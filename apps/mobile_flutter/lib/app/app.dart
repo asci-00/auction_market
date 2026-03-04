@@ -11,37 +11,37 @@ import '../features/orders/presentation/orders_screen.dart';
 import '../features/search/presentation/search_screen.dart';
 import '../features/sell/presentation/sell_screen.dart';
 
+final GoRouter _router = GoRouter(
+  initialLocation: '/login',
+  routes: [
+    GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+    ShellRoute(
+      builder: (_, __, child) => AppScaffold(child: child),
+      routes: [
+        GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+        GoRoute(path: '/search', builder: (_, __) => const SearchScreen()),
+        GoRoute(path: '/sell', builder: (_, __) => const SellScreen()),
+        GoRoute(path: '/activity', builder: (_, __) => const ActivityScreen()),
+        GoRoute(path: '/my', builder: (_, __) => const MyScreen()),
+      ],
+    ),
+    GoRoute(path: '/auction/:id', builder: (_, s) => AuctionDetailScreen(auctionId: s.pathParameters['id']!)),
+    GoRoute(path: '/orders', builder: (_, __) => const OrdersScreen()),
+    GoRoute(path: '/notifications', builder: (_, __) => const NotificationsScreen()),
+  ],
+);
+
 class AuctionMarketApp extends StatelessWidget {
   const AuctionMarketApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final router = GoRouter(
-      initialLocation: '/login',
-      routes: [
-        GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-        ShellRoute(
-          builder: (_, __, child) => AppScaffold(child: child),
-          routes: [
-            GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
-            GoRoute(path: '/search', builder: (_, __) => const SearchScreen()),
-            GoRoute(path: '/sell', builder: (_, __) => const SellScreen()),
-            GoRoute(path: '/activity', builder: (_, __) => const ActivityScreen()),
-            GoRoute(path: '/my', builder: (_, __) => const MyScreen()),
-          ],
-        ),
-        GoRoute(path: '/auction/:id', builder: (_, s) => AuctionDetailScreen(auctionId: s.pathParameters['id']!)),
-        GoRoute(path: '/orders', builder: (_, __) => const OrdersScreen()),
-        GoRoute(path: '/notifications', builder: (_, __) => const NotificationsScreen()),
-      ],
-    );
-
     return MaterialApp.router(
       title: '경마',
       themeMode: ThemeMode.system,
       darkTheme: ThemeData.dark(),
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
-      routerConfig: router,
+      routerConfig: _router,
     );
   }
 }
