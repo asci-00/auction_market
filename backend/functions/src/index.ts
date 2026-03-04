@@ -17,6 +17,7 @@ async function createInboxNotification(uid: string, type: string, title: string,
 export const createOrUpdateItem = onCall(async (req) => {
   const uid = req.auth?.uid;
   if (!uid) throw new HttpsError('unauthenticated', 'Login required');
+
   const payload = req.data as any;
   if (payload.categoryMain === 'GOODS' && (!payload.goodsAuthImages || payload.goodsAuthImages.length < 1)) {
     throw new HttpsError('invalid-argument', 'GOODS requires at least one auth image');
@@ -24,14 +25,33 @@ export const createOrUpdateItem = onCall(async (req) => {
   if ((payload.images?.length ?? 0) > 10) throw new HttpsError('invalid-argument', 'images max 10');
 
   const itemRef = payload.id ? db.collection('items').doc(payload.id) : db.collection('items').doc();
-  const now = admin.firestore.FieldValue.serverTimestamp();
-  await itemRef.set({ ...payload, sellerId: uid, updatedAt: now, createdAt: payload.createdAt ?? now }, { merge: true });
+
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(itemRef);
+    if (snap.exists && snap.data()?.sellerId !== uid) {
+      throw new HttpsError('permission-denied', 'Only owner can update item');
+    }
+
+    const existingCreatedAt = snap.data()?.createdAt ?? admin.firestore.FieldValue.serverTimestamp();
+    tx.set(
+      itemRef,
+      {
+        ...payload,
+        sellerId: uid,
+        createdAt: existingCreatedAt,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+  });
+
   return { itemId: itemRef.id };
 });
 
 export const createAuctionFromItem = onCall(async (req) => {
   const uid = req.auth?.uid;
   if (!uid) throw new HttpsError('unauthenticated', 'Login required');
+
   const data = req.data as any;
   const startAt = new Date(data.startAt ?? Date.now());
   const endAt = new Date(data.endAt);
@@ -45,6 +65,11 @@ export const createAuctionFromItem = onCall(async (req) => {
   if (data.buyNowPrice != null && (typeof data.buyNowPrice !== 'number' || data.buyNowPrice <= data.startPrice)) {
     throw new HttpsError('invalid-argument', 'buyNowPrice must be greater than startPrice');
   }
+
+  const itemRef = db.collection('items').doc(data.itemId);
+  const itemSnap = await itemRef.get();
+  if (!itemSnap.exists) throw new HttpsError('not-found', 'Item not found');
+  if (itemSnap.data()?.sellerId !== uid) throw new HttpsError('permission-denied', 'Only owner can create auction from item');
 
   const auctionRef = db.collection('auctions').doc();
   await auctionRef.set({
@@ -70,7 +95,9 @@ export const createAuctionFromItem = onCall(async (req) => {
 export const placeBid = onCall(async (req) => {
   const bidderId = req.auth?.uid;
   if (!bidderId) throw new HttpsError('unauthenticated', 'Login required');
+
   const { auctionId, amount } = req.data;
+  if (typeof amount !== 'number' || amount <= 0) throw new HttpsError('invalid-argument', 'invalid amount');
 
   const auctionRef = db.collection('auctions').doc(auctionId);
   let outbidUserId: string | undefined;
@@ -81,6 +108,8 @@ export const placeBid = onCall(async (req) => {
     if (!snap.exists) throw new HttpsError('not-found', 'Auction not found');
 
     const auctionData = snap.data()!;
+    if (auctionData.sellerId === bidderId) throw new HttpsError('failed-precondition', 'seller cannot bid own auction');
+
     const autoBidDocs = featureFlags.autoBid
       ? await tx.get(auctionRef.collection('autoBids').where('isEnabled', '==', true))
       : ({ docs: [] } as FirebaseFirestore.QuerySnapshot);
@@ -141,16 +170,33 @@ export const setAutoBid = onCall(async (req) => {
   if (!uid) throw new HttpsError('unauthenticated', 'Login required');
 
   const { auctionId, maxAmount, disable } = req.data;
-  const ref = db.collection('auctions').doc(auctionId).collection('autoBids').doc(uid);
-  await ref.set(
-    {
-      maxAmount: maxAmount ?? 0,
-      isEnabled: !disable,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    },
-    { merge: true },
-  );
+  const auctionRef = db.collection('auctions').doc(auctionId);
+  const autoBidRef = auctionRef.collection('autoBids').doc(uid);
+
+  await db.runTransaction(async (tx) => {
+    const auctionSnap = await tx.get(auctionRef);
+    if (!auctionSnap.exists) throw new HttpsError('not-found', 'Auction not found');
+
+    const auction = auctionSnap.data()!;
+    if (auction.status !== 'LIVE') throw new HttpsError('failed-precondition', 'auction is not live');
+    if (auction.sellerId === uid) throw new HttpsError('failed-precondition', 'seller cannot set auto bid');
+
+    const autoBidSnap = await tx.get(autoBidRef);
+    if (!disable && (typeof maxAmount !== 'number' || maxAmount <= 0)) {
+      throw new HttpsError('invalid-argument', 'maxAmount must be positive when enabling auto bid');
+    }
+
+    tx.set(
+      autoBidRef,
+      {
+        maxAmount: disable ? 0 : maxAmount,
+        isEnabled: !disable,
+        createdAt: autoBidSnap.data()?.createdAt ?? admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+  });
 
   return { ok: true };
 });
@@ -206,7 +252,7 @@ export const payOrder = onCall(async (req) => {
   if (!order || order.buyerId !== uid) throw new HttpsError('permission-denied', 'Only buyer');
   if (order.orderStatus !== 'AWAITING_PAYMENT') throw new HttpsError('failed-precondition', 'order not awaiting payment');
 
-  if (mockResult !== 'SUCCESS') {
+  if (mockResult === 'FAIL' || mockResult === 'FAILED') {
     await orderRef.update({ paymentStatus: 'FAILED', updatedAt: admin.firestore.FieldValue.serverTimestamp() });
     return { ok: false };
   }
@@ -278,31 +324,14 @@ export const finalizeAuctionsScheduler = onSchedule('every 5 minutes', async () 
   const snap = await db.collection('auctions').where('status', '==', 'LIVE').where('endAt', '<=', admin.firestore.Timestamp.fromDate(now)).get();
 
   for (const doc of snap.docs) {
-    const data = doc.data();
-    const decision = finalizeAuction(
-      {
-        id: doc.id,
-        itemId: data.itemId,
-        sellerId: data.sellerId,
-        status: data.status,
-        endAt: data.endAt.toDate(),
-        currentPrice: data.currentPrice,
-        highestBidderId: data.highestBidderId,
-      },
-      now,
-    );
-    if (!decision.shouldFinalize) continue;
+    const notification = await db.runTransaction(async (tx) => {
+      const freshAuctionSnap = await tx.get(doc.ref);
+      if (!freshAuctionSnap.exists) return null;
+      const data = freshAuctionSnap.data()!;
 
-    if (decision.nextStatus === 'ENDED' && data.highestBidderId) {
-      const alreadyCreatedOrder = data.orderId ? await db.collection('orders').doc(data.orderId).get() : null;
-      if (alreadyCreatedOrder?.exists) {
-        await doc.ref.update({ status: 'ENDED', updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-        continue;
-      }
-
-      const order = toAwaitingPaymentOrder(
+      const decision = finalizeAuction(
         {
-          id: doc.id,
+          id: freshAuctionSnap.id,
           itemId: data.itemId,
           sellerId: data.sellerId,
           status: data.status,
@@ -312,21 +341,49 @@ export const finalizeAuctionsScheduler = onSchedule('every 5 minutes', async () 
         },
         now,
       );
-      const orderRef = db.collection('orders').doc();
-      await orderRef.set({
-        ...order,
-        escrowStatus: 'HOLD',
-        fees: { feeRate: 0.05, feeAmount: Math.floor(order.finalPrice * 0.05) },
-        settlement: { expectedAt: null, settledAt: null },
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-      await doc.ref.update({ status: 'ENDED', orderId: orderRef.id, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-      await createInboxNotification(order.buyerId, 'WON', '낙찰되었습니다', '결제 기한 내 결제를 진행해주세요.', `app://orders/${orderRef.id}`);
-      continue;
-    }
 
-    await doc.ref.update({ status: decision.nextStatus, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+      if (!decision.shouldFinalize) return null;
+
+      if (decision.nextStatus === 'ENDED' && data.highestBidderId) {
+        if (data.orderId) {
+          tx.update(doc.ref, { status: 'ENDED', updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+          return null;
+        }
+
+        const order = toAwaitingPaymentOrder(
+          {
+            id: freshAuctionSnap.id,
+            itemId: data.itemId,
+            sellerId: data.sellerId,
+            status: data.status,
+            endAt: data.endAt.toDate(),
+            currentPrice: data.currentPrice,
+            highestBidderId: data.highestBidderId,
+          },
+          now,
+        );
+
+        const orderRef = db.collection('orders').doc();
+        tx.set(orderRef, {
+          ...order,
+          escrowStatus: 'HOLD',
+          fees: { feeRate: 0.05, feeAmount: Math.floor(order.finalPrice * 0.05) },
+          settlement: { expectedAt: null, settledAt: null },
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        tx.update(doc.ref, { status: 'ENDED', orderId: orderRef.id, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+
+        return { buyerId: order.buyerId, orderId: orderRef.id };
+      }
+
+      tx.update(doc.ref, { status: decision.nextStatus, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+      return null;
+    });
+
+    if (notification) {
+      await createInboxNotification(notification.buyerId, 'WON', '낙찰되었습니다', '결제 기한 내 결제를 진행해주세요.', `app://orders/${notification.orderId}`);
+    }
   }
 });
 
@@ -339,40 +396,55 @@ export const expireUnpaidOrdersScheduler = onSchedule('every 10 minutes', async 
     .get();
 
   for (const doc of snap.docs) {
-    const o = doc.data();
-    const updated = expireUnpaidOrders(now, [
-      {
-        id: doc.id,
-        auctionId: o.auctionId,
-        buyerId: o.buyerId,
-        sellerId: o.sellerId,
-        finalPrice: o.finalPrice,
-        paymentStatus: o.paymentStatus,
-        orderStatus: o.orderStatus,
-        paymentDueAt: o.paymentDueAt.toDate(),
-      },
-    ])[0];
-    if (updated.orderStatus !== 'CANCELLED_UNPAID') continue;
+    const shouldNotify = await db.runTransaction(async (tx) => {
+      const orderSnap = await tx.get(doc.ref);
+      if (!orderSnap.exists) return false;
+      const o = orderSnap.data()!;
 
-    await doc.ref.update({ orderStatus: 'CANCELLED_UNPAID', paymentStatus: 'CANCELLED', updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-
-    const userRef = db.collection('users').doc(o.buyerId);
-    const userSnap = await userRef.get();
-    const penaltyStats = userSnap.data()?.penaltyStats ?? { unpaidCount: 0, depositForfeitedCount: 0, trustScore: 100 };
-    const penalty = applyUnpaidPenalty(penaltyStats, o.finalPrice);
-    await userRef.set(
-      {
-        penaltyStats: {
-          unpaidCount: penalty.unpaidCount,
-          depositForfeitedCount: penalty.depositForfeitedCount,
-          trustScore: penalty.trustScore,
+      const updated = expireUnpaidOrders(now, [
+        {
+          id: orderSnap.id,
+          auctionId: o.auctionId,
+          buyerId: o.buyerId,
+          sellerId: o.sellerId,
+          finalPrice: o.finalPrice,
+          paymentStatus: o.paymentStatus,
+          orderStatus: o.orderStatus,
+          paymentDueAt: o.paymentDueAt.toDate(),
         },
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      },
-      { merge: true },
-    );
+      ])[0];
 
-    await createInboxNotification(o.buyerId, 'PAYMENT_DUE', '결제 기한이 만료되었습니다', '미결제로 주문이 취소되었고 패널티가 반영되었습니다.', `app://orders/${doc.id}`);
+      if (updated.orderStatus !== 'CANCELLED_UNPAID') return false;
+
+      const userRef = db.collection('users').doc(o.buyerId);
+      const userSnap = await tx.get(userRef);
+      const penaltyStats = userSnap.data()?.penaltyStats ?? { unpaidCount: 0, depositForfeitedCount: 0, trustScore: 100 };
+      const penalty = applyUnpaidPenalty(penaltyStats, o.finalPrice);
+
+      tx.update(doc.ref, {
+        orderStatus: 'CANCELLED_UNPAID',
+        paymentStatus: 'CANCELLED',
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      tx.set(
+        userRef,
+        {
+          penaltyStats: {
+            unpaidCount: penalty.unpaidCount,
+            depositForfeitedCount: penalty.depositForfeitedCount,
+            trustScore: penalty.trustScore,
+          },
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+
+      return true;
+    });
+
+    if (shouldNotify) {
+      await createInboxNotification(doc.data().buyerId, 'PAYMENT_DUE', '결제 기한이 만료되었습니다', '미결제로 주문이 취소되었고 패널티가 반영되었습니다.', `app://orders/${doc.id}`);
+    }
   }
 });
 
