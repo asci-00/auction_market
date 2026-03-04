@@ -35,8 +35,15 @@ export const createAuctionFromItem = onCall(async (req) => {
   const data = req.data as any;
   const startAt = new Date(data.startAt ?? Date.now());
   const endAt = new Date(data.endAt);
+
   if (Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime()) || endAt <= startAt) {
     throw new HttpsError('invalid-argument', 'invalid schedule');
+  }
+  if (typeof data.startPrice !== 'number' || data.startPrice <= 0) {
+    throw new HttpsError('invalid-argument', 'invalid startPrice');
+  }
+  if (data.buyNowPrice != null && (typeof data.buyNowPrice !== 'number' || data.buyNowPrice <= data.startPrice)) {
+    throw new HttpsError('invalid-argument', 'buyNowPrice must be greater than startPrice');
   }
 
   const auctionRef = db.collection('auctions').doc();
@@ -53,6 +60,7 @@ export const createAuctionFromItem = onCall(async (req) => {
     bidCount: 0,
     bidderCount: 0,
     highestBidderId: null,
+    orderId: null,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -71,6 +79,7 @@ export const placeBid = onCall(async (req) => {
   await db.runTransaction(async (tx) => {
     const snap = await tx.get(auctionRef);
     if (!snap.exists) throw new HttpsError('not-found', 'Auction not found');
+
     const auctionData = snap.data()!;
     const autoBidDocs = featureFlags.autoBid
       ? await tx.get(auctionRef.collection('autoBids').where('isEnabled', '==', true))
@@ -130,6 +139,7 @@ export const placeBid = onCall(async (req) => {
 export const setAutoBid = onCall(async (req) => {
   const uid = req.auth?.uid;
   if (!uid) throw new HttpsError('unauthenticated', 'Login required');
+
   const { auctionId, maxAmount, disable } = req.data;
   const ref = db.collection('auctions').doc(auctionId).collection('autoBids').doc(uid);
   await ref.set(
@@ -141,6 +151,7 @@ export const setAutoBid = onCall(async (req) => {
     },
     { merge: true },
   );
+
   return { ok: true };
 });
 
@@ -155,6 +166,8 @@ export const buyNow = onCall(async (req) => {
     const auction = snap.data();
     if (!auction?.buyNowPrice) throw new HttpsError('failed-precondition', 'buyNow not available');
     if (auction.status !== 'LIVE') throw new HttpsError('failed-precondition', 'auction not live');
+    if (auction.sellerId === uid) throw new HttpsError('failed-precondition', 'seller cannot buy own auction');
+    if (auction.orderId) throw new HttpsError('already-exists', 'order already exists for this auction');
 
     const orderRef = db.collection('orders').doc();
     tx.set(orderRef, {
@@ -170,7 +183,13 @@ export const buyNow = onCall(async (req) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-    tx.update(auctionRef, { status: 'ENDED', highestBidderId: uid, currentPrice: auction.buyNowPrice, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+    tx.update(auctionRef, {
+      status: 'ENDED',
+      highestBidderId: uid,
+      currentPrice: auction.buyNowPrice,
+      orderId: orderRef.id,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
     return { orderId: orderRef.id };
   });
 });
@@ -178,15 +197,20 @@ export const buyNow = onCall(async (req) => {
 export const payOrder = onCall(async (req) => {
   const uid = req.auth?.uid;
   if (!uid) throw new HttpsError('unauthenticated', 'Login required');
+
   const { orderId, method, mockResult } = req.data;
   const orderRef = db.collection('orders').doc(orderId);
   const snap = await orderRef.get();
   const order = snap.data();
+
   if (!order || order.buyerId !== uid) throw new HttpsError('permission-denied', 'Only buyer');
+  if (order.orderStatus !== 'AWAITING_PAYMENT') throw new HttpsError('failed-precondition', 'order not awaiting payment');
+
   if (mockResult !== 'SUCCESS') {
     await orderRef.update({ paymentStatus: 'FAILED', updatedAt: admin.firestore.FieldValue.serverTimestamp() });
     return { ok: false };
   }
+
   await orderRef.update({
     paymentMethod: method,
     paymentStatus: 'PAID',
@@ -194,39 +218,59 @@ export const payOrder = onCall(async (req) => {
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
   await createInboxNotification(order.sellerId, 'SYSTEM', '결제 완료', '구매자 결제가 완료되었습니다.', `app://orders/${orderId}`);
+
   return { ok: true };
 });
 
 export const shipmentUpdate = onCall(async (req) => {
   const uid = req.auth?.uid;
   if (!uid) throw new HttpsError('unauthenticated', 'Login required');
+
   const { orderId, carrier, trackingNumber } = req.data;
   const ref = db.collection('orders').doc(orderId);
   const order = (await ref.get()).data();
+
   if (!order || order.sellerId !== uid) throw new HttpsError('permission-denied', 'Only seller');
+  if (order.orderStatus !== 'PAID_ESCROW_HOLD') throw new HttpsError('failed-precondition', 'order not payable/shippable state');
+
   await ref.update({
     orderStatus: 'SHIPPED',
     shipping: { carrier, trackingNumber, shippedAt: admin.firestore.FieldValue.serverTimestamp() },
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
   await createInboxNotification(order.buyerId, 'SHIPPED', '배송이 시작되었습니다', `${carrier} ${trackingNumber}`, `app://orders/${orderId}`);
+
   return { ok: true };
 });
 
 export const confirmReceipt = onCall(async (req) => {
   const uid = req.auth?.uid;
   if (!uid) throw new HttpsError('unauthenticated', 'Login required');
+
   const { orderId } = req.data;
   const ref = db.collection('orders').doc(orderId);
   const order = (await ref.get()).data();
+
   if (!order || order.buyerId !== uid) throw new HttpsError('permission-denied', 'Only buyer');
+  if (order.orderStatus !== 'SHIPPED') throw new HttpsError('failed-precondition', 'order is not shipped');
+
   const expectedAt = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
   await ref.update({
     orderStatus: 'CONFIRMED_RECEIPT',
-    settlement: { expectedAt: admin.firestore.Timestamp.fromDate(expectedAt) },
+    settlement: { ...(order.settlement ?? {}), expectedAt: admin.firestore.Timestamp.fromDate(expectedAt) },
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
+
   return { ok: true };
+});
+
+export const activateDraftAuctionsScheduler = onSchedule('every 5 minutes', async () => {
+  const now = admin.firestore.Timestamp.fromDate(new Date());
+  const snap = await db.collection('auctions').where('status', '==', 'DRAFT').where('startAt', '<=', now).get();
+
+  for (const doc of snap.docs) {
+    await doc.ref.update({ status: 'LIVE', updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+  }
 });
 
 export const finalizeAuctionsScheduler = onSchedule('every 5 minutes', async () => {
@@ -235,20 +279,8 @@ export const finalizeAuctionsScheduler = onSchedule('every 5 minutes', async () 
 
   for (const doc of snap.docs) {
     const data = doc.data();
-    const decision = finalizeAuction({
-      id: doc.id,
-      itemId: data.itemId,
-      sellerId: data.sellerId,
-      status: data.status,
-      endAt: data.endAt.toDate(),
-      currentPrice: data.currentPrice,
-      highestBidderId: data.highestBidderId,
-    }, now);
-    if (!decision.shouldFinalize) continue;
-
-    await doc.ref.update({ status: decision.nextStatus, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-    if (decision.nextStatus === 'ENDED' && data.highestBidderId) {
-      const order = toAwaitingPaymentOrder({
+    const decision = finalizeAuction(
+      {
         id: doc.id,
         itemId: data.itemId,
         sellerId: data.sellerId,
@@ -256,7 +288,30 @@ export const finalizeAuctionsScheduler = onSchedule('every 5 minutes', async () 
         endAt: data.endAt.toDate(),
         currentPrice: data.currentPrice,
         highestBidderId: data.highestBidderId,
-      }, now);
+      },
+      now,
+    );
+    if (!decision.shouldFinalize) continue;
+
+    if (decision.nextStatus === 'ENDED' && data.highestBidderId) {
+      const alreadyCreatedOrder = data.orderId ? await db.collection('orders').doc(data.orderId).get() : null;
+      if (alreadyCreatedOrder?.exists) {
+        await doc.ref.update({ status: 'ENDED', updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+        continue;
+      }
+
+      const order = toAwaitingPaymentOrder(
+        {
+          id: doc.id,
+          itemId: data.itemId,
+          sellerId: data.sellerId,
+          status: data.status,
+          endAt: data.endAt.toDate(),
+          currentPrice: data.currentPrice,
+          highestBidderId: data.highestBidderId,
+        },
+        now,
+      );
       const orderRef = db.collection('orders').doc();
       await orderRef.set({
         ...order,
@@ -266,27 +321,37 @@ export const finalizeAuctionsScheduler = onSchedule('every 5 minutes', async () 
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
-      await createInboxNotification(order.buyerId, 'WON', '낙찰되었습니다', `결제 기한 내 결제를 진행해주세요.`, `app://orders/${orderRef.id}`);
+      await doc.ref.update({ status: 'ENDED', orderId: orderRef.id, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+      await createInboxNotification(order.buyerId, 'WON', '낙찰되었습니다', '결제 기한 내 결제를 진행해주세요.', `app://orders/${orderRef.id}`);
+      continue;
     }
+
+    await doc.ref.update({ status: decision.nextStatus, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
   }
 });
 
 export const expireUnpaidOrdersScheduler = onSchedule('every 10 minutes', async () => {
   const now = new Date();
-  const snap = await db.collection('orders').where('orderStatus', '==', 'AWAITING_PAYMENT').where('paymentDueAt', '<=', admin.firestore.Timestamp.fromDate(now)).get();
+  const snap = await db
+    .collection('orders')
+    .where('orderStatus', '==', 'AWAITING_PAYMENT')
+    .where('paymentDueAt', '<=', admin.firestore.Timestamp.fromDate(now))
+    .get();
 
   for (const doc of snap.docs) {
     const o = doc.data();
-    const updated = expireUnpaidOrders(now, [{
-      id: doc.id,
-      auctionId: o.auctionId,
-      buyerId: o.buyerId,
-      sellerId: o.sellerId,
-      finalPrice: o.finalPrice,
-      paymentStatus: o.paymentStatus,
-      orderStatus: o.orderStatus,
-      paymentDueAt: o.paymentDueAt.toDate(),
-    }])[0];
+    const updated = expireUnpaidOrders(now, [
+      {
+        id: doc.id,
+        auctionId: o.auctionId,
+        buyerId: o.buyerId,
+        sellerId: o.sellerId,
+        finalPrice: o.finalPrice,
+        paymentStatus: o.paymentStatus,
+        orderStatus: o.orderStatus,
+        paymentDueAt: o.paymentDueAt.toDate(),
+      },
+    ])[0];
     if (updated.orderStatus !== 'CANCELLED_UNPAID') continue;
 
     await doc.ref.update({ orderStatus: 'CANCELLED_UNPAID', paymentStatus: 'CANCELLED', updatedAt: admin.firestore.FieldValue.serverTimestamp() });
@@ -295,30 +360,39 @@ export const expireUnpaidOrdersScheduler = onSchedule('every 10 minutes', async 
     const userSnap = await userRef.get();
     const penaltyStats = userSnap.data()?.penaltyStats ?? { unpaidCount: 0, depositForfeitedCount: 0, trustScore: 100 };
     const penalty = applyUnpaidPenalty(penaltyStats, o.finalPrice);
-    await userRef.set({
-      penaltyStats: {
-        unpaidCount: penalty.unpaidCount,
-        depositForfeitedCount: penalty.depositForfeitedCount,
-        trustScore: penalty.trustScore,
+    await userRef.set(
+      {
+        penaltyStats: {
+          unpaidCount: penalty.unpaidCount,
+          depositForfeitedCount: penalty.depositForfeitedCount,
+          trustScore: penalty.trustScore,
+        },
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       },
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
+      { merge: true },
+    );
+
+    await createInboxNotification(o.buyerId, 'PAYMENT_DUE', '결제 기한이 만료되었습니다', '미결제로 주문이 취소되었고 패널티가 반영되었습니다.', `app://orders/${doc.id}`);
   }
 });
 
 export const settleScheduler = onSchedule('every 60 minutes', async () => {
   const now = new Date();
   const snap = await db.collection('orders').where('orderStatus', '==', 'CONFIRMED_RECEIPT').get();
+
   for (const doc of snap.docs) {
     const data = doc.data();
     const expectedAt = data.settlement?.expectedAt?.toDate?.();
     if (!expectedAt) continue;
     if (!shouldSettle(data.orderStatus, expectedAt, now)) continue;
+
     await doc.ref.update({
       orderStatus: 'SETTLED',
       escrowStatus: 'RELEASED',
       settlement: { ...data.settlement, settledAt: admin.firestore.Timestamp.fromDate(now) },
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
+
+    await createInboxNotification(data.sellerId, 'SYSTEM', '정산 완료', `주문 ${doc.id} 정산이 완료되었습니다.`, `app://orders/${doc.id}`);
   }
 });

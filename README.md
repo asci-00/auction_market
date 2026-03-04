@@ -20,7 +20,7 @@
 ### 서버 원칙
 - items/bids/orders/auctions 핵심 값은 Cloud Functions에서만 변경
 - Firestore rules에서 클라이언트 direct write 차단
-- 스케줄러(finalize/expire/settle)로 경매종료/미결제만료/정산전이를 자동 처리
+- 스케줄러(activate/finalize/expire/settle)로 경매개시/종료/미결제만료/정산전이를 자동 처리
 
 ## 2) 기능 플래그
 `backend/functions/src/config/policy.ts`
@@ -80,4 +80,4 @@ flutter run
 ## 6) 구현 범위 메모
 - 카카오/네이버 로그인, 감정 연계, 프리미엄 리스팅, 구독은 MVP 스텁/플래그 중심
 - Auto-bid는 플래그로 ON/OFF 가능하며 OFF여도 기본 입찰 동작
-- finalizeAuctionsScheduler / expireUnpaidOrdersScheduler / settleScheduler는 실제 상태전이 로직 포함
+- activateDraftAuctionsScheduler / finalizeAuctionsScheduler / expireUnpaidOrdersScheduler / settleScheduler는 실제 상태전이 로직 포함
