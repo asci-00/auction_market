@@ -1,0 +1,23 @@
+{
+  "name": "auction-market-functions",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "lint": "tsc --noEmit",
+    "serve": "firebase emulators:start --only functions,firestore",
+    "seed": "tsx ../emulator-seed/seed.ts"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^5.1.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "tsx": "^4.19.1",
+    "vitest": "^2.1.8",
+    "@types/node": "^22.10.1"
+  }
+}
