@@ -1,4 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+
+import '../../../core/l10n/locale_menu_action.dart';
+import '../../../generated/locale_keys.g.dart';
 
 class MyScreen extends StatelessWidget {
   const MyScreen({super.key});
@@ -6,10 +10,13 @@ class MyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My')),
-      body: const ListTile(
-        title: Text('본인인증/귀중품 판매자 인증 상태'),
-        subtitle: Text('phone: VERIFIED / id: PENDING / precious: UNVERIFIED'),
+      appBar: AppBar(
+        title: Text(LocaleKeys.my_title.tr()),
+        actions: const [AppLocaleMenuAction()],
+      ),
+      body: ListTile(
+        title: Text(LocaleKeys.my_verificationTitle.tr()),
+        subtitle: Text(LocaleKeys.my_verificationStatus.tr()),
       ),
     );
   }

@@ -1,5 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../core/l10n/locale_menu_action.dart';
+import '../../../generated/locale_keys.g.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -8,17 +12,29 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('마감임박 / 인기 경매'),
+        title: Text(LocaleKeys.home_title.tr()),
         actions: [
-          IconButton(onPressed: () => context.push('/notifications'), icon: const Icon(Icons.notifications)),
+          IconButton(
+            onPressed: () => context.push('/notifications'),
+            icon: const Icon(Icons.notifications),
+          ),
+          const AppLocaleMenuAction(),
         ],
       ),
       body: ListView.builder(
         itemCount: 10,
         itemBuilder: (_, i) => ListTile(
-          title: Text('Auction #$i'),
-          subtitle: const Text('현재가: 100,000원 / 즉시구매 가능'),
-          trailing: const Text('00:12:08'),
+          title: Text(LocaleKeys.home_auctionTitle.tr(namedArgs: {'id': '$i'})),
+          subtitle: Text(
+            LocaleKeys.home_priceSummary.tr(
+              namedArgs: {'price': '100,000원'},
+            ),
+          ),
+          trailing: Text(
+            LocaleKeys.home_timer.tr(
+              namedArgs: {'time': '00:12:08'},
+            ),
+          ),
           onTap: () => context.push('/auction/$i'),
         ),
       ),
