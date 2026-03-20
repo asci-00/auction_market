@@ -6,6 +6,7 @@ import {
   normalizeWebhookPayment,
   toCancelledPaymentOrder,
   toConfirmedPaymentOrder,
+  withLastWebhookEventId,
 } from '../src/domain/paymentEngine.js';
 import { buildOrderFees } from '../src/domain/orderEngine.js';
 
@@ -105,5 +106,26 @@ describe('payment engine', () => {
     expect(cancelled.paymentStatus).toBe('CANCELLED');
     expect(cancelled.orderStatus).toBe('CANCELLED');
     expect(cancelled.payment.lastWebhookEventId).toBe('event-cancelled');
+  });
+
+  it('updates webhook marker without replaying payment state transitions', () => {
+    const paidOrder = toConfirmedPaymentOrder(
+      baseOrder,
+      {
+        paymentKey: 'pay_1',
+        method: 'CARD',
+        approvedAt: new Date('2026-03-17T01:00:00.000Z'),
+        totalAmount: 18000,
+        status: 'DONE',
+      },
+      'event-1',
+    );
+
+    const updated = withLastWebhookEventId(paidOrder, 'event-2');
+
+    expect(updated.paymentStatus).toBe('PAID');
+    expect(updated.orderStatus).toBe('PAID_ESCROW_HOLD');
+    expect(updated.payment.paymentKey).toBe('pay_1');
+    expect(updated.payment.lastWebhookEventId).toBe('event-2');
   });
 });

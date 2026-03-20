@@ -49,6 +49,19 @@ export function toConfirmedPaymentOrder(
   };
 }
 
+export function withLastWebhookEventId(
+  order: Order,
+  webhookEventId: string | null,
+): Order {
+  return {
+    ...order,
+    payment: {
+      ...order.payment,
+      lastWebhookEventId: webhookEventId,
+    },
+  };
+}
+
 export function toFailedPaymentOrder(order: Order): Order {
   return {
     ...order,

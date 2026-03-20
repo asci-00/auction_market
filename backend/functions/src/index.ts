@@ -23,6 +23,7 @@ import {
   toCancelledPaymentOrder,
   toConfirmedPaymentOrder,
   toFailedPaymentOrder,
+  withLastWebhookEventId,
 } from './domain/paymentEngine.js';
 import { AuditEventRecord, Order } from './domain/models.js';
 import {
@@ -1123,36 +1124,14 @@ export const confirmOrderPayment = onCall(async (req) => {
     );
   }
 
+  let payment: ConfirmTossPaymentResponse;
   try {
-    const payment = await confirmTossPayment(config, {
+    payment = await confirmTossPayment(config, {
       paymentKey,
       orderId,
       amount,
       idempotencyKey: `order:${orderId}:confirm`,
     });
-
-    const nextOrder = toConfirmedPaymentOrder(order, payment, null);
-    await orderRef.update({
-      ...serializeOrder(nextOrder),
-      updatedAt: FieldValue.serverTimestamp(),
-    });
-
-    await createInboxNotification(
-      order.sellerId,
-      'PAYMENT_COMPLETED',
-      '결제 완료',
-      '구매자 결제가 완료되었습니다.',
-      buildDeepLink('orders', orderId),
-    );
-    await writeAuditEvent({
-      entityType: 'PAYMENT',
-      entityId: paymentKey,
-      eventType: 'PAYMENT_CONFIRMED',
-      actorId: uid,
-      payload: { orderId, amount, status: payment.status },
-    });
-    logger.info('confirmOrderPayment', { orderId, paymentKey, uid });
-    return { ok: true, orderId };
   } catch (error) {
     const failedOrder = toFailedPaymentOrder(order);
     await orderRef.update({
@@ -1168,6 +1147,29 @@ export const confirmOrderPayment = onCall(async (req) => {
     });
     throw error;
   }
+
+  const nextOrder = toConfirmedPaymentOrder(order, payment, null);
+  await orderRef.update({
+    ...serializeOrder(nextOrder),
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+
+  await createInboxNotification(
+    order.sellerId,
+    'PAYMENT_COMPLETED',
+    '결제 완료',
+    '구매자 결제가 완료되었습니다.',
+    buildDeepLink('orders', orderId),
+  );
+  await writeAuditEvent({
+    entityType: 'PAYMENT',
+    entityId: paymentKey,
+    eventType: 'PAYMENT_CONFIRMED',
+    actorId: uid,
+    payload: { orderId, amount, status: payment.status },
+  });
+  logger.info('confirmOrderPayment', { orderId, paymentKey, uid });
+  return { ok: true, orderId };
 });
 
 export const tossPaymentWebhook = onRequest(async (req, res) => {
@@ -1222,12 +1224,13 @@ export const tossPaymentWebhook = onRequest(async (req, res) => {
     payment.totalAmount != null &&
     payment.approvedAt
   ) {
-    const nextOrder = isDuplicatePaymentConfirmation(
+    const isDuplicateDone = isDuplicatePaymentConfirmation(
       order,
       payment.paymentKey,
       payment.totalAmount,
-    )
-      ? order
+    );
+    const nextOrder = isDuplicateDone
+      ? withLastWebhookEventId(order, eventMarker)
       : toConfirmedPaymentOrder(
           order,
           {
@@ -1243,20 +1246,22 @@ export const tossPaymentWebhook = onRequest(async (req, res) => {
       ...serializeOrder(nextOrder),
       updatedAt: FieldValue.serverTimestamp(),
     });
-    await createInboxNotification(
-      order.sellerId,
-      'PAYMENT_COMPLETED',
-      '결제 완료',
-      '구매자 결제가 완료되었습니다.',
-      buildDeepLink('orders', order.id),
-    );
-    await writeAuditEvent({
-      entityType: 'PAYMENT',
-      entityId: payment.paymentKey,
-      eventType: 'PAYMENT_WEBHOOK_DONE',
-      actorId: null,
-      payload: { orderId: order.id, eventMarker },
-    });
+    if (!isDuplicateDone) {
+      await createInboxNotification(
+        order.sellerId,
+        'PAYMENT_COMPLETED',
+        '결제 완료',
+        '구매자 결제가 완료되었습니다.',
+        buildDeepLink('orders', order.id),
+      );
+      await writeAuditEvent({
+        entityType: 'PAYMENT',
+        entityId: payment.paymentKey,
+        eventType: 'PAYMENT_WEBHOOK_DONE',
+        actorId: null,
+        payload: { orderId: order.id, eventMarker },
+      });
+    }
   } else if (
     payment.status &&
     ['CANCELED', 'ABORTED', 'EXPIRED'].includes(payment.status)
