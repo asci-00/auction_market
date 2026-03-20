@@ -2,6 +2,14 @@
 
 모바일 퍼스트 C2C 경매 MVP(Flutter + Firebase Emulator)입니다.
 
+## Detailed Docs
+- `Prompt.md`: product guardrails and release bar
+- `Plan.md`: build order and completion criteria
+- `Implement.md`: live execution log
+- `Documentation.md`: schema, contracts, environment, and ops
+- `docs/Design.md`: UI system and screen rules
+- `docs/Environment.md`: external config contract and TODO inventory
+
 ## 1) 아키텍처 제안
 
 ### 폴더 구조

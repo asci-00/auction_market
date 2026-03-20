@@ -6,6 +6,9 @@
     "rules": "backend/firestore.rules",
     "indexes": "backend/firestore.indexes.json"
   },
+  "storage": {
+    "rules": "backend/storage.rules"
+  },
   "emulators": {
     "auth": { "port": 9099 },
     "functions": { "port": 5001 },

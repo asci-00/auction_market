@@ -1,0 +1,10 @@
+.DS_Store
+.env
+.env.local
+.env.*.local
+node_modules/
+backend/functions/lib/
+backend/functions/.env
+apps/mobile_flutter/.dart_tool/
+apps/mobile_flutter/build/
+apps/mobile_flutter/dart_defines.json
