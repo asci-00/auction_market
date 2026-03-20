@@ -8,10 +8,14 @@ const supportedAppLocales = <Locale>[
   Locale('en'),
 ];
 
+const fallbackAppLocale = Locale('ko');
+
+const translationAssetPath = 'assets/translations';
+
 Locale resolveAppLocale(
-  Locale? deviceLocale,
-  Iterable<Locale> supportedLocales,
-) {
+  Locale? deviceLocale, [
+  Iterable<Locale> supportedLocales = supportedAppLocales,
+]) {
   if (deviceLocale != null) {
     for (final locale in supportedLocales) {
       if (locale.languageCode == deviceLocale.languageCode) {
@@ -20,7 +24,7 @@ Locale resolveAppLocale(
     }
   }
 
-  return const Locale('ko');
+  return fallbackAppLocale;
 }
 
 extension AppLocalizationsX on BuildContext {

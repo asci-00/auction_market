@@ -6,6 +6,7 @@ import '../../../core/app_config/app_config.dart';
 import '../../../core/firebase/firebase_bootstrap.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_localization.dart';
+import '../../../core/l10n/locale_menu_action.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
@@ -59,6 +60,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           tokens.space7,
         ),
         children: [
+          const Align(
+            alignment: Alignment.centerRight,
+            child: AppLocaleMenuAction(),
+          ),
+          SizedBox(height: tokens.space3),
           AppEditorialHero(
             eyebrow: l10n.loginHeroEyebrow,
             title: l10n.loginHeroTitle,

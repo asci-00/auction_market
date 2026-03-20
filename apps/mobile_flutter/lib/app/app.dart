@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,6 +12,13 @@ import '../core/theme/app_theme.dart';
 class AuctionMarketApp extends ConsumerWidget {
   const AuctionMarketApp({super.key});
 
+  List<LocalizationsDelegate<dynamic>> _delegates(BuildContext context) {
+    return [
+      ...context.localizationDelegates,
+      AppLocalizations.delegate,
+    ];
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = AppTheme.light();
@@ -21,25 +29,25 @@ class AuctionMarketApp extends ConsumerWidget {
         debugShowCheckedModeBanner: false,
         theme: theme,
         onGenerateTitle: (context) => context.l10n.appTitle,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: supportedAppLocales,
-        localeResolutionCallback: resolveAppLocale,
+        locale: context.locale,
+        localizationsDelegates: _delegates(context),
+        supportedLocales: context.supportedLocales,
         routerConfig: ref.watch(goRouterProvider),
       ),
       loading: () => MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: theme,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: supportedAppLocales,
-        localeResolutionCallback: resolveAppLocale,
+        locale: context.locale,
+        localizationsDelegates: _delegates(context),
+        supportedLocales: context.supportedLocales,
         home: const AppBootstrapLoadingScreen(),
       ),
       error: (error, _) => MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: theme,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: supportedAppLocales,
-        localeResolutionCallback: resolveAppLocale,
+        locale: context.locale,
+        localizationsDelegates: _delegates(context),
+        supportedLocales: context.supportedLocales,
         home: StartupFailureView(
           error: AppError.from(error),
           onRetry: () => ref.invalidate(appBootstrapProvider),

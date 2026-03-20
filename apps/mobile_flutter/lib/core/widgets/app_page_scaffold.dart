@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/locale_menu_action.dart';
 import '../theme/app_theme.dart';
 
 class AppPageScaffold extends StatelessWidget {
@@ -26,6 +27,11 @@ class AppPageScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tokens = context.tokens;
+    final appBarActions = [
+      if (actions case final customActions?) ...customActions,
+      const AppLocaleMenuAction(),
+      SizedBox(width: tokens.space2),
+    ];
 
     return Scaffold(
       extendBody: extendBody,
@@ -54,7 +60,7 @@ class AppPageScaffold extends StatelessWidget {
                     ),
                 ],
               ),
-              actions: actions,
+              actions: appBarActions,
             ),
       body: DecoratedBox(
         decoration: const BoxDecoration(

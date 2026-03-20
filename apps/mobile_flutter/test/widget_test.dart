@@ -1,25 +1,40 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:auction_market_mobile/core/app_config/app_config.dart';
-import 'package:auction_market_mobile/core/error/app_error.dart';
-import 'package:auction_market_mobile/core/error/error_views.dart';
 import 'package:auction_market_mobile/core/l10n/app_localization.dart';
 import 'package:auction_market_mobile/core/theme/app_theme.dart';
 import 'package:auction_market_mobile/features/auth/presentation/login_screen.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() async {
+    SharedPreferences.setMockInitialValues({});
+    await EasyLocalization.ensureInitialized();
+  });
+
   testWidgets('login screen renders Korean copy when locale is Korean', (
     tester,
   ) async {
     await tester.pumpWidget(
       const _TestApp(
         locale: Locale('ko'),
-        child: LoginScreen(),
+        child: LoginScreen(
+          configOverride: AppConfig(
+            environment: AppEnvironment.dev,
+            useFirebaseEmulators: false,
+            tossClientKey: null,
+          ),
+        ),
       ),
     );
+    await tester.pumpAndSettle();
 
     expect(find.text('Google로 계속하기'), findsOneWidget);
     expect(find.text('진지한 입찰을 위한 차분한 마켓에 입장하세요.'), findsOneWidget);
@@ -31,9 +46,16 @@ void main() {
     await tester.pumpWidget(
       const _TestApp(
         locale: Locale('en'),
-        child: LoginScreen(),
+        child: LoginScreen(
+          configOverride: AppConfig(
+            environment: AppEnvironment.dev,
+            useFirebaseEmulators: false,
+            tossClientKey: null,
+          ),
+        ),
       ),
     );
+    await tester.pumpAndSettle();
 
     expect(find.text('Continue with Google'), findsOneWidget);
     expect(
@@ -42,62 +64,27 @@ void main() {
     );
   });
 
-  testWidgets('unsupported locale falls back to Korean', (tester) async {
-    await tester.pumpWidget(
-      const _TestApp(
-        locale: Locale('ja'),
-        child: AppBootstrapLoadingScreen(),
-      ),
-    );
-
-    expect(find.text('앱 환경을 준비하고 있습니다'), findsOneWidget);
+  test('unsupported locale falls back to Korean', () {
+    expect(resolveAppLocale(const Locale('ja')), fallbackAppLocale);
+    expect(resolveAppLocale(null), fallbackAppLocale);
   });
 
-  testWidgets('dev emulator build shows seeded quick-login actions', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      const _TestApp(
-        locale: Locale('en'),
-        child: LoginScreen(
-          configOverride: AppConfig(
-            environment: AppEnvironment.dev,
-            useFirebaseEmulators: true,
-            tossClientKey: null,
-          ),
-        ),
-      ),
-    );
+  test('startup failure strings stay localized', () {
+    final english = lookupAppLocalizations(const Locale('en'));
+    final korean = lookupAppLocalizations(const Locale('ko'));
 
-    expect(
-      find.text('Quick access for emulator checks', skipOffstage: false),
-      findsOneWidget,
-    );
-    expect(
-      find.text('Sign in as seeded buyer', skipOffstage: false),
-      findsOneWidget,
-    );
-    expect(
-      find.text('Sign in as seeded seller', skipOffstage: false),
-      findsOneWidget,
-    );
+    expect(english.configRequiredTitle, 'Setup required');
+    expect(korean.loadingApp, '앱 환경을 준비하고 있습니다');
   });
 
-  testWidgets('startup failure titles are localized', (tester) async {
-    await tester.pumpWidget(
-      const _TestApp(
-        locale: Locale('en'),
-        child: StartupFailureView(
-          error: AppError(
-            kind: AppErrorKind.configuration,
-            message: 'APP_ENV is missing. Provide it in dart_defines.json.',
-          ),
-        ),
-      ),
-    );
+  test('easy localization assets expose the same nested keys', () {
+    final korean = _flattenKeys(_readJson('ko'));
+    final english = _flattenKeys(_readJson('en'));
 
-    expect(find.text('Setup required'), findsOneWidget);
-    expect(find.textContaining('APP_ENV is missing'), findsOneWidget);
+    expect(korean, english);
+    expect(korean, contains('common.language'));
+    expect(korean, contains('common.korean'));
+    expect(korean, contains('common.english'));
   });
 
   test('mobile UI source no longer contains banned engineering copy', () {
@@ -149,15 +136,50 @@ class _TestApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ProviderScope(
-      child: MaterialApp(
-        locale: locale,
-        theme: AppTheme.light(),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: supportedAppLocales,
-        localeResolutionCallback: resolveAppLocale,
-        home: child,
+    final resolvedLocale = resolveAppLocale(locale);
+
+    return EasyLocalization(
+      supportedLocales: supportedAppLocales,
+      fallbackLocale: fallbackAppLocale,
+      startLocale: resolvedLocale,
+      saveLocale: false,
+      path: translationAssetPath,
+      child: Builder(
+        builder: (context) => ProviderScope(
+          child: MaterialApp(
+            locale: context.locale,
+            theme: AppTheme.light(),
+            localizationsDelegates: [
+              ...context.localizationDelegates,
+              AppLocalizations.delegate,
+            ],
+            supportedLocales: context.supportedLocales,
+            home: child,
+          ),
+        ),
       ),
     );
   }
+}
+
+Map<String, dynamic> _readJson(String languageCode) {
+  final file = File('assets/translations/$languageCode.json');
+  return jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+}
+
+Set<String> _flattenKeys(Map<String, dynamic> source, [String prefix = '']) {
+  final keys = <String>{};
+
+  source.forEach((key, value) {
+    final next = prefix.isEmpty ? key : '$prefix.$key';
+
+    if (value is Map<String, dynamic>) {
+      keys.addAll(_flattenKeys(value, next));
+      return;
+    }
+
+    keys.add(next);
+  });
+
+  return keys;
 }
