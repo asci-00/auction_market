@@ -23,9 +23,9 @@
   },
   "home": {
     "title": "Ending Soon / Hot Auctions",
-    "auctionTitle": "Auction #{{id}}",
-    "priceSummary": "Current price: KRW 100,000 / Buy now available",
-    "timer": "00:12:08"
+    "auctionTitle": "Auction #{id}",
+    "priceSummary": "Current price: {price} / Buy now available",
+    "timer": "{time}"
   },
   "search": {
     "title": "Search / Filters",
@@ -52,7 +52,7 @@
     "tracking": "Shipment tracking"
   },
   "auction": {
-    "title": "Auction Detail #{{id}}",
+    "title": "Auction Detail #{id}",
     "summary": "Current highest bid KRW 120,000 / 4 bidders / time left 00:14:20",
     "bid": "Place bid",
     "buyNow": "Buy now",
@@ -68,8 +68,7 @@
   },
   "notifications": {
     "title": "Notification Center",
-    "outbid": "OUTBID alert #{{id}}",
-    "deeplink": "app://auction/123"
+    "outbid": "OUTBID alert #{id}"
   },
   "my": {
     "title": "My",

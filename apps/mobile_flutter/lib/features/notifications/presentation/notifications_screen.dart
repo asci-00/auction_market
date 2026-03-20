@@ -20,7 +20,7 @@ class NotificationsScreen extends StatelessWidget {
           title: Text(
             LocaleKeys.notifications_outbid.tr(namedArgs: {'id': '$i'}),
           ),
-          subtitle: Text(LocaleKeys.notifications_deeplink.tr()),
+          subtitle: Text('app://auction/$i'),
         ),
       ),
     );

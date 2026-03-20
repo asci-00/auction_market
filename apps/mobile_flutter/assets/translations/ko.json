@@ -23,9 +23,9 @@
   },
   "home": {
     "title": "마감임박 / 인기 경매",
-    "auctionTitle": "경매 #{{id}}",
-    "priceSummary": "현재가: 100,000원 / 즉시구매 가능",
-    "timer": "00:12:08"
+    "auctionTitle": "경매 #{id}",
+    "priceSummary": "현재가: {price} / 즉시구매 가능",
+    "timer": "{time}"
   },
   "search": {
     "title": "검색 / 필터",
@@ -52,7 +52,7 @@
     "tracking": "배송 추적"
   },
   "auction": {
-    "title": "경매 상세 #{{id}}",
+    "title": "경매 상세 #{id}",
     "summary": "현재 최고가 120,000원 / 입찰자 4명 / 남은시간 00:14:20",
     "bid": "입찰하기",
     "buyNow": "즉시구매",
@@ -68,8 +68,7 @@
   },
   "notifications": {
     "title": "알림센터",
-    "outbid": "OUTBID 알림 #{{id}}",
-    "deeplink": "app://auction/123"
+    "outbid": "OUTBID 알림 #{id}"
   },
   "my": {
     "title": "마이",

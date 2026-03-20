@@ -2,7 +2,7 @@
 
 // ignore_for_file: constant_identifier_names
 
-abstract class LocaleKeys {
+abstract class  LocaleKeys {
   static const app_title = 'app.title';
   static const app = 'app';
   static const common_language = 'common.language';
@@ -62,10 +62,10 @@ abstract class LocaleKeys {
   static const orders = 'orders';
   static const notifications_title = 'notifications.title';
   static const notifications_outbid = 'notifications.outbid';
-  static const notifications_deeplink = 'notifications.deeplink';
   static const notifications = 'notifications';
   static const my_title = 'my.title';
   static const my_verificationTitle = 'my.verificationTitle';
   static const my_verificationStatus = 'my.verificationStatus';
   static const my = 'my';
+
 }

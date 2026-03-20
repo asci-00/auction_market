@@ -25,8 +25,16 @@ class HomeScreen extends StatelessWidget {
         itemCount: 10,
         itemBuilder: (_, i) => ListTile(
           title: Text(LocaleKeys.home_auctionTitle.tr(namedArgs: {'id': '$i'})),
-          subtitle: Text(LocaleKeys.home_priceSummary.tr()),
-          trailing: Text(LocaleKeys.home_timer.tr()),
+          subtitle: Text(
+            LocaleKeys.home_priceSummary.tr(
+              namedArgs: {'price': '100,000원'},
+            ),
+          ),
+          trailing: Text(
+            LocaleKeys.home_timer.tr(
+              namedArgs: {'time': '00:12:08'},
+            ),
+          ),
           onTap: () => context.push('/auction/$i'),
         ),
       ),

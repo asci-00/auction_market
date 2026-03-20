@@ -73,7 +73,7 @@ class AuctionDetailScreen extends StatelessWidget {
         localizedReason: LocaleKeys.auction_bidAuthReason.tr(),
       );
     } catch (_) {
-      ok = true;
+      ok = false;
     }
     if (!context.mounted) return;
     if (!ok) return;

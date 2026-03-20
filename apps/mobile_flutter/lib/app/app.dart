@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../core/l10n/app_localization.dart';
 import '../generated/locale_keys.g.dart';
 import '../features/activity/presentation/activity_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
@@ -51,8 +50,6 @@ class AuctionMarketApp extends StatelessWidget {
       locale: context.locale,
       supportedLocales: context.supportedLocales,
       localizationsDelegates: context.localizationDelegates,
-      localeResolutionCallback: (locale, supportedLocales) =>
-          resolveAppLocale(locale),
       themeMode: ThemeMode.system,
       darkTheme: ThemeData.dark(),
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
