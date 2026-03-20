@@ -1,0 +1,1117 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations_en.dart';
+import 'app_localizations_ko.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of AppLocalizations
+/// returned by `AppLocalizations.of(context)`.
+///
+/// Applications need to include `AppLocalizations.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'l10n/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: AppLocalizations.localizationsDelegates,
+///   supportedLocales: AppLocalizations.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the AppLocalizations.supportedLocales
+/// property.
+abstract class AppLocalizations {
+  AppLocalizations(String locale)
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static AppLocalizations? of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations);
+  }
+
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('ko')
+  ];
+
+  /// No description provided for @appTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auction Market'**
+  String get appTitle;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get retry;
+
+  /// No description provided for @loadingApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing your marketplace'**
+  String get loadingApp;
+
+  /// No description provided for @configRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup required'**
+  String get configRequiredTitle;
+
+  /// No description provided for @bootstrapFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t start the app'**
+  String get bootstrapFailedTitle;
+
+  /// No description provided for @unknownStartupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Something unexpected happened'**
+  String get unknownStartupTitle;
+
+  /// No description provided for @configRequiredDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your dart_defines.json values and reopen the app.'**
+  String get configRequiredDetails;
+
+  /// No description provided for @unknownStartupMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'There was a problem while opening the app. Check your configuration and network, then try again.'**
+  String get unknownStartupMessage;
+
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get navSearch;
+
+  /// No description provided for @navSell.
+  ///
+  /// In en, this message translates to:
+  /// **'Sell'**
+  String get navSell;
+
+  /// No description provided for @navActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get navActivity;
+
+  /// No description provided for @navMy.
+  ///
+  /// In en, this message translates to:
+  /// **'My'**
+  String get navMy;
+
+  /// No description provided for @badgeLive.
+  ///
+  /// In en, this message translates to:
+  /// **'LIVE'**
+  String get badgeLive;
+
+  /// No description provided for @badgeEndingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'ENDING SOON'**
+  String get badgeEndingSoon;
+
+  /// No description provided for @badgeBuyNow.
+  ///
+  /// In en, this message translates to:
+  /// **'BUY NOW'**
+  String get badgeBuyNow;
+
+  /// No description provided for @badgePaid.
+  ///
+  /// In en, this message translates to:
+  /// **'PAID'**
+  String get badgePaid;
+
+  /// No description provided for @badgeSettled.
+  ///
+  /// In en, this message translates to:
+  /// **'SETTLED'**
+  String get badgeSettled;
+
+  /// No description provided for @badgePending.
+  ///
+  /// In en, this message translates to:
+  /// **'PENDING'**
+  String get badgePending;
+
+  /// No description provided for @badgeVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'VERIFIED'**
+  String get badgeVerified;
+
+  /// No description provided for @badgeUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW'**
+  String get badgeUnread;
+
+  /// No description provided for @homeLargeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Curated auctions'**
+  String get homeLargeTitle;
+
+  /// No description provided for @homeHeroEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium resale'**
+  String get homeHeroEyebrow;
+
+  /// No description provided for @homeHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move quickly on trusted auctions without losing the calm.'**
+  String get homeHeroTitle;
+
+  /// No description provided for @homeHeroDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Track the pieces ending first, the sellers drawing momentum, and the categories worth revisiting today.'**
+  String get homeHeroDescription;
+
+  /// No description provided for @homeHeroChipUrgency.
+  ///
+  /// In en, this message translates to:
+  /// **'Timed bidding'**
+  String get homeHeroChipUrgency;
+
+  /// No description provided for @homeHeroChipQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified listings'**
+  String get homeHeroChipQuality;
+
+  /// No description provided for @homeEndingSoonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ending soon'**
+  String get homeEndingSoonTitle;
+
+  /// No description provided for @homeEndingSoonSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay on top of auctions with the shortest remaining time.'**
+  String get homeEndingSoonSubtitle;
+
+  /// No description provided for @homeHotTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hot right now'**
+  String get homeHotTitle;
+
+  /// No description provided for @homeHotSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'See the listings collecting bids and attention first.'**
+  String get homeHotSubtitle;
+
+  /// No description provided for @homeOpenNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get homeOpenNotifications;
+
+  /// No description provided for @homeEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New auctions will appear here'**
+  String get homeEmptyTitle;
+
+  /// No description provided for @homeEmptyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Live listings will surface in this space as soon as they are published.'**
+  String get homeEmptyDescription;
+
+  /// No description provided for @homeEmptyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh feed'**
+  String get homeEmptyAction;
+
+  /// No description provided for @homeSectionViewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get homeSectionViewAll;
+
+  /// No description provided for @searchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get searchTitle;
+
+  /// No description provided for @searchHeroEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Refined discovery'**
+  String get searchHeroEyebrow;
+
+  /// No description provided for @searchHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by taste, not only by keywords.'**
+  String get searchHeroTitle;
+
+  /// No description provided for @searchHeroDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use focused filters to narrow down price, urgency, and instant-purchase availability in one pass.'**
+  String get searchHeroDescription;
+
+  /// No description provided for @searchFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Search query'**
+  String get searchFieldLabel;
+
+  /// No description provided for @searchFieldHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand, model, or seller'**
+  String get searchFieldHint;
+
+  /// No description provided for @searchFilterCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get searchFilterCategory;
+
+  /// No description provided for @searchFilterPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get searchFilterPrice;
+
+  /// No description provided for @searchFilterEndingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Ending soon'**
+  String get searchFilterEndingSoon;
+
+  /// No description provided for @searchFilterBuyNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy now'**
+  String get searchFilterBuyNow;
+
+  /// No description provided for @searchResultsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Results'**
+  String get searchResultsTitle;
+
+  /// No description provided for @searchResultsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Live auctions are filtered in real time from your current query.'**
+  String get searchResultsSubtitle;
+
+  /// No description provided for @searchEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No auctions match yet'**
+  String get searchEmptyTitle;
+
+  /// No description provided for @searchEmptyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Try widening your search or return when more listings go live.'**
+  String get searchEmptyDescription;
+
+  /// No description provided for @searchResetAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear query'**
+  String get searchResetAction;
+
+  /// No description provided for @loginHeroEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Trusted access'**
+  String get loginHeroEyebrow;
+
+  /// No description provided for @loginHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a quieter marketplace for serious bidding.'**
+  String get loginHeroTitle;
+
+  /// No description provided for @loginHeroDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with a supported provider to restore your session, inbox, orders, and selling tools securely.'**
+  String get loginHeroDescription;
+
+  /// No description provided for @loginContinueGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get loginContinueGoogle;
+
+  /// No description provided for @loginContinueApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Apple'**
+  String get loginContinueApple;
+
+  /// No description provided for @loginSubmitting.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing you in...'**
+  String get loginSubmitting;
+
+  /// No description provided for @loginReturnNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'After sign-in, you\'ll go back to the screen you requested.'**
+  String get loginReturnNotice;
+
+  /// No description provided for @loginTrustNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Only Apple and Google sign-in are available in v1.'**
+  String get loginTrustNote;
+
+  /// No description provided for @loginEmulatorWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'When Firebase Emulator mode is on, this build does not run the mobile Google or Apple browser sign-in flow. Run with USE_FIREBASE_EMULATORS=false to verify real social sign-in.'**
+  String get loginEmulatorWarning;
+
+  /// No description provided for @loginEmulatorUnsupportedProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'This build is connected to Firebase Auth Emulator, so it cannot complete the mobile Google or Apple browser sign-in flow. Run again with USE_FIREBASE_EMULATORS=false to verify real social sign-in.'**
+  String get loginEmulatorUnsupportedProvider;
+
+  /// No description provided for @loginGenericError.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in failed. Check your Firebase project setup and try again.'**
+  String get loginGenericError;
+
+  /// No description provided for @loginErrorNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your connection and try again.'**
+  String get loginErrorNetwork;
+
+  /// No description provided for @loginErrorProviderDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'That sign-in provider is not enabled in Firebase Auth yet.'**
+  String get loginErrorProviderDisabled;
+
+  /// No description provided for @loginErrorAccountExists.
+  ///
+  /// In en, this message translates to:
+  /// **'This account already exists with a different sign-in method.'**
+  String get loginErrorAccountExists;
+
+  /// No description provided for @activityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get activityTitle;
+
+  /// No description provided for @activityHeroEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'At-a-glance status'**
+  String get activityHeroEyebrow;
+
+  /// No description provided for @activityHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep payment, shipping, and inbox movement in one place.'**
+  String get activityHeroTitle;
+
+  /// No description provided for @activityHeroDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump to the next operational step quickly instead of hunting across screens.'**
+  String get activityHeroDescription;
+
+  /// No description provided for @activityOrdersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders and payments'**
+  String get activityOrdersTitle;
+
+  /// No description provided for @activityOrdersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track what needs payment, shipment, or confirmation next.'**
+  String get activityOrdersSubtitle;
+
+  /// No description provided for @activityNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Inbox and alerts'**
+  String get activityNotificationsTitle;
+
+  /// No description provided for @activityNotificationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Open bid, payment, and delivery updates from your inbox.'**
+  String get activityNotificationsSubtitle;
+
+  /// No description provided for @auctionDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auction detail'**
+  String get auctionDetailTitle;
+
+  /// No description provided for @auctionDetailGalleryEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Listing overview'**
+  String get auctionDetailGalleryEyebrow;
+
+  /// No description provided for @auctionDetailFallbackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Listing details are on the way'**
+  String get auctionDetailFallbackTitle;
+
+  /// No description provided for @auctionDetailFallbackDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'When this auction document is available, images, seller trust, and bid history will appear in this layout.'**
+  String get auctionDetailFallbackDescription;
+
+  /// No description provided for @auctionDetailCurrentBid.
+  ///
+  /// In en, this message translates to:
+  /// **'Current bid'**
+  String get auctionDetailCurrentBid;
+
+  /// No description provided for @auctionDetailBuyNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy now'**
+  String get auctionDetailBuyNow;
+
+  /// No description provided for @auctionDetailSellerSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller summary'**
+  String get auctionDetailSellerSummary;
+
+  /// No description provided for @auctionDetailSellerDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust signals, category fit, and shipping readiness stay visible before you place a bid.'**
+  String get auctionDetailSellerDescription;
+
+  /// No description provided for @auctionDetailBidHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Bid history'**
+  String get auctionDetailBidHistory;
+
+  /// No description provided for @auctionDetailBidHistorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent price movement is presented without extra noise.'**
+  String get auctionDetailBidHistorySubtitle;
+
+  /// No description provided for @auctionDetailNoBidHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Bid updates will appear after the first accepted bid.'**
+  String get auctionDetailNoBidHistory;
+
+  /// No description provided for @auctionDetailActionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Bidding and instant purchase actions appear here as soon as a live auction record is available.'**
+  String get auctionDetailActionHint;
+
+  /// No description provided for @auctionDetailBrowseAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse live auctions'**
+  String get auctionDetailBrowseAction;
+
+  /// No description provided for @ordersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
+  String get ordersTitle;
+
+  /// No description provided for @ordersBuyerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Buying'**
+  String get ordersBuyerTitle;
+
+  /// No description provided for @ordersSellerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Selling'**
+  String get ordersSellerTitle;
+
+  /// No description provided for @ordersBuyerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments, shipments, and confirmations for purchases you made.'**
+  String get ordersBuyerSubtitle;
+
+  /// No description provided for @ordersSellerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipment and settlement progress for the auctions you sold.'**
+  String get ordersSellerSubtitle;
+
+  /// No description provided for @ordersEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No order activity yet'**
+  String get ordersEmptyTitle;
+
+  /// No description provided for @ordersEmptyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Once a payment starts or a sale closes, the timeline will appear here.'**
+  String get ordersEmptyDescription;
+
+  /// No description provided for @ordersHighlightedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Focused order'**
+  String get ordersHighlightedLabel;
+
+  /// No description provided for @notificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsTitle;
+
+  /// No description provided for @notificationsHeroEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Inbox'**
+  String get notificationsHeroEyebrow;
+
+  /// No description provided for @notificationsHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Important changes, without noisy blue alerts.'**
+  String get notificationsHeroTitle;
+
+  /// No description provided for @notificationsHeroDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread updates stay visible so you can move straight to the next relevant screen.'**
+  String get notificationsHeroDescription;
+
+  /// No description provided for @notificationsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your inbox is quiet'**
+  String get notificationsEmptyTitle;
+
+  /// No description provided for @notificationsEmptyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Bid, payment, and shipment updates will land here as soon as activity begins.'**
+  String get notificationsEmptyDescription;
+
+  /// No description provided for @myTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My'**
+  String get myTitle;
+
+  /// No description provided for @myHeroEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile and trust'**
+  String get myHeroEyebrow;
+
+  /// No description provided for @myHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your profile ready for buying and selling.'**
+  String get myHeroTitle;
+
+  /// No description provided for @myHeroDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification, seller momentum, and account preferences should feel close at hand, not buried in settings.'**
+  String get myHeroDescription;
+
+  /// No description provided for @mySignedInAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in as'**
+  String get mySignedInAs;
+
+  /// No description provided for @myVerificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification status'**
+  String get myVerificationTitle;
+
+  /// No description provided for @myVerificationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Review the trust checks that shape how confidently others trade with you.'**
+  String get myVerificationDescription;
+
+  /// No description provided for @myVerificationPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get myVerificationPhone;
+
+  /// No description provided for @myVerificationIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity'**
+  String get myVerificationIdentity;
+
+  /// No description provided for @myVerificationSeller.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller'**
+  String get myVerificationSeller;
+
+  /// No description provided for @mySessionUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load profile details yet.'**
+  String get mySessionUnavailable;
+
+  /// No description provided for @myEnvironmentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{environment} · {platform}'**
+  String myEnvironmentLabel(Object environment, Object platform);
+
+  /// No description provided for @mySignOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get mySignOut;
+
+  /// No description provided for @sellTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start selling'**
+  String get sellTitle;
+
+  /// No description provided for @sellHeroEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller studio'**
+  String get sellHeroEyebrow;
+
+  /// No description provided for @sellHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shape a listing that feels deliberate before it goes live.'**
+  String get sellHeroTitle;
+
+  /// No description provided for @sellHeroDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk through the item story, pricing, schedule, and images with a cleaner publishing rhythm.'**
+  String get sellHeroDescription;
+
+  /// No description provided for @sellPolicyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auction timing policy'**
+  String get sellPolicyTitle;
+
+  /// No description provided for @sellPolicyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A bid placed within the last five minutes extends the closing time by five minutes, up to three times.'**
+  String get sellPolicyDescription;
+
+  /// No description provided for @sellStepCategoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a category'**
+  String get sellStepCategoryTitle;
+
+  /// No description provided for @sellStepCategoryDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Start in the right path for goods or precious items so the required fields stay aligned.'**
+  String get sellStepCategoryDescription;
+
+  /// No description provided for @sellStepDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the item clearly'**
+  String get sellStepDetailsTitle;
+
+  /// No description provided for @sellStepDetailsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Title, condition, tags, and description should make the listing easy to trust at a glance.'**
+  String get sellStepDetailsDescription;
+
+  /// No description provided for @sellStepPricingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set price and schedule'**
+  String get sellStepPricingTitle;
+
+  /// No description provided for @sellStepPricingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Start price, buy-now price, and closing time need to communicate urgency without confusion.'**
+  String get sellStepPricingDescription;
+
+  /// No description provided for @sellStepImagesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepare image coverage'**
+  String get sellStepImagesTitle;
+
+  /// No description provided for @sellStepImagesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Main photos and any required authentication images should feel complete before publishing.'**
+  String get sellStepImagesDescription;
+
+  /// No description provided for @sellStepPublishTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview and publish'**
+  String get sellStepPublishTitle;
+
+  /// No description provided for @sellStepPublishDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the story, pricing, and urgency cues together before you send the auction live.'**
+  String get sellStepPublishDescription;
+
+  /// No description provided for @genericUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get genericUnavailable;
+
+  /// No description provided for @genericUnknownSeller.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller'**
+  String get genericUnknownSeller;
+
+  /// No description provided for @genericUnknownUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get genericUnknownUser;
+
+  /// No description provided for @genericStateVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get genericStateVerified;
+
+  /// No description provided for @genericStatePending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending review'**
+  String get genericStatePending;
+
+  /// No description provided for @genericStateRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get genericStateRejected;
+
+  /// No description provided for @genericStateUnverified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not verified'**
+  String get genericStateUnverified;
+
+  /// No description provided for @genericOrderAwaitingPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting payment'**
+  String get genericOrderAwaitingPayment;
+
+  /// No description provided for @genericOrderPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid and held'**
+  String get genericOrderPaid;
+
+  /// No description provided for @genericOrderShipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipped'**
+  String get genericOrderShipped;
+
+  /// No description provided for @genericOrderConfirmedReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt confirmed'**
+  String get genericOrderConfirmedReceipt;
+
+  /// No description provided for @genericOrderSettled.
+  ///
+  /// In en, this message translates to:
+  /// **'Settled'**
+  String get genericOrderSettled;
+
+  /// No description provided for @genericOrderCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get genericOrderCancelled;
+
+  /// No description provided for @genericOrderProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get genericOrderProcessing;
+
+  /// No description provided for @genericCountBids.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} bids'**
+  String genericCountBids(int count);
+
+  /// No description provided for @genericEndsAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends {time}'**
+  String genericEndsAt(Object time);
+
+  /// No description provided for @genericUnreadCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} unread'**
+  String genericUnreadCount(int count);
+
+  /// No description provided for @loginDevAccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick access for emulator checks'**
+  String get loginDevAccessTitle;
+
+  /// No description provided for @loginDevAccessDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the seeded buyer and seller accounts only for local smoke tests in dev emulator mode.'**
+  String get loginDevAccessDescription;
+
+  /// No description provided for @loginDevBuyer.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in as seeded buyer'**
+  String get loginDevBuyer;
+
+  /// No description provided for @loginDevSeller.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in as seeded seller'**
+  String get loginDevSeller;
+
+  /// No description provided for @loginErrorSeedAccountUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The seeded emulator account is unavailable. Start the emulators and run npm run seed again.'**
+  String get loginErrorSeedAccountUnavailable;
+
+  /// No description provided for @ordersActionAddShipment.
+  ///
+  /// In en, this message translates to:
+  /// **'Add shipment'**
+  String get ordersActionAddShipment;
+
+  /// No description provided for @ordersActionConfirmReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm receipt'**
+  String get ordersActionConfirmReceipt;
+
+  /// No description provided for @ordersShipmentDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipment details'**
+  String get ordersShipmentDialogTitle;
+
+  /// No description provided for @ordersShipmentCarrierLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Carrier'**
+  String get ordersShipmentCarrierLabel;
+
+  /// No description provided for @ordersShipmentCarrierHint.
+  ///
+  /// In en, this message translates to:
+  /// **'CJ Logistics'**
+  String get ordersShipmentCarrierHint;
+
+  /// No description provided for @ordersShipmentTrackingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracking number'**
+  String get ordersShipmentTrackingLabel;
+
+  /// No description provided for @ordersShipmentTrackingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'1234567890'**
+  String get ordersShipmentTrackingHint;
+
+  /// No description provided for @ordersShipmentSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Save shipment'**
+  String get ordersShipmentSubmit;
+
+  /// No description provided for @ordersDialogCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get ordersDialogCancel;
+
+  /// No description provided for @ordersActionSuccessShipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipment details were saved.'**
+  String get ordersActionSuccessShipped;
+
+  /// No description provided for @ordersActionSuccessReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt confirmed. Settlement can proceed next.'**
+  String get ordersActionSuccessReceipt;
+
+  /// No description provided for @ordersActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t complete that order action. Try again.'**
+  String get ordersActionFailed;
+
+  /// No description provided for @ordersShipmentSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{carrierName} · {trackingNumber}'**
+  String ordersShipmentSummary(Object carrierName, Object trackingNumber);
+}
+
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationsDelegate();
+
+  @override
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) =>
+      <String>['en', 'ko'].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_AppLocalizationsDelegate old) => false;
+}
+
+AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'en':
+      return AppLocalizationsEn();
+    case 'ko':
+      return AppLocalizationsKo();
+  }
+
+  throw FlutterError(
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
+}
