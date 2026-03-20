@@ -2,34 +2,37 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import 'app_localization.dart';
-import '../../generated/locale_keys.g.dart';
 
 class AppLocaleMenuAction extends StatelessWidget {
   const AppLocaleMenuAction({super.key});
 
   @override
   Widget build(BuildContext context) {
+    if (EasyLocalization.of(context) == null) {
+      return const SizedBox.shrink();
+    }
+
     return PopupMenuButton<Locale>(
-      tooltip: LocaleKeys.common_language.tr(),
-      icon: const Icon(Icons.language),
+      tooltip: 'common.language'.tr(),
+      icon: const Icon(Icons.language_rounded),
       initialValue: context.locale,
       onSelected: context.setLocale,
       itemBuilder: (context) => supportedAppLocales
           .map(
-            (locale) => PopupMenuItem(
+            (locale) => PopupMenuItem<Locale>(
               value: locale,
-              child: Text(_labelForLocale(locale).tr()),
+              child: Text(_labelKey(locale).tr()),
             ),
           )
           .toList(),
     );
   }
 
-  String _labelForLocale(Locale locale) {
+  String _labelKey(Locale locale) {
     return switch (locale.languageCode) {
-      'ko' => LocaleKeys.common_korean,
-      'en' => LocaleKeys.common_english,
-      _ => LocaleKeys.common_language,
+      'ko' => 'common.korean',
+      'en' => 'common.english',
+      _ => 'common.language',
     };
   }
 }

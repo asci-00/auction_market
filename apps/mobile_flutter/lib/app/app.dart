@@ -1,101 +1,57 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../generated/locale_keys.g.dart';
-import '../features/activity/presentation/activity_screen.dart';
-import '../features/auth/presentation/login_screen.dart';
-import '../features/auction/presentation/auction_detail_screen.dart';
-import '../features/home/presentation/home_screen.dart';
-import '../features/my/presentation/my_screen.dart';
-import '../features/notifications/presentation/notifications_screen.dart';
-import '../features/orders/presentation/orders_screen.dart';
-import '../features/search/presentation/search_screen.dart';
-import '../features/sell/presentation/sell_screen.dart';
+import '../core/error/app_error.dart';
+import '../core/error/error_views.dart';
+import '../core/firebase/firebase_bootstrap.dart';
+import '../core/l10n/app_localization.dart';
+import '../core/routing/app_router.dart';
+import '../core/theme/app_theme.dart';
 
-final GoRouter _router = GoRouter(
-  initialLocation: '/login',
-  routes: [
-    GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-    ShellRoute(
-      builder: (_, __, child) => AppScaffold(child: child),
-      routes: [
-        GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
-        GoRoute(path: '/search', builder: (_, __) => const SearchScreen()),
-        GoRoute(path: '/sell', builder: (_, __) => const SellScreen()),
-        GoRoute(path: '/activity', builder: (_, __) => const ActivityScreen()),
-        GoRoute(path: '/my', builder: (_, __) => const MyScreen()),
-      ],
-    ),
-    GoRoute(
-      path: '/auction/:id',
-      builder: (_, s) =>
-          AuctionDetailScreen(auctionId: s.pathParameters['id']!),
-    ),
-    GoRoute(path: '/orders', builder: (_, __) => const OrdersScreen()),
-    GoRoute(
-      path: '/notifications',
-      builder: (_, __) => const NotificationsScreen(),
-    ),
-  ],
-);
-
-class AuctionMarketApp extends StatelessWidget {
+class AuctionMarketApp extends ConsumerWidget {
   const AuctionMarketApp({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp.router(
-      onGenerateTitle: (context) => LocaleKeys.app_title.tr(),
-      locale: context.locale,
-      supportedLocales: context.supportedLocales,
-      localizationsDelegates: context.localizationDelegates,
-      themeMode: ThemeMode.system,
-      darkTheme: ThemeData.dark(),
-      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
-      routerConfig: _router,
-    );
+  List<LocalizationsDelegate<dynamic>> _delegates(BuildContext context) {
+    return [
+      ...context.localizationDelegates,
+      AppLocalizations.delegate,
+    ];
   }
-}
-
-class AppScaffold extends StatelessWidget {
-  final Widget child;
-  const AppScaffold({super.key, required this.child});
-
-  static const _tabs = ['/home', '/search', '/sell', '/activity', '/my'];
 
   @override
-  Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).uri.toString();
-    final index = _tabs.indexWhere((t) => location.startsWith(t));
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = AppTheme.light();
+    final bootstrapState = ref.watch(appBootstrapProvider);
 
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: index < 0 ? 0 : index,
-        onDestinationSelected: (i) => context.go(_tabs[i]),
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.home),
-            label: LocaleKeys.nav_home.tr(),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.search),
-            label: LocaleKeys.nav_search.tr(),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.sell),
-            label: LocaleKeys.nav_sell.tr(),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.local_activity),
-            label: LocaleKeys.nav_activity.tr(),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.person),
-            label: LocaleKeys.nav_my.tr(),
-          ),
-        ],
+    return bootstrapState.when(
+      data: (_) => MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        theme: theme,
+        onGenerateTitle: (context) => context.l10n.appTitle,
+        locale: context.locale,
+        localizationsDelegates: _delegates(context),
+        supportedLocales: context.supportedLocales,
+        routerConfig: ref.watch(goRouterProvider),
+      ),
+      loading: () => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: theme,
+        locale: context.locale,
+        localizationsDelegates: _delegates(context),
+        supportedLocales: context.supportedLocales,
+        home: const AppBootstrapLoadingScreen(),
+      ),
+      error: (error, _) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: theme,
+        locale: context.locale,
+        localizationsDelegates: _delegates(context),
+        supportedLocales: context.supportedLocales,
+        home: StartupFailureView(
+          error: AppError.from(error),
+          onRetry: () => ref.invalidate(appBootstrapProvider),
+        ),
       ),
     );
   }

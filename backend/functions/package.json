@@ -3,12 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "main": "lib/src/index.js",
+  "engines": {
+    "node": "22"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
     "lint": "tsc --noEmit",
-    "serve": "firebase emulators:start --only functions,firestore",
-    "seed": "tsx ../emulator-seed/seed.ts"
+    "serve": "firebase emulators:start --only auth,functions,firestore,storage",
+    "seed": "tsx ./scripts/seed.ts"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0",
