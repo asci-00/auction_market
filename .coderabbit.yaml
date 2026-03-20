@@ -1,0 +1,162 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: "ko-KR"
+tone_instructions: "코드 통일성, 아키텍처 관점에서의 지적과 회귀 위험·버그·누락된 테스트를 우선 지적하세요."
+early_access: false
+
+reviews:
+  profile: "assertive"
+  high_level_summary: true
+  high_level_summary_in_walkthrough: true
+  high_level_summary_instructions: >
+    사용자 영향, 백엔드나 인프라 영향,
+    검증 결과 또는 남은 위험을 우선 적으세요.
+  review_status: true
+  commit_status: true
+  collapse_walkthrough: true
+  changed_files_summary: true
+  estimate_code_review_effort: true
+  sequence_diagrams: false
+  assess_linked_issues: false
+  related_issues: false
+  related_prs: false
+  suggested_labels: false
+  suggested_reviewers: false
+  in_progress_fortune: false
+  poem: false
+  enable_prompt_for_ai_agents: true
+  path_filters:
+    - "!apps/mobile_flutter/lib/l10n/app_localizations*.dart"
+    - "!apps/mobile_flutter/android/app/src/main/res/mipmap-*/**"
+    - "!apps/mobile_flutter/ios/Runner/Assets.xcassets/**"
+  path_instructions:
+    - path: "backend/functions/src/domain/**"
+      instructions: >
+        Treat these files as business-critical state machines. Prioritize invalid
+        transitions, idempotency, timeout and scheduler behavior, money and escrow
+        correctness, and feature-flag or policy regressions over style nits.
+    - path: "backend/functions/src/index.ts"
+      instructions: >
+        Keep handlers thin. Flag business logic that should live in domain modules,
+        missing validation, missing auth or authorization checks, and handler code
+        that makes scheduler or emulator behavior harder to reason about.
+    - path: "backend/functions/src/config/**"
+      instructions: >
+        Review policy and runtime changes for unsafe defaults, environment drift,
+        and mismatches with the README or emulator flow.
+    - path: "backend/functions/test/**"
+      instructions: >
+        Check that tests cover state transitions, validation failures, idempotency,
+        and scheduler edge cases. Prefer finding missing negative coverage and
+        brittle assertions over style issues.
+    - path: "backend/firestore.rules"
+      instructions: >
+        Review with a least-privilege mindset. Flag any write path that weakens the
+        rule that sensitive data must be mutated through Cloud Functions.
+    - path: "backend/storage.rules"
+      instructions: >
+        Focus on least privilege, upload abuse, and whether file access remains
+        consistent with the app's Firebase usage.
+    - path: "firebase.json"
+      instructions: >
+        Focus on emulator safety, deploy target correctness, and whether config
+        changes could break local development or scheduled jobs.
+    - path: "apps/mobile_flutter/lib/**"
+      instructions: >
+        Prioritize routing and auth regressions, Firebase bootstrap and emulator
+        wiring, Riverpod state placement, async error handling, and localization
+        correctness. Do not ask for edits to generated localization outputs.
+    - path: "apps/mobile_flutter/lib/l10n/*.arb"
+      instructions: >
+        Treat localization files as user-facing behavior. Flag missing Korean or
+        English parity and copy changes that require widget-test updates.
+    - path: "apps/mobile_flutter/test/**"
+      instructions: >
+        Prefer visible behavior assertions over implementation details and check
+        that localization-sensitive flows still have meaningful coverage.
+    - path: "README.md"
+      instructions: >
+        Review for drift against the current emulator flow, setup commands, and
+        architecture decisions. Prefer catching stale operational guidance over
+        minor wording suggestions.
+    - path: "Documentation.md"
+      instructions: >
+        Review for drift against the current emulator flow, setup commands, and
+        architecture decisions. Prefer catching stale operational guidance over
+        minor wording suggestions.
+    - path: "Plan.md"
+      instructions: >
+        Review for drift against the current emulator flow, setup commands, and
+        architecture decisions. Prefer catching stale operational guidance over
+        minor wording suggestions.
+    - path: "Implement.md"
+      instructions: >
+        Review for drift against the current emulator flow, setup commands, and
+        architecture decisions. Prefer catching stale operational guidance over
+        minor wording suggestions.
+    - path: "Prompt.md"
+      instructions: >
+        Review for drift against the current emulator flow, setup commands, and
+        architecture decisions. Prefer catching stale operational guidance over
+        minor wording suggestions.
+    - path: "docs/**/*.md"
+      instructions: >
+        Review for drift against the current emulator flow, setup commands, and
+        architecture decisions. Prefer catching stale operational guidance over
+        minor wording suggestions.
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    auto_pause_after_reviewed_commits: 0
+    drafts: false
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT REVIEW"
+  pre_merge_checks:
+    title:
+      mode: "warning"
+      requirements: >
+        Use a short imperative title that states the behavioral change. Avoid vague
+        titles such as WIP, update, misc fixes, or temporary notes.
+    description:
+      mode: "warning"
+    custom_checks:
+      - name: "PR evidence"
+        mode: "warning"
+        instructions: >
+          Pass only if the PR description explains what changed and how it was
+          validated. If automated tests were not run, the description should say
+          that explicitly and include emulator or manual validation notes. If the
+          PR changes Flutter UI, the description should mention screenshot or
+          screen-recording evidence.
+  tools:
+    github-checks:
+      enabled: true
+      timeout_ms: 180000
+    gitleaks:
+      enabled: true
+    markdownlint:
+      enabled: true
+    yamllint:
+      enabled: true
+    shellcheck:
+      enabled: false
+    ruff:
+      enabled: false
+    languagetool:
+      enabled: false
+
+chat:
+  art: false
+
+knowledge_base:
+  web_search:
+    enabled: true
+  code_guidelines:
+    enabled: true
+  learnings:
+    scope: "local"
+  issues:
+    scope: "local"
+  pull_requests:
+    scope: "local"
