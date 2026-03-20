@@ -1,4 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+
+import '../../../core/l10n/locale_menu_action.dart';
 
 class OrdersScreen extends StatelessWidget {
   const OrdersScreen({super.key});
@@ -6,11 +9,14 @@ class OrdersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('주문/결제 (Mock)')),
+      appBar: AppBar(
+        title: Text('orders.title'.tr()),
+        actions: const [AppLocaleMenuAction()],
+      ),
       body: ListView(
-        children: const [
-          ListTile(title: Text('AWAITING_PAYMENT → PAID_ESCROW_HOLD')),
-          ListTile(title: Text('SHIPPED → CONFIRMED_RECEIPT → SETTLED')),
+        children: [
+          ListTile(title: Text('orders.paymentFlow'.tr())),
+          ListTile(title: Text('orders.shippingFlow'.tr())),
         ],
       ),
     );

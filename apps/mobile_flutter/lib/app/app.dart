@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/l10n/app_localization.dart';
 import '../features/activity/presentation/activity_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auction/presentation/auction_detail_screen.dart';
@@ -25,9 +27,16 @@ final GoRouter _router = GoRouter(
         GoRoute(path: '/my', builder: (_, __) => const MyScreen()),
       ],
     ),
-    GoRoute(path: '/auction/:id', builder: (_, s) => AuctionDetailScreen(auctionId: s.pathParameters['id']!)),
+    GoRoute(
+      path: '/auction/:id',
+      builder: (_, s) =>
+          AuctionDetailScreen(auctionId: s.pathParameters['id']!),
+    ),
     GoRoute(path: '/orders', builder: (_, __) => const OrdersScreen()),
-    GoRoute(path: '/notifications', builder: (_, __) => const NotificationsScreen()),
+    GoRoute(
+      path: '/notifications',
+      builder: (_, __) => const NotificationsScreen(),
+    ),
   ],
 );
 
@@ -37,7 +46,12 @@ class AuctionMarketApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: '경마',
+      onGenerateTitle: (context) => 'app.title'.tr(),
+      locale: context.locale,
+      supportedLocales: context.supportedLocales,
+      localizationsDelegates: context.localizationDelegates,
+      localeResolutionCallback: (locale, supportedLocales) =>
+          resolveAppLocale(locale),
       themeMode: ThemeMode.system,
       darkTheme: ThemeData.dark(),
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
@@ -62,12 +76,27 @@ class AppScaffold extends StatelessWidget {
       bottomNavigationBar: NavigationBar(
         selectedIndex: index < 0 ? 0 : index,
         onDestinationSelected: (i) => context.go(_tabs[i]),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.search), label: 'Search'),
-          NavigationDestination(icon: Icon(Icons.sell), label: 'Sell'),
-          NavigationDestination(icon: Icon(Icons.local_activity), label: 'Activity'),
-          NavigationDestination(icon: Icon(Icons.person), label: 'My'),
+        destinations: [
+          NavigationDestination(
+            icon: const Icon(Icons.home),
+            label: 'nav.home'.tr(),
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.search),
+            label: 'nav.search'.tr(),
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.sell),
+            label: 'nav.sell'.tr(),
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.local_activity),
+            label: 'nav.activity'.tr(),
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.person),
+            label: 'nav.my'.tr(),
+          ),
         ],
       ),
     );
