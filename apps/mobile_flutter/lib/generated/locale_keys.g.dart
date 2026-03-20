@@ -1,0 +1,71 @@
+// DO NOT EDIT. This is code generated via package:easy_localization/generate.dart
+
+// ignore_for_file: constant_identifier_names
+
+abstract class LocaleKeys {
+  static const app_title = 'app.title';
+  static const app = 'app';
+  static const common_language = 'common.language';
+  static const common_korean = 'common.korean';
+  static const common_english = 'common.english';
+  static const common = 'common';
+  static const nav_home = 'nav.home';
+  static const nav_search = 'nav.search';
+  static const nav_sell = 'nav.sell';
+  static const nav_activity = 'nav.activity';
+  static const nav_my = 'nav.my';
+  static const nav = 'nav';
+  static const login_title = 'login.title';
+  static const login_google = 'login.google';
+  static const login_apple = 'login.apple';
+  static const login_kakao = 'login.kakao';
+  static const login_naver = 'login.naver';
+  static const login = 'login';
+  static const home_title = 'home.title';
+  static const home_auctionTitle = 'home.auctionTitle';
+  static const home_priceSummary = 'home.priceSummary';
+  static const home_timer = 'home.timer';
+  static const home = 'home';
+  static const search_title = 'search.title';
+  static const search_keyword = 'search.keyword';
+  static const search_category = 'search.category';
+  static const search_priceRange = 'search.priceRange';
+  static const search_endingSoon = 'search.endingSoon';
+  static const search_buyNow = 'search.buyNow';
+  static const search = 'search';
+  static const sell_title = 'sell.title';
+  static const sell_step1 = 'sell.step1';
+  static const sell_step2 = 'sell.step2';
+  static const sell_step3 = 'sell.step3';
+  static const sell_step4 = 'sell.step4';
+  static const sell_step5 = 'sell.step5';
+  static const sell_step6 = 'sell.step6';
+  static const sell_antiSniping = 'sell.antiSniping';
+  static const sell = 'sell';
+  static const activity_title = 'activity.title';
+  static const activity_orders = 'activity.orders';
+  static const activity_bids = 'activity.bids';
+  static const activity_tracking = 'activity.tracking';
+  static const activity = 'activity';
+  static const auction_title = 'auction.title';
+  static const auction_summary = 'auction.summary';
+  static const auction_bid = 'auction.bid';
+  static const auction_buyNow = 'auction.buyNow';
+  static const auction_autoBid = 'auction.autoBid';
+  static const auction_bidAuthReason = 'auction.bidAuthReason';
+  static const auction_bidAmount = 'auction.bidAmount';
+  static const auction_placeBid = 'auction.placeBid';
+  static const auction = 'auction';
+  static const orders_title = 'orders.title';
+  static const orders_paymentFlow = 'orders.paymentFlow';
+  static const orders_shippingFlow = 'orders.shippingFlow';
+  static const orders = 'orders';
+  static const notifications_title = 'notifications.title';
+  static const notifications_outbid = 'notifications.outbid';
+  static const notifications_deeplink = 'notifications.deeplink';
+  static const notifications = 'notifications';
+  static const my_title = 'my.title';
+  static const my_verificationTitle = 'my.verificationTitle';
+  static const my_verificationStatus = 'my.verificationStatus';
+  static const my = 'my';
+}

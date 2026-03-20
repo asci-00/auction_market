@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/l10n/locale_menu_action.dart';
+import '../../../generated/locale_keys.g.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -11,7 +12,7 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('login.title'.tr()),
+        title: Text(LocaleKeys.login_title.tr()),
         actions: const [AppLocaleMenuAction()],
       ),
       body: ListView(
@@ -19,14 +20,20 @@ class LoginScreen extends StatelessWidget {
         children: [
           ElevatedButton(
             onPressed: () => context.go('/home'),
-            child: Text('login.google'.tr()),
+            child: Text(LocaleKeys.login_google.tr()),
           ),
           ElevatedButton(
             onPressed: () => context.go('/home'),
-            child: Text('login.apple'.tr()),
+            child: Text(LocaleKeys.login_apple.tr()),
           ),
-          OutlinedButton(onPressed: null, child: Text('login.kakao'.tr())),
-          OutlinedButton(onPressed: null, child: Text('login.naver'.tr())),
+          OutlinedButton(
+            onPressed: null,
+            child: Text(LocaleKeys.login_kakao.tr()),
+          ),
+          OutlinedButton(
+            onPressed: null,
+            child: Text(LocaleKeys.login_naver.tr()),
+          ),
         ],
       ),
     );

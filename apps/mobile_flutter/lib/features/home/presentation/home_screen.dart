@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/l10n/locale_menu_action.dart';
+import '../../../generated/locale_keys.g.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -11,7 +12,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('home.title'.tr()),
+        title: Text(LocaleKeys.home_title.tr()),
         actions: [
           IconButton(
             onPressed: () => context.push('/notifications'),
@@ -23,9 +24,9 @@ class HomeScreen extends StatelessWidget {
       body: ListView.builder(
         itemCount: 10,
         itemBuilder: (_, i) => ListTile(
-          title: Text('home.auctionTitle'.tr(namedArgs: {'id': '$i'})),
-          subtitle: Text('home.priceSummary'.tr()),
-          trailing: Text('home.timer'.tr()),
+          title: Text(LocaleKeys.home_auctionTitle.tr(namedArgs: {'id': '$i'})),
+          subtitle: Text(LocaleKeys.home_priceSummary.tr()),
+          trailing: Text(LocaleKeys.home_timer.tr()),
           onTap: () => context.push('/auction/$i'),
         ),
       ),

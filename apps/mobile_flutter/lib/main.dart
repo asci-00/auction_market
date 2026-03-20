@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/app.dart';
 import 'core/l10n/app_localization.dart';
+import 'generated/codegen_loader.g.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +16,7 @@ Future<void> main() async {
       fallbackLocale: fallbackAppLocale,
       saveLocale: true,
       path: translationAssetPath,
+      assetLoader: const CodegenLoader(),
       child: const ProviderScope(child: AuctionMarketApp()),
     ),
   );

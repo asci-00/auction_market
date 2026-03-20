@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:auction_market_mobile/core/l10n/app_localization.dart';
+import 'package:auction_market_mobile/generated/locale_keys.g.dart';
 
 void main() {
   test('translation assets expose the same nested keys', () {
@@ -12,9 +13,9 @@ void main() {
     final english = _flattenKeys(_readJson('en'));
 
     expect(korean, english);
-    expect(korean, contains('app.title'));
-    expect(korean, contains('login.google'));
-    expect(korean, contains('auction.placeBid'));
+    expect(korean, contains(LocaleKeys.app_title));
+    expect(korean, contains(LocaleKeys.login_google));
+    expect(korean, contains(LocaleKeys.auction_placeBid));
   });
 
   test('locale resolution follows supported language codes', () {

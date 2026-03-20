@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/l10n/app_localization.dart';
+import '../generated/locale_keys.g.dart';
 import '../features/activity/presentation/activity_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auction/presentation/auction_detail_screen.dart';
@@ -46,7 +47,7 @@ class AuctionMarketApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      onGenerateTitle: (context) => 'app.title'.tr(),
+      onGenerateTitle: (context) => LocaleKeys.app_title.tr(),
       locale: context.locale,
       supportedLocales: context.supportedLocales,
       localizationsDelegates: context.localizationDelegates,
@@ -79,23 +80,23 @@ class AppScaffold extends StatelessWidget {
         destinations: [
           NavigationDestination(
             icon: const Icon(Icons.home),
-            label: 'nav.home'.tr(),
+            label: LocaleKeys.nav_home.tr(),
           ),
           NavigationDestination(
             icon: const Icon(Icons.search),
-            label: 'nav.search'.tr(),
+            label: LocaleKeys.nav_search.tr(),
           ),
           NavigationDestination(
             icon: const Icon(Icons.sell),
-            label: 'nav.sell'.tr(),
+            label: LocaleKeys.nav_sell.tr(),
           ),
           NavigationDestination(
             icon: const Icon(Icons.local_activity),
-            label: 'nav.activity'.tr(),
+            label: LocaleKeys.nav_activity.tr(),
           ),
           NavigationDestination(
             icon: const Icon(Icons.person),
-            label: 'nav.my'.tr(),
+            label: LocaleKeys.nav_my.tr(),
           ),
         ],
       ),

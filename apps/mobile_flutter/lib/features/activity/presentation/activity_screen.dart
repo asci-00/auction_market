@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/l10n/locale_menu_action.dart';
+import '../../../generated/locale_keys.g.dart';
 
 class ActivityScreen extends StatelessWidget {
   const ActivityScreen({super.key});
@@ -11,17 +12,17 @@ class ActivityScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('activity.title'.tr()),
+        title: Text(LocaleKeys.activity_title.tr()),
         actions: const [AppLocaleMenuAction()],
       ),
       body: ListView(
         children: [
           ListTile(
-            title: Text('activity.orders'.tr()),
+            title: Text(LocaleKeys.activity_orders.tr()),
             onTap: () => context.push('/orders'),
           ),
-          ListTile(title: Text('activity.bids'.tr())),
-          ListTile(title: Text('activity.tracking'.tr())),
+          ListTile(title: Text(LocaleKeys.activity_bids.tr())),
+          ListTile(title: Text(LocaleKeys.activity_tracking.tr())),
         ],
       ),
     );

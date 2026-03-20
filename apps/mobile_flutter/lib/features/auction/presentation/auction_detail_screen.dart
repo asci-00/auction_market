@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 
 import '../../../core/l10n/locale_menu_action.dart';
+import '../../../generated/locale_keys.g.dart';
 
 class AuctionDetailScreen extends StatelessWidget {
   final String auctionId;
@@ -13,14 +14,16 @@ class AuctionDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('auction.title'.tr(namedArgs: {'id': auctionId})),
+        title: Text(
+          LocaleKeys.auction_title.tr(namedArgs: {'id': auctionId}),
+        ),
         actions: const [AppLocaleMenuAction()],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           const SizedBox(height: 200, child: Placeholder()),
-          Text('auction.summary'.tr()),
+          Text(LocaleKeys.auction_summary.tr()),
           const SizedBox(height: 16),
           SizedBox(
             height: 160,
@@ -45,15 +48,15 @@ class AuctionDetailScreen extends StatelessWidget {
             children: [
               ElevatedButton(
                 onPressed: () => _openBid(context),
-                child: Text('auction.bid'.tr()),
+                child: Text(LocaleKeys.auction_bid.tr()),
               ),
               OutlinedButton(
                 onPressed: () {},
-                child: Text('auction.buyNow'.tr()),
+                child: Text(LocaleKeys.auction_buyNow.tr()),
               ),
               OutlinedButton(
                 onPressed: () {},
-                child: Text('auction.autoBid'.tr()),
+                child: Text(LocaleKeys.auction_autoBid.tr()),
               ),
             ],
           ),
@@ -67,7 +70,7 @@ class AuctionDetailScreen extends StatelessWidget {
     bool ok = false;
     try {
       ok = await auth.authenticate(
-        localizedReason: 'auction.bidAuthReason'.tr(),
+        localizedReason: LocaleKeys.auction_bidAuthReason.tr(),
       );
     } catch (_) {
       ok = true;
@@ -83,10 +86,15 @@ class AuctionDetailScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              decoration: InputDecoration(labelText: 'auction.bidAmount'.tr()),
+              decoration: InputDecoration(
+                labelText: LocaleKeys.auction_bidAmount.tr(),
+              ),
             ),
             const SizedBox(height: 8),
-            FilledButton(onPressed: null, child: Text('auction.placeBid'.tr())),
+            FilledButton(
+              onPressed: null,
+              child: Text(LocaleKeys.auction_placeBid.tr()),
+            ),
           ],
         ),
       ),
