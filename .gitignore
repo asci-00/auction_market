@@ -2,9 +2,16 @@
 .env
 .env.local
 .env.*.local
+.vscode/
 node_modules/
+firebase-debug.log
+firestore-debug.log
 backend/functions/lib/
 backend/functions/.env
+backend/functions/firebase-debug.log
+backend/functions/firestore-debug.log
 apps/mobile_flutter/.dart_tool/
+apps/mobile_flutter/.metadata
+apps/mobile_flutter/.vscode/
 apps/mobile_flutter/build/
 apps/mobile_flutter/dart_defines.json
