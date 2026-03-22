@@ -4,14 +4,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/app_config/app_config.dart';
 import '../../../core/firebase/firebase_bootstrap.dart';
-import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/l10n/locale_menu_action.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
-import '../../../core/widgets/app_panel.dart';
-import '../../../core/widgets/app_status_badge.dart';
+import '../application/auth_action_service.dart';
+import '../data/dev_quick_account.dart';
+import 'auth_error_message.dart';
+import 'widgets/login_dev_access_panel.dart';
+import 'widgets/login_error_panel.dart';
+import 'widgets/login_header.dart';
+import 'widgets/login_notes_panel.dart';
+import 'widgets/login_provider_panel.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({
@@ -31,20 +35,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isSubmitting = false;
   String? _errorMessage;
 
-  static const _buyerAccount = _DevQuickAccount(
-    email: 'buyer1@test.local',
-    password: 'buyer-pass-1234',
-  );
-  static const _sellerAccount = _DevQuickAccount(
-    email: 'seller1@test.local',
-    password: 'seller-pass-1234',
-  );
-
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final tokens = context.tokens;
-    final theme = Theme.of(context);
     final config =
         widget.configOverride ?? ref.watch(appBootstrapProvider).value?.config;
     final useFirebaseEmulators = config?.useFirebaseEmulators == true;
@@ -65,185 +58,60 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: AppLocaleMenuAction(),
           ),
           SizedBox(height: tokens.space3),
-          AppEditorialHero(
-            eyebrow: l10n.loginHeroEyebrow,
-            title: l10n.loginHeroTitle,
-            description: l10n.loginHeroDescription,
-            badges: const [
-              AppStatusBadge(kind: AppStatusKind.verified),
-              AppStatusBadge(kind: AppStatusKind.pending),
-            ],
-            trailing: Container(
-              width: 88,
-              height: 124,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(tokens.heroRadius),
-                gradient: const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [AppColors.accentPrimary, AppColors.accentUrgent],
-                ),
-              ),
-              child: const Icon(
-                Icons.gavel_rounded,
-                color: AppColors.textInverse,
-                size: 34,
-              ),
-            ),
-          ),
+          const LoginHeader(),
           SizedBox(height: tokens.space6),
-          AppPanel(
-            tone: AppPanelTone.surface,
-            child: Column(
-              children: [
-                FilledButton.icon(
-                  onPressed: _isSubmitting
-                      ? null
-                      : () => _signIn(
-                            provider: _googleProvider(),
-                            useFirebaseEmulators: useFirebaseEmulators,
-                          ),
-                  icon: const Icon(Icons.g_mobiledata_rounded),
-                  label: Text(
-                    _isSubmitting
-                        ? l10n.loginSubmitting
-                        : l10n.loginContinueGoogle,
-                  ),
-                ),
-                SizedBox(height: tokens.space3),
-                OutlinedButton.icon(
-                  onPressed: _isSubmitting
-                      ? null
-                      : () => _signIn(
-                            provider: _appleProvider(),
-                            useFirebaseEmulators: useFirebaseEmulators,
-                          ),
-                  icon: const Icon(Icons.apple_rounded),
-                  label: Text(l10n.loginContinueApple),
-                ),
-                if (useFirebaseEmulators) ...[
-                  SizedBox(height: tokens.space3),
-                  Text(
-                    l10n.loginEmulatorWarning,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ],
+          LoginProviderPanel(
+            isSubmitting: _isSubmitting,
+            useFirebaseEmulators: useFirebaseEmulators,
+            onGooglePressed: () => _signIn(
+              provider: _buildGoogleProvider(),
+              useFirebaseEmulators: useFirebaseEmulators,
+            ),
+            onApplePressed: () => _signIn(
+              provider: _buildAppleProvider(),
+              useFirebaseEmulators: useFirebaseEmulators,
             ),
           ),
           if (showDevQuickLogin) ...[
             SizedBox(height: tokens.space4),
-            AppPanel(
-              tone: AppPanelTone.elevated,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.loginDevAccessTitle,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  SizedBox(height: tokens.space2),
-                  Text(
-                    l10n.loginDevAccessDescription,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  SizedBox(height: tokens.space3),
-                  FilledButton(
-                    onPressed: _isSubmitting
-                        ? null
-                        : () => _signInWithSeededAccount(_buyerAccount),
-                    child: Text(l10n.loginDevBuyer),
-                  ),
-                  SizedBox(height: tokens.space2),
-                  OutlinedButton(
-                    onPressed: _isSubmitting
-                        ? null
-                        : () => _signInWithSeededAccount(_sellerAccount),
-                    child: Text(l10n.loginDevSeller),
-                  ),
-                ],
-              ),
+            LoginDevAccessPanel(
+              isSubmitting: _isSubmitting,
+              onBuyerPressed: () =>
+                  _signInWithSeededAccount(DevQuickAccount.buyer),
+              onSellerPressed: () =>
+                  _signInWithSeededAccount(DevQuickAccount.seller),
             ),
           ],
           if (_errorMessage case final message?) ...[
             SizedBox(height: tokens.space4),
-            AppPanel(
-              tone: AppPanelTone.soft,
-              borderColor: AppColors.accentUrgent.withValues(alpha: 0.3),
-              child: Text(
-                message,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: AppColors.accentUrgent,
-                ),
-              ),
-            ),
+            LoginErrorPanel(message: message),
           ],
           SizedBox(height: tokens.space4),
-          AppPanel(
-            tone: AppPanelTone.elevated,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.loginTrustNote, style: theme.textTheme.titleMedium),
-                if (widget.returnTo != null) ...[
-                  SizedBox(height: tokens.space2),
-                  Text(
-                    l10n.loginReturnNotice,
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                ],
-              ],
-            ),
-          ),
+          LoginNotesPanel(showReturnNotice: widget.returnTo != null),
         ],
       ),
     );
   }
 
-  GoogleAuthProvider _googleProvider() {
+  GoogleAuthProvider _buildGoogleProvider() {
     final provider = GoogleAuthProvider();
     provider.addScope('email');
     provider.setCustomParameters(const {'prompt': 'select_account'});
     return provider;
   }
 
-  AppleAuthProvider _appleProvider() {
+  AppleAuthProvider _buildAppleProvider() {
     final provider = AppleAuthProvider();
     provider.addScope('email');
     provider.addScope('name');
     return provider;
   }
 
-  Future<void> _signInWithSeededAccount(_DevQuickAccount account) async {
-    setState(() {
-      _isSubmitting = true;
-      _errorMessage = null;
-    });
-
-    try {
-      await ref.read(firebaseAuthProvider).signInWithEmailAndPassword(
-            email: account.email,
-            password: account.password,
-          );
-    } on FirebaseAuthException catch (error) {
-      setState(() {
-        _errorMessage = _mapFirebaseError(context, error);
-      });
-    } catch (_) {
-      setState(() {
-        _errorMessage = context.l10n.loginGenericError;
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
-    }
+  Future<void> _signInWithSeededAccount(DevQuickAccount account) async {
+    await _runAuthAction(
+      action: () =>
+          ref.read(authActionServiceProvider).signInWithSeededAccount(account),
+    );
   }
 
   Future<void> _signIn({
@@ -258,18 +126,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
 
+    await _runAuthAction(
+      action: () =>
+          ref.read(authActionServiceProvider).signInWithProvider(provider),
+    );
+  }
+
+  Future<void> _runAuthAction({
+    required Future<void> Function() action,
+  }) async {
     setState(() {
       _isSubmitting = true;
       _errorMessage = null;
     });
 
     try {
-      await ref.read(firebaseAuthProvider).signInWithProvider(provider);
+      await action();
     } on FirebaseAuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
-        _errorMessage = _mapFirebaseError(context, error);
+        _errorMessage = mapAuthErrorMessage(context, error);
       });
     } catch (_) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _errorMessage = context.l10n.loginGenericError;
       });
@@ -281,34 +164,4 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     }
   }
-
-  String _mapFirebaseError(BuildContext context, FirebaseAuthException error) {
-    final l10n = context.l10n;
-
-    switch (error.code) {
-      case 'network-request-failed':
-        return l10n.loginErrorNetwork;
-      case 'operation-not-allowed':
-        return l10n.loginErrorProviderDisabled;
-      case 'account-exists-with-different-credential':
-        return l10n.loginErrorAccountExists;
-      case 'invalid-credential':
-      case 'invalid-login-credentials':
-      case 'user-not-found':
-      case 'wrong-password':
-        return l10n.loginErrorSeedAccountUnavailable;
-      default:
-        return error.message ?? l10n.loginGenericError;
-    }
-  }
-}
-
-class _DevQuickAccount {
-  const _DevQuickAccount({
-    required this.email,
-    required this.password,
-  });
-
-  final String email;
-  final String password;
 }

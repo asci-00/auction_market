@@ -48,8 +48,10 @@
   - Login, home, search, auction detail, sell, activity, orders, notifications, and my screens now use localized copy and the shared editorial design primitives.
   - Login now blocks Google and Apple browser sign-in when `USE_FIREBASE_EMULATORS=true`, because the project treats mobile social-login verification as a real-Firebase path rather than an Auth Emulator path.
   - Login also exposes seeded buyer and seller quick-login actions only when `APP_ENV=dev` and `USE_FIREBASE_EMULATORS=true`, so emulator smoke tests can enter authenticated routes without live social login.
+  - Login now keeps seeded account constants in `features/auth/data`, auth mutations in `features/auth/application`, and each major visual block in `features/auth/presentation/widgets`.
   - Auction detail now keeps the screen in `presentation`, pushes callable writes through `features/auction/application/auction_detail_action_service.dart`, and maps Firestore documents through `features/auction/data/auction_detail_view_data.dart`.
   - Orders now keeps the screen layout in `presentation`, pushes callable writes through `features/orders/application/order_action_service.dart`, and maps Firestore documents through `features/orders/data/order_summary.dart`.
+  - Sell now keeps localized step assembly in `features/sell/application/sell_content_factory.dart` and presentation cards in `features/sell/presentation/widgets`, so the route screen stays thin.
   - Notifications now reuse the shared app deep-link normalizer instead of carrying a screen-local route parser.
   - Home, search, auction detail, orders, notifications, and my pages render from live Firestore read paths and fall back to localized empty or unavailable states when documents are missing.
 - Read data directly from Firestore and Storage-backed URLs.

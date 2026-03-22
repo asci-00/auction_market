@@ -34,6 +34,8 @@
 - Home, search, auction detail, orders, notifications, and my screens now read from Firestore paths and fall back to localized unavailable states when documents are missing.
 - Auction detail now calls `placeBid`, `setAutoBid`, and `buyNow` from the mobile UI, then routes completed buy-now orders into the order timeline.
 - Auction detail and orders now split presentation widgets, data mappers, and callable action services into separate files instead of mixing Firestore maps, Functions calls, dialogs, and screen layout in one file.
+- Login now splits seeded dev account data, auth action execution, error mapping, and panel widgets instead of keeping provider setup and every visual block in one file.
+- Sell now splits localized step content generation and reusable presentation cards out of the screen file, so the screen stays as composition-only presentation scaffolding.
 - Orders now runs live shipment update and receipt confirmation callables from the mobile UI, and notifications mark themselves as read before routing when the callable succeeds.
 - Backend callables now cover bootstrap, item draft save, auction publish, cancel, relist, bid, auto-bid, buy-now, payment session creation, Toss payment confirmation, shipment update, receipt confirmation, and notification read state.
 - Toss webhook handling now exists as `tossPaymentWebhook` and updates payment and order state idempotently.
