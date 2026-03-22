@@ -295,6 +295,104 @@ class AppLocalizationsEn extends AppLocalizations {
   String get auctionDetailBrowseAction => 'Browse live auctions';
 
   @override
+  String auctionDetailLiveActionHint(Object minimumBid, Object endAt) {
+    return 'Next accepted bid starts at $minimumBid. Auction closes $endAt.';
+  }
+
+  @override
+  String auctionDetailSellerOwnedHint(Object endAt) {
+    return 'Your listing is live until $endAt. Buyer actions stay active on this screen.';
+  }
+
+  @override
+  String get auctionDetailSellerOwnedFallback =>
+      'Your listing is live. Order and settlement updates will appear when a buyer closes the auction.';
+
+  @override
+  String get auctionDetailSellerOwnedAction => 'Review orders';
+
+  @override
+  String get auctionDetailOrderReadyHint =>
+      'This auction already has an order. Open the order timeline to continue payment or fulfillment.';
+
+  @override
+  String get auctionDetailEndedHint =>
+      'This auction is no longer open for bidding. Browse other live listings instead.';
+
+  @override
+  String get auctionDetailViewOrder => 'Open order timeline';
+
+  @override
+  String get auctionDetailLoginHint =>
+      'Sign in to place bids, set an auto-bid ceiling, or complete buy now.';
+
+  @override
+  String auctionDetailBidAction(Object amount) {
+    return 'Bid from $amount';
+  }
+
+  @override
+  String auctionDetailBuyNowAction(Object amount) {
+    return 'Buy now $amount';
+  }
+
+  @override
+  String get auctionDetailAutoBidAction => 'Set auto-bid ceiling';
+
+  @override
+  String get auctionDetailBidDialogTitle => 'Place a bid';
+
+  @override
+  String get auctionDetailBidAmountLabel => 'Bid amount';
+
+  @override
+  String get auctionDetailBidAmountHint => 'Enter your offer in KRW';
+
+  @override
+  String get auctionDetailAutoBidDialogTitle => 'Set auto-bid ceiling';
+
+  @override
+  String get auctionDetailAutoBidAmountLabel => 'Maximum auto-bid';
+
+  @override
+  String get auctionDetailAutoBidAmountHint =>
+      'Highest amount you want the system to defend';
+
+  @override
+  String auctionDetailBidMinimum(Object amount) {
+    return 'Minimum accepted amount: $amount';
+  }
+
+  @override
+  String auctionDetailAutoBidHint(Object amount) {
+    return 'The auto-bid ceiling must start at or above $amount. The system raises only as needed.';
+  }
+
+  @override
+  String get auctionDetailDialogCancel => 'Cancel';
+
+  @override
+  String get auctionDetailDialogSubmitBid => 'Submit bid';
+
+  @override
+  String get auctionDetailDialogSubmitAutoBid => 'Save auto-bid';
+
+  @override
+  String get auctionDetailActionSuccessBid => 'Your bid was submitted.';
+
+  @override
+  String get auctionDetailActionSuccessAutoBid =>
+      'Your auto-bid ceiling was saved.';
+
+  @override
+  String get auctionDetailActionSuccessBuyNow =>
+      'Buy now is complete. Continue in the order timeline.';
+
+  @override
+  String get auctionDetailActionFailed =>
+      'We couldn\'t complete that auction action. Try again.';
+
+  @override
   String get ordersTitle => 'Orders';
 
   @override

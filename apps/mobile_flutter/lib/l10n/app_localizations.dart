@@ -614,6 +614,162 @@ abstract class AppLocalizations {
   /// **'Browse live auctions'**
   String get auctionDetailBrowseAction;
 
+  /// No description provided for @auctionDetailLiveActionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Next accepted bid starts at {minimumBid}. Auction closes {endAt}.'**
+  String auctionDetailLiveActionHint(Object minimumBid, Object endAt);
+
+  /// No description provided for @auctionDetailSellerOwnedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your listing is live until {endAt}. Buyer actions stay active on this screen.'**
+  String auctionDetailSellerOwnedHint(Object endAt);
+
+  /// No description provided for @auctionDetailSellerOwnedFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Your listing is live. Order and settlement updates will appear when a buyer closes the auction.'**
+  String get auctionDetailSellerOwnedFallback;
+
+  /// No description provided for @auctionDetailSellerOwnedAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Review orders'**
+  String get auctionDetailSellerOwnedAction;
+
+  /// No description provided for @auctionDetailOrderReadyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This auction already has an order. Open the order timeline to continue payment or fulfillment.'**
+  String get auctionDetailOrderReadyHint;
+
+  /// No description provided for @auctionDetailEndedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This auction is no longer open for bidding. Browse other live listings instead.'**
+  String get auctionDetailEndedHint;
+
+  /// No description provided for @auctionDetailViewOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Open order timeline'**
+  String get auctionDetailViewOrder;
+
+  /// No description provided for @auctionDetailLoginHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to place bids, set an auto-bid ceiling, or complete buy now.'**
+  String get auctionDetailLoginHint;
+
+  /// No description provided for @auctionDetailBidAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Bid from {amount}'**
+  String auctionDetailBidAction(Object amount);
+
+  /// No description provided for @auctionDetailBuyNowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy now {amount}'**
+  String auctionDetailBuyNowAction(Object amount);
+
+  /// No description provided for @auctionDetailAutoBidAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Set auto-bid ceiling'**
+  String get auctionDetailAutoBidAction;
+
+  /// No description provided for @auctionDetailBidDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Place a bid'**
+  String get auctionDetailBidDialogTitle;
+
+  /// No description provided for @auctionDetailBidAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bid amount'**
+  String get auctionDetailBidAmountLabel;
+
+  /// No description provided for @auctionDetailBidAmountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your offer in KRW'**
+  String get auctionDetailBidAmountHint;
+
+  /// No description provided for @auctionDetailAutoBidDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set auto-bid ceiling'**
+  String get auctionDetailAutoBidDialogTitle;
+
+  /// No description provided for @auctionDetailAutoBidAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum auto-bid'**
+  String get auctionDetailAutoBidAmountLabel;
+
+  /// No description provided for @auctionDetailAutoBidAmountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest amount you want the system to defend'**
+  String get auctionDetailAutoBidAmountHint;
+
+  /// No description provided for @auctionDetailBidMinimum.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum accepted amount: {amount}'**
+  String auctionDetailBidMinimum(Object amount);
+
+  /// No description provided for @auctionDetailAutoBidHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The auto-bid ceiling must start at or above {amount}. The system raises only as needed.'**
+  String auctionDetailAutoBidHint(Object amount);
+
+  /// No description provided for @auctionDetailDialogCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get auctionDetailDialogCancel;
+
+  /// No description provided for @auctionDetailDialogSubmitBid.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit bid'**
+  String get auctionDetailDialogSubmitBid;
+
+  /// No description provided for @auctionDetailDialogSubmitAutoBid.
+  ///
+  /// In en, this message translates to:
+  /// **'Save auto-bid'**
+  String get auctionDetailDialogSubmitAutoBid;
+
+  /// No description provided for @auctionDetailActionSuccessBid.
+  ///
+  /// In en, this message translates to:
+  /// **'Your bid was submitted.'**
+  String get auctionDetailActionSuccessBid;
+
+  /// No description provided for @auctionDetailActionSuccessAutoBid.
+  ///
+  /// In en, this message translates to:
+  /// **'Your auto-bid ceiling was saved.'**
+  String get auctionDetailActionSuccessAutoBid;
+
+  /// No description provided for @auctionDetailActionSuccessBuyNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy now is complete. Continue in the order timeline.'**
+  String get auctionDetailActionSuccessBuyNow;
+
+  /// No description provided for @auctionDetailActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t complete that auction action. Try again.'**
+  String get auctionDetailActionFailed;
+
   /// No description provided for @ordersTitle.
   ///
   /// In en, this message translates to:
