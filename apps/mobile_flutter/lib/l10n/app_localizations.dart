@@ -662,6 +662,12 @@ abstract class AppLocalizations {
   /// **'Sign in to place bids, set an auto-bid ceiling, or complete buy now.'**
   String get auctionDetailLoginHint;
 
+  /// No description provided for @auctionDetailSignInAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to bid'**
+  String get auctionDetailSignInAction;
+
   /// No description provided for @auctionDetailBidAction.
   ///
   /// In en, this message translates to:

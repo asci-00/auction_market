@@ -1,0 +1,148 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/extensions/build_context_x.dart';
+import '../../../../core/l10n/app_localization.dart';
+import '../../../../core/widgets/app_empty_state.dart';
+import '../../application/order_action_service.dart';
+import '../../data/order_summary.dart';
+import '../order_section_role.dart';
+import '../order_shipment_dialog.dart';
+import 'order_summary_card.dart';
+
+class OrderSection extends ConsumerStatefulWidget {
+  const OrderSection({
+    super.key,
+    required this.fieldName,
+    required this.userId,
+    required this.role,
+  });
+
+  final String fieldName;
+  final String? userId;
+  final OrderSectionRole role;
+
+  @override
+  ConsumerState<OrderSection> createState() => _OrderSectionState();
+}
+
+class _OrderSectionState extends ConsumerState<OrderSection> {
+  final Set<String> _submittingOrderIds = <String>{};
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.userId == null) {
+      return AppEmptyState(
+        icon: Icons.receipt_long_outlined,
+        title: context.l10n.ordersEmptyTitle,
+        description: context.l10n.ordersEmptyDescription,
+      );
+    }
+
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('orders')
+          .where(widget.fieldName, isEqualTo: widget.userId)
+          .orderBy('createdAt', descending: true)
+          .limit(10)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return AppEmptyState(
+            icon: Icons.error_outline_rounded,
+            title: context.l10n.genericUnavailable,
+            description: context.l10n.ordersEmptyDescription,
+          );
+        }
+
+        final documents = snapshot.data?.docs ?? const [];
+        if (documents.isEmpty) {
+          return AppEmptyState(
+            icon: Icons.inventory_2_outlined,
+            title: context.l10n.ordersEmptyTitle,
+            description: context.l10n.ordersEmptyDescription,
+          );
+        }
+
+        return Column(
+          children: documents.map((document) {
+            final order = OrderSummary.fromDocument(document);
+
+            return OrderSummaryCard(
+              order: order,
+              role: widget.role,
+              isSubmitting: _submittingOrderIds.contains(order.id),
+              onAddShipment: () => _openShipmentDialog(order.id),
+              onConfirmReceipt: () => _confirmReceipt(order.id),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  Future<void> _openShipmentDialog(String orderId) async {
+    final draft = await showOrderShipmentDialog(context);
+    if (!mounted || draft == null) {
+      return;
+    }
+
+    await _runOrderAction(
+      orderId: orderId,
+      action: () => ref.read(orderActionServiceProvider).submitShipment(
+            orderId: orderId,
+            carrierName: draft.carrierName,
+            trackingNumber: draft.trackingNumber,
+          ),
+      successMessage: context.l10n.ordersActionSuccessShipped,
+    );
+  }
+
+  Future<void> _confirmReceipt(String orderId) {
+    return _runOrderAction(
+      orderId: orderId,
+      action: () => ref.read(orderActionServiceProvider).confirmReceipt(
+            orderId: orderId,
+          ),
+      successMessage: context.l10n.ordersActionSuccessReceipt,
+    );
+  }
+
+  Future<void> _runOrderAction({
+    required String orderId,
+    required Future<void> Function() action,
+    required String successMessage,
+  }) async {
+    setState(() {
+      _submittingOrderIds.add(orderId);
+    });
+
+    try {
+      await action();
+      if (!mounted) {
+        return;
+      }
+      context.showSnackBarMessage(successMessage);
+    } on FirebaseFunctionsException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      context.showErrorSnackBar(
+        error.message ?? context.l10n.ordersActionFailed,
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      context.showErrorSnackBar(context.l10n.ordersActionFailed);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _submittingOrderIds.remove(orderId);
+        });
+      }
+    }
+  }
+}

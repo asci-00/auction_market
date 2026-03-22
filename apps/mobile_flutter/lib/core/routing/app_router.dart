@@ -15,6 +15,7 @@ import '../../features/orders/presentation/orders_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/sell/presentation/sell_screen.dart';
 import '../firebase/firebase_providers.dart';
+import 'app_deeplink.dart';
 import '../widgets/app_shell.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -135,7 +136,7 @@ class AuthRefreshListenable extends ChangeNotifier {
 }
 
 String? _redirect(FirebaseAuth auth, GoRouterState state) {
-  final normalizedDeepLink = _normalizeDeepLink(state.uri);
+  final normalizedDeepLink = normalizeAppDeepLink(state.uri);
   if (normalizedDeepLink != null) {
     if (auth.currentUser == null) {
       return '/login?from=${Uri.encodeComponent(normalizedDeepLink)}';
@@ -160,27 +161,4 @@ String? _redirect(FirebaseAuth auth, GoRouterState state) {
   }
 
   return null;
-}
-
-String? _normalizeDeepLink(Uri uri) {
-  if (uri.scheme != 'app') {
-    return null;
-  }
-
-  switch (uri.host) {
-    case 'auction':
-      if (uri.pathSegments.isNotEmpty) {
-        return '/auction/${uri.pathSegments.first}';
-      }
-      return '/home';
-    case 'orders':
-      if (uri.pathSegments.isNotEmpty) {
-        return '/orders/${uri.pathSegments.first}';
-      }
-      return '/orders';
-    case 'notifications':
-      return '/notifications';
-    default:
-      return '/home';
-  }
 }

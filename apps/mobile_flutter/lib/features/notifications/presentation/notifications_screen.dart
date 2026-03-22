@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/extensions/build_context_x.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_formatters.dart';
 import '../../../core/l10n/app_localization.dart';
+import '../../../core/routing/app_deeplink.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_empty_state.dart';
@@ -107,7 +109,8 @@ class NotificationsScreen extends ConsumerWidget {
                                   if (!context.mounted) {
                                     return;
                                   }
-                                  context.push(_normalizeDeeplink(deeplink));
+                                  context
+                                      .push(resolveAppDeepLinkPath(deeplink));
                                 },
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,17 +126,13 @@ class NotificationsScreen extends ConsumerWidget {
                                     Text(
                                       (data['title'] as String?) ??
                                           l10n.notificationsTitle,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium,
+                                      style: context.textTheme.titleMedium,
                                     ),
                                     SizedBox(height: tokens.space2),
                                     Text(
                                       (data['body'] as String?) ??
                                           l10n.notificationsEmptyDescription,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium,
+                                      style: context.textTheme.bodyMedium,
                                     ),
                                   ],
                                 ),
@@ -143,8 +142,7 @@ class NotificationsScreen extends ConsumerWidget {
                                   padding: EdgeInsets.only(left: tokens.space3),
                                   child: Text(
                                     formatCompactDateTime(context, createdAt),
-                                    style:
-                                        Theme.of(context).textTheme.bodySmall,
+                                    style: context.textTheme.bodySmall,
                                   ),
                                 ),
                             ],
@@ -159,31 +157,5 @@ class NotificationsScreen extends ConsumerWidget {
         ],
       ),
     );
-  }
-}
-
-String _normalizeDeeplink(String raw) {
-  final uri = Uri.tryParse(raw);
-  if (uri == null) {
-    return raw;
-  }
-
-  if (uri.scheme != 'app') {
-    return raw;
-  }
-
-  switch (uri.host) {
-    case 'auction':
-      return uri.pathSegments.isNotEmpty
-          ? '/auction/${uri.pathSegments.first}'
-          : '/home';
-    case 'orders':
-      return uri.pathSegments.isNotEmpty
-          ? '/orders/${uri.pathSegments.first}'
-          : '/orders';
-    case 'notifications':
-      return '/notifications';
-    default:
-      return '/home';
   }
 }
