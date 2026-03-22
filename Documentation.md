@@ -52,6 +52,9 @@
   - Auction detail now keeps the screen in `presentation`, pushes callable writes through `features/auction/application/auction_detail_action_service.dart`, and maps Firestore documents through `features/auction/data/auction_detail_view_data.dart`.
   - Orders now keeps the screen layout in `presentation`, pushes callable writes through `features/orders/application/order_action_service.dart`, and maps Firestore documents through `features/orders/data/order_summary.dart`.
   - Sell now keeps localized step assembly in `features/sell/application/sell_content_factory.dart` and presentation cards in `features/sell/presentation/widgets`, so the route screen stays thin.
+  - Home now maps auction rail documents through `features/home/data/home_auction_summary.dart` and keeps reusable rail and action button widgets in `features/home/presentation/widgets`.
+  - Search now maps Firestore records through `features/search/data/search_auction_summary.dart`, keeps filtering logic in `features/search/application/search_auction_filter.dart`, and uses dedicated query, filter-chip, and result-grid widgets.
+  - My now maps the user document through `features/my/data/my_profile_summary.dart`, keeps verification label logic separate, and composes account and verification blocks from dedicated widgets.
   - Notifications now reuse the shared app deep-link normalizer instead of carrying a screen-local route parser.
   - Home, search, auction detail, orders, notifications, and my pages render from live Firestore read paths and fall back to localized empty or unavailable states when documents are missing.
 - Read data directly from Firestore and Storage-backed URLs.
