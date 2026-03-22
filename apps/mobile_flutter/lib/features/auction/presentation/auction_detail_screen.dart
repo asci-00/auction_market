@@ -1,8 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_formatters.dart';
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/theme/app_theme.dart';
@@ -14,18 +18,29 @@ import '../../../core/widgets/app_section_heading.dart';
 import '../../../core/widgets/app_status_badge.dart';
 import '../../../core/widgets/app_sticky_action_bar.dart';
 
-class AuctionDetailScreen extends StatelessWidget {
+class AuctionDetailScreen extends ConsumerStatefulWidget {
   const AuctionDetailScreen({super.key, required this.auctionId});
 
   final String auctionId;
 
   @override
+  ConsumerState<AuctionDetailScreen> createState() =>
+      _AuctionDetailScreenState();
+}
+
+class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
+  bool _submittingBid = false;
+  bool _submittingAutoBid = false;
+  bool _submittingBuyNow = false;
+
+  @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final tokens = context.tokens;
+    final userId = ref.watch(firebaseAuthProvider).currentUser?.uid;
     final auctionStream = FirebaseFirestore.instance
         .collection('auctions')
-        .doc(auctionId)
+        .doc(widget.auctionId)
         .snapshots();
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
@@ -37,19 +52,7 @@ class AuctionDetailScreen extends StatelessWidget {
         return AppPageScaffold(
           title: l10n.auctionDetailTitle,
           extendBody: true,
-          bottomBar: AppStickyActionBar(
-            title: hasAuction
-                ? formatKrw(context, (data['currentPrice'] as num?) ?? 0)
-                : l10n.auctionDetailCurrentBid,
-            subtitle: l10n.auctionDetailActionHint,
-            child: SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => context.go('/home'),
-                child: Text(l10n.auctionDetailBrowseAction),
-              ),
-            ),
-          ),
+          bottomBar: _buildBottomBar(context, data, userId),
           body: ListView(
             padding: EdgeInsets.fromLTRB(
               tokens.screenPadding,
@@ -74,7 +77,7 @@ class AuctionDetailScreen extends StatelessWidget {
                   tone: AppPanelTone.dark,
                 )
               else
-                _AuctionHeader(data: data, auctionId: auctionId),
+                _AuctionHeader(data: data, auctionId: widget.auctionId),
               SizedBox(height: tokens.space5),
               if (hasAuction) _PriceSummary(data: data),
               if (hasAuction) ...[
@@ -122,7 +125,7 @@ class AuctionDetailScreen extends StatelessWidget {
                   subtitle: l10n.auctionDetailBidHistorySubtitle,
                 ),
                 SizedBox(height: tokens.space4),
-                _BidHistoryCard(auctionId: auctionId),
+                _BidHistoryCard(auctionId: widget.auctionId),
               ],
             ],
           ),
@@ -130,6 +133,388 @@ class AuctionDetailScreen extends StatelessWidget {
       },
     );
   }
+
+  Widget _buildBottomBar(
+    BuildContext context,
+    Map<String, dynamic>? data,
+    String? userId,
+  ) {
+    final l10n = context.l10n;
+
+    if (data == null) {
+      return AppStickyActionBar(
+        title: l10n.auctionDetailCurrentBid,
+        subtitle: l10n.auctionDetailActionHint,
+        child: _buildBrowseButton(context),
+      );
+    }
+
+    final currentPrice = (data['currentPrice'] as num?) ?? 0;
+    final buyNowPrice = data['buyNowPrice'] as num?;
+    final orderId = data['orderId'] as String?;
+    final sellerId = data['sellerId'] as String?;
+    final status = data['status'] as String? ?? 'DRAFT';
+    final endAt = (data['endAt'] as Timestamp?)?.toDate();
+    final minimumBid = (currentPrice + _minIncrementFor(currentPrice)).toInt();
+
+    if (status != 'LIVE') {
+      return AppStickyActionBar(
+        title: formatKrw(context, currentPrice),
+        subtitle: orderId != null
+            ? l10n.auctionDetailOrderReadyHint
+            : l10n.auctionDetailEndedHint,
+        child: orderId != null
+            ? SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => context.go('/orders/$orderId'),
+                  child: Text(l10n.auctionDetailViewOrder),
+                ),
+              )
+            : _buildBrowseButton(context),
+      );
+    }
+
+    if (userId == null) {
+      return AppStickyActionBar(
+        title: formatKrw(context, currentPrice),
+        subtitle: l10n.auctionDetailLoginHint,
+        child: SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            onPressed: () =>
+                context.go('/login?from=/auction/${widget.auctionId}'),
+            child: Text(l10n.loginContinueGoogle),
+          ),
+        ),
+      );
+    }
+
+    if (sellerId == userId) {
+      return AppStickyActionBar(
+        title: formatKrw(context, currentPrice),
+        subtitle: endAt != null
+            ? l10n.auctionDetailSellerOwnedHint(
+                formatCompactDateTime(context, endAt),
+              )
+            : l10n.auctionDetailSellerOwnedFallback,
+        child: SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () => context.go('/orders'),
+            child: Text(
+              l10n.auctionDetailSellerOwnedAction,
+              style: const TextStyle(color: AppColors.textInverse),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return AppStickyActionBar(
+      title: formatKrw(context, currentPrice),
+      subtitle: endAt != null
+          ? l10n.auctionDetailLiveActionHint(
+              formatKrw(context, minimumBid),
+              formatCompactDateTime(context, endAt),
+            )
+          : l10n.auctionDetailActionHint,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton(
+                  onPressed:
+                      _submittingBid || _submittingAutoBid || _submittingBuyNow
+                          ? null
+                          : () => _openBidDialog(minimumBid),
+                  child: Text(l10n
+                      .auctionDetailBidAction(formatKrw(context, minimumBid))),
+                ),
+              ),
+              if (buyNowPrice != null) ...[
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _submittingBid ||
+                            _submittingAutoBid ||
+                            _submittingBuyNow
+                        ? null
+                        : () => _buyNow(),
+                    child: Text(
+                      l10n.auctionDetailBuyNowAction(
+                          formatKrw(context, buyNowPrice)),
+                      style: const TextStyle(color: AppColors.textInverse),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: _submittingBid || _submittingAutoBid || _submittingBuyNow
+                ? null
+                : () => _openAutoBidDialog(minimumBid),
+            child: Text(l10n.auctionDetailAutoBidAction),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBrowseButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: () => context.go('/home'),
+        child: Text(
+          context.l10n.auctionDetailBrowseAction,
+          style: const TextStyle(color: AppColors.textInverse),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openBidDialog(int minimumBid) async {
+    final l10n = context.l10n;
+    final controller = TextEditingController(text: '$minimumBid');
+
+    try {
+      final amount = await showDialog<int>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: Text(l10n.auctionDetailBidDialogTitle),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.auctionDetailBidMinimum(formatKrw(context, minimumBid)),
+                  style: Theme.of(dialogContext).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: InputDecoration(
+                    labelText: l10n.auctionDetailBidAmountLabel,
+                    hintText: l10n.auctionDetailBidAmountHint,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(l10n.auctionDetailDialogCancel),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final parsedAmount = int.tryParse(controller.text.trim());
+                  if (parsedAmount == null || parsedAmount < minimumBid) {
+                    return;
+                  }
+                  Navigator.of(dialogContext).pop(parsedAmount);
+                },
+                child: Text(l10n.auctionDetailDialogSubmitBid),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (!mounted || amount == null) {
+        return;
+      }
+
+      await _runAuctionAction(
+        type: _AuctionActionType.bid,
+        action: () =>
+            ref.read(functionsProvider).httpsCallable('placeBid').call({
+          'auctionId': widget.auctionId,
+          'amount': amount,
+        }),
+        successMessage: l10n.auctionDetailActionSuccessBid,
+      );
+    } finally {
+      controller.dispose();
+    }
+  }
+
+  Future<void> _openAutoBidDialog(int minimumBid) async {
+    final l10n = context.l10n;
+    final controller = TextEditingController(text: '$minimumBid');
+
+    try {
+      final maxAmount = await showDialog<int>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: Text(l10n.auctionDetailAutoBidDialogTitle),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.auctionDetailAutoBidHint(formatKrw(context, minimumBid)),
+                  style: Theme.of(dialogContext).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: InputDecoration(
+                    labelText: l10n.auctionDetailAutoBidAmountLabel,
+                    hintText: l10n.auctionDetailAutoBidAmountHint,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(l10n.auctionDetailDialogCancel),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final parsedAmount = int.tryParse(controller.text.trim());
+                  if (parsedAmount == null || parsedAmount < minimumBid) {
+                    return;
+                  }
+                  Navigator.of(dialogContext).pop(parsedAmount);
+                },
+                child: Text(l10n.auctionDetailDialogSubmitAutoBid),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (!mounted || maxAmount == null) {
+        return;
+      }
+
+      await _runAuctionAction(
+        type: _AuctionActionType.autoBid,
+        action: () =>
+            ref.read(functionsProvider).httpsCallable('setAutoBid').call({
+          'auctionId': widget.auctionId,
+          'maxAmount': maxAmount,
+        }),
+        successMessage: l10n.auctionDetailActionSuccessAutoBid,
+      );
+    } finally {
+      controller.dispose();
+    }
+  }
+
+  Future<void> _buyNow() async {
+    final l10n = context.l10n;
+
+    final result = await _runAuctionAction(
+      type: _AuctionActionType.buyNow,
+      action: () => ref.read(functionsProvider).httpsCallable('buyNow').call({
+        'auctionId': widget.auctionId,
+      }),
+      successMessage: l10n.auctionDetailActionSuccessBuyNow,
+    );
+
+    final orderId = result?.data is Map
+        ? (result!.data as Map)['orderId'] as String?
+        : null;
+    if (!mounted || orderId == null || orderId.isEmpty) {
+      return;
+    }
+
+    context.go('/orders/$orderId');
+  }
+
+  Future<HttpsCallableResult<dynamic>?> _runAuctionAction({
+    required _AuctionActionType type,
+    required Future<HttpsCallableResult<dynamic>> Function() action,
+    required String successMessage,
+  }) async {
+    _setSubmitting(type, true);
+
+    try {
+      final result = await action();
+      if (!mounted) {
+        return result;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(successMessage)),
+      );
+      return result;
+    } on FirebaseFunctionsException catch (error) {
+      if (!mounted) {
+        return null;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            error.message ?? context.l10n.auctionDetailActionFailed,
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return null;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.auctionDetailActionFailed)),
+      );
+    } finally {
+      if (mounted) {
+        _setSubmitting(type, false);
+      }
+    }
+
+    return null;
+  }
+
+  void _setSubmitting(_AuctionActionType type, bool value) {
+    setState(() {
+      switch (type) {
+        case _AuctionActionType.bid:
+          _submittingBid = value;
+          break;
+        case _AuctionActionType.autoBid:
+          _submittingAutoBid = value;
+          break;
+        case _AuctionActionType.buyNow:
+          _submittingBuyNow = value;
+          break;
+      }
+    });
+  }
+}
+
+enum _AuctionActionType {
+  bid,
+  autoBid,
+  buyNow,
+}
+
+int _minIncrementFor(num currentPrice) {
+  if (currentPrice <= 99999) {
+    return 1000;
+  }
+  if (currentPrice <= 499999) {
+    return 5000;
+  }
+  if (currentPrice <= 999999) {
+    return 10000;
+  }
+  return 50000;
 }
 
 class _AuctionHeader extends StatelessWidget {

@@ -86,6 +86,63 @@
   "auctionDetailNoBidHistory": "Bid updates will appear after the first accepted bid.",
   "auctionDetailActionHint": "Bidding and instant purchase actions appear here as soon as a live auction record is available.",
   "auctionDetailBrowseAction": "Browse live auctions",
+  "auctionDetailLiveActionHint": "Next accepted bid starts at {minimumBid}. Auction closes {endAt}.",
+  "@auctionDetailLiveActionHint": {
+    "placeholders": {
+      "minimumBid": {},
+      "endAt": {}
+    }
+  },
+  "auctionDetailSellerOwnedHint": "Your listing is live until {endAt}. Buyer actions stay active on this screen.",
+  "@auctionDetailSellerOwnedHint": {
+    "placeholders": {
+      "endAt": {}
+    }
+  },
+  "auctionDetailSellerOwnedFallback": "Your listing is live. Order and settlement updates will appear when a buyer closes the auction.",
+  "auctionDetailSellerOwnedAction": "Review orders",
+  "auctionDetailOrderReadyHint": "This auction already has an order. Open the order timeline to continue payment or fulfillment.",
+  "auctionDetailEndedHint": "This auction is no longer open for bidding. Browse other live listings instead.",
+  "auctionDetailViewOrder": "Open order timeline",
+  "auctionDetailLoginHint": "Sign in to place bids, set an auto-bid ceiling, or complete buy now.",
+  "auctionDetailBidAction": "Bid from {amount}",
+  "@auctionDetailBidAction": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "auctionDetailBuyNowAction": "Buy now {amount}",
+  "@auctionDetailBuyNowAction": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "auctionDetailAutoBidAction": "Set auto-bid ceiling",
+  "auctionDetailBidDialogTitle": "Place a bid",
+  "auctionDetailBidAmountLabel": "Bid amount",
+  "auctionDetailBidAmountHint": "Enter your offer in KRW",
+  "auctionDetailAutoBidDialogTitle": "Set auto-bid ceiling",
+  "auctionDetailAutoBidAmountLabel": "Maximum auto-bid",
+  "auctionDetailAutoBidAmountHint": "Highest amount you want the system to defend",
+  "auctionDetailBidMinimum": "Minimum accepted amount: {amount}",
+  "@auctionDetailBidMinimum": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "auctionDetailAutoBidHint": "The auto-bid ceiling must start at or above {amount}. The system raises only as needed.",
+  "@auctionDetailAutoBidHint": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "auctionDetailDialogCancel": "Cancel",
+  "auctionDetailDialogSubmitBid": "Submit bid",
+  "auctionDetailDialogSubmitAutoBid": "Save auto-bid",
+  "auctionDetailActionSuccessBid": "Your bid was submitted.",
+  "auctionDetailActionSuccessAutoBid": "Your auto-bid ceiling was saved.",
+  "auctionDetailActionSuccessBuyNow": "Buy now is complete. Continue in the order timeline.",
+  "auctionDetailActionFailed": "We couldn't complete that auction action. Try again.",
   "ordersTitle": "Orders",
   "ordersBuyerTitle": "Buying",
   "ordersSellerTitle": "Selling",

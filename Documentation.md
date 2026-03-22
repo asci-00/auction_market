@@ -46,6 +46,7 @@
   - Login, home, search, auction detail, sell, activity, orders, notifications, and my screens now use localized copy and the shared editorial design primitives.
   - Login now blocks Google and Apple browser sign-in when `USE_FIREBASE_EMULATORS=true`, because the project treats mobile social-login verification as a real-Firebase path rather than an Auth Emulator path.
   - Login also exposes seeded buyer and seller quick-login actions only when `APP_ENV=dev` and `USE_FIREBASE_EMULATORS=true`, so emulator smoke tests can enter authenticated routes without live social login.
+  - Auction detail now runs `placeBid`, `setAutoBid`, and `buyNow` from the sticky action bar when the viewer is an eligible buyer on a live auction, and redirects completed buy-now orders into `/orders/{orderId}`.
   - Orders now calls `shipmentUpdate` and `confirmReceipt` directly from the mobile UI, and notifications call `markNotificationRead` before deep-link navigation.
   - Home, search, auction detail, orders, notifications, and my pages render from live Firestore read paths and fall back to localized empty or unavailable states when documents are missing.
 - Read data directly from Firestore and Storage-backed URLs.
@@ -95,6 +96,7 @@
   - `seller1@test.local` with password `seller-pass-1234`
   - `ops1@test.local` with password `ops-pass-1234`
 - The mobile login screen surfaces only the buyer and seller quick-login actions in `dev` emulator mode.
+- Buyer smoke test path for auction actions: sign in as `buyer1`, open a live seeded auction, place a manual bid or save an auto-bid ceiling from the auction detail action bar, or use buy-now and verify the app routes into the created order timeline.
 - Seller smoke test path: sign in as `seller1`, open `order-paid`, submit carrier and tracking information, and confirm the order moves to `SHIPPED`.
 - Buyer smoke test path: sign in as `buyer1`, open the same `order-paid`, confirm receipt, and verify the order moves to `CONFIRMED_RECEIPT`.
 - These accounts are for local emulator checks only. They do not validate Google or Apple browser sign-in, provider linking, redirect handling, or staging and prod auth configuration.

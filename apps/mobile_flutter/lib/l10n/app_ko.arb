@@ -86,6 +86,63 @@
   "auctionDetailNoBidHistory": "첫 유효 입찰이 들어오면 여기에 기록이 표시됩니다.",
   "auctionDetailActionHint": "라이브 경매가 확인되면 이 자리에서 입찰과 즉시 구매 액션이 열립니다.",
   "auctionDetailBrowseAction": "라이브 경매 둘러보기",
+  "auctionDetailLiveActionHint": "다음 유효 입찰가는 {minimumBid}부터 시작합니다. 경매 종료 시각은 {endAt}입니다.",
+  "@auctionDetailLiveActionHint": {
+    "placeholders": {
+      "minimumBid": {},
+      "endAt": {}
+    }
+  },
+  "auctionDetailSellerOwnedHint": "내 리스팅은 {endAt}까지 라이브 상태입니다. 구매자 액션은 이 화면에서 계속 열립니다.",
+  "@auctionDetailSellerOwnedHint": {
+    "placeholders": {
+      "endAt": {}
+    }
+  },
+  "auctionDetailSellerOwnedFallback": "내 리스팅이 라이브 상태입니다. 구매가 성사되면 주문과 정산 흐름이 이어집니다.",
+  "auctionDetailSellerOwnedAction": "주문 흐름 보기",
+  "auctionDetailOrderReadyHint": "이 경매에는 이미 주문이 연결되어 있습니다. 결제나 배송을 이어가려면 주문 타임라인을 여세요.",
+  "auctionDetailEndedHint": "이 경매는 더 이상 입찰을 받지 않습니다. 다른 라이브 경매를 둘러보세요.",
+  "auctionDetailViewOrder": "주문 타임라인 열기",
+  "auctionDetailLoginHint": "입찰, 자동입찰, 즉시 구매를 진행하려면 로그인하세요.",
+  "auctionDetailBidAction": "{amount}부터 입찰",
+  "@auctionDetailBidAction": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "auctionDetailBuyNowAction": "즉시 구매 {amount}",
+  "@auctionDetailBuyNowAction": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "auctionDetailAutoBidAction": "자동입찰 상한 설정",
+  "auctionDetailBidDialogTitle": "입찰하기",
+  "auctionDetailBidAmountLabel": "입찰 금액",
+  "auctionDetailBidAmountHint": "원 단위 금액을 입력해 주세요",
+  "auctionDetailAutoBidDialogTitle": "자동입찰 상한 설정",
+  "auctionDetailAutoBidAmountLabel": "최대 자동입찰 금액",
+  "auctionDetailAutoBidAmountHint": "시스템이 방어할 최대 금액을 입력해 주세요",
+  "auctionDetailBidMinimum": "최소 유효 금액은 {amount}입니다.",
+  "@auctionDetailBidMinimum": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "auctionDetailAutoBidHint": "자동입찰 상한은 {amount} 이상이어야 하며, 필요한 만큼만 자동으로 올라갑니다.",
+  "@auctionDetailAutoBidHint": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "auctionDetailDialogCancel": "취소",
+  "auctionDetailDialogSubmitBid": "입찰 제출",
+  "auctionDetailDialogSubmitAutoBid": "자동입찰 저장",
+  "auctionDetailActionSuccessBid": "입찰이 접수되었습니다.",
+  "auctionDetailActionSuccessAutoBid": "자동입찰 상한이 저장되었습니다.",
+  "auctionDetailActionSuccessBuyNow": "즉시 구매가 완료되었습니다. 주문 타임라인으로 이동합니다.",
+  "auctionDetailActionFailed": "경매 액션을 완료하지 못했습니다. 다시 시도해 주세요.",
   "ordersTitle": "주문",
   "ordersBuyerTitle": "구매",
   "ordersSellerTitle": "판매",

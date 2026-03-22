@@ -278,6 +278,100 @@ class AppLocalizationsKo extends AppLocalizations {
   String get auctionDetailBrowseAction => '라이브 경매 둘러보기';
 
   @override
+  String auctionDetailLiveActionHint(Object minimumBid, Object endAt) {
+    return '다음 유효 입찰가는 $minimumBid부터 시작합니다. 경매 종료 시각은 $endAt입니다.';
+  }
+
+  @override
+  String auctionDetailSellerOwnedHint(Object endAt) {
+    return '내 리스팅은 $endAt까지 라이브 상태입니다. 구매자 액션은 이 화면에서 계속 열립니다.';
+  }
+
+  @override
+  String get auctionDetailSellerOwnedFallback =>
+      '내 리스팅이 라이브 상태입니다. 구매가 성사되면 주문과 정산 흐름이 이어집니다.';
+
+  @override
+  String get auctionDetailSellerOwnedAction => '주문 흐름 보기';
+
+  @override
+  String get auctionDetailOrderReadyHint =>
+      '이 경매에는 이미 주문이 연결되어 있습니다. 결제나 배송을 이어가려면 주문 타임라인을 여세요.';
+
+  @override
+  String get auctionDetailEndedHint =>
+      '이 경매는 더 이상 입찰을 받지 않습니다. 다른 라이브 경매를 둘러보세요.';
+
+  @override
+  String get auctionDetailViewOrder => '주문 타임라인 열기';
+
+  @override
+  String get auctionDetailLoginHint => '입찰, 자동입찰, 즉시 구매를 진행하려면 로그인하세요.';
+
+  @override
+  String auctionDetailBidAction(Object amount) {
+    return '$amount부터 입찰';
+  }
+
+  @override
+  String auctionDetailBuyNowAction(Object amount) {
+    return '즉시 구매 $amount';
+  }
+
+  @override
+  String get auctionDetailAutoBidAction => '자동입찰 상한 설정';
+
+  @override
+  String get auctionDetailBidDialogTitle => '입찰하기';
+
+  @override
+  String get auctionDetailBidAmountLabel => '입찰 금액';
+
+  @override
+  String get auctionDetailBidAmountHint => '원 단위 금액을 입력해 주세요';
+
+  @override
+  String get auctionDetailAutoBidDialogTitle => '자동입찰 상한 설정';
+
+  @override
+  String get auctionDetailAutoBidAmountLabel => '최대 자동입찰 금액';
+
+  @override
+  String get auctionDetailAutoBidAmountHint => '시스템이 방어할 최대 금액을 입력해 주세요';
+
+  @override
+  String auctionDetailBidMinimum(Object amount) {
+    return '최소 유효 금액은 $amount입니다.';
+  }
+
+  @override
+  String auctionDetailAutoBidHint(Object amount) {
+    return '자동입찰 상한은 $amount 이상이어야 하며, 필요한 만큼만 자동으로 올라갑니다.';
+  }
+
+  @override
+  String get auctionDetailDialogCancel => '취소';
+
+  @override
+  String get auctionDetailDialogSubmitBid => '입찰 제출';
+
+  @override
+  String get auctionDetailDialogSubmitAutoBid => '자동입찰 저장';
+
+  @override
+  String get auctionDetailActionSuccessBid => '입찰이 접수되었습니다.';
+
+  @override
+  String get auctionDetailActionSuccessAutoBid => '자동입찰 상한이 저장되었습니다.';
+
+  @override
+  String get auctionDetailActionSuccessBuyNow =>
+      '즉시 구매가 완료되었습니다. 주문 타임라인으로 이동합니다.';
+
+  @override
+  String get auctionDetailActionFailed => '경매 액션을 완료하지 못했습니다. 다시 시도해 주세요.';
+
+  @override
   String get ordersTitle => '주문';
 
   @override

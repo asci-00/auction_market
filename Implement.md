@@ -1,7 +1,7 @@
 # Auction Market Execution Log
 
 ## Current Task
-- Phase 3 mobile flow work is active, with seeded dev smoke tests now covering seller shipment update and buyer receipt confirmation from the orders screen.
+- Phase 3 mobile flow work is active, with auction detail now running live bid, auto-bid, and buy-now actions. The next unfinished gap is the sell draft and publish flow.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -31,6 +31,7 @@
 - Mobile copy is generated from `app_ko.arb` and `app_en.arb`, with device-locale fallback to Korean.
 - Login, home, search, auction detail, sell, activity, orders, notifications, and my screens use localized product copy and no longer expose engineering-status labels in the UI.
 - Home, search, auction detail, orders, notifications, and my screens now read from Firestore paths and fall back to localized unavailable states when documents are missing.
+- Auction detail now calls `placeBid`, `setAutoBid`, and `buyNow` from the mobile UI, then routes completed buy-now orders into the order timeline.
 - Orders now runs live shipment update and receipt confirmation callables from the mobile UI, and notifications mark themselves as read before routing when the callable succeeds.
 - Backend callables now cover bootstrap, item draft save, auction publish, cancel, relist, bid, auto-bid, buy-now, payment session creation, Toss payment confirmation, shipment update, receipt confirmation, and notification read state.
 - Toss webhook handling now exists as `tossPaymentWebhook` and updates payment and order state idempotently.
@@ -42,19 +43,20 @@
 - Android app module applies the Google Services Gradle plugin.
 - Login screen now surfaces the Firebase Auth Emulator limitation for mobile Google and Apple browser sign-in instead of opening a non-functional browser loop.
 - `cd backend/functions && npm run seed` passed on March 20, 2026.
-- `cd backend/functions && npm test` passed on March 20, 2026.
-- `cd backend/functions && npm run build` passed on March 20, 2026.
-- `cd apps/mobile_flutter && flutter gen-l10n` passed on March 20, 2026.
-- `cd apps/mobile_flutter && dart format lib test` passed on March 20, 2026.
-- `cd apps/mobile_flutter && flutter analyze` passed on March 20, 2026.
-- `cd apps/mobile_flutter && flutter test` passed on March 20, 2026.
+- `cd backend/functions && npm test` passed on March 22, 2026.
+- `cd backend/functions && npm run build` passed on March 22, 2026.
+- `cd apps/mobile_flutter && flutter gen-l10n` passed on March 22, 2026.
+- `cd apps/mobile_flutter && dart format lib test` passed on March 22, 2026.
+- `cd apps/mobile_flutter && flutter analyze` passed on March 22, 2026.
+- `cd apps/mobile_flutter && flutter test` passed on March 22, 2026.
 
 ## Next Commands
 1. `cd backend/functions && npm run serve`
 2. `cd backend/functions && npm run seed`
 3. `cd apps/mobile_flutter && flutter run --dart-define-from-file=dart_defines.json`
-4. In `dev` emulator mode, sign in as `seller1` and register shipment for `order-paid`, then sign in as `buyer1` and confirm receipt from the same order.
-5. Fill `backend/functions/.env` and `apps/mobile_flutter/dart_defines.json` with real Toss values for staging and prod verification.
+4. In `dev` emulator mode, sign in as `buyer1`, open a live auction, place a bid or save an auto-bid ceiling, then complete buy-now and confirm the order timeline opens.
+5. Still in `dev`, sign in as `seller1` and register shipment for `order-paid`, then sign back in as `buyer1` and confirm receipt from the same order.
+6. Fill `backend/functions/.env` and `apps/mobile_flutter/dart_defines.json` with real Toss values for staging and prod verification.
 
 ## Update Rules
 - Keep this file short.
