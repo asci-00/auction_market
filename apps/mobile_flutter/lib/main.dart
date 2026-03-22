@@ -9,10 +9,10 @@ import 'app/app.dart';
 import 'core/l10n/app_localization.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await EasyLocalization.ensureInitialized();
+  await runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    await EasyLocalization.ensureInitialized();
 
-  runZonedGuarded(() {
     FlutterError.onError = (details) {
       Zone.current.handleUncaughtError(
         details.exception,
