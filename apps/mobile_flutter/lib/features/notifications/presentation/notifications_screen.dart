@@ -98,7 +98,7 @@ class NotificationsScreen extends ConsumerWidget {
                                       await ref
                                           .read(functionsProvider)
                                           .httpsCallable('markNotificationRead')
-                                          .call({
+                                          .call<void>({
                                         'notificationId': doc.id,
                                       });
                                     } catch (_) {

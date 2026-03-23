@@ -42,6 +42,7 @@
   - `lib/core/routing/app_router.dart` owns guarded routing and deep-link normalization.
   - `lib/core/theme/app_theme.dart` applies the warm neutral, charcoal, copper, coral, and sage token system from `docs/Design.md`, including anchored navigation and sticky action sizing.
   - `lib/core/widgets/` owns the shared editorial hero, auction card, shell, page scaffold, panel, badge, section heading, sticky action bar, and empty-state primitives.
+  - `apps/mobile_flutter/analysis_options.yaml` now excludes generated localization files from manual lint noise, enables strict analyzer modes for casts, inference, and raw types, and adds a small set of project-wide lint rules for explicit return types, final locals and fields, and redundant lambda cleanup.
 - Current mobile UX and localization implementation details:
   - `apps/mobile_flutter/lib/l10n/app_ko.arb` and `apps/mobile_flutter/lib/l10n/app_en.arb` own user-facing mobile copy for `ko` and `en`.
   - `lib/app/app.dart` wires `supportedLocales`, localization delegates, and locale fallback into `MaterialApp`.
@@ -76,6 +77,7 @@
 ## Backend Implementation Notes
 - `backend/functions/src/config/runtime.ts` validates backend runtime env such as `APP_ENV`, `GCLOUD_PROJECT`, Toss secrets, Toss API base URL, and `APP_BASE_URL`.
 - `backend/functions/src/domain/paymentEngine.ts` owns payment confirmation idempotency helpers, webhook normalization, and payment state transitions.
+- `backend/functions/eslint.config.mjs` now runs ESLint for `src`, `test`, and `scripts`, while `.prettierrc.json` and package scripts provide a repeatable formatting check for TypeScript files before commit.
 - `backend/functions/src/index.ts` now exports the Phase 2 callable and scheduler surface:
   - `bootstrapUserProfile`
   - `createOrUpdateItem`

@@ -32,10 +32,15 @@ export const sellerGradeWeights = {
 };
 
 export function minIncrementFor(price: number): number {
-  const band = bidIncrementTable.find((row) => price >= row.min && price <= row.max);
+  const band = bidIncrementTable.find(
+    (row) => price >= row.min && price <= row.max,
+  );
   return band?.step ?? 1000;
 }
 
 export function calcDepositForfeit(finalPrice: number): number {
-  return Math.max(depositPolicy.min, Math.min(depositPolicy.max, Math.floor(finalPrice * depositPolicy.percent)));
+  return Math.max(
+    depositPolicy.min,
+    Math.min(depositPolicy.max, Math.floor(finalPrice * depositPolicy.percent)),
+  );
 }

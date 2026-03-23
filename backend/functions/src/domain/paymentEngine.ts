@@ -90,12 +90,19 @@ export function buildWebhookEventMarker(
   paymentKey: string | null,
   status: string | null,
 ): string {
-  return [eventType, createdAt ?? 'unknown', paymentKey ?? 'no-key', status ?? 'unknown']
+  return [
+    eventType,
+    createdAt ?? 'unknown',
+    paymentKey ?? 'no-key',
+    status ?? 'unknown',
+  ]
     .join(':')
     .replace(/\s+/g, '_');
 }
 
-export function extractWebhookSecret(payload: Record<string, unknown>): string | null {
+export function extractWebhookSecret(
+  payload: Record<string, unknown>,
+): string | null {
   const rootSecret = typeof payload.secret === 'string' ? payload.secret : null;
   if (rootSecret) {
     return rootSecret;
@@ -128,7 +135,8 @@ export function normalizeWebhookPayment(
 
   return {
     orderId: typeof payment.orderId === 'string' ? payment.orderId : '',
-    paymentKey: typeof payment.paymentKey === 'string' ? payment.paymentKey : null,
+    paymentKey:
+      typeof payment.paymentKey === 'string' ? payment.paymentKey : null,
     method: typeof payment.method === 'string' ? payment.method : null,
     totalAmount:
       typeof payment.totalAmount === 'number' ? payment.totalAmount : null,

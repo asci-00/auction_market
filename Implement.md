@@ -48,10 +48,12 @@
 - Android app module applies the Google Services Gradle plugin.
 - Login screen now surfaces the Firebase Auth Emulator limitation for mobile Google and Apple browser sign-in instead of opening a non-functional browser loop.
 - `cd backend/functions && npm run seed` passed on March 20, 2026.
+- `cd backend/functions && npm run format:check` passed on March 24, 2026.
+- `cd backend/functions && npm run lint` passed on March 24, 2026.
 - `cd backend/functions && npm test` passed on March 24, 2026.
 - `cd backend/functions && npm run build` passed on March 24, 2026.
 - `cd apps/mobile_flutter && flutter gen-l10n` passed on March 24, 2026.
-- `cd apps/mobile_flutter && dart format lib test` passed on March 24, 2026.
+- `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib test` passed on March 24, 2026.
 - `cd apps/mobile_flutter && flutter analyze` passed on March 24, 2026.
 - `cd apps/mobile_flutter && flutter test` passed on March 24, 2026.
 
@@ -69,4 +71,5 @@
 - Replace completed tasks instead of appending long history.
 - Keep only current task, locked decisions, blockers, validation status, and next commands.
 - When a meaningful unit of work is complete and its required validations pass, leave a focused git commit before moving on to the next meaningful unit.
+- Before that commit, run the applicable formatting and lint gates for each touched stack, not only tests and builds.
 - When opening a PR for human review, write the PR title and body in Korean so the review intent and change scope are easy to scan.

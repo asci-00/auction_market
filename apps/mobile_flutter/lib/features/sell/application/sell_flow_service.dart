@@ -68,7 +68,7 @@ class SellFlowService {
       ...uploadedAuthImageUrls,
     ];
 
-    await _functions.httpsCallable('createOrUpdateItem').call({
+    await _functions.httpsCallable('createOrUpdateItem').call<void>({
       'id': itemId,
       'status': 'DRAFT',
       'categoryMain': form.categoryMain,
@@ -110,7 +110,7 @@ class SellFlowService {
     final now = DateTime.now();
     final endAt = now.add(Duration(days: form.durationDays));
     final result =
-        await _functions.httpsCallable('createAuctionFromItem').call({
+        await _functions.httpsCallable('createAuctionFromItem').call<dynamic>({
       'itemId': savedDraft.itemId,
       'startAt': now.toIso8601String(),
       'endAt': endAt.toIso8601String(),
