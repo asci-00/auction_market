@@ -123,6 +123,23 @@ function optionalString(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
 
+function optionalPositiveNumber(value: unknown): number | null {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return null;
+  }
+  return value > 0 ? value : null;
+}
+
+function optionalPositiveInteger(value: unknown): number | null {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return null;
+  }
+  if (!Number.isInteger(value) || value <= 0) {
+    return null;
+  }
+  return value;
+}
+
 function stringArray(value: unknown): string[] {
   if (!Array.isArray(value)) {
     return [];
@@ -221,6 +238,11 @@ function normalizedItemPayload(payload: AnyRecord): {
   imageUrls: string[];
   authImageUrls: string[];
   isOfficialMd: boolean | null;
+  draftAuction: {
+    startPrice: number | null;
+    buyNowPrice: number | null;
+    durationDays: number | null;
+  };
   appraisal: { status: 'NONE' | 'REQUESTED' | 'APPROVED' | 'REJECTED'; badgeLabel: string | null };
 } {
   const categoryMain = ensureString(payload.categoryMain, 'categoryMain');
@@ -259,6 +281,20 @@ function normalizedItemPayload(payload: AnyRecord): {
     throw new HttpsError('invalid-argument', 'invalid appraisal status');
   }
 
+  const draftAuctionPayload =
+    payload.draftAuction && typeof payload.draftAuction === 'object'
+      ? (payload.draftAuction as AnyRecord)
+      : {};
+  const startPrice = optionalPositiveNumber(draftAuctionPayload.startPrice);
+  const buyNowPrice = optionalPositiveNumber(draftAuctionPayload.buyNowPrice);
+  const durationDays = optionalPositiveInteger(draftAuctionPayload.durationDays);
+  if (startPrice != null && buyNowPrice != null && buyNowPrice <= startPrice) {
+    throw new HttpsError(
+      'invalid-argument',
+      'draft buyNowPrice must be greater than startPrice',
+    );
+  }
+
   return {
     status: status as 'DRAFT' | 'READY' | 'ARCHIVED',
     categoryMain,
@@ -271,6 +307,11 @@ function normalizedItemPayload(payload: AnyRecord): {
     authImageUrls,
     isOfficialMd:
       typeof payload.isOfficialMd === 'boolean' ? payload.isOfficialMd : null,
+    draftAuction: {
+      startPrice,
+      buyNowPrice,
+      durationDays,
+    },
     appraisal: {
       status: appraisalStatus as
         | 'NONE'
