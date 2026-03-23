@@ -105,6 +105,7 @@
   "auctionDetailEndedHint": "이 경매는 더 이상 입찰을 받지 않습니다. 다른 라이브 경매를 둘러보세요.",
   "auctionDetailViewOrder": "주문 타임라인 열기",
   "auctionDetailLoginHint": "입찰, 자동입찰, 즉시 구매를 진행하려면 로그인하세요.",
+  "auctionDetailSignInAction": "로그인하고 입찰하기",
   "auctionDetailBidAction": "{amount}부터 입찰",
   "@auctionDetailBidAction": {
     "placeholders": {

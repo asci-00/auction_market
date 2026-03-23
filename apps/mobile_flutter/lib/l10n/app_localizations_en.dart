@@ -327,6 +327,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Sign in to place bids, set an auto-bid ceiling, or complete buy now.';
 
   @override
+  String get auctionDetailSignInAction => 'Sign in to bid';
+
+  @override
   String auctionDetailBidAction(Object amount) {
     return 'Bid from $amount';
   }

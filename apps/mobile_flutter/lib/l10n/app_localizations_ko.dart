@@ -309,6 +309,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get auctionDetailLoginHint => '입찰, 자동입찰, 즉시 구매를 진행하려면 로그인하세요.';
 
   @override
+  String get auctionDetailSignInAction => '로그인하고 입찰하기';
+
+  @override
   String auctionDetailBidAction(Object amount) {
     return '$amount부터 입찰';
   }

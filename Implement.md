@@ -1,7 +1,7 @@
 # Auction Market Execution Log
 
 ## Current Task
-- Phase 3 mobile flow work is active, with auction detail now running live bid, auto-bid, and buy-now actions. The next unfinished gap is the sell draft and publish flow.
+- Phase 3 mobile flow work is active, with the Flutter client now being refactored toward clearer feature layers and smaller presentation files. The next unfinished product gap is still the sell draft and publish flow.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -29,9 +29,14 @@
 - Guarded `go_router` navigation uses `StatefulShellRoute.indexedStack` for tab preservation and supports `app://auction/{id}` and `app://orders/{id}` deep-link normalization.
 - Shared theme tokens, editorial hero patterns, auction cards, anchored bottom navigation, and sticky action bars match the updated design contract direction.
 - Mobile copy is generated from `app_ko.arb` and `app_en.arb`, with device-locale fallback to Korean.
+- Flutter shared context helpers now live in `core/extensions/build_context_x.dart`, so common access like snackbars, theme, text theme, media query, and navigator no longer requires repeated `ScaffoldMessenger.of(context)` or similar direct lookups in feature screens.
 - Login, home, search, auction detail, sell, activity, orders, notifications, and my screens use localized product copy and no longer expose engineering-status labels in the UI.
 - Home, search, auction detail, orders, notifications, and my screens now read from Firestore paths and fall back to localized unavailable states when documents are missing.
 - Auction detail now calls `placeBid`, `setAutoBid`, and `buyNow` from the mobile UI, then routes completed buy-now orders into the order timeline.
+- Auction detail and orders now split presentation widgets, data mappers, and callable action services into separate files instead of mixing Firestore maps, Functions calls, dialogs, and screen layout in one file.
+- Login now splits seeded dev account data, auth action execution, error mapping, and panel widgets instead of keeping provider setup and every visual block in one file.
+- Sell now splits localized step content generation and reusable presentation cards out of the screen file, so the screen stays as composition-only presentation scaffolding.
+- Home, search, and my now also split Firestore document mapping, filtering helpers, and repeated section widgets away from the route screen files, so those route widgets mainly compose streams, sections, and navigation.
 - Orders now runs live shipment update and receipt confirmation callables from the mobile UI, and notifications mark themselves as read before routing when the callable succeeds.
 - Backend callables now cover bootstrap, item draft save, auction publish, cancel, relist, bid, auto-bid, buy-now, payment session creation, Toss payment confirmation, shipment update, receipt confirmation, and notification read state.
 - Toss webhook handling now exists as `tossPaymentWebhook` and updates payment and order state idempotently.

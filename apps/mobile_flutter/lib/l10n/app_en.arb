@@ -105,6 +105,7 @@
   "auctionDetailEndedHint": "This auction is no longer open for bidding. Browse other live listings instead.",
   "auctionDetailViewOrder": "Open order timeline",
   "auctionDetailLoginHint": "Sign in to place bids, set an auto-bid ceiling, or complete buy now.",
+  "auctionDetailSignInAction": "Sign in to bid",
   "auctionDetailBidAction": "Bid from {amount}",
   "@auctionDetailBidAction": {
     "placeholders": {

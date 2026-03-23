@@ -28,6 +28,7 @@
   - `app_config`: reads build-time defines and exposes typed config.
   - `firebase`: initializes Firebase, emulator mode, auth, functions, storage, and messaging.
   - `l10n`: owns locale resolution helpers and display formatting.
+  - `extensions`: owns `BuildContext` convenience accessors for shared UI infrastructure such as snackbars, text theme, and navigator access.
   - `routing`: guarded `go_router` config with deep links and tab restoration.
   - `theme`: colors, typography, spacing, shapes, motion tokens.
   - `error`: typed app errors and user-safe error messages.
@@ -37,6 +38,7 @@
   - `lib/core/app_config/app_config.dart` validates only non-secret app defines such as `APP_ENV`, emulator mode, and Toss client key.
   - `lib/core/firebase/firebase_bootstrap.dart` initializes Firebase from native iOS and Android config files, then attaches Auth, Firestore, Functions, and Storage emulators when enabled.
   - `lib/core/l10n/app_localization.dart` resolves device locale to `ko` or `en` and exposes generated localization accessors.
+  - `lib/core/extensions/build_context_x.dart` centralizes repeated `BuildContext` lookups like `Theme.of`, `ScaffoldMessenger.of`, `MediaQuery.of`, and `Navigator.of`.
   - `lib/core/routing/app_router.dart` owns guarded routing and deep-link normalization.
   - `lib/core/theme/app_theme.dart` applies the warm neutral, charcoal, copper, coral, and sage token system from `docs/Design.md`, including anchored navigation and sticky action sizing.
   - `lib/core/widgets/` owns the shared editorial hero, auction card, shell, page scaffold, panel, badge, section heading, sticky action bar, and empty-state primitives.
@@ -46,8 +48,16 @@
   - Login, home, search, auction detail, sell, activity, orders, notifications, and my screens now use localized copy and the shared editorial design primitives.
   - Login now blocks Google and Apple browser sign-in when `USE_FIREBASE_EMULATORS=true`, because the project treats mobile social-login verification as a real-Firebase path rather than an Auth Emulator path.
   - Login also exposes seeded buyer and seller quick-login actions only when `APP_ENV=dev` and `USE_FIREBASE_EMULATORS=true`, so emulator smoke tests can enter authenticated routes without live social login.
+  - Login now keeps seeded account constants in `features/auth/data`, auth mutations in `features/auth/application`, and each major visual block in `features/auth/presentation/widgets`.
+  - Auction detail now keeps the screen in `presentation`, pushes callable writes through `features/auction/application/auction_detail_action_service.dart`, and maps Firestore documents through `features/auction/data/auction_detail_view_data.dart`.
+  - Orders now keeps the screen layout in `presentation`, pushes callable writes through `features/orders/application/order_action_service.dart`, and maps Firestore documents through `features/orders/data/order_summary.dart`.
+  - Sell now keeps localized step assembly in `features/sell/application/sell_content_factory.dart` and presentation cards in `features/sell/presentation/widgets`, so the route screen stays thin.
+  - Home now maps auction rail documents through `features/home/data/home_auction_summary.dart` and keeps reusable rail and action button widgets in `features/home/presentation/widgets`.
+  - Search now maps Firestore records through `features/search/data/search_auction_summary.dart`, keeps filtering logic in `features/search/application/search_auction_filter.dart`, and uses dedicated query, filter-chip, and result-grid widgets.
+  - My now maps the user document through `features/my/data/my_profile_summary.dart`, keeps verification label logic separate, and composes account and verification blocks from dedicated widgets.
+  - Notifications now reuse the shared app deep-link normalizer instead of carrying a screen-local route parser.
   - Auction detail now runs `placeBid`, `setAutoBid`, and `buyNow` from the sticky action bar when the viewer is an eligible buyer on a live auction, and redirects completed buy-now orders into `/orders/{orderId}`.
-  - Orders now calls `shipmentUpdate` and `confirmReceipt` directly from the mobile UI, and notifications call `markNotificationRead` before deep-link navigation.
+- Orders now routes `shipmentUpdate` and `confirmReceipt` through `features/orders/application/order_action_service.dart`, and notifications call `markNotificationRead` before deep-link navigation.
   - Home, search, auction detail, orders, notifications, and my pages render from live Firestore read paths and fall back to localized empty or unavailable states when documents are missing.
 - Read data directly from Firestore and Storage-backed URLs.
 - Send mutations through Firebase Functions only.

@@ -20,6 +20,7 @@ class AppColors {
   static const borderSoft = Color(0xFFE5D9CC);
   static const borderStrong = Color(0xFFD4C2AE);
   static const overlay = Color(0x251F1A15);
+  static const panelOverlay = Color(0xCC1E1C1A);
 }
 
 @immutable
