@@ -17,6 +17,10 @@ class AuctionDetailActionService {
     required String auctionId,
     required int amount,
   }) async {
+    if (amount <= 0) {
+      throw ArgumentError.value(amount, 'amount', 'must be greater than 0');
+    }
+
     await _functions.httpsCallable('placeBid').call({
       'auctionId': auctionId,
       'amount': amount,
@@ -27,6 +31,14 @@ class AuctionDetailActionService {
     required String auctionId,
     required int maxAmount,
   }) async {
+    if (maxAmount <= 0) {
+      throw ArgumentError.value(
+        maxAmount,
+        'maxAmount',
+        'must be greater than 0',
+      );
+    }
+
     await _functions.httpsCallable('setAutoBid').call({
       'auctionId': auctionId,
       'maxAmount': maxAmount,
@@ -47,6 +59,8 @@ class AuctionDetailActionService {
       }
     }
 
-    return null;
+    throw StateError(
+      'buyNow callable response missing non-empty orderId: ${result.data}',
+    );
   }
 }

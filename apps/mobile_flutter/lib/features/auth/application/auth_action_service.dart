@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/firebase/firebase_providers.dart';
@@ -14,6 +15,10 @@ class AuthActionService {
   final FirebaseAuth _auth;
 
   Future<void> signInWithSeededAccount(DevQuickAccount account) {
+    if (kReleaseMode) {
+      throw StateError('Seeded account login is disabled in release builds.');
+    }
+
     return _auth.signInWithEmailAndPassword(
       email: account.email,
       password: account.password,

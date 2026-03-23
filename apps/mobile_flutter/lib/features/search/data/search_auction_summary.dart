@@ -39,11 +39,11 @@ class SearchAuctionSummary {
   }
 
   bool matchesQuery(String query) {
-    if (query.isEmpty) {
+    final normalizedQuery = query.trim().toLowerCase();
+    if (normalizedQuery.isEmpty) {
       return true;
     }
 
-    final normalizedQuery = query.toLowerCase();
     return title.toLowerCase().contains(normalizedQuery) ||
         categorySub.toLowerCase().contains(normalizedQuery);
   }

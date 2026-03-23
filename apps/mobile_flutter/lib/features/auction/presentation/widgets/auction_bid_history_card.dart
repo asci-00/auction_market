@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/extensions/build_context_x.dart';
+import '../../../../core/firebase/firebase_providers.dart';
 import '../../../../core/l10n/app_formatters.dart';
 import '../../../../core/l10n/app_localization.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -10,7 +12,7 @@ import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_panel.dart';
 import '../../../../core/widgets/app_status_badge.dart';
 
-class AuctionBidHistoryCard extends StatelessWidget {
+class AuctionBidHistoryCard extends ConsumerWidget {
   const AuctionBidHistoryCard({
     super.key,
     required this.auctionId,
@@ -19,8 +21,9 @@ class AuctionBidHistoryCard extends StatelessWidget {
   final String auctionId;
 
   @override
-  Widget build(BuildContext context) {
-    final bidsStream = FirebaseFirestore.instance
+  Widget build(BuildContext context, WidgetRef ref) {
+    final firestore = ref.watch(firestoreProvider);
+    final bidsStream = firestore
         .collection('auctions')
         .doc(auctionId)
         .collection('bids')
@@ -41,7 +44,11 @@ class AuctionBidHistoryCard extends StatelessWidget {
           );
         }
 
-        final docs = snapshot.data?.docs ?? const [];
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final docs = snapshot.data!.docs;
         if (docs.isEmpty) {
           return AppEmptyState(
             icon: Icons.gavel_rounded,

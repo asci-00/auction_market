@@ -50,6 +50,10 @@ class MyVerificationSection extends StatelessWidget {
                 );
               }
 
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
               if (!snapshot.hasData || !snapshot.data!.exists) {
                 return AppEmptyState(
                   icon: Icons.person_search_outlined,

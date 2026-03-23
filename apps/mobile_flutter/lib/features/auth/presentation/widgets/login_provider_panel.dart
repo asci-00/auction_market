@@ -28,7 +28,8 @@ class LoginProviderPanel extends StatelessWidget {
       child: Column(
         children: [
           FilledButton.icon(
-            onPressed: isSubmitting ? null : onGooglePressed,
+            onPressed:
+                isSubmitting || useFirebaseEmulators ? null : onGooglePressed,
             icon: const Icon(Icons.g_mobiledata_rounded),
             label: Text(
               isSubmitting
@@ -38,7 +39,8 @@ class LoginProviderPanel extends StatelessWidget {
           ),
           SizedBox(height: tokens.space3),
           OutlinedButton.icon(
-            onPressed: isSubmitting ? null : onApplePressed,
+            onPressed:
+                isSubmitting || useFirebaseEmulators ? null : onApplePressed,
             icon: const Icon(Icons.apple_rounded),
             label: Text(context.l10n.loginContinueApple),
           ),

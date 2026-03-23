@@ -31,7 +31,10 @@ extension BuildContextX on BuildContext {
 
     messenger.showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(
+          message,
+          style: TextStyle(color: colorScheme.onError),
+        ),
         backgroundColor: colorScheme.error,
       ),
     );

@@ -8,7 +8,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_panel.dart';
 import '../../../core/widgets/app_section_heading.dart';
-import '../../../core/widgets/app_status_badge.dart';
 import 'order_section_role.dart';
 import 'widgets/order_section.dart';
 
@@ -45,7 +44,7 @@ class OrdersScreen extends ConsumerWidget {
           ),
           SizedBox(height: tokens.space4),
           OrderSection(
-            fieldName: 'buyerId',
+            fieldName: OrderSectionField.buyerId,
             userId: userId,
             role: OrderSectionRole.buyer,
           ),
@@ -56,7 +55,7 @@ class OrdersScreen extends ConsumerWidget {
           ),
           SizedBox(height: tokens.space4),
           OrderSection(
-            fieldName: 'sellerId',
+            fieldName: OrderSectionField.sellerId,
             userId: userId,
             role: OrderSectionRole.seller,
           ),
@@ -81,7 +80,10 @@ class _HighlightedOrderBanner extends StatelessWidget {
       tone: AppPanelTone.elevated,
       child: Row(
         children: [
-          const AppStatusBadge(kind: AppStatusKind.pending),
+          Icon(
+            Icons.receipt_long_rounded,
+            color: context.colorScheme.primary,
+          ),
           SizedBox(width: tokens.space3),
           Expanded(
             child: Text(

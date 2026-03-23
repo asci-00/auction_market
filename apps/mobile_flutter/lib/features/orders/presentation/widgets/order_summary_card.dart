@@ -90,13 +90,12 @@ class OrderSummaryCard extends StatelessWidget {
               Row(
                 children: [
                   if (canShip)
-                    Expanded(
-                      child: OutlinedButton(
+                Expanded(
+                  child: OutlinedButton(
                         onPressed: isSubmitting ? null : onAddShipment,
                         child: Text(context.l10n.ordersActionAddShipment),
                       ),
                     ),
-                  if (canShip && canConfirmReceipt) const SizedBox(width: 12),
                   if (canConfirmReceipt)
                     Expanded(
                       child: FilledButton(

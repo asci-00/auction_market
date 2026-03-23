@@ -69,9 +69,9 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
               }
             },
             onPlaceBid:
-                auction == null ? () {} : () => _placeBid(auction.minimumBid),
+                auction == null ? null : () => _placeBid(auction.minimumBid),
             onSetAutoBid:
-                auction == null ? () {} : () => _setAutoBid(auction.minimumBid),
+                auction == null ? null : () => _setAutoBid(auction.minimumBid),
             onBuyNow: _buyNow,
           ),
           body: ListView(
@@ -179,7 +179,7 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
       successMessage: context.l10n.auctionDetailActionSuccessBuyNow,
     );
 
-    if (!mounted || orderId == null || orderId!.isEmpty) {
+    if (!mounted || (orderId?.isEmpty ?? true)) {
       return;
     }
 

@@ -37,8 +37,6 @@ class OrderSummary {
   }
 
   bool get hasShipmentSummary =>
-      carrierName != null &&
-      carrierName!.isNotEmpty &&
-      trackingNumber != null &&
-      trackingNumber!.isNotEmpty;
+      (carrierName?.isNotEmpty ?? false) &&
+      (trackingNumber?.isNotEmpty ?? false);
 }

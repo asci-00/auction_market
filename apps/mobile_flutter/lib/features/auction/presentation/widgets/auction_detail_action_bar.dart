@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/extensions/build_context_x.dart';
 import '../../../../core/l10n/app_formatters.dart';
 import '../../../../core/l10n/app_localization.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -27,9 +28,9 @@ class AuctionDetailActionBar extends StatelessWidget {
   final VoidCallback onBrowseHome;
   final VoidCallback onRequireLogin;
   final VoidCallback onReviewOrders;
-  final VoidCallback onOpenOrder;
-  final VoidCallback onPlaceBid;
-  final VoidCallback onSetAutoBid;
+  final VoidCallback? onOpenOrder;
+  final VoidCallback? onPlaceBid;
+  final VoidCallback? onSetAutoBid;
   final VoidCallback onBuyNow;
 
   @override
@@ -117,8 +118,8 @@ class _BuyerAuctionActions extends StatelessWidget {
 
   final AuctionDetailViewData auction;
   final bool isSubmitting;
-  final VoidCallback onPlaceBid;
-  final VoidCallback onSetAutoBid;
+  final VoidCallback? onPlaceBid;
+  final VoidCallback? onSetAutoBid;
   final VoidCallback onBuyNow;
 
   @override
@@ -214,7 +215,9 @@ class _SecondaryActionButton extends StatelessWidget {
         onPressed: onPressed,
         child: Text(
           label,
-          style: const TextStyle(color: AppColors.textInverse),
+          style: context.textTheme.labelLarge?.copyWith(
+            color: AppColors.textInverse,
+          ),
           textAlign: TextAlign.center,
         ),
       ),

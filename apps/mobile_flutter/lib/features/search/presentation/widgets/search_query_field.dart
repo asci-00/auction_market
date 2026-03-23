@@ -28,6 +28,7 @@ class SearchQueryField extends StatelessWidget {
         suffixIcon: query.isEmpty
             ? null
             : IconButton(
+                tooltip: context.l10n.searchResetAction,
                 onPressed: onClear,
                 icon: const Icon(Icons.close_rounded),
               ),

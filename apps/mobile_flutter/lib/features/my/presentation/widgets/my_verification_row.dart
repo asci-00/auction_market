@@ -31,7 +31,15 @@ class MyVerificationRow extends StatelessWidget {
               style: context.textTheme.titleMedium,
             ),
           ),
-          Text(value, style: context.textTheme.bodyMedium),
+          Flexible(
+            child: Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.textTheme.bodyMedium,
+              textAlign: TextAlign.end,
+            ),
+          ),
         ],
       ),
     );

@@ -10,7 +10,7 @@ import '../../../../core/widgets/app_status_badge.dart';
 import '../../application/search_auction_filter.dart';
 import '../../data/search_auction_summary.dart';
 
-class SearchResultsGrid extends StatelessWidget {
+class SearchResultsGrid extends StatefulWidget {
   const SearchResultsGrid({
     super.key,
     required this.query,
@@ -21,14 +21,27 @@ class SearchResultsGrid extends StatelessWidget {
   final VoidCallback onResetQuery;
 
   @override
+  State<SearchResultsGrid> createState() => _SearchResultsGridState();
+}
+
+class _SearchResultsGridState extends State<SearchResultsGrid> {
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _stream;
+
+  @override
+  void initState() {
+    super.initState();
+    _stream = FirebaseFirestore.instance
+        .collection('auctions')
+        .where('status', isEqualTo: 'LIVE')
+        .orderBy('endAt')
+        .limit(24)
+        .snapshots();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('auctions')
-          .where('status', isEqualTo: 'LIVE')
-          .orderBy('endAt')
-          .limit(24)
-          .snapshots(),
+      stream: _stream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return AppEmptyState(
@@ -44,7 +57,7 @@ class SearchResultsGrid extends StatelessWidget {
 
         final auctions =
             snapshot.data!.docs.map(SearchAuctionSummary.fromDocument).toList();
-        final filtered = filterSearchAuctions(auctions, query);
+        final filtered = filterSearchAuctions(auctions, widget.query);
 
         if (filtered.isEmpty) {
           return AppEmptyState(
@@ -52,7 +65,7 @@ class SearchResultsGrid extends StatelessWidget {
             title: context.l10n.searchEmptyTitle,
             description: context.l10n.searchEmptyDescription,
             action: TextButton(
-              onPressed: onResetQuery,
+              onPressed: widget.onResetQuery,
               child: Text(context.l10n.searchResetAction),
             ),
           );

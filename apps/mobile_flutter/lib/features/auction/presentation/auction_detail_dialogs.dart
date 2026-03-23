@@ -9,81 +9,62 @@ Future<int?> showAuctionBidAmountDialog(
   BuildContext context, {
   required int minimumBid,
 }) async {
-  final controller = TextEditingController(text: '$minimumBid');
-
-  try {
-    return showDialog<int>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(context.l10n.auctionDetailBidDialogTitle),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                context.l10n.auctionDetailBidMinimum(
-                  formatKrw(context, minimumBid),
-                ),
-                style: dialogContext.textTheme.bodySmall,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: InputDecoration(
-                  labelText: context.l10n.auctionDetailBidAmountLabel,
-                  hintText: context.l10n.auctionDetailBidAmountHint,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(context.l10n.auctionDetailDialogCancel),
-            ),
-            FilledButton(
-              onPressed: () {
-                final parsedAmount = int.tryParse(controller.text.trim());
-                if (parsedAmount == null || parsedAmount < minimumBid) {
-                  return;
-                }
-
-                Navigator.of(dialogContext).pop(parsedAmount);
-              },
-              child: Text(context.l10n.auctionDetailDialogSubmitBid),
-            ),
-          ],
-        );
-      },
-    );
-  } finally {
-    controller.dispose();
-  }
+  return _showAuctionAmountDialog(
+    context,
+    minimumBid: minimumBid,
+    title: context.l10n.auctionDetailBidDialogTitle,
+    description: context.l10n.auctionDetailBidMinimum(
+      formatKrw(context, minimumBid),
+    ),
+    labelText: context.l10n.auctionDetailBidAmountLabel,
+    hintText: context.l10n.auctionDetailBidAmountHint,
+    submitLabel: context.l10n.auctionDetailDialogSubmitBid,
+  );
 }
 
 Future<int?> showAuctionAutoBidDialog(
   BuildContext context, {
   required int minimumBid,
 }) async {
+  return _showAuctionAmountDialog(
+    context,
+    minimumBid: minimumBid,
+    title: context.l10n.auctionDetailAutoBidDialogTitle,
+    description: context.l10n.auctionDetailAutoBidHint(
+      formatKrw(context, minimumBid),
+    ),
+    labelText: context.l10n.auctionDetailAutoBidAmountLabel,
+    hintText: context.l10n.auctionDetailAutoBidAmountHint,
+    submitLabel: context.l10n.auctionDetailDialogSubmitAutoBid,
+  );
+}
+
+Future<int?> _showAuctionAmountDialog(
+  BuildContext context, {
+  required int minimumBid,
+  required String title,
+  required String description,
+  required String labelText,
+  required String hintText,
+  required String submitLabel,
+}) async {
   final controller = TextEditingController(text: '$minimumBid');
+  final validationMessage = context.l10n.auctionDetailBidMinimum(
+    formatKrw(context, minimumBid),
+  );
 
   try {
     return showDialog<int>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: Text(context.l10n.auctionDetailAutoBidDialogTitle),
+          title: Text(title),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                context.l10n.auctionDetailAutoBidHint(
-                  formatKrw(context, minimumBid),
-                ),
+                description,
                 style: dialogContext.textTheme.bodySmall,
               ),
               const SizedBox(height: 12),
@@ -92,8 +73,8 @@ Future<int?> showAuctionAutoBidDialog(
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: InputDecoration(
-                  labelText: context.l10n.auctionDetailAutoBidAmountLabel,
-                  hintText: context.l10n.auctionDetailAutoBidAmountHint,
+                  labelText: labelText,
+                  hintText: hintText,
                 ),
               ),
             ],
@@ -107,12 +88,13 @@ Future<int?> showAuctionAutoBidDialog(
               onPressed: () {
                 final parsedAmount = int.tryParse(controller.text.trim());
                 if (parsedAmount == null || parsedAmount < minimumBid) {
+                  dialogContext.showErrorSnackBar(validationMessage);
                   return;
                 }
 
                 Navigator.of(dialogContext).pop(parsedAmount);
               },
-              child: Text(context.l10n.auctionDetailDialogSubmitAutoBid),
+              child: Text(submitLabel),
             ),
           ],
         );

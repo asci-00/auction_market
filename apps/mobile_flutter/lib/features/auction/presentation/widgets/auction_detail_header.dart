@@ -43,7 +43,7 @@ class AuctionDetailHeader extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Color(0xCC1E1C1A)],
+                    colors: [Colors.transparent, AppColors.panelOverlay],
                   ),
                 ),
               ),

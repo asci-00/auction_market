@@ -29,11 +29,25 @@ class MyAccountPanel extends StatelessWidget {
           ),
           SizedBox(height: tokens.space2),
           Text(
-            user?.displayName ?? user?.email ?? context.l10n.genericUnknownUser,
+            _displayLabel(context),
             style: context.textTheme.headlineSmall,
           ),
         ],
       ),
     );
+  }
+
+  String _displayLabel(BuildContext context) {
+    final displayName = user?.displayName?.trim();
+    if (displayName != null && displayName.isNotEmpty) {
+      return displayName;
+    }
+
+    final email = user?.email?.trim();
+    if (email != null && email.isNotEmpty) {
+      return email;
+    }
+
+    return context.l10n.genericUnknownUser;
   }
 }

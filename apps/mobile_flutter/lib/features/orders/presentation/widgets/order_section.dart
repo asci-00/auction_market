@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/extensions/build_context_x.dart';
+import '../../../../core/firebase/firebase_providers.dart';
 import '../../../../core/l10n/app_localization.dart';
 import '../../../../core/widgets/app_empty_state.dart';
 import '../../application/order_action_service.dart';
@@ -11,6 +12,15 @@ import '../../data/order_summary.dart';
 import '../order_section_role.dart';
 import '../order_shipment_dialog.dart';
 import 'order_summary_card.dart';
+
+enum OrderSectionField {
+  buyerId('buyerId'),
+  sellerId('sellerId');
+
+  const OrderSectionField(this.key);
+
+  final String key;
+}
 
 class OrderSection extends ConsumerStatefulWidget {
   const OrderSection({
@@ -20,7 +30,7 @@ class OrderSection extends ConsumerStatefulWidget {
     required this.role,
   });
 
-  final String fieldName;
+  final OrderSectionField fieldName;
   final String? userId;
   final OrderSectionRole role;
 
@@ -30,6 +40,24 @@ class OrderSection extends ConsumerStatefulWidget {
 
 class _OrderSectionState extends ConsumerState<OrderSection> {
   final Set<String> _submittingOrderIds = <String>{};
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _ordersStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _ordersStream = _createOrdersStream();
+  }
+
+  @override
+  void didUpdateWidget(covariant OrderSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.userId != widget.userId ||
+        oldWidget.fieldName != widget.fieldName) {
+      setState(() {
+        _ordersStream = _createOrdersStream();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,12 +70,7 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
     }
 
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('orders')
-          .where(widget.fieldName, isEqualTo: widget.userId)
-          .orderBy('createdAt', descending: true)
-          .limit(10)
-          .snapshots(),
+      stream: _ordersStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return AppEmptyState(
@@ -57,7 +80,11 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
           );
         }
 
-        final documents = snapshot.data?.docs ?? const [];
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final documents = snapshot.data!.docs;
         if (documents.isEmpty) {
           return AppEmptyState(
             icon: Icons.inventory_2_outlined,
@@ -144,5 +171,20 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
         });
       }
     }
+  }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _createOrdersStream() {
+    final userId = widget.userId;
+    if (userId == null) {
+      return null;
+    }
+
+    return ref
+        .read(firestoreProvider)
+        .collection('orders')
+        .where(widget.fieldName.key, isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .limit(10)
+        .snapshots();
   }
 }
