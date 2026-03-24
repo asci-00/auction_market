@@ -15,3 +15,6 @@ apps/mobile_flutter/.metadata
 apps/mobile_flutter/.vscode/
 apps/mobile_flutter/build/
 apps/mobile_flutter/dart_defines.json
+
+# codex
+.codex
