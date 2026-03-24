@@ -317,6 +317,37 @@
       "time": {}
     }
   },
+  "genericCountdownExpired": "Expired",
+  "genericCountdownMinutesRemaining": "{minutes}m left",
+  "@genericCountdownMinutesRemaining": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "genericCountdownHoursRemaining": "{hours}h {minutes}m left",
+  "@genericCountdownHoursRemaining": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "genericCountdownDaysRemaining": "{days}d {hours}h left",
+  "@genericCountdownDaysRemaining": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
   "genericUnreadCount": "{count} unread",
   "@genericUnreadCount": {
     "placeholders": {
@@ -353,6 +384,13 @@
   },
   "ordersPaymentProviderLabel": "Provider",
   "ordersPaymentEmailLabel": "Buyer email",
+  "ordersPaymentDueIn": "Payment due in {remaining}",
+  "@ordersPaymentDueIn": {
+    "placeholders": {
+      "remaining": {}
+    }
+  },
+  "ordersPaymentExpired": "Payment window expired",
   "ordersPaymentDevKeyLabel": "Dev payment key · {paymentKey}",
   "@ordersPaymentDevKeyLabel": {
     "placeholders": {

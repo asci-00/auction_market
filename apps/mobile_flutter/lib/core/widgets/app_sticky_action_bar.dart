@@ -30,6 +30,7 @@ class AppStickyActionBar extends StatelessWidget {
       ),
       child: AppPanel(
         tone: AppPanelTone.dark,
+        blurSigma: 18,
         padding: EdgeInsets.all(tokens.space4),
         child: Column(
           mainAxisSize: MainAxisSize.min,

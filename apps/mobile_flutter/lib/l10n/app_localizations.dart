@@ -1481,6 +1481,30 @@ abstract class AppLocalizations {
   /// **'Ends {time}'**
   String genericEndsAt(Object time);
 
+  /// No description provided for @genericCountdownExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get genericCountdownExpired;
+
+  /// No description provided for @genericCountdownMinutesRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}m left'**
+  String genericCountdownMinutesRemaining(int minutes);
+
+  /// No description provided for @genericCountdownHoursRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h {minutes}m left'**
+  String genericCountdownHoursRemaining(int hours, int minutes);
+
+  /// No description provided for @genericCountdownDaysRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d {hours}h left'**
+  String genericCountdownDaysRemaining(int days, int hours);
+
   /// No description provided for @genericUnreadCount.
   ///
   /// In en, this message translates to:
@@ -1624,6 +1648,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Buyer email'**
   String get ordersPaymentEmailLabel;
+
+  /// No description provided for @ordersPaymentDueIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment due in {remaining}'**
+  String ordersPaymentDueIn(Object remaining);
+
+  /// No description provided for @ordersPaymentExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment window expired'**
+  String get ordersPaymentExpired;
 
   /// No description provided for @ordersPaymentDevKeyLabel.
   ///

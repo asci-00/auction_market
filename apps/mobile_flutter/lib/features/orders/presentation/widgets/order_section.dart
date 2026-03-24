@@ -7,6 +7,7 @@ import '../../../../core/extensions/build_context_x.dart';
 import '../../../../core/firebase/firebase_providers.dart';
 import '../../../../core/l10n/app_localization.dart';
 import '../../../../core/widgets/app_empty_state.dart';
+import '../../../../core/widgets/app_motion.dart';
 import '../../application/order_action_service.dart';
 import '../../data/order_summary.dart';
 import '../order_payment_confirm_dialog.dart';
@@ -96,16 +97,21 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
         }
 
         return Column(
-          children: documents.map((document) {
+          children: documents.indexed.map((entry) {
+            final index = entry.$1;
+            final document = entry.$2;
             final order = OrderSummary.fromDocument(document);
 
-            return OrderSummaryCard(
-              order: order,
-              role: widget.role,
-              isSubmitting: _submittingOrderIds.contains(order.id),
-              onPreparePayment: () => _preparePayment(order),
-              onAddShipment: () => _openShipmentDialog(order.id),
-              onConfirmReceipt: () => _confirmReceipt(order.id),
+            return AppStaggeredReveal(
+              index: index,
+              child: OrderSummaryCard(
+                order: order,
+                role: widget.role,
+                isSubmitting: _submittingOrderIds.contains(order.id),
+                onPreparePayment: () => _preparePayment(order),
+                onAddShipment: () => _openShipmentDialog(order.id),
+                onConfirmReceipt: () => _confirmReceipt(order.id),
+              ),
             );
           }).toList(),
         );

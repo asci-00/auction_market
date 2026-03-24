@@ -11,6 +11,7 @@ import '../../../core/routing/app_deeplink.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../../core/widgets/app_motion.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_panel.dart';
 import '../../../core/widgets/app_status_badge.dart';
@@ -76,76 +77,86 @@ class NotificationsScreen extends ConsumerWidget {
                 }
 
                 return Column(
-                  children: docs.map((doc) {
+                  children: docs.indexed.map((entry) {
+                    final index = entry.$1;
+                    final doc = entry.$2;
                     final data = doc.data();
                     final createdAt =
                         (data['createdAt'] as Timestamp?)?.toDate();
                     final deeplink = data['deeplink'] as String?;
                     final isRead = data['isRead'] as bool? ?? false;
 
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: tokens.space3),
-                      child: AppPanel(
-                        tone: isRead
-                            ? AppPanelTone.surface
-                            : AppPanelTone.elevated,
-                        child: InkWell(
-                          onTap: deeplink == null || deeplink.isEmpty
-                              ? null
-                              : () async {
-                                  if (!isRead) {
-                                    try {
-                                      await ref
-                                          .read(functionsProvider)
-                                          .httpsCallable('markNotificationRead')
-                                          .call<void>({
-                                        'notificationId': doc.id,
-                                      });
-                                    } catch (_) {
-                                      // Keep navigation responsive even if the read marker fails.
+                    return AppStaggeredReveal(
+                      index: index,
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: tokens.space3),
+                        child: AppPanel(
+                          tone: isRead
+                              ? AppPanelTone.surface
+                              : AppPanelTone.elevated,
+                          child: InkWell(
+                            onTap: deeplink == null || deeplink.isEmpty
+                                ? null
+                                : () async {
+                                    if (!isRead) {
+                                      try {
+                                        await ref
+                                            .read(functionsProvider)
+                                            .httpsCallable(
+                                                'markNotificationRead')
+                                            .call<void>({
+                                          'notificationId': doc.id,
+                                        });
+                                      } catch (_) {
+                                        // Keep navigation responsive even if the read marker fails.
+                                      }
                                     }
-                                  }
 
-                                  if (!context.mounted) {
-                                    return;
-                                  }
-                                  context
-                                      .push(resolveAppDeepLinkPath(deeplink));
-                                },
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (!isRead)
-                                const AppStatusBadge(
-                                    kind: AppStatusKind.unread),
-                              if (!isRead) SizedBox(width: tokens.space3),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      (data['title'] as String?) ??
-                                          l10n.notificationsTitle,
-                                      style: context.textTheme.titleMedium,
-                                    ),
-                                    SizedBox(height: tokens.space2),
-                                    Text(
-                                      (data['body'] as String?) ??
-                                          l10n.notificationsEmptyDescription,
-                                      style: context.textTheme.bodyMedium,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (createdAt != null)
-                                Padding(
-                                  padding: EdgeInsets.only(left: tokens.space3),
-                                  child: Text(
-                                    formatCompactDateTime(context, createdAt),
-                                    style: context.textTheme.bodySmall,
+                                    if (!context.mounted) {
+                                      return;
+                                    }
+                                    context
+                                        .push(resolveAppDeepLinkPath(deeplink));
+                                  },
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (!isRead)
+                                  const AppStatusBadge(
+                                    kind: AppStatusKind.unread,
+                                  ),
+                                if (!isRead) SizedBox(width: tokens.space3),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        (data['title'] as String?) ??
+                                            l10n.notificationsTitle,
+                                        style: context.textTheme.titleMedium,
+                                      ),
+                                      SizedBox(height: tokens.space2),
+                                      Text(
+                                        (data['body'] as String?) ??
+                                            l10n.notificationsEmptyDescription,
+                                        style: context.textTheme.bodyMedium,
+                                      ),
+                                    ],
                                   ),
                                 ),
-                            ],
+                                if (createdAt != null)
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                      left: tokens.space3,
+                                    ),
+                                    child: Text(
+                                      formatCompactDateTime(context, createdAt),
+                                      style: context.textTheme.bodySmall,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
                       ),

@@ -8,16 +8,21 @@ class AppAuctionCard extends StatelessWidget {
     super.key,
     required this.title,
     required this.priceLabel,
-    required this.metaLabel,
     required this.bidCountLabel,
     required this.badgeKind,
+    this.metaLabel,
+    this.meta,
     this.imageUrl,
     this.onTap,
-  });
+  }) : assert(
+          metaLabel != null || meta != null,
+          'Either metaLabel or meta must be provided.',
+        );
 
   final String title;
   final String priceLabel;
-  final String metaLabel;
+  final String? metaLabel;
+  final Widget? meta;
   final String bidCountLabel;
   final AppStatusKind badgeKind;
   final String? imageUrl;
@@ -70,6 +75,7 @@ class AppAuctionCard extends StatelessWidget {
                     child: _AuctionCardDetails(
                       title: title,
                       metaLabel: metaLabel,
+                      meta: meta,
                       bidCountLabel: bidCountLabel,
                       layout: layout,
                     ),
@@ -145,12 +151,14 @@ class _AuctionCardDetails extends StatelessWidget {
   const _AuctionCardDetails({
     required this.title,
     required this.metaLabel,
+    required this.meta,
     required this.bidCountLabel,
     required this.layout,
   });
 
   final String title;
-  final String metaLabel;
+  final String? metaLabel;
+  final Widget? meta;
   final String bidCountLabel;
   final _AuctionCardLayout layout;
 
@@ -174,12 +182,15 @@ class _AuctionCardDetails extends StatelessWidget {
                 : theme.textTheme.titleMedium,
           ),
           SizedBox(height: layout.metaSpacing),
-          Text(
-            metaLabel,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall,
-          ),
+          if (meta != null)
+            meta!
+          else
+            Text(
+              metaLabel!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall,
+            ),
           SizedBox(height: layout.bidSpacing),
           Text(
             bidCountLabel,

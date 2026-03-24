@@ -317,6 +317,37 @@
       "time": {}
     }
   },
+  "genericCountdownExpired": "만료",
+  "genericCountdownMinutesRemaining": "{minutes}분 남음",
+  "@genericCountdownMinutesRemaining": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "genericCountdownHoursRemaining": "{hours}시간 {minutes}분 남음",
+  "@genericCountdownHoursRemaining": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "genericCountdownDaysRemaining": "{days}일 {hours}시간 남음",
+  "@genericCountdownDaysRemaining": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
   "genericUnreadCount": "읽지 않음 {count}건",
   "@genericUnreadCount": {
     "placeholders": {
@@ -353,6 +384,13 @@
   },
   "ordersPaymentProviderLabel": "결제사",
   "ordersPaymentEmailLabel": "구매자 이메일",
+  "ordersPaymentDueIn": "{remaining} 내 결제 필요",
+  "@ordersPaymentDueIn": {
+    "placeholders": {
+      "remaining": {}
+    }
+  },
+  "ordersPaymentExpired": "결제 기한이 지났습니다",
   "ordersPaymentDevKeyLabel": "dev payment key · {paymentKey}",
   "@ordersPaymentDevKeyLabel": {
     "placeholders": {

@@ -6,6 +6,8 @@ import '../../../../core/l10n/app_localization.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_auction_card.dart';
 import '../../../../core/widgets/app_empty_state.dart';
+import '../../../../core/widgets/app_live_countdown_text.dart';
+import '../../../../core/widgets/app_motion.dart';
 import '../../../../core/widgets/app_status_badge.dart';
 import '../../data/home_auction_summary.dart';
 
@@ -58,23 +60,44 @@ class HomeAuctionRail extends StatelessWidget {
               final auction = auctions[index];
               return SizedBox(
                 width: 236,
-                child: AppAuctionCard(
-                  title: auction.title.isNotEmpty
-                      ? auction.title
-                      : context.l10n.genericUnavailable,
-                  priceLabel: formatKrw(context, auction.currentPrice),
-                  metaLabel: auction.endAt != null
-                      ? context.l10n.genericEndsAt(
-                          formatCompactDateTime(context, auction.endAt!),
-                        )
-                      : context.l10n.genericUnavailable,
-                  bidCountLabel:
-                      context.l10n.genericCountBids(auction.bidCount),
-                  imageUrl: auction.heroImageUrl,
-                  badgeKind: auction.buyNowPrice != null
-                      ? AppStatusKind.buyNow
-                      : defaultBadge,
-                  onTap: () => onTapAuction(auction.id),
+                child: AppStaggeredReveal(
+                  index: index,
+                  axis: Axis.horizontal,
+                  child: AppAuctionCard(
+                    title: auction.title.isNotEmpty
+                        ? auction.title
+                        : context.l10n.genericUnavailable,
+                    priceLabel: formatKrw(context, auction.currentPrice),
+                    meta: auction.endAt != null
+                        ? AppLiveCountdownText(
+                            targetTime: auction.endAt!,
+                            builder: (context, label) => Text(
+                              label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            expiredBuilder: (context) => Text(
+                              context.l10n.genericUnavailable,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          )
+                        : Text(
+                            context.l10n.genericUnavailable,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                    bidCountLabel:
+                        context.l10n.genericCountBids(auction.bidCount),
+                    imageUrl: auction.heroImageUrl,
+                    badgeKind: auction.buyNowPrice != null
+                        ? AppStatusKind.buyNow
+                        : defaultBadge,
+                    onTap: () => onTapAuction(auction.id),
+                  ),
                 ),
               );
             },

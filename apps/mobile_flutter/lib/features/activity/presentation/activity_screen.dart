@@ -5,6 +5,7 @@ import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_editorial_hero.dart';
+import '../../../core/widgets/app_motion.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_status_badge.dart';
 import 'widgets/activity_buyer_card.dart';
@@ -30,23 +31,35 @@ class ActivityScreen extends ConsumerWidget {
           tokens.space8,
         ),
         children: [
-          AppEditorialHero(
-            eyebrow: l10n.activityHeroEyebrow,
-            title: l10n.activityHeroTitle,
-            description: l10n.activityHeroDescription,
-            badges: const [AppStatusBadge(kind: AppStatusKind.pending)],
+          AppStaggeredItem(
+            index: 0,
+            child: AppEditorialHero(
+              eyebrow: l10n.activityHeroEyebrow,
+              title: l10n.activityHeroTitle,
+              description: l10n.activityHeroDescription,
+              badges: const [AppStatusBadge(kind: AppStatusKind.pending)],
+            ),
           ),
           SizedBox(height: tokens.space6),
-          ActivityBuyerCard(
-            userId: userId,
+          AppStaggeredItem(
+            index: 1,
+            child: ActivityBuyerCard(
+              userId: userId,
+            ),
           ),
           SizedBox(height: tokens.space3),
-          ActivitySellerCard(
-            userId: userId,
+          AppStaggeredItem(
+            index: 2,
+            child: ActivitySellerCard(
+              userId: userId,
+            ),
           ),
           SizedBox(height: tokens.space3),
-          ActivityNotificationsCard(
-            userId: userId,
+          AppStaggeredItem(
+            index: 3,
+            child: ActivityNotificationsCard(
+              userId: userId,
+            ),
           ),
         ],
       ),

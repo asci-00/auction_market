@@ -29,6 +29,10 @@ Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
   return showModalBottomSheet<OrderPaymentSheetResult>(
     context: context,
     isScrollControlled: true,
+    sheetAnimationStyle: const AnimationStyle(
+      duration: Duration(milliseconds: 320),
+      reverseDuration: Duration(milliseconds: 220),
+    ),
     builder: (sheetContext) {
       final tokens = sheetContext.tokens;
 

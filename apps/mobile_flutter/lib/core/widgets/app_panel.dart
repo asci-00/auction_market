@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
@@ -16,12 +18,14 @@ class AppPanel extends StatelessWidget {
     this.padding,
     this.tone = AppPanelTone.surface,
     this.borderColor,
+    this.blurSigma = 0,
   });
 
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final AppPanelTone tone;
   final Color? borderColor;
+  final double blurSigma;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +53,7 @@ class AppPanel extends StatelessWidget {
         ),
     };
 
-    return DecoratedBox(
+    final decoratedChild = DecoratedBox(
       decoration: BoxDecoration(
         color: palette.$1,
         borderRadius: BorderRadius.circular(tokens.cardRadius),
@@ -65,6 +69,18 @@ class AppPanel extends StatelessWidget {
       child: Padding(
         padding: padding ?? EdgeInsets.all(tokens.space5),
         child: child,
+      ),
+    );
+
+    if (blurSigma <= 0) {
+      return decoratedChild;
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(tokens.cardRadius),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+        child: decoratedChild,
       ),
     );
   }

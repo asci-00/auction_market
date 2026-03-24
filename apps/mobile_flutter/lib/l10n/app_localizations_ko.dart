@@ -734,6 +734,24 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get genericCountdownExpired => '만료';
+
+  @override
+  String genericCountdownMinutesRemaining(int minutes) {
+    return '$minutes분 남음';
+  }
+
+  @override
+  String genericCountdownHoursRemaining(int hours, int minutes) {
+    return '$hours시간 $minutes분 남음';
+  }
+
+  @override
+  String genericCountdownDaysRemaining(int days, int hours) {
+    return '$days일 $hours시간 남음';
+  }
+
+  @override
   String genericUnreadCount(int count) {
     return '읽지 않음 $count건';
   }
@@ -766,12 +784,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get ordersPaymentSheetTitle => '결제 진행';
 
   @override
-  String get ordersPaymentSheetDevDescription =>
-      '이 dev 주문은 서버 주도 더미 결제 흐름으로 바로 완료할 수 있습니다. 한 번 확인하면 주문이 결제 완료 에스크로 보관 단계로 이동합니다.';
+  String get ordersPaymentSheetDevDescription => '이 dev 주문은 서버 주도 더미 결제 흐름으로 바로 완료할 수 있습니다. 한 번 확인하면 주문이 결제 완료 에스크로 보관 단계로 이동합니다.';
 
   @override
-  String get ordersPaymentSheetReadyDescription =>
-      '이 주문은 Toss 결제 전달 준비가 완료되었습니다. 계속 진행하기 전에 세션 정보를 확인해 주세요.';
+  String get ordersPaymentSheetReadyDescription => '이 주문은 Toss 결제 전달 준비가 완료되었습니다. 계속 진행하기 전에 세션 정보를 확인해 주세요.';
 
   @override
   String get ordersPaymentSheetBlockedDescription => '이 빌드는 주문 결제 세션까지는 준비할 수 있지만, 자동 Toss checkout을 위해서는 최종 client key와 return URL 구성이 더 필요합니다. 이미 payment key가 있다면 아래에서 바로 확인할 수 있습니다.';
@@ -810,6 +826,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get ordersPaymentEmailLabel => '구매자 이메일';
+
+  @override
+  String ordersPaymentDueIn(Object remaining) {
+    return '$remaining 내 결제 필요';
+  }
+
+  @override
+  String get ordersPaymentExpired => '결제 기한이 지났습니다';
 
   @override
   String ordersPaymentDevKeyLabel(Object paymentKey) {
