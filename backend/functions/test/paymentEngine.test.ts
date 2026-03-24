@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildWebhookEventMarker,
   extractWebhookSecret,
+  isDevDummyPaymentEnabled,
   isDuplicatePaymentConfirmation,
   normalizeWebhookPayment,
   toCancelledPaymentOrder,
@@ -43,6 +44,37 @@ const baseOrder = {
 };
 
 describe('payment engine', () => {
+  it('allows dev dummy payment only in emulator-backed dev runtime', () => {
+    expect(
+      isDevDummyPaymentEnabled('dev', {
+        FUNCTIONS_EMULATOR: 'true',
+      } as NodeJS.ProcessEnv),
+    ).toBe(true);
+    expect(
+      isDevDummyPaymentEnabled('dev', {
+        FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
+      } as NodeJS.ProcessEnv),
+    ).toBe(true);
+    expect(isDevDummyPaymentEnabled('dev', {} as NodeJS.ProcessEnv)).toBe(
+      false,
+    );
+    expect(
+      isDevDummyPaymentEnabled('dev', {
+        FIRESTORE_EMULATOR_HOST: '',
+      } as NodeJS.ProcessEnv),
+    ).toBe(false);
+    expect(
+      isDevDummyPaymentEnabled('dev', {
+        FIRESTORE_EMULATOR_HOST: '   ',
+      } as NodeJS.ProcessEnv),
+    ).toBe(false);
+    expect(
+      isDevDummyPaymentEnabled('staging', {
+        FUNCTIONS_EMULATOR: 'true',
+      } as NodeJS.ProcessEnv),
+    ).toBe(false);
+  });
+
   it('marks confirmed payments as paid escrow hold', () => {
     const updated = toConfirmedPaymentOrder(
       baseOrder,

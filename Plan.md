@@ -43,9 +43,12 @@ Status: complete on March 17, 2026.
 Status: next unfinished milestone.
 - Build login, home, search, auction detail, sell, activity, orders, notifications, and my pages with real Firebase reads and localized UI copy.
 - Implement image upload, draft save, auction publish, bid flow, auto-bid flow, buy now, payment, shipment update, and receipt confirmation.
+- For dependency-heavy external integrations, keep the app testable in `dev` through server-side dummy responses or emulator-backed payloads until the real integration values are available.
+- Schedule the final real external-integration handoff work last within the phase, after the rest of the app flow is testable in `dev`.
 - Add loading, empty, error, retry, and permission-denied states for every core screen.
 - Remove all placeholder widgets, engineering-status copy, and non-functional primary actions.
 - Align the shared design system and screen compositions with the premium editorial direction in `docs/Design.md`.
+- Add motion and interaction polish that follows `docs/Design.md`, including page entrance timing, list stagger, bottom-sheet motion, countdown-only animation updates, and tuned surface or blur treatment where it materially improves readability and hierarchy.
 
 ### Done When
 - Buyer can complete browse to settlement flow in emulator and staging.
@@ -53,11 +56,14 @@ Status: next unfinished milestone.
 - Every route has a clear state model and actionable error handling.
 - All mobile copy is localized for `ko` and `en`, with unsupported locales falling back to `ko`.
 - Navigation, empty/loading/error states, and screen compositions match the documented premium editorial direction.
+- Motion, page transitions, and high-emphasis surfaces match the documented premium editorial direction without adding decorative blur or animation that harms clarity.
+- External dependency handoffs that require real third-party values are the last remaining work inside the phase, not a blocker for earlier `dev` app validation.
 
 ## Phase 4: Quality, Ops, And Release
 - Add backend unit tests, emulator integration tests, Flutter widget tests, and end-to-end flow checks.
 - Verify release gates: no hardcoded secrets, no fake repositories, no placeholder UI, docs complete.
 - Add deploy, rollback, monitoring, and incident response notes.
+- Keep real third-party cutover and production-only integration checks after `dev` server-driven validation paths are already in place.
 
 ### Done When
 - Test coverage protects core state transitions and auth boundaries.

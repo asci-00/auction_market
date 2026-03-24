@@ -1481,6 +1481,36 @@ abstract class AppLocalizations {
   /// **'Ends {time}'**
   String genericEndsAt(Object time);
 
+  /// No description provided for @genericCountdownExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get genericCountdownExpired;
+
+  /// No description provided for @genericCountdownLessThanMinute.
+  ///
+  /// In en, this message translates to:
+  /// **'under 1m left'**
+  String get genericCountdownLessThanMinute;
+
+  /// No description provided for @genericCountdownMinutesRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}m left'**
+  String genericCountdownMinutesRemaining(int minutes);
+
+  /// No description provided for @genericCountdownHoursRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h {minutes}m left'**
+  String genericCountdownHoursRemaining(int hours, int minutes);
+
+  /// No description provided for @genericCountdownDaysRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d {hours}h left'**
+  String genericCountdownDaysRemaining(int days, int hours);
+
   /// No description provided for @genericUnreadCount.
   ///
   /// In en, this message translates to:
@@ -1541,6 +1571,12 @@ abstract class AppLocalizations {
   /// **'Complete payment'**
   String get ordersPaymentSheetTitle;
 
+  /// No description provided for @ordersPaymentSheetDevDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This dev order can complete payment entirely through the server-driven dummy flow. Confirm once to move the order into paid escrow hold.'**
+  String get ordersPaymentSheetDevDescription;
+
   /// No description provided for @ordersPaymentSheetReadyDescription.
   ///
   /// In en, this message translates to:
@@ -1552,6 +1588,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This build can prepare the order, but automatic Toss checkout still needs the final client key and return URL setup. If you already have a payment key, you can still confirm it below.'**
   String get ordersPaymentSheetBlockedDescription;
+
+  /// No description provided for @ordersPaymentCompleteDevAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete dev payment'**
+  String get ordersPaymentCompleteDevAction;
 
   /// No description provided for @ordersPaymentEnterKeyAction.
   ///
@@ -1612,6 +1654,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Buyer email'**
   String get ordersPaymentEmailLabel;
+
+  /// No description provided for @ordersPaymentDueIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment due in {remaining}'**
+  String ordersPaymentDueIn(Object remaining);
+
+  /// No description provided for @ordersPaymentExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment window expired'**
+  String get ordersPaymentExpired;
+
+  /// No description provided for @ordersPaymentDevKeyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Dev payment key · {paymentKey}'**
+  String ordersPaymentDevKeyLabel(Object paymentKey);
 
   /// No description provided for @ordersPaymentSuccessUrlLabel.
   ///

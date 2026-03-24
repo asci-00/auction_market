@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../l10n/app_localization.dart';
@@ -40,38 +43,46 @@ class AppShell extends StatelessWidget {
           tokens.screenPadding,
           tokens.space4,
         ),
-        child: Container(
-          padding: EdgeInsets.all(tokens.space2),
-          decoration: BoxDecoration(
-            color: AppColors.panel,
-            borderRadius: BorderRadius.circular(tokens.heroRadius),
-            border: Border.all(color: AppColors.panelSoft),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.18),
-                blurRadius: 28,
-                offset: const Offset(0, 18),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              for (var i = 0; i < destinations.length; i++)
-                Expanded(
-                  child: _NavItem(
-                    label: destinations[i].$1,
-                    icon: destinations[i].$2,
-                    selectedIcon: destinations[i].$3,
-                    isSelected: i == navigationShell.currentIndex,
-                    onTap: () {
-                      navigationShell.goBranch(
-                        i,
-                        initialLocation: i == navigationShell.currentIndex,
-                      );
-                    },
-                  ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(tokens.heroRadius),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+            child: Container(
+              padding: EdgeInsets.all(tokens.space2),
+              decoration: BoxDecoration(
+                color: AppColors.panelOverlay.withValues(alpha: 0.92),
+                borderRadius: BorderRadius.circular(tokens.heroRadius),
+                border: Border.all(
+                  color: AppColors.textInverse.withValues(alpha: 0.08),
                 ),
-            ],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.16),
+                    blurRadius: 24,
+                    offset: const Offset(0, 16),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  for (var i = 0; i < destinations.length; i++)
+                    Expanded(
+                      child: _NavItem(
+                        label: destinations[i].$1,
+                        icon: destinations[i].$2,
+                        selectedIcon: destinations[i].$3,
+                        isSelected: i == navigationShell.currentIndex,
+                        onTap: () {
+                          navigationShell.goBranch(
+                            i,
+                            initialLocation: i == navigationShell.currentIndex,
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -105,28 +116,42 @@ class _NavItem extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(999),
-          onTap: onTap,
+          onTap: () {
+            HapticFeedback.selectionClick();
+            onTap();
+          },
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeOutCubic,
             padding: EdgeInsets.symmetric(
-              horizontal: tokens.space2,
+              horizontal: tokens.space2 + 2,
               vertical: tokens.space2,
             ),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.accentPrimary.withValues(alpha: 0.18)
+                  ? AppColors.textInverse.withValues(alpha: 0.08)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(999),
               border: Border.all(
                 color: isSelected
-                    ? AppColors.accentPrimary.withValues(alpha: 0.4)
+                    ? AppColors.textInverse.withValues(alpha: 0.08)
                     : Colors.transparent,
               ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  height: 3,
+                  width: isSelected ? 26 : 0,
+                  margin: EdgeInsets.only(bottom: tokens.space1),
+                  decoration: BoxDecoration(
+                    color: AppColors.accentPrimarySoft,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
                 Icon(
                   isSelected ? selectedIcon : icon,
                   color: isSelected

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/locale_menu_action.dart';
 import '../theme/app_theme.dart';
+import 'app_motion.dart';
 
 class AppPageScaffold extends StatelessWidget {
   const AppPageScaffold({
@@ -91,7 +92,7 @@ class AppPageScaffold extends StatelessWidget {
             SafeArea(
               top: false,
               bottom: bottomBar == null,
-              child: body,
+              child: AppPageEntrance(child: body),
             ),
           ],
         ),

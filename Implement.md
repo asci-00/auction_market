@@ -1,14 +1,14 @@
 # Auction Market Execution Log
 
 ## Current Task
-- Phase 3 mobile flow work is active. Orders now support live payment session preparation and payment confirmation callables from the buyer timeline, and the next unfinished product gap is the final automated Toss checkout handoff once real client key and return URL values are available.
+- Phase 3 mobile flow work is active. Orders now support a `dev` server-driven dummy payment handoff from the buyer timeline, shared page transitions and entrance motion are aligned to the design contract, shimmer-based loading and Hero image transitions are in place, and the next unfinished product gap is the final automated Toss checkout handoff once real client key and return URL values are available.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
 - App UI supports Korean and English and follows the device locale without an in-app language switch.
 - TossPayments is the only payment provider for v1.
 - Apple sign in and Google sign in are the only login providers for v1.
-- Emulator seed is the only allowed dummy data path.
+- Emulator seed is the default dummy data path, and dependency-blocked integrations may use server-driven dummy responses in `dev` until the real handoff is ready.
 - Secrets never live in repo files. Only example files are committed.
 - Flutter mobile boot fails fast when required public `dart-define` values are missing or still set to `TODO_...`.
 - Android uses `10.0.2.2` for Firebase emulator hosts and iOS uses `127.0.0.1`.
@@ -17,6 +17,7 @@
 - In `dev` with `USE_FIREBASE_EMULATORS=true`, the login screen also exposes seeded buyer and seller quick-login buttons backed by Auth Emulator email/password accounts.
 - Backend payment confirmation uses Toss `/v1/payments/confirm`, and webhook updates flow through `tossPaymentWebhook` with `payment.lastWebhookEventId` idempotency markers.
 - Backend critical transitions now write `auditEvents` documents instead of relying on implicit log-only traces.
+- When a task depends on slow external integration setup, keep `dev` testable first through server-driven dummy or emulator-backed responses, then move the final real integration handoff to the end of the milestone.
 
 ## Open Blockers
 - Real Toss client key, secret key, and webhook secret are not available in this repo yet.
@@ -28,6 +29,8 @@
 - Firebase bootstrap initializes from native iOS and Android config files, connects emulators when enabled, and surfaces readable startup errors.
 - Guarded `go_router` navigation uses `StatefulShellRoute.indexedStack` for tab preservation and supports `app://auction/{id}` and `app://orders/{id}` deep-link normalization.
 - Shared theme tokens, editorial hero patterns, auction cards, anchored bottom navigation, and sticky action bars match the updated design contract direction.
+- Shared motion now includes route-level fade and rise transitions, page entrance reveal, staggered auction card entry, live countdown-only text updates, and a tuned floating navigation surface with restrained blur.
+- User-facing loading states now prefer shimmer placeholders over centered spinners, and auction card to detail navigation can carry a Hero image tag without colliding across repeated home rails.
 - Mobile copy is generated from `app_ko.arb` and `app_en.arb`, with device-locale fallback to Korean.
 - Flutter shared context helpers now live in `core/extensions/build_context_x.dart`, so common access like snackbars, theme, text theme, media query, and navigator no longer requires repeated `ScaffoldMessenger.of(context)` or similar direct lookups in feature screens.
 - Login, home, search, auction detail, sell, activity, orders, notifications, and my screens use localized product copy and no longer expose engineering-status labels in the UI.
@@ -39,6 +42,7 @@
 - Home, search, and my now also split Firestore document mapping, filtering helpers, and repeated section widgets away from the route screen files, so those route widgets mainly compose streams, sections, and navigation.
 - Activity now reads live buyer orders, seller orders, and inbox notifications to show the next payment, shipment, receipt, and unread-alert queues instead of linking through static cards only.
 - Orders now runs live payment-session preparation, payment confirmation, shipment update, and receipt confirmation callables from the mobile UI, and notifications mark themselves as read before routing when the callable succeeds.
+- Orders now completes `dev` payment testing through a server-driven dummy payment key from `createPaymentSession`, so buyer smoke tests can move `AWAITING_PAYMENT` orders into paid escrow hold before real Toss checkout values exist.
 - Backend callables now cover bootstrap, item draft save, auction publish, cancel, relist, bid, auto-bid, buy-now, payment session creation, Toss payment confirmation, shipment update, receipt confirmation, and notification read state.
 - Toss webhook handling now exists as `tossPaymentWebhook` and updates payment and order state idempotently.
 - Emulator seed now creates buyer and seller profiles, live and ended auctions, bids, auto-bid config, an awaiting-payment order, and inbox notifications.
@@ -49,14 +53,14 @@
 - Android app module applies the Google Services Gradle plugin.
 - Login screen now surfaces the Firebase Auth Emulator limitation for mobile Google and Apple browser sign-in instead of opening a non-functional browser loop.
 - `cd backend/functions && npm run seed` passed on March 20, 2026.
-- `cd backend/functions && npm run format:check` passed on March 24, 2026.
-- `cd backend/functions && npm run lint` passed on March 24, 2026.
-- `cd backend/functions && npm test` passed on March 24, 2026.
-- `cd backend/functions && npm run build` passed on March 24, 2026.
-- `cd apps/mobile_flutter && flutter gen-l10n` passed on March 24, 2026.
-- `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib test` passed on March 24, 2026.
-- `cd apps/mobile_flutter && flutter analyze` passed on March 24, 2026.
-- `cd apps/mobile_flutter && flutter test` passed on March 24, 2026.
+- `cd backend/functions && npm run format:check` passed on March 25, 2026.
+- `cd backend/functions && npm run lint` passed on March 25, 2026.
+- `cd backend/functions && npm test` passed on March 25, 2026.
+- `cd backend/functions && npm run build` passed on March 25, 2026.
+- `cd apps/mobile_flutter && flutter gen-l10n` passed on March 25, 2026.
+- `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib test` passed on March 25, 2026.
+- `cd apps/mobile_flutter && flutter analyze` passed on March 25, 2026.
+- `cd apps/mobile_flutter && flutter test` passed on March 25, 2026.
 
 ## Next Commands
 1. `cd backend/functions && npm run serve`
@@ -64,7 +68,7 @@
 3. `cd apps/mobile_flutter && flutter run --dart-define-from-file=dart_defines.json`
 4. In `dev` emulator mode, sign in as `seller1`, save a draft with gallery and auth images, publish the auction, and verify the app opens the live auction detail route.
 5. Sign in as `buyer1`, open a live auction, place a bid or save an auto-bid ceiling, then complete buy-now and confirm the order timeline opens.
-6. Still as `buyer1`, open an `AWAITING_PAYMENT` order, prepare the payment session, and verify the payment confirmation flow can accept a Toss `paymentKey` and move the order to paid escrow hold.
+6. Still as `buyer1`, open an `AWAITING_PAYMENT` order, prepare the payment session, and verify the `dev` dummy payment action moves the order to paid escrow hold without leaving the app.
 7. Sign in as `seller1` and register shipment for `order-paid`, then sign back in as `buyer1` and confirm receipt from the same order.
 8. Fill `backend/functions/.env` and `apps/mobile_flutter/dart_defines.json` with real Toss values for staging and prod verification.
 

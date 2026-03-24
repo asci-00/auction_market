@@ -23,9 +23,14 @@ import 'widgets/auction_detail_header.dart';
 import 'widgets/auction_detail_price_summary.dart';
 
 class AuctionDetailScreen extends ConsumerStatefulWidget {
-  const AuctionDetailScreen({super.key, required this.auctionId});
+  const AuctionDetailScreen({
+    super.key,
+    required this.auctionId,
+    this.heroTag,
+  });
 
   final String auctionId;
+  final String? heroTag;
 
   @override
   ConsumerState<AuctionDetailScreen> createState() =>
@@ -79,7 +84,9 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
               tokens.screenPadding,
               tokens.space4,
               tokens.screenPadding,
-              tokens.stickyActionHeight + tokens.space7,
+              tokens.stickyActionHeight +
+                  MediaQuery.paddingOf(context).bottom +
+                  tokens.space8,
             ),
             children: [
               if (snapshot.hasError)
@@ -98,7 +105,10 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
                   tone: AppPanelTone.dark,
                 )
               else
-                AuctionDetailHeader(auction: auction),
+                AuctionDetailHeader(
+                  auction: auction,
+                  heroTag: widget.heroTag,
+                ),
               SizedBox(height: tokens.space5),
               if (auction != null) AuctionDetailPriceSummary(auction: auction),
               if (auction != null) ...[

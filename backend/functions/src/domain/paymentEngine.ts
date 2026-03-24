@@ -18,6 +18,21 @@ export interface TossWebhookPayment {
   approvedAt: Date | null;
 }
 
+export function isDevDummyPaymentEnabled(
+  appEnv: 'dev' | 'staging' | 'prod',
+  env: NodeJS.ProcessEnv = process.env,
+): boolean {
+  if (appEnv !== 'dev') {
+    return false;
+  }
+
+  const firestoreHost = env.FIRESTORE_EMULATOR_HOST?.trim();
+  return (
+    env.FUNCTIONS_EMULATOR === 'true' ||
+    Boolean(firestoreHost)
+  );
+}
+
 export function isDuplicatePaymentConfirmation(
   order: Order,
   paymentKey: string,

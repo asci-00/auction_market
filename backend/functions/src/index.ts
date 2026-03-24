@@ -18,6 +18,7 @@ import {
 import {
   buildWebhookEventMarker,
   extractWebhookSecret,
+  isDevDummyPaymentEnabled,
   isDuplicatePaymentConfirmation,
   normalizeWebhookPayment,
   toCancelledPaymentOrder,
@@ -51,6 +52,19 @@ interface ConfirmTossPaymentResponse {
   approvedAt: Date;
   totalAmount: number;
   status: string;
+}
+
+interface PaymentSessionResponse {
+  provider: 'TOSS_PAYMENTS';
+  mode: 'TOSS' | 'DEV_DUMMY';
+  orderId: string;
+  amount: number;
+  orderName: string;
+  customerName: string | null;
+  customerEmail: string | null;
+  successUrl: string | null;
+  failUrl: string | null;
+  devPaymentKey: string | null;
 }
 
 function meaningfulString(value: unknown): string | null {
@@ -192,6 +206,10 @@ function buildDeepLink(
     return 'app://notifications';
   }
   return id ? `app://${target}/${id}` : `app://${target}`;
+}
+
+function buildDevPaymentKey(orderId: string): string {
+  return `dev_pay_${orderId}`;
 }
 
 async function createInboxNotification(
@@ -1123,10 +1141,17 @@ export const createPaymentSession = onCall(async (req) => {
       'Order is not awaiting payment',
     );
   }
+  const allowDevDummyPayment = isDevDummyPaymentEnabled(config.appEnv);
   if (config.appEnv !== 'dev' && !config.appBaseUrl) {
     throw new HttpsError(
       'failed-precondition',
       'APP_BASE_URL is required outside dev builds.',
+    );
+  }
+  if (!allowDevDummyPayment && !config.appBaseUrl) {
+    throw new HttpsError(
+      'failed-precondition',
+      'APP_BASE_URL is required when dev dummy payment is unavailable.',
     );
   }
 
@@ -1137,8 +1162,9 @@ export const createPaymentSession = onCall(async (req) => {
     ? `${config.appBaseUrl.replace(/\/$/, '')}/payments/fail?orderId=${orderId}`
     : null;
 
-  return {
+  const response: PaymentSessionResponse = {
     provider: 'TOSS_PAYMENTS',
+    mode: allowDevDummyPayment ? 'DEV_DUMMY' : 'TOSS',
     orderId,
     amount: order.finalPrice,
     orderName: buildOrderName(order.auctionId),
@@ -1146,7 +1172,10 @@ export const createPaymentSession = onCall(async (req) => {
     customerEmail: optionalString(req.auth?.token?.email) ?? null,
     successUrl,
     failUrl,
+    devPaymentKey: allowDevDummyPayment ? buildDevPaymentKey(orderId) : null,
   };
+
+  return response;
 });
 
 export const confirmOrderPayment = onCall(async (req) => {
@@ -1163,6 +1192,7 @@ export const confirmOrderPayment = onCall(async (req) => {
   }
 
   const config = getRuntimeConfig();
+  const allowDevDummyPayment = isDevDummyPaymentEnabled(config.appEnv);
   const orderRef = db.collection('orders').doc(orderId);
   const orderSnap = await orderRef.get();
   if (!orderSnap.exists) {
@@ -1191,12 +1221,22 @@ export const confirmOrderPayment = onCall(async (req) => {
 
   let payment: ConfirmTossPaymentResponse;
   try {
-    payment = await confirmTossPayment(config, {
-      paymentKey,
-      orderId,
-      amount,
-      idempotencyKey: `order:${orderId}:confirm`,
-    });
+    if (allowDevDummyPayment && paymentKey === buildDevPaymentKey(orderId)) {
+      payment = {
+        paymentKey,
+        method: 'DEV_DUMMY',
+        approvedAt: new Date(),
+        totalAmount: amount,
+        status: 'DONE',
+      };
+    } else {
+      payment = await confirmTossPayment(config, {
+        paymentKey,
+        orderId,
+        amount,
+        idempotencyKey: `order:${orderId}:confirm`,
+      });
+    }
   } catch (error) {
     const failedOrder = toFailedPaymentOrder(order);
     await orderRef.update({

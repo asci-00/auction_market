@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/extensions/build_context_x.dart';
 import '../../../../core/l10n/app_formatters.dart';
 import '../../../../core/l10n/app_localization.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_live_countdown_text.dart';
 import '../../../../core/widgets/app_panel.dart';
 import '../../../../core/widgets/app_status_badge.dart';
 import '../../data/order_summary.dart';
@@ -29,6 +31,7 @@ class OrderSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.tokens;
     final canShip = role == OrderSectionRole.seller &&
         order.orderStatus == 'PAID_ESCROW_HOLD';
     final canPay = role == OrderSectionRole.buyer &&
@@ -63,14 +66,19 @@ class OrderSummaryCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: tokens.space3),
             Text(
               localizedOrderStatus(context, order.orderStatus),
               style: context.textTheme.bodyMedium,
             ),
+            if (order.orderStatus == 'AWAITING_PAYMENT' &&
+                order.paymentDueAt != null) ...[
+              SizedBox(height: tokens.space3),
+              _PaymentDuePlate(order: order),
+            ],
             if (order.hasShipmentSummary)
               Padding(
-                padding: const EdgeInsets.only(top: 8),
+                padding: EdgeInsets.only(top: tokens.space2),
                 child: Text(
                   context.l10n.ordersShipmentSummary(
                     order.carrierName!,
@@ -79,18 +87,8 @@ class OrderSummaryCard extends StatelessWidget {
                   style: context.textTheme.bodySmall,
                 ),
               ),
-            if (order.paymentDueAt != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  context.l10n.genericEndsAt(
-                    formatCompactDateTime(context, order.paymentDueAt!),
-                  ),
-                  style: context.textTheme.bodySmall,
-                ),
-              ),
             if (canPay || canShip || canConfirmReceipt) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: tokens.space4),
               Row(
                 children: [
                   if (canPay)
@@ -119,6 +117,66 @@ class OrderSummaryCard extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PaymentDuePlate extends StatelessWidget {
+  const _PaymentDuePlate({
+    required this.order,
+  });
+
+  final OrderSummary order;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
+    return Container(
+      padding: EdgeInsets.all(tokens.space3),
+      decoration: BoxDecoration(
+        color: AppColors.bgMuted,
+        borderRadius: BorderRadius.circular(tokens.cardRadius - 8),
+        border: Border.all(color: AppColors.borderSoft),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.timelapse_rounded,
+            color: AppColors.accentUrgent,
+            size: 18,
+          ),
+          SizedBox(width: tokens.space2),
+          Expanded(
+            child: AppLiveCountdownText(
+              targetTime: order.paymentDueAt!,
+              builder: (context, label) => Text(
+                context.l10n.ordersPaymentDueIn(label),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              expiredBuilder: (context) => Text(
+                context.l10n.ordersPaymentExpired,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: AppColors.accentUrgent,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: tokens.space2),
+          Text(
+            formatKrw(context, order.finalPrice),
+            style: context.textTheme.labelLarge?.copyWith(
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ],
       ),
     );
   }

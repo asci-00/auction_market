@@ -8,19 +8,26 @@ class AppAuctionCard extends StatelessWidget {
     super.key,
     required this.title,
     required this.priceLabel,
-    required this.metaLabel,
     required this.bidCountLabel,
     required this.badgeKind,
+    this.metaLabel,
+    this.meta,
     this.imageUrl,
+    this.heroTag,
     this.onTap,
-  });
+  }) : assert(
+          metaLabel != null || meta != null,
+          'Either metaLabel or meta must be provided.',
+        );
 
   final String title;
   final String priceLabel;
-  final String metaLabel;
+  final String? metaLabel;
+  final Widget? meta;
   final String bidCountLabel;
   final AppStatusKind badgeKind;
   final String? imageUrl;
+  final String? heroTag;
   final VoidCallback? onTap;
 
   @override
@@ -61,6 +68,7 @@ class AppAuctionCard extends StatelessWidget {
                     child: _AuctionCardMedia(
                       priceLabel: priceLabel,
                       imageUrl: imageUrl,
+                      heroTag: heroTag,
                       badgeKind: badgeKind,
                       layout: layout,
                     ),
@@ -70,6 +78,7 @@ class AppAuctionCard extends StatelessWidget {
                     child: _AuctionCardDetails(
                       title: title,
                       metaLabel: metaLabel,
+                      meta: meta,
                       bidCountLabel: bidCountLabel,
                       layout: layout,
                     ),
@@ -88,12 +97,14 @@ class _AuctionCardMedia extends StatelessWidget {
   const _AuctionCardMedia({
     required this.priceLabel,
     required this.imageUrl,
+    required this.heroTag,
     required this.badgeKind,
     required this.layout,
   });
 
   final String priceLabel;
   final String? imageUrl;
+  final String? heroTag;
   final AppStatusKind badgeKind;
   final _AuctionCardLayout layout;
 
@@ -104,7 +115,10 @@ class _AuctionCardMedia extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        _AuctionImage(imageUrl: imageUrl),
+        _AuctionImage(
+          imageUrl: imageUrl,
+          heroTag: heroTag,
+        ),
         const DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -145,12 +159,14 @@ class _AuctionCardDetails extends StatelessWidget {
   const _AuctionCardDetails({
     required this.title,
     required this.metaLabel,
+    required this.meta,
     required this.bidCountLabel,
     required this.layout,
   });
 
   final String title;
-  final String metaLabel;
+  final String? metaLabel;
+  final Widget? meta;
   final String bidCountLabel;
   final _AuctionCardLayout layout;
 
@@ -174,12 +190,15 @@ class _AuctionCardDetails extends StatelessWidget {
                 : theme.textTheme.titleMedium,
           ),
           SizedBox(height: layout.metaSpacing),
-          Text(
-            metaLabel,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall,
-          ),
+          if (meta != null)
+            meta!
+          else
+            Text(
+              metaLabel!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall,
+            ),
           SizedBox(height: layout.bidSpacing),
           Text(
             bidCountLabel,
@@ -240,21 +259,32 @@ class _AuctionCardLayout {
 }
 
 class _AuctionImage extends StatelessWidget {
-  const _AuctionImage({this.imageUrl});
+  const _AuctionImage({
+    this.imageUrl,
+    this.heroTag,
+  });
 
   final String? imageUrl;
+  final String? heroTag;
 
   @override
   Widget build(BuildContext context) {
-    if (imageUrl != null && imageUrl!.isNotEmpty) {
-      return Image.network(
-        imageUrl!,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => const _FallbackImage(),
-      );
+    final image = imageUrl != null && imageUrl!.isNotEmpty
+        ? Image.network(
+            imageUrl!,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => const _FallbackImage(),
+          )
+        : const _FallbackImage();
+
+    if (heroTag == null) {
+      return image;
     }
 
-    return const _FallbackImage();
+    return Hero(
+      tag: heroTag!,
+      child: image,
+    );
   }
 }
 

@@ -7,6 +7,8 @@ import '../../../../core/extensions/build_context_x.dart';
 import '../../../../core/firebase/firebase_providers.dart';
 import '../../../../core/l10n/app_localization.dart';
 import '../../../../core/widgets/app_empty_state.dart';
+import '../../../../core/widgets/app_motion.dart';
+import '../../../../core/widgets/app_shimmer.dart';
 import '../../application/order_action_service.dart';
 import '../../data/order_summary.dart';
 import '../order_payment_confirm_dialog.dart';
@@ -83,7 +85,10 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
         }
 
         if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return const AppShimmerListPlaceholder(
+            itemCount: 3,
+            itemHeight: 172,
+          );
         }
 
         final documents = snapshot.data!.docs;
@@ -96,16 +101,21 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
         }
 
         return Column(
-          children: documents.map((document) {
+          children: documents.indexed.map((entry) {
+            final index = entry.$1;
+            final document = entry.$2;
             final order = OrderSummary.fromDocument(document);
 
-            return OrderSummaryCard(
-              order: order,
-              role: widget.role,
-              isSubmitting: _submittingOrderIds.contains(order.id),
-              onPreparePayment: () => _preparePayment(order),
-              onAddShipment: () => _openShipmentDialog(order.id),
-              onConfirmReceipt: () => _confirmReceipt(order.id),
+            return AppStaggeredReveal(
+              index: index,
+              child: OrderSummaryCard(
+                order: order,
+                role: widget.role,
+                isSubmitting: _submittingOrderIds.contains(order.id),
+                onPreparePayment: () => _preparePayment(order),
+                onAddShipment: () => _openShipmentDialog(order.id),
+                onConfirmReceipt: () => _confirmReceipt(order.id),
+              ),
             );
           }).toList(),
         );
@@ -147,21 +157,32 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
         context,
         session: session,
       );
-      if (!mounted || shouldConfirm != true) {
+      if (!mounted || shouldConfirm == null) {
         return;
       }
 
-      final draft = await showOrderPaymentConfirmDialog(
-        context,
-        amount: session.amount,
-      );
-      if (!mounted || draft == null) {
+      var paymentKey = shouldConfirm.paymentKey;
+      if (shouldConfirm.useManualEntry) {
+        final draft = await showOrderPaymentConfirmDialog(
+          context,
+          amount: session.amount,
+        );
+        if (!mounted || draft == null) {
+          return;
+        }
+        paymentKey = draft.paymentKey;
+      }
+
+      if (paymentKey == null || paymentKey.isEmpty) {
+        if (mounted) {
+          context.showErrorSnackBar(context.l10n.ordersActionFailed);
+        }
         return;
       }
 
       await ref.read(orderActionServiceProvider).confirmPayment(
             orderId: order.id,
-            paymentKey: draft.paymentKey,
+            paymentKey: paymentKey,
             amount: session.amount,
           );
       if (!mounted) {

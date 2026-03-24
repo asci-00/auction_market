@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localization.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_panel.dart';
+import '../widgets/app_shimmer.dart';
 import 'app_error.dart';
 
 class AppBootstrapLoadingScreen extends StatelessWidget {
@@ -20,7 +21,7 @@ class AppBootstrapLoadingScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const CircularProgressIndicator(),
+                const AppShimmerCardPlaceholder(height: 112),
                 SizedBox(height: tokens.space4),
                 Text(
                   context.l10n.loadingApp,

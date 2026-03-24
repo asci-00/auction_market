@@ -7,15 +7,37 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_panel.dart';
 import '../data/order_payment_session.dart';
 
-Future<bool?> showOrderPaymentSessionSheet(
+class OrderPaymentSheetResult {
+  const OrderPaymentSheetResult._({
+    required this.useManualEntry,
+    this.paymentKey,
+  });
+
+  const OrderPaymentSheetResult.manualEntry() : this._(useManualEntry: true);
+
+  const OrderPaymentSheetResult.directConfirm(String paymentKey)
+      : this._(useManualEntry: false, paymentKey: paymentKey);
+
+  final bool useManualEntry;
+  final String? paymentKey;
+}
+
+Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
   BuildContext context, {
   required OrderPaymentSession session,
 }) {
-  return showModalBottomSheet<bool>(
+  return showModalBottomSheet<OrderPaymentSheetResult>(
     context: context,
     isScrollControlled: true,
+    sheetAnimationStyle: const AnimationStyle(
+      duration: Duration(milliseconds: 320),
+      reverseDuration: Duration(milliseconds: 220),
+    ),
     builder: (sheetContext) {
       final tokens = sheetContext.tokens;
+      final devPaymentKey =
+          session.isDevDummyMode ? session.devPaymentKey?.trim() : null;
+      final canDirectDevConfirm = devPaymentKey?.isNotEmpty ?? false;
 
       return SafeArea(
         child: Padding(
@@ -35,9 +57,11 @@ Future<bool?> showOrderPaymentSessionSheet(
               ),
               SizedBox(height: tokens.space2),
               Text(
-                session.hasCheckoutHandoff
-                    ? context.l10n.ordersPaymentSheetReadyDescription
-                    : context.l10n.ordersPaymentSheetBlockedDescription,
+                session.isDevDummyMode
+                    ? context.l10n.ordersPaymentSheetDevDescription
+                    : session.hasCheckoutHandoff
+                        ? context.l10n.ordersPaymentSheetReadyDescription
+                        : context.l10n.ordersPaymentSheetBlockedDescription,
                 style: sheetContext.textTheme.bodyMedium,
               ),
               SizedBox(height: tokens.space4),
@@ -46,8 +70,25 @@ Future<bool?> showOrderPaymentSessionSheet(
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: () => Navigator.of(sheetContext).pop(true),
-                  child: Text(context.l10n.ordersPaymentEnterKeyAction),
+                  onPressed: () {
+                    if (canDirectDevConfirm) {
+                      Navigator.of(sheetContext).pop(
+                        OrderPaymentSheetResult.directConfirm(
+                          devPaymentKey!,
+                        ),
+                      );
+                      return;
+                    }
+
+                    Navigator.of(sheetContext).pop(
+                      const OrderPaymentSheetResult.manualEntry(),
+                    );
+                  },
+                  child: Text(
+                    canDirectDevConfirm
+                        ? context.l10n.ordersPaymentCompleteDevAction
+                        : context.l10n.ordersPaymentEnterKeyAction,
+                  ),
                 ),
               ),
             ],
@@ -68,6 +109,8 @@ class _OrderPaymentInfoPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final devPaymentKey =
+        session.isDevDummyMode ? session.devPaymentKey?.trim() : null;
 
     return AppPanel(
       tone: AppPanelTone.surface,
@@ -108,6 +151,13 @@ class _OrderPaymentInfoPanel extends StatelessWidget {
             SizedBox(height: tokens.space2),
             Text(
               context.l10n.ordersPaymentFailUrlLabel(session.failUrl!),
+              style: context.textTheme.bodySmall,
+            ),
+          ],
+          if (devPaymentKey?.isNotEmpty ?? false) ...[
+            SizedBox(height: tokens.space2),
+            Text(
+              context.l10n.ordersPaymentDevKeyLabel(devPaymentKey!),
               style: context.textTheme.bodySmall,
             ),
           ],

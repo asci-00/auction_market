@@ -10,6 +10,7 @@ import '../../../../core/l10n/app_localization.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_panel.dart';
+import '../../../../core/widgets/app_shimmer.dart';
 import '../../../../core/widgets/app_status_badge.dart';
 
 class AuctionBidHistoryCard extends ConsumerWidget {
@@ -45,7 +46,32 @@ class AuctionBidHistoryCard extends ConsumerWidget {
         }
 
         if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return AppPanel(
+            tone: AppPanelTone.surface,
+            child: AppShimmer(
+              child: Column(
+                children: [
+                  AppShimmerBlock(
+                    height: 180,
+                    radius: tokens.cardRadius,
+                  ),
+                  SizedBox(height: tokens.space4),
+                  ...List<Widget>.generate(
+                    3,
+                    (index) => Padding(
+                      padding: EdgeInsets.only(
+                        bottom: index == 2 ? 0 : tokens.space3,
+                      ),
+                      child: const AppShimmerBlock(
+                        height: 18,
+                        radius: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
         }
 
         final docs = snapshot.data!.docs;

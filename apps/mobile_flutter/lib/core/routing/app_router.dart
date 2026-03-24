@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -15,8 +16,8 @@ import '../../features/orders/presentation/orders_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/sell/presentation/sell_screen.dart';
 import '../firebase/firebase_providers.dart';
-import 'app_deeplink.dart';
 import '../widgets/app_shell.dart';
+import 'app_deeplink.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(firebaseAuthProvider);
@@ -30,8 +31,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/login',
-        builder: (_, state) => LoginScreen(
-          returnTo: state.uri.queryParameters['from'],
+        pageBuilder: (_, state) => _buildTransitionPage(
+          state: state,
+          child: LoginScreen(
+            returnTo: state.uri.queryParameters['from'],
+          ),
         ),
       ),
       StatefulShellRoute.indexedStack(
@@ -87,22 +91,36 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/auction/:id',
-        builder: (_, state) =>
-            AuctionDetailScreen(auctionId: state.pathParameters['id']!),
+        pageBuilder: (_, state) => _buildTransitionPage(
+          state: state,
+          child: AuctionDetailScreen(
+            auctionId: state.pathParameters['id']!,
+            heroTag: state.uri.queryParameters['heroTag'],
+          ),
+        ),
       ),
       GoRoute(
         path: '/orders',
-        builder: (_, __) => const OrdersScreen(),
+        pageBuilder: (_, state) => _buildTransitionPage(
+          state: state,
+          child: const OrdersScreen(),
+        ),
       ),
       GoRoute(
         path: '/orders/:orderId',
-        builder: (_, state) => OrdersScreen(
-          highlightedOrderId: state.pathParameters['orderId'],
+        pageBuilder: (_, state) => _buildTransitionPage(
+          state: state,
+          child: OrdersScreen(
+            highlightedOrderId: state.pathParameters['orderId'],
+          ),
         ),
       ),
       GoRoute(
         path: '/notifications',
-        builder: (_, __) => const NotificationsScreen(),
+        pageBuilder: (_, state) => _buildTransitionPage(
+          state: state,
+          child: const NotificationsScreen(),
+        ),
       ),
     ],
   );
@@ -161,4 +179,31 @@ String? _redirect(FirebaseAuth auth, GoRouterState state) {
   }
 
   return null;
+}
+
+CustomTransitionPage<void> _buildTransitionPage({
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    transitionDuration: const Duration(milliseconds: 260),
+    reverseTransitionDuration: const Duration(milliseconds: 220),
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final fade = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+      );
+      final slide = Tween<Offset>(
+        begin: const Offset(0, 0.03),
+        end: Offset.zero,
+      ).animate(fade);
+
+      return FadeTransition(
+        opacity: fade,
+        child: SlideTransition(position: slide, child: child),
+      );
+    },
+  );
 }
