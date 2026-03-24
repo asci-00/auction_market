@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -149,7 +147,7 @@ class SellFlowService {
       final reference = _storage.ref(storagePath);
       await reference.putData(
         bytes,
-        SettableMetadata(contentType: _contentTypeFor(file.name, bytes)),
+        SettableMetadata(contentType: _contentTypeFor(file.name)),
       );
       urls.add(await reference.getDownloadURL());
     }
@@ -183,7 +181,7 @@ String _fileExtension(String name) {
   return segments.last.toLowerCase();
 }
 
-String _contentTypeFor(String name, Uint8List bytes) {
+String _contentTypeFor(String name) {
   final extension = _fileExtension(name);
   switch (extension) {
     case 'png':

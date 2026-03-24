@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../core/extensions/build_context_x.dart';
 import '../../../../core/l10n/app_localization.dart';
@@ -36,6 +37,7 @@ class SellPricingPanel extends StatelessWidget {
           TextField(
             controller: startPriceController,
             keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             decoration: InputDecoration(
               labelText: context.l10n.sellFormStartPriceLabel,
             ),
@@ -44,6 +46,7 @@ class SellPricingPanel extends StatelessWidget {
           TextField(
             controller: buyNowPriceController,
             keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             decoration: InputDecoration(
               labelText: context.l10n.sellFormBuyNowPriceLabel,
             ),

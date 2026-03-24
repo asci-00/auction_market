@@ -110,9 +110,11 @@ class _ImageFallbackTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const DecoratedBox(
-      decoration: BoxDecoration(color: AppColors.bgMuted),
-      child: Icon(Icons.broken_image_outlined),
+    return const SizedBox.expand(
+      child: DecoratedBox(
+        decoration: BoxDecoration(color: AppColors.bgMuted),
+        child: Center(child: Icon(Icons.broken_image_outlined)),
+      ),
     );
   }
 }

@@ -46,6 +46,6 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>상품 이미지와 인증 이미지를 선택해 경매 드래프트와 판매 등록에 사용합니다.</string>
+	<string>Select photos to attach to auction drafts and listings.</string>
 </dict>
 </plist>

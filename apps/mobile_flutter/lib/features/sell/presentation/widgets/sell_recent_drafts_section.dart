@@ -45,6 +45,7 @@ class SellRecentDraftsSection extends StatelessWidget {
                 .collection('items')
                 .where('sellerId', isEqualTo: userId)
                 .where('status', isEqualTo: 'DRAFT')
+                .orderBy('updatedAt', descending: true)
                 .limit(8)
                 .snapshots(),
             builder: (context, snapshot) {
@@ -56,14 +57,13 @@ class SellRecentDraftsSection extends StatelessWidget {
                 );
               }
 
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
               final drafts = (snapshot.data?.docs ?? const [])
                   .map(SellDraftSummary.fromDocument)
-                  .toList()
-                ..sort((a, b) {
-                  final aTime = a.updatedAt?.millisecondsSinceEpoch ?? 0;
-                  final bTime = b.updatedAt?.millisecondsSinceEpoch ?? 0;
-                  return bTime.compareTo(aTime);
-                });
+                  .toList();
 
               if (drafts.isEmpty) {
                 return AppEmptyState(

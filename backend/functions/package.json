@@ -12,7 +12,7 @@
     "format": "prettier --write \"{src,test,scripts}/**/*.ts\"",
     "format:check": "prettier --check \"{src,test,scripts}/**/*.ts\"",
     "test": "vitest run",
-    "lint": "eslint . --ext .ts && tsc --noEmit",
+    "lint": "eslint . && tsc --noEmit",
     "serve": "firebase emulators:start --only auth,functions,firestore,storage",
     "seed": "tsx ./scripts/seed.ts"
   },

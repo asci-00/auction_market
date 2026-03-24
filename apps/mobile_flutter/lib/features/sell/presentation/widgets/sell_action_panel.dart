@@ -45,11 +45,15 @@ class SellActionPanel extends StatelessWidget {
               Expanded(
                 child: OutlinedButton(
                   onPressed: isSavingDraft || isPublishing ? null : onSaveDraft,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textInverse,
+                    disabledForegroundColor:
+                        AppColors.textInverse.withValues(alpha: 0.4),
+                  ),
                   child: Text(
                     isSavingDraft
                         ? context.l10n.sellSavingDraft
                         : context.l10n.sellSaveDraftAction,
-                    style: const TextStyle(color: AppColors.textInverse),
                   ),
                 ),
               ),

@@ -1,4 +1,5 @@
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -164,8 +165,14 @@ class _SellScreenState extends ConsumerState<SellScreen> {
       return;
     }
 
+    final remainingSlots =
+        10 - _existingImageUrls.length - _newImageFiles.length;
+    if (remainingSlots <= 0) {
+      return;
+    }
+
     setState(() {
-      _newImageFiles = [..._newImageFiles, ...picked].take(10).toList();
+      _newImageFiles = [..._newImageFiles, ...picked.take(remainingSlots)];
     });
   }
 
@@ -235,9 +242,12 @@ class _SellScreenState extends ConsumerState<SellScreen> {
         return;
       }
       context.showErrorSnackBar(error.message ?? context.l10n.sellActionFailed);
-    } catch (_) {
+    } catch (error, stackTrace) {
       if (!mounted) {
         return;
+      }
+      if (kDebugMode) {
+        debugPrint('Draft save failed: $error\n$stackTrace');
       }
       context.showErrorSnackBar(context.l10n.sellActionFailed);
     } finally {
@@ -277,9 +287,12 @@ class _SellScreenState extends ConsumerState<SellScreen> {
         return;
       }
       context.showErrorSnackBar(error.message ?? context.l10n.sellActionFailed);
-    } catch (_) {
+    } catch (error, stackTrace) {
       if (!mounted) {
         return;
+      }
+      if (kDebugMode) {
+        debugPrint('Publish failed: $error\n$stackTrace');
       }
       context.showErrorSnackBar(context.l10n.sellActionFailed);
     } finally {
