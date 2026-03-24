@@ -48,6 +48,7 @@ Status: next unfinished milestone.
 - Add loading, empty, error, retry, and permission-denied states for every core screen.
 - Remove all placeholder widgets, engineering-status copy, and non-functional primary actions.
 - Align the shared design system and screen compositions with the premium editorial direction in `docs/Design.md`.
+- Add motion and interaction polish that follows `docs/Design.md`, including page entrance timing, list stagger, bottom-sheet motion, countdown-only animation updates, and tuned surface or blur treatment where it materially improves readability and hierarchy.
 
 ### Done When
 - Buyer can complete browse to settlement flow in emulator and staging.
@@ -55,6 +56,7 @@ Status: next unfinished milestone.
 - Every route has a clear state model and actionable error handling.
 - All mobile copy is localized for `ko` and `en`, with unsupported locales falling back to `ko`.
 - Navigation, empty/loading/error states, and screen compositions match the documented premium editorial direction.
+- Motion, page transitions, and high-emphasis surfaces match the documented premium editorial direction without adding decorative blur or animation that harms clarity.
 - External dependency handoffs that require real third-party values are the last remaining work inside the phase, not a blocker for earlier `dev` app validation.
 
 ## Phase 4: Quality, Ops, And Release

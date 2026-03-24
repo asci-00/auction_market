@@ -2,6 +2,7 @@
 
 ## Current Task
 - Phase 3 mobile flow work is active. Orders now support a `dev` server-driven dummy payment handoff from the buyer timeline, and the next unfinished product gap is the final automated Toss checkout handoff once real client key and return URL values are available.
+- Phase 3 also still reserves a UI polish slice for animation, page transitions, countdown motion, and surface or blur tuning that must follow `docs/Design.md` without reducing readability.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
