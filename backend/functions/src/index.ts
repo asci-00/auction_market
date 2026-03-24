@@ -53,6 +53,19 @@ interface ConfirmTossPaymentResponse {
   status: string;
 }
 
+interface PaymentSessionResponse {
+  provider: 'TOSS_PAYMENTS';
+  mode: 'TOSS' | 'DEV_DUMMY';
+  orderId: string;
+  amount: number;
+  orderName: string;
+  customerName: string | null;
+  customerEmail: string | null;
+  successUrl: string | null;
+  failUrl: string | null;
+  devPaymentKey: string | null;
+}
+
 function meaningfulString(value: unknown): string | null {
   if (typeof value !== 'string') {
     return null;
@@ -192,6 +205,10 @@ function buildDeepLink(
     return 'app://notifications';
   }
   return id ? `app://${target}/${id}` : `app://${target}`;
+}
+
+function buildDevPaymentKey(orderId: string): string {
+  return `dev_pay_${orderId}`;
 }
 
 async function createInboxNotification(
@@ -1137,8 +1154,9 @@ export const createPaymentSession = onCall(async (req) => {
     ? `${config.appBaseUrl.replace(/\/$/, '')}/payments/fail?orderId=${orderId}`
     : null;
 
-  return {
+  const response: PaymentSessionResponse = {
     provider: 'TOSS_PAYMENTS',
+    mode: config.appEnv === 'dev' ? 'DEV_DUMMY' : 'TOSS',
     orderId,
     amount: order.finalPrice,
     orderName: buildOrderName(order.auctionId),
@@ -1146,7 +1164,10 @@ export const createPaymentSession = onCall(async (req) => {
     customerEmail: optionalString(req.auth?.token?.email) ?? null,
     successUrl,
     failUrl,
+    devPaymentKey: config.appEnv === 'dev' ? buildDevPaymentKey(orderId) : null,
   };
+
+  return response;
 });
 
 export const confirmOrderPayment = onCall(async (req) => {
@@ -1191,12 +1212,22 @@ export const confirmOrderPayment = onCall(async (req) => {
 
   let payment: ConfirmTossPaymentResponse;
   try {
-    payment = await confirmTossPayment(config, {
-      paymentKey,
-      orderId,
-      amount,
-      idempotencyKey: `order:${orderId}:confirm`,
-    });
+    if (config.appEnv === 'dev' && paymentKey === buildDevPaymentKey(orderId)) {
+      payment = {
+        paymentKey,
+        method: 'DEV_DUMMY',
+        approvedAt: new Date(),
+        totalAmount: amount,
+        status: 'DONE',
+      };
+    } else {
+      payment = await confirmTossPayment(config, {
+        paymentKey,
+        orderId,
+        amount,
+        idempotencyKey: `order:${orderId}:confirm`,
+      });
+    }
   } catch (error) {
     const failedOrder = toFailedPaymentOrder(order);
     await orderRef.update({

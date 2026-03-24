@@ -1541,6 +1541,12 @@ abstract class AppLocalizations {
   /// **'Complete payment'**
   String get ordersPaymentSheetTitle;
 
+  /// No description provided for @ordersPaymentSheetDevDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This dev order can complete payment entirely through the server-driven dummy flow. Confirm once to move the order into paid escrow hold.'**
+  String get ordersPaymentSheetDevDescription;
+
   /// No description provided for @ordersPaymentSheetReadyDescription.
   ///
   /// In en, this message translates to:
@@ -1552,6 +1558,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This build can prepare the order, but automatic Toss checkout still needs the final client key and return URL setup. If you already have a payment key, you can still confirm it below.'**
   String get ordersPaymentSheetBlockedDescription;
+
+  /// No description provided for @ordersPaymentCompleteDevAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete dev payment'**
+  String get ordersPaymentCompleteDevAction;
 
   /// No description provided for @ordersPaymentEnterKeyAction.
   ///
@@ -1612,6 +1624,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Buyer email'**
   String get ordersPaymentEmailLabel;
+
+  /// No description provided for @ordersPaymentDevKeyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Dev payment key · {paymentKey}'**
+  String ordersPaymentDevKeyLabel(Object paymentKey);
 
   /// No description provided for @ordersPaymentSuccessUrlLabel.
   ///

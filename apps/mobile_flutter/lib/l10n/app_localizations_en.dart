@@ -766,10 +766,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ordersPaymentSheetTitle => 'Complete payment';
 
   @override
-  String get ordersPaymentSheetReadyDescription => 'This order is ready for Toss handoff. Review the payment session details before you continue.';
+  String get ordersPaymentSheetDevDescription =>
+      'This dev order can complete payment entirely through the server-driven dummy flow. Confirm once to move the order into paid escrow hold.';
+
+  @override
+  String get ordersPaymentSheetReadyDescription =>
+      'This order is ready for Toss handoff. Review the payment session details before you continue.';
 
   @override
   String get ordersPaymentSheetBlockedDescription => 'This build can prepare the order, but automatic Toss checkout still needs the final client key and return URL setup. If you already have a payment key, you can still confirm it below.';
+
+  @override
+  String get ordersPaymentCompleteDevAction => 'Complete dev payment';
 
   @override
   String get ordersPaymentEnterKeyAction => 'Enter payment key';
@@ -802,6 +810,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ordersPaymentEmailLabel => 'Buyer email';
+
+  @override
+  String ordersPaymentDevKeyLabel(Object paymentKey) {
+    return 'Dev payment key · $paymentKey';
+  }
 
   @override
   String ordersPaymentSuccessUrlLabel(Object url) {

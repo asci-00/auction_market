@@ -17,6 +17,7 @@
 - `dev`: local emulator for Auth, Functions, Firestore, and Storage. Uses seeded data only.
 - `staging`: real Firebase project plus Toss test credentials.
 - `prod`: real Firebase project plus Toss production credentials.
+- When a third-party dependency is not ready yet, `dev` may expose server-driven dummy integration payloads so the mobile app can validate the surrounding product flow before the final real handoff is wired.
 - The app switches environment only through build-time public config for `APP_ENV`, emulator mode, and other non-secret app settings.
 - Backend runtime switches environment only through env variables.
 - Flutter mobile boot on iOS and Android reads Firebase app registration from native platform files instead of `dart-define` values.
@@ -60,7 +61,7 @@
   - Notifications now reuse the shared app deep-link normalizer instead of carrying a screen-local route parser.
   - Auction detail now runs `placeBid`, `setAutoBid`, and `buyNow` from the sticky action bar when the viewer is an eligible buyer on a live auction, and redirects completed buy-now orders into `/orders/{orderId}`.
   - Orders now routes `createPaymentSession`, `confirmOrderPayment`, `shipmentUpdate`, and `confirmReceipt` through `features/orders/application/order_action_service.dart`, and notifications call `markNotificationRead` before deep-link navigation.
-  - Buyer order cards now surface `AWAITING_PAYMENT` actions, prepare the Toss payment session in-app, and allow manual payment-key confirmation without introducing a fake checkout flow when final public payment config is still missing.
+  - Buyer order cards now surface `AWAITING_PAYMENT` actions, prepare the payment session in-app, and in `dev` can complete a server-driven dummy payment key path before the final Toss checkout handoff values are available.
   - Sell uses `image_picker` plus Firebase Storage upload paths under `users/{uid}/items/{itemId}/gallery/*` and `users/{uid}/auth/{itemId}/*`, then persists draft data through `createOrUpdateItem` before publish.
   - Sell drafts now persist `draftAuction.startPrice`, `draftAuction.buyNowPrice`, and `draftAuction.durationDays` on `items/{itemId}`, so sellers can reload pricing intent before publishing.
   - Activity now reads `orders` and `notifications/{uid}/inbox` directly to highlight pending buyer payments, buyer receipt confirmations, seller shipment work, and unread inbox updates in one screen.
@@ -101,6 +102,7 @@
   - `expireUnpaidOrdersScheduler`
   - `settleScheduler`
 - Critical transitions now write `auditEvents` records for user bootstrap, item and auction lifecycle, bids, payment confirmation and failure, shipment, receipt confirmation, unpaid expiry, and settlement.
+- `createPaymentSession` now returns `mode: "DEV_DUMMY"` plus a deterministic `devPaymentKey` in `dev`, so the mobile app can validate buyer payment progression without pretending to launch a production checkout.
 - The Toss webhook path verifies the configured webhook secret from the payload, applies idempotent payment transitions through `payment.lastWebhookEventId`, and updates the order instead of relying on a mock payment mutation.
 - The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `seller1`, and `ops1`, a live auction with bids and auto-bid config, an ended auction with an awaiting-payment order, and inbox notifications for both sides.
 - The default seeded `order-paid` document now starts in `PAID_ESCROW_HOLD` with empty shipping data, so the seller can submit shipment first and the buyer can confirm receipt afterward during emulator smoke tests.
@@ -114,6 +116,7 @@
   - `ops1@test.local` with password `ops-pass-1234`
 - The mobile login screen surfaces only the buyer and seller quick-login actions in `dev` emulator mode.
 - Buyer smoke test path for auction actions: sign in as `buyer1`, open a live seeded auction, place a manual bid or save an auto-bid ceiling from the auction detail action bar, or use buy-now and verify the app routes into the created order timeline.
+- Buyer payment smoke test path: sign in as `buyer1`, open an `AWAITING_PAYMENT` order, trigger payment preparation, and use the in-app `dev` payment completion action to move the order into `PAID_ESCROW_HOLD`.
 - Seller smoke test path: sign in as `seller1`, open `order-paid`, submit carrier and tracking information, and confirm the order moves to `SHIPPED`.
 - Buyer smoke test path: sign in as `buyer1`, open the same `order-paid`, confirm receipt, and verify the order moves to `CONFIRMED_RECEIPT`.
 - These accounts are for local emulator checks only. They do not validate Google or Apple browser sign-in, provider linking, redirect handling, or staging and prod auth configuration.
@@ -456,7 +459,7 @@
 
 ## Release Gates
 - No hardcoded external values.
-- No fake repository or mock payment path.
+- No fake repository or production-facing mock payment path. `dev` may use documented server-driven dummy integration payloads when a real third-party handoff is still pending.
 - No placeholder screens or disabled primary actions in core flows.
 - Emulator and staging both boot from documented config only.
 - A new engineer can follow docs and run the project without tribal knowledge.

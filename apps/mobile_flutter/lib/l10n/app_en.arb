@@ -334,8 +334,10 @@
   "ordersActionPreparePayment": "Continue payment",
   "ordersActionConfirmReceipt": "Confirm receipt",
   "ordersPaymentSheetTitle": "Complete payment",
+  "ordersPaymentSheetDevDescription": "This dev order can complete payment entirely through the server-driven dummy flow. Confirm once to move the order into paid escrow hold.",
   "ordersPaymentSheetReadyDescription": "This order is ready for Toss handoff. Review the payment session details before you continue.",
   "ordersPaymentSheetBlockedDescription": "This build can prepare the order, but automatic Toss checkout still needs the final client key and return URL setup. If you already have a payment key, you can still confirm it below.",
+  "ordersPaymentCompleteDevAction": "Complete dev payment",
   "ordersPaymentEnterKeyAction": "Enter payment key",
   "ordersPaymentConfirmTitle": "Confirm payment",
   "ordersPaymentConfirmDescription": "Enter the Toss payment key that came back from checkout to move the order into paid escrow hold.",
@@ -351,6 +353,12 @@
   },
   "ordersPaymentProviderLabel": "Provider",
   "ordersPaymentEmailLabel": "Buyer email",
+  "ordersPaymentDevKeyLabel": "Dev payment key · {paymentKey}",
+  "@ordersPaymentDevKeyLabel": {
+    "placeholders": {
+      "paymentKey": {}
+    }
+  },
   "ordersPaymentSuccessUrlLabel": "Success URL · {url}",
   "@ordersPaymentSuccessUrlLabel": {
     "placeholders": {

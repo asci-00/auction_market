@@ -766,10 +766,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get ordersPaymentSheetTitle => '결제 진행';
 
   @override
-  String get ordersPaymentSheetReadyDescription => '이 주문은 Toss 결제 전달 준비가 완료되었습니다. 계속 진행하기 전에 세션 정보를 확인해 주세요.';
+  String get ordersPaymentSheetDevDescription =>
+      '이 dev 주문은 서버 주도 더미 결제 흐름으로 바로 완료할 수 있습니다. 한 번 확인하면 주문이 결제 완료 에스크로 보관 단계로 이동합니다.';
+
+  @override
+  String get ordersPaymentSheetReadyDescription =>
+      '이 주문은 Toss 결제 전달 준비가 완료되었습니다. 계속 진행하기 전에 세션 정보를 확인해 주세요.';
 
   @override
   String get ordersPaymentSheetBlockedDescription => '이 빌드는 주문 결제 세션까지는 준비할 수 있지만, 자동 Toss checkout을 위해서는 최종 client key와 return URL 구성이 더 필요합니다. 이미 payment key가 있다면 아래에서 바로 확인할 수 있습니다.';
+
+  @override
+  String get ordersPaymentCompleteDevAction => 'dev 결제 완료';
 
   @override
   String get ordersPaymentEnterKeyAction => 'payment key 입력';
@@ -802,6 +810,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get ordersPaymentEmailLabel => '구매자 이메일';
+
+  @override
+  String ordersPaymentDevKeyLabel(Object paymentKey) {
+    return 'dev payment key · $paymentKey';
+  }
 
   @override
   String ordersPaymentSuccessUrlLabel(Object url) {
