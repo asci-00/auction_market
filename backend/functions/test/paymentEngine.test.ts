@@ -97,7 +97,12 @@ describe('payment engine', () => {
       'whsec_test',
     );
     expect(
-      buildWebhookEventMarker('PAYMENT_STATUS_CHANGED', '2026-03-17T01:00:00Z', 'pay_1', 'DONE'),
+      buildWebhookEventMarker(
+        'PAYMENT_STATUS_CHANGED',
+        '2026-03-17T01:00:00Z',
+        'pay_1',
+        'DONE',
+      ),
     ).toContain('PAYMENT_STATUS_CHANGED');
   });
 

@@ -123,6 +123,23 @@ function optionalString(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
 
+function optionalPositiveNumber(value: unknown): number | null {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return null;
+  }
+  return value > 0 ? value : null;
+}
+
+function optionalPositiveInteger(value: unknown): number | null {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return null;
+  }
+  if (!Number.isInteger(value) || value <= 0) {
+    return null;
+  }
+  return value;
+}
+
 function stringArray(value: unknown): string[] {
   if (!Array.isArray(value)) {
     return [];
@@ -167,7 +184,10 @@ function timestampOrNull(value: Date | null): Timestamp | null {
   return value ? Timestamp.fromDate(value) : null;
 }
 
-function buildDeepLink(target: `auction` | `orders` | `notifications`, id?: string) {
+function buildDeepLink(
+  target: `auction` | `orders` | `notifications`,
+  id?: string,
+) {
   if (target === 'notifications') {
     return 'app://notifications';
   }
@@ -199,10 +219,7 @@ async function writeAuditEvent(event: AuditEventRecord): Promise<void> {
   });
 }
 
-function queueAuditEvent(
-  tx: Transaction,
-  event: AuditEventRecord,
-): void {
+function queueAuditEvent(tx: Transaction, event: AuditEventRecord): void {
   const ref = db.collection('auditEvents').doc();
   tx.set(ref, {
     ...event,
@@ -221,7 +238,15 @@ function normalizedItemPayload(payload: AnyRecord): {
   imageUrls: string[];
   authImageUrls: string[];
   isOfficialMd: boolean | null;
-  appraisal: { status: 'NONE' | 'REQUESTED' | 'APPROVED' | 'REJECTED'; badgeLabel: string | null };
+  draftAuction: {
+    startPrice: number | null;
+    buyNowPrice: number | null;
+    durationDays: number | null;
+  };
+  appraisal: {
+    status: 'NONE' | 'REQUESTED' | 'APPROVED' | 'REJECTED';
+    badgeLabel: string | null;
+  };
 } {
   const categoryMain = ensureString(payload.categoryMain, 'categoryMain');
   if (categoryMain !== 'GOODS' && categoryMain !== 'PRECIOUS') {
@@ -255,8 +280,26 @@ function normalizedItemPayload(payload: AnyRecord): {
       ? (payload.appraisal as AnyRecord)
       : {};
   const appraisalStatus = optionalString(appraisalPayload.status) ?? 'NONE';
-  if (!['NONE', 'REQUESTED', 'APPROVED', 'REJECTED'].includes(appraisalStatus)) {
+  if (
+    !['NONE', 'REQUESTED', 'APPROVED', 'REJECTED'].includes(appraisalStatus)
+  ) {
     throw new HttpsError('invalid-argument', 'invalid appraisal status');
+  }
+
+  const draftAuctionPayload =
+    payload.draftAuction && typeof payload.draftAuction === 'object'
+      ? (payload.draftAuction as AnyRecord)
+      : {};
+  const startPrice = optionalPositiveNumber(draftAuctionPayload.startPrice);
+  const buyNowPrice = optionalPositiveNumber(draftAuctionPayload.buyNowPrice);
+  const durationDays = optionalPositiveInteger(
+    draftAuctionPayload.durationDays,
+  );
+  if (startPrice != null && buyNowPrice != null && buyNowPrice <= startPrice) {
+    throw new HttpsError(
+      'invalid-argument',
+      'draft buyNowPrice must be greater than startPrice',
+    );
   }
 
   return {
@@ -271,12 +314,13 @@ function normalizedItemPayload(payload: AnyRecord): {
     authImageUrls,
     isOfficialMd:
       typeof payload.isOfficialMd === 'boolean' ? payload.isOfficialMd : null,
+    draftAuction: {
+      startPrice,
+      buyNowPrice,
+      durationDays,
+    },
     appraisal: {
-      status: appraisalStatus as
-        | 'NONE'
-        | 'REQUESTED'
-        | 'APPROVED'
-        | 'REJECTED',
+      status: appraisalStatus as 'NONE' | 'REQUESTED' | 'APPROVED' | 'REJECTED',
       badgeLabel: optionalString(appraisalPayload.badgeLabel),
     },
   };
@@ -330,8 +374,7 @@ function deserializeOrder(id: string, data: AnyRecord): Order {
     itemId: ensureString(data.itemId, 'itemId'),
     buyerId: ensureString(data.buyerId, 'buyerId'),
     sellerId: ensureString(data.sellerId, 'sellerId'),
-    finalPrice:
-      typeof data.finalPrice === 'number' ? data.finalPrice : 0,
+    finalPrice: typeof data.finalPrice === 'number' ? data.finalPrice : 0,
     paymentStatus: ensureString(
       data.paymentStatus,
       'paymentStatus',
@@ -388,9 +431,9 @@ async function confirmTossPayment(
   const response = await fetch(`${config.tossApiBaseUrl}/v1/payments/confirm`, {
     method: 'POST',
     headers: {
-      Authorization: `Basic ${Buffer.from(
-        `${config.tossSecretKey}:`,
-      ).toString('base64')}`,
+      Authorization: `Basic ${Buffer.from(`${config.tossSecretKey}:`).toString(
+        'base64',
+      )}`,
       'Content-Type': 'application/json',
       'Idempotency-Key': input.idempotencyKey,
     },
@@ -462,10 +505,12 @@ export const bootstrapUserProfile = onCall(async (req) => {
           optionalString(token.name) ??
           optionalString(token.email?.toString().split('@')[0]) ??
           '회원',
-        photoUrl: optionalString(existing?.photoUrl) ?? optionalString(token.picture),
+        photoUrl:
+          optionalString(existing?.photoUrl) ?? optionalString(token.picture),
         email: optionalString(token.email) ?? optionalString(existing?.email),
         phoneNumber:
-          optionalString(token.phone_number) ?? optionalString(existing?.phoneNumber),
+          optionalString(token.phone_number) ??
+          optionalString(existing?.phoneNumber),
         authProviders,
         bio: optionalString(existing?.bio),
         preferences: {
@@ -474,17 +519,20 @@ export const bootstrapUserProfile = onCall(async (req) => {
               (existing?.preferences as AnyRecord | undefined)?.languageCode,
             ) ?? 'ko',
           pushEnabled:
-            typeof (existing?.preferences as AnyRecord | undefined)?.pushEnabled ===
-            'boolean'
+            typeof (existing?.preferences as AnyRecord | undefined)
+              ?.pushEnabled === 'boolean'
               ? ((existing?.preferences as AnyRecord).pushEnabled as boolean)
               : true,
         },
         verification: {
           phone:
-            optionalString((existing?.verification as AnyRecord | undefined)?.phone) ??
-            'UNVERIFIED',
-          id: optionalString((existing?.verification as AnyRecord | undefined)?.id) ??
-            'UNVERIFIED',
+            optionalString(
+              (existing?.verification as AnyRecord | undefined)?.phone,
+            ) ?? 'UNVERIFIED',
+          id:
+            optionalString(
+              (existing?.verification as AnyRecord | undefined)?.id,
+            ) ?? 'UNVERIFIED',
           preciousSeller:
             optionalString(
               (existing?.verification as AnyRecord | undefined)?.preciousSeller,
@@ -507,20 +555,20 @@ export const bootstrapUserProfile = onCall(async (req) => {
               ? ((existing?.sellerStats as AnyRecord).successRate as number)
               : 0,
           reviewAvg:
-            typeof (existing?.sellerStats as AnyRecord | undefined)?.reviewAvg ===
-            'number'
+            typeof (existing?.sellerStats as AnyRecord | undefined)
+              ?.reviewAvg === 'number'
               ? ((existing?.sellerStats as AnyRecord).reviewAvg as number)
               : 0,
           gradeScore:
-            typeof (existing?.sellerStats as AnyRecord | undefined)?.gradeScore ===
-            'number'
+            typeof (existing?.sellerStats as AnyRecord | undefined)
+              ?.gradeScore === 'number'
               ? ((existing?.sellerStats as AnyRecord).gradeScore as number)
               : 0,
         },
         penaltyStats: {
           unpaidCount:
-            typeof (existing?.penaltyStats as AnyRecord | undefined)?.unpaidCount ===
-            'number'
+            typeof (existing?.penaltyStats as AnyRecord | undefined)
+              ?.unpaidCount === 'number'
               ? ((existing?.penaltyStats as AnyRecord).unpaidCount as number)
               : 0,
           depositForfeitedCount:
@@ -530,8 +578,8 @@ export const bootstrapUserProfile = onCall(async (req) => {
                   .depositForfeitedCount as number)
               : 0,
           trustScore:
-            typeof (existing?.penaltyStats as AnyRecord | undefined)?.trustScore ===
-            'number'
+            typeof (existing?.penaltyStats as AnyRecord | undefined)
+              ?.trustScore === 'number'
               ? ((existing?.penaltyStats as AnyRecord).trustScore as number)
               : 100,
         },
@@ -549,7 +597,9 @@ export const bootstrapUserProfile = onCall(async (req) => {
     queueAuditEvent(tx, {
       entityType: 'USER',
       entityId: uid,
-      eventType: snap.exists ? 'USER_PROFILE_SYNCED' : 'USER_PROFILE_BOOTSTRAPPED',
+      eventType: snap.exists
+        ? 'USER_PROFILE_SYNCED'
+        : 'USER_PROFILE_BOOTSTRAPPED',
       actorId: uid,
       payload: { authProviders },
     });
@@ -643,7 +693,10 @@ export const createAuctionFromItem = onCall(async (req) => {
   const imageUrls = stringArray(item.imageUrls);
   const authImageUrls = stringArray(item.authImageUrls);
   if (!imageUrls.length) {
-    throw new HttpsError('failed-precondition', 'At least one image is required');
+    throw new HttpsError(
+      'failed-precondition',
+      'At least one image is required',
+    );
   }
   if (item.categoryMain === 'GOODS' && authImageUrls.length < 1) {
     throw new HttpsError(
@@ -712,10 +765,16 @@ export const cancelAuction = onCall(async (req) => {
     }
     const auction = snap.data()!;
     if (auction.sellerId !== uid) {
-      throw new HttpsError('permission-denied', 'Only seller can cancel auction');
+      throw new HttpsError(
+        'permission-denied',
+        'Only seller can cancel auction',
+      );
     }
     if (!['DRAFT', 'LIVE'].includes(auction.status)) {
-      throw new HttpsError('failed-precondition', 'Auction cannot be cancelled');
+      throw new HttpsError(
+        'failed-precondition',
+        'Auction cannot be cancelled',
+      );
     }
     if (auction.orderId) {
       throw new HttpsError(
@@ -760,7 +819,10 @@ export const relistAuction = onCall(async (req) => {
 
     const auction = sourceSnap.data()!;
     if (auction.sellerId !== uid) {
-      throw new HttpsError('permission-denied', 'Only seller can relist auction');
+      throw new HttpsError(
+        'permission-denied',
+        'Only seller can relist auction',
+      );
     }
     if (!['UNSOLD', 'CANCELLED'].includes(auction.status)) {
       throw new HttpsError(
@@ -901,7 +963,10 @@ export const placeBid = onCall(async (req) => {
       entityId: auctionId,
       eventType: 'BID_PLACED',
       actorId: bidderId,
-      payload: { amount: result.auction.currentPrice, bidCount: result.bids.length },
+      payload: {
+        amount: result.auction.currentPrice,
+        bidCount: result.bids.length,
+      },
     });
   });
 
@@ -939,10 +1004,7 @@ export const setAutoBid = onCall(async (req) => {
       throw new HttpsError('failed-precondition', 'auction is not live');
     }
     if (auction.sellerId === uid) {
-      throw new HttpsError(
-        'failed-precondition',
-        'seller cannot set auto bid',
-      );
+      throw new HttpsError('failed-precondition', 'seller cannot set auto bid');
     }
     if (!disable && (maxAmount == null || maxAmount <= 0)) {
       throw new HttpsError(
@@ -1089,7 +1151,10 @@ export const createPaymentSession = onCall(async (req) => {
 
 export const confirmOrderPayment = onCall(async (req) => {
   const uid = requireAuthUid(req.auth?.uid);
-  const payload = ensureObject(req.data, 'payment confirmation payload is required');
+  const payload = ensureObject(
+    req.data,
+    'payment confirmation payload is required',
+  );
   const orderId = ensureString(payload.orderId, 'orderId');
   const paymentKey = ensureString(payload.paymentKey, 'paymentKey');
   const amount = typeof payload.amount === 'number' ? payload.amount : NaN;
@@ -1186,7 +1251,9 @@ export const tossPaymentWebhook = onRequest(async (req, res) => {
 
   const payload = ensureObject(req.body, 'webhook body is required');
   const eventType =
-    optionalString(payload.eventType) ?? optionalString(payload.type) ?? 'UNKNOWN';
+    optionalString(payload.eventType) ??
+    optionalString(payload.type) ??
+    'UNKNOWN';
   const payment = normalizeWebhookPayment(payload);
   if (!payment || !payment.orderId) {
     res.status(200).json({ ok: true, ignored: true });
@@ -1307,7 +1374,10 @@ export const shipmentUpdate = onCall(async (req) => {
 
   const order = deserializeOrder(snap.id, snap.data() as AnyRecord);
   if (order.sellerId !== uid) {
-    throw new HttpsError('permission-denied', 'Only seller can update shipment');
+    throw new HttpsError(
+      'permission-denied',
+      'Only seller can update shipment',
+    );
   }
   if (order.orderStatus !== 'PAID_ESCROW_HOLD') {
     throw new HttpsError(
@@ -1484,7 +1554,10 @@ export const finalizeAuctionsScheduler = onSchedule(
               status: data.status,
               endAt: toDate(data.endAt, 'endAt'),
               currentPrice: data.currentPrice as number,
-              highestBidderId: ensureString(data.highestBidderId, 'highestBidderId'),
+              highestBidderId: ensureString(
+                data.highestBidderId,
+                'highestBidderId',
+              ),
             },
             now,
           );
@@ -1519,7 +1592,9 @@ export const finalizeAuctionsScheduler = onSchedule(
           entityType: 'AUCTION',
           entityId: freshAuctionSnap.id,
           eventType:
-            decision.nextStatus === 'UNSOLD' ? 'AUCTION_UNSOLD' : 'AUCTION_ENDED',
+            decision.nextStatus === 'UNSOLD'
+              ? 'AUCTION_UNSOLD'
+              : 'AUCTION_ENDED',
           actorId: null,
           payload: {},
         });

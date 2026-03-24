@@ -543,6 +543,161 @@ class AppLocalizationsEn extends AppLocalizations {
       'Check the story, pricing, and urgency cues together before you send the auction live.';
 
   @override
+  String get sellDraftsTitle => 'Recent drafts';
+
+  @override
+  String get sellDraftsSubtitle =>
+      'Return to saved item content before you publish a live auction.';
+
+  @override
+  String get sellDraftEmptyTitle => 'No saved drafts yet';
+
+  @override
+  String get sellDraftEmptyDescription =>
+      'Your saved item drafts will appear here when they are written to Firestore.';
+
+  @override
+  String get sellDraftLoadAction => 'Load';
+
+  @override
+  String get sellDraftUntitled => 'Untitled item';
+
+  @override
+  String sellDraftUpdatedAt(Object time) {
+    return 'Updated $time';
+  }
+
+  @override
+  String get sellDraftNoTimestamp => 'Timestamp unavailable';
+
+  @override
+  String sellCurrentDraftLabel(Object itemId) {
+    return 'Editing draft #$itemId';
+  }
+
+  @override
+  String get sellCategoryGoods => 'Goods';
+
+  @override
+  String get sellCategoryPrecious => 'Precious';
+
+  @override
+  String get sellFormCategoryMainLabel => 'Main category';
+
+  @override
+  String get sellFormCategorySubLabel => 'Category detail';
+
+  @override
+  String get sellFormTitleLabel => 'Item title';
+
+  @override
+  String get sellFormConditionLabel => 'Condition';
+
+  @override
+  String get sellFormTagsLabel => 'Tags';
+
+  @override
+  String get sellFormTagsHint => 'Brand, material, size';
+
+  @override
+  String get sellFormDescriptionLabel => 'Description';
+
+  @override
+  String get sellFormAppraisalLabel => 'Request appraisal workflow';
+
+  @override
+  String get sellFormStartPriceLabel => 'Start price';
+
+  @override
+  String get sellFormBuyNowPriceLabel => 'Buy now price';
+
+  @override
+  String get sellFormDurationLabel => 'Auction duration';
+
+  @override
+  String sellDurationDays(int count) {
+    return '$count day window';
+  }
+
+  @override
+  String get sellImageMainTitle => 'Listing gallery';
+
+  @override
+  String get sellImageMainDescription =>
+      'Upload up to 10 main images for the public auction card and detail page.';
+
+  @override
+  String get sellImageMainAction => 'Choose gallery images';
+
+  @override
+  String get sellImageAuthTitle => 'Authentication images';
+
+  @override
+  String get sellImageAuthDescription =>
+      'Goods listings require at least one authentication image before draft save and publish.';
+
+  @override
+  String get sellImageAuthAction => 'Choose authentication images';
+
+  @override
+  String get sellImagesEmptyState => 'No images selected yet.';
+
+  @override
+  String get sellSaveDraftAction => 'Save draft';
+
+  @override
+  String get sellPublishAction => 'Publish auction';
+
+  @override
+  String get sellSavingDraft => 'Saving draft...';
+
+  @override
+  String get sellPublishing => 'Publishing...';
+
+  @override
+  String get sellActionSaved => 'Draft saved to your seller workspace.';
+
+  @override
+  String get sellActionPublished =>
+      'Auction published. Opening the live listing now.';
+
+  @override
+  String get sellActionFailed =>
+      'We couldn\'t complete that seller action. Check the form and try again.';
+
+  @override
+  String get sellValidationCategorySub =>
+      'Add a category detail before saving the draft.';
+
+  @override
+  String get sellValidationTitle =>
+      'Add an item title before saving the draft.';
+
+  @override
+  String get sellValidationCondition =>
+      'Add the item condition before saving the draft.';
+
+  @override
+  String get sellValidationDescription =>
+      'Add the item description before saving the draft.';
+
+  @override
+  String get sellValidationAuthImages =>
+      'Goods drafts need at least one authentication image.';
+
+  @override
+  String get sellValidationImages =>
+      'Publishing requires at least one gallery image.';
+
+  @override
+  String get sellValidationStartPrice =>
+      'Enter a valid start price before publishing.';
+
+  @override
+  String get sellValidationBuyNowPrice =>
+      'Buy now price must be greater than the start price.';
+
+  @override
   String get genericUnavailable => 'Unavailable';
 
   @override

@@ -1034,6 +1034,276 @@ abstract class AppLocalizations {
   /// **'Check the story, pricing, and urgency cues together before you send the auction live.'**
   String get sellStepPublishDescription;
 
+  /// No description provided for @sellDraftsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent drafts'**
+  String get sellDraftsTitle;
+
+  /// No description provided for @sellDraftsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to saved item content before you publish a live auction.'**
+  String get sellDraftsSubtitle;
+
+  /// No description provided for @sellDraftEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved drafts yet'**
+  String get sellDraftEmptyTitle;
+
+  /// No description provided for @sellDraftEmptyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your saved item drafts will appear here when they are written to Firestore.'**
+  String get sellDraftEmptyDescription;
+
+  /// No description provided for @sellDraftLoadAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Load'**
+  String get sellDraftLoadAction;
+
+  /// No description provided for @sellDraftUntitled.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled item'**
+  String get sellDraftUntitled;
+
+  /// No description provided for @sellDraftUpdatedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {time}'**
+  String sellDraftUpdatedAt(Object time);
+
+  /// No description provided for @sellDraftNoTimestamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Timestamp unavailable'**
+  String get sellDraftNoTimestamp;
+
+  /// No description provided for @sellCurrentDraftLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Editing draft #{itemId}'**
+  String sellCurrentDraftLabel(Object itemId);
+
+  /// No description provided for @sellCategoryGoods.
+  ///
+  /// In en, this message translates to:
+  /// **'Goods'**
+  String get sellCategoryGoods;
+
+  /// No description provided for @sellCategoryPrecious.
+  ///
+  /// In en, this message translates to:
+  /// **'Precious'**
+  String get sellCategoryPrecious;
+
+  /// No description provided for @sellFormCategoryMainLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Main category'**
+  String get sellFormCategoryMainLabel;
+
+  /// No description provided for @sellFormCategorySubLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Category detail'**
+  String get sellFormCategorySubLabel;
+
+  /// No description provided for @sellFormTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Item title'**
+  String get sellFormTitleLabel;
+
+  /// No description provided for @sellFormConditionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Condition'**
+  String get sellFormConditionLabel;
+
+  /// No description provided for @sellFormTagsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get sellFormTagsLabel;
+
+  /// No description provided for @sellFormTagsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand, material, size'**
+  String get sellFormTagsHint;
+
+  /// No description provided for @sellFormDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get sellFormDescriptionLabel;
+
+  /// No description provided for @sellFormAppraisalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Request appraisal workflow'**
+  String get sellFormAppraisalLabel;
+
+  /// No description provided for @sellFormStartPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Start price'**
+  String get sellFormStartPriceLabel;
+
+  /// No description provided for @sellFormBuyNowPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy now price'**
+  String get sellFormBuyNowPriceLabel;
+
+  /// No description provided for @sellFormDurationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Auction duration'**
+  String get sellFormDurationLabel;
+
+  /// No description provided for @sellDurationDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} day window'**
+  String sellDurationDays(int count);
+
+  /// No description provided for @sellImageMainTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Listing gallery'**
+  String get sellImageMainTitle;
+
+  /// No description provided for @sellImageMainDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload up to 10 main images for the public auction card and detail page.'**
+  String get sellImageMainDescription;
+
+  /// No description provided for @sellImageMainAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose gallery images'**
+  String get sellImageMainAction;
+
+  /// No description provided for @sellImageAuthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication images'**
+  String get sellImageAuthTitle;
+
+  /// No description provided for @sellImageAuthDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Goods listings require at least one authentication image before draft save and publish.'**
+  String get sellImageAuthDescription;
+
+  /// No description provided for @sellImageAuthAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose authentication images'**
+  String get sellImageAuthAction;
+
+  /// No description provided for @sellImagesEmptyState.
+  ///
+  /// In en, this message translates to:
+  /// **'No images selected yet.'**
+  String get sellImagesEmptyState;
+
+  /// No description provided for @sellSaveDraftAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save draft'**
+  String get sellSaveDraftAction;
+
+  /// No description provided for @sellPublishAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish auction'**
+  String get sellPublishAction;
+
+  /// No description provided for @sellSavingDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving draft...'**
+  String get sellSavingDraft;
+
+  /// No description provided for @sellPublishing.
+  ///
+  /// In en, this message translates to:
+  /// **'Publishing...'**
+  String get sellPublishing;
+
+  /// No description provided for @sellActionSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft saved to your seller workspace.'**
+  String get sellActionSaved;
+
+  /// No description provided for @sellActionPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Auction published. Opening the live listing now.'**
+  String get sellActionPublished;
+
+  /// No description provided for @sellActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t complete that seller action. Check the form and try again.'**
+  String get sellActionFailed;
+
+  /// No description provided for @sellValidationCategorySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a category detail before saving the draft.'**
+  String get sellValidationCategorySub;
+
+  /// No description provided for @sellValidationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an item title before saving the draft.'**
+  String get sellValidationTitle;
+
+  /// No description provided for @sellValidationCondition.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the item condition before saving the draft.'**
+  String get sellValidationCondition;
+
+  /// No description provided for @sellValidationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the item description before saving the draft.'**
+  String get sellValidationDescription;
+
+  /// No description provided for @sellValidationAuthImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Goods drafts need at least one authentication image.'**
+  String get sellValidationAuthImages;
+
+  /// No description provided for @sellValidationImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Publishing requires at least one gallery image.'**
+  String get sellValidationImages;
+
+  /// No description provided for @sellValidationStartPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid start price before publishing.'**
+  String get sellValidationStartPrice;
+
+  /// No description provided for @sellValidationBuyNowPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy now price must be greater than the start price.'**
+  String get sellValidationBuyNowPrice;
+
   /// No description provided for @genericUnavailable.
   ///
   /// In en, this message translates to:

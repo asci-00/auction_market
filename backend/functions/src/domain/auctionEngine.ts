@@ -1,4 +1,8 @@
-import { antiSnipingPolicy, featureFlags, minIncrementFor } from '../config/policy.js';
+import {
+  antiSnipingPolicy,
+  featureFlags,
+  minIncrementFor,
+} from '../config/policy.js';
 import { Auction, AutoBidConfig, Bid } from './models.js';
 
 export interface PlaceBidInput {
@@ -24,11 +28,18 @@ function validateBid(auction: Auction, amount: number, now: Date): void {
 }
 
 function applyAntiSniping(auction: Auction, now: Date): Auction {
-  const secondsLeft = Math.floor((auction.endAt.getTime() - now.getTime()) / 1000);
-  if (secondsLeft <= antiSnipingPolicy.triggerSecondsBeforeEnd && auction.extendedCount < antiSnipingPolicy.maxExtensions) {
+  const secondsLeft = Math.floor(
+    (auction.endAt.getTime() - now.getTime()) / 1000,
+  );
+  if (
+    secondsLeft <= antiSnipingPolicy.triggerSecondsBeforeEnd &&
+    auction.extendedCount < antiSnipingPolicy.maxExtensions
+  ) {
     return {
       ...auction,
-      endAt: new Date(auction.endAt.getTime() + antiSnipingPolicy.extensionSeconds * 1000),
+      endAt: new Date(
+        auction.endAt.getTime() + antiSnipingPolicy.extensionSeconds * 1000,
+      ),
       extendedCount: auction.extendedCount + 1,
     };
   }
@@ -41,7 +52,9 @@ function resolveAutoBidCompetition(
   autoBids: AutoBidConfig[],
   now: Date,
 ): { auction: Auction; bids: Bid[] } {
-  const enabled = autoBids.filter((a) => a.isEnabled).sort((a, b) => b.maxAmount - a.maxAmount);
+  const enabled = autoBids
+    .filter((a) => a.isEnabled)
+    .sort((a, b) => b.maxAmount - a.maxAmount);
   if (enabled.length < 1) return { auction, bids: [] };
 
   const bids: Bid[] = [];
@@ -50,13 +63,24 @@ function resolveAutoBidCompetition(
 
   while (guard < 20) {
     guard += 1;
-    const challenger = enabled.find((c) => c.uid !== current.highestBidderId && c.maxAmount >= current.currentPrice + minIncrementFor(current.currentPrice));
+    const challenger = enabled.find(
+      (c) =>
+        c.uid !== current.highestBidderId &&
+        c.maxAmount >=
+          current.currentPrice + minIncrementFor(current.currentPrice),
+    );
     if (!challenger) break;
 
-    const nextPrice = current.currentPrice + minIncrementFor(current.currentPrice);
+    const nextPrice =
+      current.currentPrice + minIncrementFor(current.currentPrice);
     if (nextPrice > challenger.maxAmount) break;
 
-    bids.push({ bidderId: challenger.uid, amount: nextPrice, kind: 'AUTO', createdAt: now });
+    bids.push({
+      bidderId: challenger.uid,
+      amount: nextPrice,
+      kind: 'AUTO',
+      createdAt: now,
+    });
     current = {
       ...current,
       currentPrice: nextPrice,
@@ -77,15 +101,30 @@ export function placeBid(input: PlaceBidInput): PlaceBidResult {
     currentPrice: input.amount,
     highestBidderId: input.bidderId,
     bidCount: input.auction.bidCount + 1,
-    bidderCount: input.auction.highestBidderId === input.bidderId ? input.auction.bidderCount : input.auction.bidderCount + 1,
+    bidderCount:
+      input.auction.highestBidderId === input.bidderId
+        ? input.auction.bidderCount
+        : input.auction.bidderCount + 1,
   };
 
   auction = applyAntiSniping(auction, input.now);
 
-  const bids: Bid[] = [{ bidderId: input.bidderId, amount: input.amount, kind: 'MANUAL', createdAt: input.now }];
+  const bids: Bid[] = [
+    {
+      bidderId: input.bidderId,
+      amount: input.amount,
+      kind: 'MANUAL',
+      createdAt: input.now,
+    },
+  ];
 
   if (featureFlags.autoBid && input.autoBids?.length) {
-    const auto = resolveAutoBidCompetition(auction, input.bidderId, input.autoBids, input.now);
+    const auto = resolveAutoBidCompetition(
+      auction,
+      input.bidderId,
+      input.autoBids,
+      input.now,
+    );
     auction = auto.auction;
     bids.push(...auto.bids);
   }

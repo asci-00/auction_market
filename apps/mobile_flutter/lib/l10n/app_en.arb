@@ -193,6 +193,68 @@
   "sellStepImagesDescription": "Main photos and any required authentication images should feel complete before publishing.",
   "sellStepPublishTitle": "Preview and publish",
   "sellStepPublishDescription": "Check the story, pricing, and urgency cues together before you send the auction live.",
+  "sellDraftsTitle": "Recent drafts",
+  "sellDraftsSubtitle": "Return to saved item content before you publish a live auction.",
+  "sellDraftEmptyTitle": "No saved drafts yet",
+  "sellDraftEmptyDescription": "Your saved item drafts will appear here when they are written to Firestore.",
+  "sellDraftLoadAction": "Load",
+  "sellDraftUntitled": "Untitled item",
+  "sellDraftUpdatedAt": "Updated {time}",
+  "@sellDraftUpdatedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "sellDraftNoTimestamp": "Timestamp unavailable",
+  "sellCurrentDraftLabel": "Editing draft #{itemId}",
+  "@sellCurrentDraftLabel": {
+    "placeholders": {
+      "itemId": {}
+    }
+  },
+  "sellCategoryGoods": "Goods",
+  "sellCategoryPrecious": "Precious",
+  "sellFormCategoryMainLabel": "Main category",
+  "sellFormCategorySubLabel": "Category detail",
+  "sellFormTitleLabel": "Item title",
+  "sellFormConditionLabel": "Condition",
+  "sellFormTagsLabel": "Tags",
+  "sellFormTagsHint": "Brand, material, size",
+  "sellFormDescriptionLabel": "Description",
+  "sellFormAppraisalLabel": "Request appraisal workflow",
+  "sellFormStartPriceLabel": "Start price",
+  "sellFormBuyNowPriceLabel": "Buy now price",
+  "sellFormDurationLabel": "Auction duration",
+  "sellDurationDays": "{count} day window",
+  "@sellDurationDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sellImageMainTitle": "Listing gallery",
+  "sellImageMainDescription": "Upload up to 10 main images for the public auction card and detail page.",
+  "sellImageMainAction": "Choose gallery images",
+  "sellImageAuthTitle": "Authentication images",
+  "sellImageAuthDescription": "Goods listings require at least one authentication image before draft save and publish.",
+  "sellImageAuthAction": "Choose authentication images",
+  "sellImagesEmptyState": "No images selected yet.",
+  "sellSaveDraftAction": "Save draft",
+  "sellPublishAction": "Publish auction",
+  "sellSavingDraft": "Saving draft...",
+  "sellPublishing": "Publishing...",
+  "sellActionSaved": "Draft saved to your seller workspace.",
+  "sellActionPublished": "Auction published. Opening the live listing now.",
+  "sellActionFailed": "We couldn't complete that seller action. Check the form and try again.",
+  "sellValidationCategorySub": "Add a category detail before saving the draft.",
+  "sellValidationTitle": "Add an item title before saving the draft.",
+  "sellValidationCondition": "Add the item condition before saving the draft.",
+  "sellValidationDescription": "Add the item description before saving the draft.",
+  "sellValidationAuthImages": "Goods drafts need at least one authentication image.",
+  "sellValidationImages": "Publishing requires at least one gallery image.",
+  "sellValidationStartPrice": "Enter a valid start price before publishing.",
+  "sellValidationBuyNowPrice": "Buy now price must be greater than the start price.",
   "genericUnavailable": "Unavailable",
   "genericUnknownSeller": "Seller",
   "genericUnknownUser": "Member",

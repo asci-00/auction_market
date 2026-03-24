@@ -193,6 +193,68 @@
   "sellStepImagesDescription": "대표 이미지와 필요한 인증 이미지를 발행 전에 충분히 갖춥니다.",
   "sellStepPublishTitle": "미리보기와 발행",
   "sellStepPublishDescription": "스토리, 가격, 긴급도 신호를 함께 점검한 뒤 경매를 라이브로 보냅니다.",
+  "sellDraftsTitle": "최근 저장한 드래프트",
+  "sellDraftsSubtitle": "라이브 발행 전, 저장해 둔 상품 초안을 다시 불러올 수 있습니다.",
+  "sellDraftEmptyTitle": "저장된 드래프트가 아직 없습니다",
+  "sellDraftEmptyDescription": "상품 초안을 Firestore에 저장하면 이 영역에 나타납니다.",
+  "sellDraftLoadAction": "불러오기",
+  "sellDraftUntitled": "제목 없는 상품",
+  "sellDraftUpdatedAt": "{time} 업데이트",
+  "@sellDraftUpdatedAt": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "sellDraftNoTimestamp": "업데이트 시각 없음",
+  "sellCurrentDraftLabel": "현재 편집 중인 드래프트 #{itemId}",
+  "@sellCurrentDraftLabel": {
+    "placeholders": {
+      "itemId": {}
+    }
+  },
+  "sellCategoryGoods": "일반 상품",
+  "sellCategoryPrecious": "귀금속",
+  "sellFormCategoryMainLabel": "메인 카테고리",
+  "sellFormCategorySubLabel": "세부 카테고리",
+  "sellFormTitleLabel": "상품 제목",
+  "sellFormConditionLabel": "상품 상태",
+  "sellFormTagsLabel": "태그",
+  "sellFormTagsHint": "브랜드, 소재, 사이즈",
+  "sellFormDescriptionLabel": "상품 설명",
+  "sellFormAppraisalLabel": "감정 요청 흐름 사용",
+  "sellFormStartPriceLabel": "시작가",
+  "sellFormBuyNowPriceLabel": "즉시 구매가",
+  "sellFormDurationLabel": "경매 기간",
+  "sellDurationDays": "{count}일 진행",
+  "@sellDurationDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sellImageMainTitle": "대표 이미지",
+  "sellImageMainDescription": "공개 경매 카드와 상세 화면에 노출될 대표 이미지를 최대 10장까지 올립니다.",
+  "sellImageMainAction": "대표 이미지 선택",
+  "sellImageAuthTitle": "인증 이미지",
+  "sellImageAuthDescription": "일반 상품은 드래프트 저장과 발행 전에 최소 1장의 인증 이미지가 필요합니다.",
+  "sellImageAuthAction": "인증 이미지 선택",
+  "sellImagesEmptyState": "아직 선택한 이미지가 없습니다.",
+  "sellSaveDraftAction": "드래프트 저장",
+  "sellPublishAction": "경매 발행",
+  "sellSavingDraft": "드래프트 저장 중...",
+  "sellPublishing": "발행 중...",
+  "sellActionSaved": "드래프트가 판매 작업 공간에 저장되었습니다.",
+  "sellActionPublished": "경매가 발행되었습니다. 라이브 리스팅으로 이동합니다.",
+  "sellActionFailed": "판매 액션을 완료하지 못했습니다. 입력값을 확인한 뒤 다시 시도해 주세요.",
+  "sellValidationCategorySub": "드래프트 저장 전에 세부 카테고리를 입력해 주세요.",
+  "sellValidationTitle": "드래프트 저장 전에 상품 제목을 입력해 주세요.",
+  "sellValidationCondition": "드래프트 저장 전에 상품 상태를 입력해 주세요.",
+  "sellValidationDescription": "드래프트 저장 전에 상품 설명을 입력해 주세요.",
+  "sellValidationAuthImages": "일반 상품 드래프트에는 인증 이미지가 최소 1장 필요합니다.",
+  "sellValidationImages": "경매 발행 전에는 대표 이미지가 최소 1장 필요합니다.",
+  "sellValidationStartPrice": "발행 전에 올바른 시작가를 입력해 주세요.",
+  "sellValidationBuyNowPrice": "즉시 구매가는 시작가보다 높아야 합니다.",
   "genericUnavailable": "정보 없음",
   "genericUnknownSeller": "셀러",
   "genericUnknownUser": "회원",

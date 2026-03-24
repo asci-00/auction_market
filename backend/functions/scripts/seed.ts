@@ -74,8 +74,7 @@ async function run(): Promise<void> {
 }
 
 function resolveProjectId(): string {
-  const fromEnv =
-    process.env.GCLOUD_PROJECT ?? process.env.FIREBASE_PROJECT_ID;
+  const fromEnv = process.env.GCLOUD_PROJECT ?? process.env.FIREBASE_PROJECT_ID;
   if (fromEnv && fromEnv.trim().length > 0) {
     return fromEnv.trim();
   }

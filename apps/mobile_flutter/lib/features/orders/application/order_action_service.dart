@@ -17,7 +17,7 @@ class OrderActionService {
     required String carrierName,
     required String trackingNumber,
   }) async {
-    await _functions.httpsCallable('shipmentUpdate').call({
+    await _functions.httpsCallable('shipmentUpdate').call<void>({
       'orderId': orderId,
       'carrierName': carrierName,
       'trackingNumber': trackingNumber,
@@ -27,7 +27,7 @@ class OrderActionService {
   Future<void> confirmReceipt({
     required String orderId,
   }) async {
-    await _functions.httpsCallable('confirmReceipt').call({
+    await _functions.httpsCallable('confirmReceipt').call<void>({
       'orderId': orderId,
     });
   }

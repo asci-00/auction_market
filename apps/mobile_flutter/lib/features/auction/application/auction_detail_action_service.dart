@@ -21,7 +21,7 @@ class AuctionDetailActionService {
       throw ArgumentError.value(amount, 'amount', 'must be greater than 0');
     }
 
-    await _functions.httpsCallable('placeBid').call({
+    await _functions.httpsCallable('placeBid').call<void>({
       'auctionId': auctionId,
       'amount': amount,
     });
@@ -39,7 +39,7 @@ class AuctionDetailActionService {
       );
     }
 
-    await _functions.httpsCallable('setAutoBid').call({
+    await _functions.httpsCallable('setAutoBid').call<void>({
       'auctionId': auctionId,
       'maxAmount': maxAmount,
     });
@@ -48,7 +48,7 @@ class AuctionDetailActionService {
   Future<String?> buyNow({
     required String auctionId,
   }) async {
-    final result = await _functions.httpsCallable('buyNow').call({
+    final result = await _functions.httpsCallable('buyNow').call<dynamic>({
       'auctionId': auctionId,
     });
 

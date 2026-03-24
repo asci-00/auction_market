@@ -9,8 +9,10 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "format": "prettier --write \"{src,test,scripts}/**/*.ts\"",
+    "format:check": "prettier --check \"{src,test,scripts}/**/*.ts\"",
     "test": "vitest run",
-    "lint": "tsc --noEmit",
+    "lint": "eslint . && tsc --noEmit",
     "serve": "firebase emulators:start --only auth,functions,firestore,storage",
     "seed": "tsx ./scripts/seed.ts"
   },
@@ -19,8 +21,13 @@
     "firebase-functions": "^5.1.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.23.0",
     "typescript": "^5.6.3",
+    "eslint": "^9.23.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
     "tsx": "^4.19.1",
+    "typescript-eslint": "^8.28.0",
     "vitest": "^2.1.8",
     "@types/node": "^22.10.1"
   }

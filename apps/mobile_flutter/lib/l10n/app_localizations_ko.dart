@@ -516,6 +516,149 @@ class AppLocalizationsKo extends AppLocalizations {
       '스토리, 가격, 긴급도 신호를 함께 점검한 뒤 경매를 라이브로 보냅니다.';
 
   @override
+  String get sellDraftsTitle => '최근 저장한 드래프트';
+
+  @override
+  String get sellDraftsSubtitle => '라이브 발행 전, 저장해 둔 상품 초안을 다시 불러올 수 있습니다.';
+
+  @override
+  String get sellDraftEmptyTitle => '저장된 드래프트가 아직 없습니다';
+
+  @override
+  String get sellDraftEmptyDescription => '상품 초안을 Firestore에 저장하면 이 영역에 나타납니다.';
+
+  @override
+  String get sellDraftLoadAction => '불러오기';
+
+  @override
+  String get sellDraftUntitled => '제목 없는 상품';
+
+  @override
+  String sellDraftUpdatedAt(Object time) {
+    return '$time 업데이트';
+  }
+
+  @override
+  String get sellDraftNoTimestamp => '업데이트 시각 없음';
+
+  @override
+  String sellCurrentDraftLabel(Object itemId) {
+    return '현재 편집 중인 드래프트 #$itemId';
+  }
+
+  @override
+  String get sellCategoryGoods => '일반 상품';
+
+  @override
+  String get sellCategoryPrecious => '귀금속';
+
+  @override
+  String get sellFormCategoryMainLabel => '메인 카테고리';
+
+  @override
+  String get sellFormCategorySubLabel => '세부 카테고리';
+
+  @override
+  String get sellFormTitleLabel => '상품 제목';
+
+  @override
+  String get sellFormConditionLabel => '상품 상태';
+
+  @override
+  String get sellFormTagsLabel => '태그';
+
+  @override
+  String get sellFormTagsHint => '브랜드, 소재, 사이즈';
+
+  @override
+  String get sellFormDescriptionLabel => '상품 설명';
+
+  @override
+  String get sellFormAppraisalLabel => '감정 요청 흐름 사용';
+
+  @override
+  String get sellFormStartPriceLabel => '시작가';
+
+  @override
+  String get sellFormBuyNowPriceLabel => '즉시 구매가';
+
+  @override
+  String get sellFormDurationLabel => '경매 기간';
+
+  @override
+  String sellDurationDays(int count) {
+    return '$count일 진행';
+  }
+
+  @override
+  String get sellImageMainTitle => '대표 이미지';
+
+  @override
+  String get sellImageMainDescription =>
+      '공개 경매 카드와 상세 화면에 노출될 대표 이미지를 최대 10장까지 올립니다.';
+
+  @override
+  String get sellImageMainAction => '대표 이미지 선택';
+
+  @override
+  String get sellImageAuthTitle => '인증 이미지';
+
+  @override
+  String get sellImageAuthDescription =>
+      '일반 상품은 드래프트 저장과 발행 전에 최소 1장의 인증 이미지가 필요합니다.';
+
+  @override
+  String get sellImageAuthAction => '인증 이미지 선택';
+
+  @override
+  String get sellImagesEmptyState => '아직 선택한 이미지가 없습니다.';
+
+  @override
+  String get sellSaveDraftAction => '드래프트 저장';
+
+  @override
+  String get sellPublishAction => '경매 발행';
+
+  @override
+  String get sellSavingDraft => '드래프트 저장 중...';
+
+  @override
+  String get sellPublishing => '발행 중...';
+
+  @override
+  String get sellActionSaved => '드래프트가 판매 작업 공간에 저장되었습니다.';
+
+  @override
+  String get sellActionPublished => '경매가 발행되었습니다. 라이브 리스팅으로 이동합니다.';
+
+  @override
+  String get sellActionFailed => '판매 액션을 완료하지 못했습니다. 입력값을 확인한 뒤 다시 시도해 주세요.';
+
+  @override
+  String get sellValidationCategorySub => '드래프트 저장 전에 세부 카테고리를 입력해 주세요.';
+
+  @override
+  String get sellValidationTitle => '드래프트 저장 전에 상품 제목을 입력해 주세요.';
+
+  @override
+  String get sellValidationCondition => '드래프트 저장 전에 상품 상태를 입력해 주세요.';
+
+  @override
+  String get sellValidationDescription => '드래프트 저장 전에 상품 설명을 입력해 주세요.';
+
+  @override
+  String get sellValidationAuthImages => '일반 상품 드래프트에는 인증 이미지가 최소 1장 필요합니다.';
+
+  @override
+  String get sellValidationImages => '경매 발행 전에는 대표 이미지가 최소 1장 필요합니다.';
+
+  @override
+  String get sellValidationStartPrice => '발행 전에 올바른 시작가를 입력해 주세요.';
+
+  @override
+  String get sellValidationBuyNowPrice => '즉시 구매가는 시작가보다 높아야 합니다.';
+
+  @override
   String get genericUnavailable => '정보 없음';
 
   @override

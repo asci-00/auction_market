@@ -44,7 +44,7 @@ class MyScreen extends ConsumerWidget {
           MyVerificationSection(user: user),
           SizedBox(height: tokens.space6),
           FilledButton(
-            onPressed: () => auth.signOut(),
+            onPressed: auth.signOut,
             child: Text(context.l10n.mySignOut),
           ),
         ],
