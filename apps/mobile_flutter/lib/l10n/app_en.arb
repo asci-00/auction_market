@@ -297,7 +297,37 @@
   "loginDevSeller": "Sign in as seeded seller",
   "loginErrorSeedAccountUnavailable": "The seeded emulator account is unavailable. Start the emulators and run npm run seed again.",
   "ordersActionAddShipment": "Add shipment",
+  "ordersActionPreparePayment": "Continue payment",
   "ordersActionConfirmReceipt": "Confirm receipt",
+  "ordersPaymentSheetTitle": "Complete payment",
+  "ordersPaymentSheetReadyDescription": "This order is ready for Toss handoff. Review the payment session details before you continue.",
+  "ordersPaymentSheetBlockedDescription": "This build can prepare the order, but automatic Toss checkout still needs the final client key and return URL setup. If you already have a payment key, you can still confirm it below.",
+  "ordersPaymentEnterKeyAction": "Enter payment key",
+  "ordersPaymentConfirmTitle": "Confirm payment",
+  "ordersPaymentConfirmDescription": "Enter the Toss payment key that came back from checkout to move the order into paid escrow hold.",
+  "ordersPaymentConfirmAction": "Confirm payment",
+  "ordersPaymentKeyLabel": "Payment key",
+  "ordersPaymentKeyHint": "pay_...",
+  "ordersPaymentAmountLabel": "Amount · {amount}",
+  "@ordersPaymentAmountLabel": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ordersPaymentProviderLabel": "Provider",
+  "ordersPaymentEmailLabel": "Buyer email",
+  "ordersPaymentSuccessUrlLabel": "Success URL · {url}",
+  "@ordersPaymentSuccessUrlLabel": {
+    "placeholders": {
+      "url": {}
+    }
+  },
+  "ordersPaymentFailUrlLabel": "Fail URL · {url}",
+  "@ordersPaymentFailUrlLabel": {
+    "placeholders": {
+      "url": {}
+    }
+  },
   "ordersShipmentDialogTitle": "Shipment details",
   "ordersShipmentCarrierLabel": "Carrier",
   "ordersShipmentCarrierHint": "CJ Logistics",
@@ -306,6 +336,7 @@
   "ordersShipmentSubmit": "Save shipment",
   "ordersDialogCancel": "Cancel",
   "ordersActionSuccessShipped": "Shipment details were saved.",
+  "ordersActionSuccessPayment": "Payment confirmed. The order is now held in escrow.",
   "ordersActionSuccessReceipt": "Receipt confirmed. Settlement can proceed next.",
   "ordersActionFailed": "We couldn't complete that order action. Try again.",
   "ordersShipmentSummary": "{carrierName} · {trackingNumber}",

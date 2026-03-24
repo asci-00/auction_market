@@ -736,7 +736,61 @@ class AppLocalizationsKo extends AppLocalizations {
   String get ordersActionAddShipment => '배송 정보 등록';
 
   @override
+  String get ordersActionPreparePayment => '결제 진행';
+
+  @override
   String get ordersActionConfirmReceipt => '수령 확인';
+
+  @override
+  String get ordersPaymentSheetTitle => '결제 진행';
+
+  @override
+  String get ordersPaymentSheetReadyDescription =>
+      '이 주문은 Toss 결제 전달 준비가 완료되었습니다. 계속 진행하기 전에 세션 정보를 확인해 주세요.';
+
+  @override
+  String get ordersPaymentSheetBlockedDescription =>
+      '이 빌드는 주문 결제 세션까지는 준비할 수 있지만, 자동 Toss checkout을 위해서는 최종 client key와 return URL 구성이 더 필요합니다. 이미 payment key가 있다면 아래에서 바로 확인할 수 있습니다.';
+
+  @override
+  String get ordersPaymentEnterKeyAction => 'payment key 입력';
+
+  @override
+  String get ordersPaymentConfirmTitle => '결제 확인';
+
+  @override
+  String get ordersPaymentConfirmDescription =>
+      'checkout에서 돌아온 Toss payment key를 입력하면 주문 상태를 결제 완료 에스크로 보관 단계로 전환합니다.';
+
+  @override
+  String get ordersPaymentConfirmAction => '결제 확인';
+
+  @override
+  String get ordersPaymentKeyLabel => 'payment key';
+
+  @override
+  String get ordersPaymentKeyHint => 'pay_...';
+
+  @override
+  String ordersPaymentAmountLabel(Object amount) {
+    return '결제 금액 · $amount';
+  }
+
+  @override
+  String get ordersPaymentProviderLabel => '결제사';
+
+  @override
+  String get ordersPaymentEmailLabel => '구매자 이메일';
+
+  @override
+  String ordersPaymentSuccessUrlLabel(Object url) {
+    return '성공 URL · $url';
+  }
+
+  @override
+  String ordersPaymentFailUrlLabel(Object url) {
+    return '실패 URL · $url';
+  }
 
   @override
   String get ordersShipmentDialogTitle => '배송 정보';
@@ -761,6 +815,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get ordersActionSuccessShipped => '배송 정보가 저장되었습니다.';
+
+  @override
+  String get ordersActionSuccessPayment =>
+      '결제가 확인되었습니다. 주문이 에스크로 보관 단계로 이동했습니다.';
 
   @override
   String get ordersActionSuccessReceipt =>

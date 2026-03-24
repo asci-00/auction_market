@@ -775,7 +775,61 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ordersActionAddShipment => 'Add shipment';
 
   @override
+  String get ordersActionPreparePayment => 'Continue payment';
+
+  @override
   String get ordersActionConfirmReceipt => 'Confirm receipt';
+
+  @override
+  String get ordersPaymentSheetTitle => 'Complete payment';
+
+  @override
+  String get ordersPaymentSheetReadyDescription =>
+      'This order is ready for Toss handoff. Review the payment session details before you continue.';
+
+  @override
+  String get ordersPaymentSheetBlockedDescription =>
+      'This build can prepare the order, but automatic Toss checkout still needs the final client key and return URL setup. If you already have a payment key, you can still confirm it below.';
+
+  @override
+  String get ordersPaymentEnterKeyAction => 'Enter payment key';
+
+  @override
+  String get ordersPaymentConfirmTitle => 'Confirm payment';
+
+  @override
+  String get ordersPaymentConfirmDescription =>
+      'Enter the Toss payment key that came back from checkout to move the order into paid escrow hold.';
+
+  @override
+  String get ordersPaymentConfirmAction => 'Confirm payment';
+
+  @override
+  String get ordersPaymentKeyLabel => 'Payment key';
+
+  @override
+  String get ordersPaymentKeyHint => 'pay_...';
+
+  @override
+  String ordersPaymentAmountLabel(Object amount) {
+    return 'Amount · $amount';
+  }
+
+  @override
+  String get ordersPaymentProviderLabel => 'Provider';
+
+  @override
+  String get ordersPaymentEmailLabel => 'Buyer email';
+
+  @override
+  String ordersPaymentSuccessUrlLabel(Object url) {
+    return 'Success URL · $url';
+  }
+
+  @override
+  String ordersPaymentFailUrlLabel(Object url) {
+    return 'Fail URL · $url';
+  }
 
   @override
   String get ordersShipmentDialogTitle => 'Shipment details';
@@ -800,6 +854,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ordersActionSuccessShipped => 'Shipment details were saved.';
+
+  @override
+  String get ordersActionSuccessPayment =>
+      'Payment confirmed. The order is now held in escrow.';
 
   @override
   String get ordersActionSuccessReceipt =>

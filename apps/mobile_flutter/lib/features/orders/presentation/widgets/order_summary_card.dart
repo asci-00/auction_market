@@ -15,6 +15,7 @@ class OrderSummaryCard extends StatelessWidget {
     required this.order,
     required this.role,
     required this.isSubmitting,
+    required this.onPreparePayment,
     required this.onAddShipment,
     required this.onConfirmReceipt,
   });
@@ -22,6 +23,7 @@ class OrderSummaryCard extends StatelessWidget {
   final OrderSummary order;
   final OrderSectionRole role;
   final bool isSubmitting;
+  final VoidCallback onPreparePayment;
   final VoidCallback onAddShipment;
   final VoidCallback onConfirmReceipt;
 
@@ -29,8 +31,12 @@ class OrderSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final canShip = role == OrderSectionRole.seller &&
         order.orderStatus == 'PAID_ESCROW_HOLD';
+    final canPay = role == OrderSectionRole.buyer &&
+        order.orderStatus == 'AWAITING_PAYMENT';
     final canConfirmReceipt =
         role == OrderSectionRole.buyer && order.orderStatus == 'SHIPPED';
+    final actionCount =
+        [canPay, canShip, canConfirmReceipt].where((value) => value).length;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -85,10 +91,18 @@ class OrderSummaryCard extends StatelessWidget {
                   style: context.textTheme.bodySmall,
                 ),
               ),
-            if (canShip || canConfirmReceipt) ...[
+            if (canPay || canShip || canConfirmReceipt) ...[
               const SizedBox(height: 16),
               Row(
                 children: [
+                  if (canPay)
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: isSubmitting ? null : onPreparePayment,
+                        child: Text(context.l10n.ordersActionPreparePayment),
+                      ),
+                    ),
+                  if (canPay && actionCount > 1) const SizedBox(width: 12),
                   if (canShip)
                     Expanded(
                       child: OutlinedButton(
@@ -96,6 +110,7 @@ class OrderSummaryCard extends StatelessWidget {
                         child: Text(context.l10n.ordersActionAddShipment),
                       ),
                     ),
+                  if (canShip && canConfirmReceipt) const SizedBox(width: 12),
                   if (canConfirmReceipt)
                     Expanded(
                       child: FilledButton(

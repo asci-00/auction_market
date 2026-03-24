@@ -1442,11 +1442,101 @@ abstract class AppLocalizations {
   /// **'Add shipment'**
   String get ordersActionAddShipment;
 
+  /// No description provided for @ordersActionPreparePayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue payment'**
+  String get ordersActionPreparePayment;
+
   /// No description provided for @ordersActionConfirmReceipt.
   ///
   /// In en, this message translates to:
   /// **'Confirm receipt'**
   String get ordersActionConfirmReceipt;
+
+  /// No description provided for @ordersPaymentSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete payment'**
+  String get ordersPaymentSheetTitle;
+
+  /// No description provided for @ordersPaymentSheetReadyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This order is ready for Toss handoff. Review the payment session details before you continue.'**
+  String get ordersPaymentSheetReadyDescription;
+
+  /// No description provided for @ordersPaymentSheetBlockedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This build can prepare the order, but automatic Toss checkout still needs the final client key and return URL setup. If you already have a payment key, you can still confirm it below.'**
+  String get ordersPaymentSheetBlockedDescription;
+
+  /// No description provided for @ordersPaymentEnterKeyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter payment key'**
+  String get ordersPaymentEnterKeyAction;
+
+  /// No description provided for @ordersPaymentConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm payment'**
+  String get ordersPaymentConfirmTitle;
+
+  /// No description provided for @ordersPaymentConfirmDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the Toss payment key that came back from checkout to move the order into paid escrow hold.'**
+  String get ordersPaymentConfirmDescription;
+
+  /// No description provided for @ordersPaymentConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm payment'**
+  String get ordersPaymentConfirmAction;
+
+  /// No description provided for @ordersPaymentKeyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment key'**
+  String get ordersPaymentKeyLabel;
+
+  /// No description provided for @ordersPaymentKeyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'pay_...'**
+  String get ordersPaymentKeyHint;
+
+  /// No description provided for @ordersPaymentAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount · {amount}'**
+  String ordersPaymentAmountLabel(Object amount);
+
+  /// No description provided for @ordersPaymentProviderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get ordersPaymentProviderLabel;
+
+  /// No description provided for @ordersPaymentEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Buyer email'**
+  String get ordersPaymentEmailLabel;
+
+  /// No description provided for @ordersPaymentSuccessUrlLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Success URL · {url}'**
+  String ordersPaymentSuccessUrlLabel(Object url);
+
+  /// No description provided for @ordersPaymentFailUrlLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fail URL · {url}'**
+  String ordersPaymentFailUrlLabel(Object url);
 
   /// No description provided for @ordersShipmentDialogTitle.
   ///
@@ -1495,6 +1585,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Shipment details were saved.'**
   String get ordersActionSuccessShipped;
+
+  /// No description provided for @ordersActionSuccessPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment confirmed. The order is now held in escrow.'**
+  String get ordersActionSuccessPayment;
 
   /// No description provided for @ordersActionSuccessReceipt.
   ///

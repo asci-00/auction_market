@@ -297,7 +297,37 @@
   "loginDevSeller": "시드 판매자 계정으로 로그인",
   "loginErrorSeedAccountUnavailable": "시드된 에뮬레이터 계정을 찾을 수 없습니다. 에뮬레이터를 시작하고 npm run seed를 다시 실행하세요.",
   "ordersActionAddShipment": "배송 정보 등록",
+  "ordersActionPreparePayment": "결제 진행",
   "ordersActionConfirmReceipt": "수령 확인",
+  "ordersPaymentSheetTitle": "결제 진행",
+  "ordersPaymentSheetReadyDescription": "이 주문은 Toss 결제 전달 준비가 완료되었습니다. 계속 진행하기 전에 세션 정보를 확인해 주세요.",
+  "ordersPaymentSheetBlockedDescription": "이 빌드는 주문 결제 세션까지는 준비할 수 있지만, 자동 Toss checkout을 위해서는 최종 client key와 return URL 구성이 더 필요합니다. 이미 payment key가 있다면 아래에서 바로 확인할 수 있습니다.",
+  "ordersPaymentEnterKeyAction": "payment key 입력",
+  "ordersPaymentConfirmTitle": "결제 확인",
+  "ordersPaymentConfirmDescription": "checkout에서 돌아온 Toss payment key를 입력하면 주문 상태를 결제 완료 에스크로 보관 단계로 전환합니다.",
+  "ordersPaymentConfirmAction": "결제 확인",
+  "ordersPaymentKeyLabel": "payment key",
+  "ordersPaymentKeyHint": "pay_...",
+  "ordersPaymentAmountLabel": "결제 금액 · {amount}",
+  "@ordersPaymentAmountLabel": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ordersPaymentProviderLabel": "결제사",
+  "ordersPaymentEmailLabel": "구매자 이메일",
+  "ordersPaymentSuccessUrlLabel": "성공 URL · {url}",
+  "@ordersPaymentSuccessUrlLabel": {
+    "placeholders": {
+      "url": {}
+    }
+  },
+  "ordersPaymentFailUrlLabel": "실패 URL · {url}",
+  "@ordersPaymentFailUrlLabel": {
+    "placeholders": {
+      "url": {}
+    }
+  },
   "ordersShipmentDialogTitle": "배송 정보",
   "ordersShipmentCarrierLabel": "택배사",
   "ordersShipmentCarrierHint": "CJ Logistics",
@@ -306,6 +336,7 @@
   "ordersShipmentSubmit": "배송 정보 저장",
   "ordersDialogCancel": "취소",
   "ordersActionSuccessShipped": "배송 정보가 저장되었습니다.",
+  "ordersActionSuccessPayment": "결제가 확인되었습니다. 주문이 에스크로 보관 단계로 이동했습니다.",
   "ordersActionSuccessReceipt": "수령 확인이 완료되었습니다. 다음 정산 단계로 넘어갈 수 있습니다.",
   "ordersActionFailed": "주문 액션을 완료하지 못했습니다. 다시 시도하세요.",
   "ordersShipmentSummary": "{carrierName} · {trackingNumber}",
