@@ -64,4 +64,12 @@ class OrderPaymentSession {
       (successUrl?.isNotEmpty ?? false) && (failUrl?.isNotEmpty ?? false);
 
   bool get isDevDummyMode => mode == 'DEV_DUMMY';
+
+  bool get hasDevPaymentKey => devPaymentKey?.isNotEmpty ?? false;
+
+  bool get isRealTossMode => mode == 'TOSS';
+
+  bool get isRealTossReady => isRealTossMode && hasCheckoutHandoff;
+
+  bool get requiresManualConfirmation => !isDevDummyMode || !hasDevPaymentKey;
 }

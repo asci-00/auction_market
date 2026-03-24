@@ -5,6 +5,7 @@ import '../../../core/l10n/app_formatters.dart';
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_panel.dart';
+import '../application/order_payment_handoff_service.dart';
 import '../data/order_payment_session.dart';
 
 class OrderPaymentSheetResult {
@@ -25,6 +26,7 @@ class OrderPaymentSheetResult {
 Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
   BuildContext context, {
   required OrderPaymentSession session,
+  required OrderPaymentHandoffPlan handoffPlan,
 }) {
   return showModalBottomSheet<OrderPaymentSheetResult>(
     context: context,
@@ -35,9 +37,8 @@ Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
     ),
     builder: (sheetContext) {
       final tokens = sheetContext.tokens;
-      final devPaymentKey =
-          session.isDevDummyMode ? session.devPaymentKey?.trim() : null;
-      final canDirectDevConfirm = devPaymentKey?.isNotEmpty ?? false;
+      final devPaymentKey = handoffPlan.paymentKey;
+      final canDirectDevConfirm = handoffPlan.isDevDummy;
 
       return SafeArea(
         child: Padding(
@@ -57,9 +58,9 @@ Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
               ),
               SizedBox(height: tokens.space2),
               Text(
-                session.isDevDummyMode
+                handoffPlan.isDevDummy
                     ? context.l10n.ordersPaymentSheetDevDescription
-                    : session.hasCheckoutHandoff
+                    : handoffPlan.isLauncherReady
                         ? context.l10n.ordersPaymentSheetReadyDescription
                         : context.l10n.ordersPaymentSheetBlockedDescription,
                 style: sheetContext.textTheme.bodyMedium,
@@ -109,8 +110,7 @@ class _OrderPaymentInfoPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
-    final devPaymentKey =
-        session.isDevDummyMode ? session.devPaymentKey?.trim() : null;
+    final devPaymentKey = session.devPaymentKey?.trim();
 
     return AppPanel(
       tone: AppPanelTone.surface,
@@ -154,7 +154,8 @@ class _OrderPaymentInfoPanel extends StatelessWidget {
               style: context.textTheme.bodySmall,
             ),
           ],
-          if (devPaymentKey?.isNotEmpty ?? false) ...[
+          if (session.isDevDummyMode &&
+              (devPaymentKey?.isNotEmpty ?? false)) ...[
             SizedBox(height: tokens.space2),
             Text(
               context.l10n.ordersPaymentDevKeyLabel(devPaymentKey!),

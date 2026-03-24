@@ -10,6 +10,7 @@ import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_motion.dart';
 import '../../../../core/widgets/app_shimmer.dart';
 import '../../application/order_action_service.dart';
+import '../../application/order_payment_handoff_service.dart';
 import '../../data/order_summary.dart';
 import '../order_payment_confirm_dialog.dart';
 import '../order_payment_session_sheet.dart';
@@ -149,20 +150,23 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
       final session = await ref
           .read(orderActionServiceProvider)
           .createPaymentSession(orderId: order.id);
+      final handoffPlan =
+          ref.read(orderPaymentHandoffServiceProvider).buildPlan(session);
       if (!mounted) {
         return;
       }
 
-      final shouldConfirm = await showOrderPaymentSessionSheet(
+      final sheetResult = await showOrderPaymentSessionSheet(
         context,
         session: session,
+        handoffPlan: handoffPlan,
       );
-      if (!mounted || shouldConfirm == null) {
+      if (!mounted || sheetResult == null) {
         return;
       }
 
-      var paymentKey = shouldConfirm.paymentKey;
-      if (shouldConfirm.useManualEntry) {
+      var paymentKey = sheetResult.paymentKey;
+      if (sheetResult.useManualEntry) {
         final draft = await showOrderPaymentConfirmDialog(
           context,
           amount: session.amount,

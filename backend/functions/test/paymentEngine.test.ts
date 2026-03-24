@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildPaymentSessionContract,
   buildWebhookEventMarker,
   extractWebhookSecret,
   isDevDummyPaymentEnabled,
@@ -73,6 +74,103 @@ describe('payment engine', () => {
         FUNCTIONS_EMULATOR: 'true',
       } as NodeJS.ProcessEnv),
     ).toBe(false);
+  });
+
+  it('builds dev dummy payment session without app base url', () => {
+    const contract = buildPaymentSessionContract({
+      appEnv: 'dev',
+      appBaseUrl: null,
+      orderId: 'order-1',
+      allowDevDummyPayment: true,
+      buildDevPaymentKey: (orderId) => `dev_pay_${orderId}`,
+    });
+
+    expect(contract).toEqual({
+      mode: 'DEV_DUMMY',
+      successUrl: null,
+      failUrl: null,
+      devPaymentKey: 'dev_pay_order-1',
+    });
+  });
+
+  it('builds toss payment session urls and trims trailing slash', () => {
+    const contract = buildPaymentSessionContract({
+      appEnv: 'staging',
+      appBaseUrl: 'https://app.example.com/',
+      orderId: 'order-1',
+      allowDevDummyPayment: false,
+      buildDevPaymentKey: (orderId) => `dev_pay_${orderId}`,
+    });
+
+    expect(contract).toEqual({
+      mode: 'TOSS',
+      successUrl: 'https://app.example.com/payments/success?orderId=order-1',
+      failUrl: 'https://app.example.com/payments/fail?orderId=order-1',
+      devPaymentKey: null,
+    });
+  });
+
+  it('keeps app base path and drops query noise when building payment urls', () => {
+    const contract = buildPaymentSessionContract({
+      appEnv: 'prod',
+      appBaseUrl: 'https://app.example.com/mobile/?foo=bar',
+      orderId: 'order-1',
+      allowDevDummyPayment: false,
+      buildDevPaymentKey: (orderId) => `dev_pay_${orderId}`,
+    });
+
+    expect(contract.successUrl).toBe(
+      'https://app.example.com/mobile/payments/success?orderId=order-1',
+    );
+    expect(contract.failUrl).toBe(
+      'https://app.example.com/mobile/payments/fail?orderId=order-1',
+    );
+  });
+
+  it('requires app base url when toss handoff must be prepared', () => {
+    expect(() =>
+      buildPaymentSessionContract({
+        appEnv: 'staging',
+        appBaseUrl: null,
+        orderId: 'order-1',
+        allowDevDummyPayment: false,
+        buildDevPaymentKey: (orderId) => `dev_pay_${orderId}`,
+      }),
+    ).toThrowError('APP_BASE_URL is required outside dev builds.');
+
+    expect(() =>
+      buildPaymentSessionContract({
+        appEnv: 'dev',
+        appBaseUrl: null,
+        orderId: 'order-1',
+        allowDevDummyPayment: false,
+        buildDevPaymentKey: (orderId) => `dev_pay_${orderId}`,
+      }),
+    ).toThrowError(
+      'APP_BASE_URL is required when dev dummy payment is unavailable.',
+    );
+  });
+
+  it('rejects invalid app base urls', () => {
+    expect(() =>
+      buildPaymentSessionContract({
+        appEnv: 'staging',
+        appBaseUrl: 'notaurl',
+        orderId: 'order-1',
+        allowDevDummyPayment: false,
+        buildDevPaymentKey: (orderId) => `dev_pay_${orderId}`,
+      }),
+    ).toThrowError('APP_BASE_URL must be a valid http or https URL.');
+
+    expect(() =>
+      buildPaymentSessionContract({
+        appEnv: 'staging',
+        appBaseUrl: 'app://payments',
+        orderId: 'order-1',
+        allowDevDummyPayment: false,
+        buildDevPaymentKey: (orderId) => `dev_pay_${orderId}`,
+      }),
+    ).toThrowError('APP_BASE_URL must use http or https.');
   });
 
   it('marks confirmed payments as paid escrow hold', () => {

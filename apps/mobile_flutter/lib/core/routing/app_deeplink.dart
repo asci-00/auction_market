@@ -16,6 +16,13 @@ String? normalizeAppDeepLink(Uri uri) {
       return '/orders';
     case 'notifications':
       return '/notifications';
+    case 'payments':
+      if (uri.pathSegments.isEmpty) {
+        return '/orders';
+      }
+      final nextPath = '/payments/${uri.pathSegments.first}';
+      final query = uri.hasQuery ? '?${uri.query}' : '';
+      return '$nextPath$query';
     default:
       return '/home';
   }
