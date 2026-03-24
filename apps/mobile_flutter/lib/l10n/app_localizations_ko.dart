@@ -236,6 +236,58 @@ class AppLocalizationsKo extends AppLocalizations {
   String get activityNotificationsSubtitle => '입찰, 결제, 배송 소식을 알림함에서 바로 엽니다.';
 
   @override
+  String get activityBuyerCardTitle => '구매 작업함';
+
+  @override
+  String get activityBuyerCardDescription => '결제와 수령 확인이 필요한 주문을 한 곳에서 정리합니다.';
+
+  @override
+  String activityBuyerPendingPaymentSubtitle(Object count) {
+    return '$count건의 주문이 아직 결제 확인을 기다리고 있습니다.';
+  }
+
+  @override
+  String activityBuyerAwaitingReceiptSubtitle(Object count) {
+    return '$count건의 배송 완료 주문이 수령 확인을 기다리고 있습니다.';
+  }
+
+  @override
+  String get activityBuyerMetricLabel => '구매자 액션 대기';
+
+  @override
+  String get activitySellerCardTitle => '판매 작업함';
+
+  @override
+  String get activitySellerCardDescription =>
+      '결제 완료 후 배송 등록이 필요한 주문을 바로 확인합니다.';
+
+  @override
+  String activitySellerAwaitingShipmentSubtitle(Object count) {
+    return '$count건의 결제 완료 주문이 배송 정보를 기다리고 있습니다.';
+  }
+
+  @override
+  String get activitySellerMetricLabel => '판매자 액션 대기';
+
+  @override
+  String get activityNotificationsCardTitle => '읽지 않은 업데이트';
+
+  @override
+  String get activityNotificationsCardDescription =>
+      '입찰, 결제, 배송 이벤트가 생기면 알림함에서 바로 엽니다.';
+
+  @override
+  String activityNotificationsUnreadSubtitle(Object count) {
+    return '$count건의 읽지 않은 업데이트가 알림함에 남아 있습니다.';
+  }
+
+  @override
+  String get activityNotificationsMetricLabel => '읽지 않은 알림';
+
+  @override
+  String get activitySignedOutDescription => '로그인하면 실시간 주문과 알림 활동을 확인할 수 있습니다.';
+
+  @override
   String get auctionDetailTitle => '경매 상세';
 
   @override

@@ -536,6 +536,90 @@ abstract class AppLocalizations {
   /// **'Open bid, payment, and delivery updates from your inbox.'**
   String get activityNotificationsSubtitle;
 
+  /// No description provided for @activityBuyerCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Buyer queue'**
+  String get activityBuyerCardTitle;
+
+  /// No description provided for @activityBuyerCardDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep up with payment and receipt actions from one place.'**
+  String get activityBuyerCardDescription;
+
+  /// No description provided for @activityBuyerPendingPaymentSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} orders still need payment confirmation.'**
+  String activityBuyerPendingPaymentSubtitle(Object count);
+
+  /// No description provided for @activityBuyerAwaitingReceiptSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} delivered orders still need receipt confirmation.'**
+  String activityBuyerAwaitingReceiptSubtitle(Object count);
+
+  /// No description provided for @activityBuyerMetricLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'buyer actions pending'**
+  String get activityBuyerMetricLabel;
+
+  /// No description provided for @activitySellerCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller queue'**
+  String get activitySellerCardTitle;
+
+  /// No description provided for @activitySellerCardDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay on top of shipment handoff after payment clears.'**
+  String get activitySellerCardDescription;
+
+  /// No description provided for @activitySellerAwaitingShipmentSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} paid orders are waiting for shipment details.'**
+  String activitySellerAwaitingShipmentSubtitle(Object count);
+
+  /// No description provided for @activitySellerMetricLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'seller actions pending'**
+  String get activitySellerMetricLabel;
+
+  /// No description provided for @activityNotificationsCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread updates'**
+  String get activityNotificationsCardTitle;
+
+  /// No description provided for @activityNotificationsCardDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the inbox when bids, payment, or delivery events need attention.'**
+  String get activityNotificationsCardDescription;
+
+  /// No description provided for @activityNotificationsUnreadSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} unread updates are waiting in your inbox.'**
+  String activityNotificationsUnreadSubtitle(Object count);
+
+  /// No description provided for @activityNotificationsMetricLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'unread alerts'**
+  String get activityNotificationsMetricLabel;
+
+  /// No description provided for @activitySignedOutDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to see your live order and inbox activity.'**
+  String get activitySignedOutDescription;
+
   /// No description provided for @auctionDetailTitle.
   ///
   /// In en, this message translates to:

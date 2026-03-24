@@ -37,6 +37,7 @@
 - Login now splits seeded dev account data, auth action execution, error mapping, and panel widgets instead of keeping provider setup and every visual block in one file.
 - Sell now runs live Storage image uploads plus `createOrUpdateItem` and `createAuctionFromItem`, stores draft pricing metadata in Firestore, reloads saved drafts into the editor, and keeps the route screen thin by splitting panels and action logic into feature files.
 - Home, search, and my now also split Firestore document mapping, filtering helpers, and repeated section widgets away from the route screen files, so those route widgets mainly compose streams, sections, and navigation.
+- Activity now reads live buyer orders, seller orders, and inbox notifications to show the next payment, shipment, receipt, and unread-alert queues instead of linking through static cards only.
 - Orders now runs live payment-session preparation, payment confirmation, shipment update, and receipt confirmation callables from the mobile UI, and notifications mark themselves as read before routing when the callable succeeds.
 - Backend callables now cover bootstrap, item draft save, auction publish, cancel, relist, bid, auto-bid, buy-now, payment session creation, Toss payment confirmation, shipment update, receipt confirmation, and notification read state.
 - Toss webhook handling now exists as `tossPaymentWebhook` and updates payment and order state idempotently.

@@ -73,6 +73,40 @@
   "activityOrdersSubtitle": "Track what needs payment, shipment, or confirmation next.",
   "activityNotificationsTitle": "Inbox and alerts",
   "activityNotificationsSubtitle": "Open bid, payment, and delivery updates from your inbox.",
+  "activityBuyerCardTitle": "Buyer queue",
+  "activityBuyerCardDescription": "Keep up with payment and receipt actions from one place.",
+  "activityBuyerPendingPaymentSubtitle": "{count} orders still need payment confirmation.",
+  "@activityBuyerPendingPaymentSubtitle": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "activityBuyerAwaitingReceiptSubtitle": "{count} delivered orders still need receipt confirmation.",
+  "@activityBuyerAwaitingReceiptSubtitle": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "activityBuyerMetricLabel": "buyer actions pending",
+  "activitySellerCardTitle": "Seller queue",
+  "activitySellerCardDescription": "Stay on top of shipment handoff after payment clears.",
+  "activitySellerAwaitingShipmentSubtitle": "{count} paid orders are waiting for shipment details.",
+  "@activitySellerAwaitingShipmentSubtitle": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "activitySellerMetricLabel": "seller actions pending",
+  "activityNotificationsCardTitle": "Unread updates",
+  "activityNotificationsCardDescription": "Open the inbox when bids, payment, or delivery events need attention.",
+  "activityNotificationsUnreadSubtitle": "{count} unread updates are waiting in your inbox.",
+  "@activityNotificationsUnreadSubtitle": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "activityNotificationsMetricLabel": "unread alerts",
+  "activitySignedOutDescription": "Sign in to see your live order and inbox activity.",
   "auctionDetailTitle": "Auction detail",
   "auctionDetailGalleryEyebrow": "Listing overview",
   "auctionDetailFallbackTitle": "Listing details are on the way",

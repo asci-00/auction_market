@@ -251,6 +251,60 @@ class AppLocalizationsEn extends AppLocalizations {
       'Open bid, payment, and delivery updates from your inbox.';
 
   @override
+  String get activityBuyerCardTitle => 'Buyer queue';
+
+  @override
+  String get activityBuyerCardDescription =>
+      'Keep up with payment and receipt actions from one place.';
+
+  @override
+  String activityBuyerPendingPaymentSubtitle(Object count) {
+    return '$count orders still need payment confirmation.';
+  }
+
+  @override
+  String activityBuyerAwaitingReceiptSubtitle(Object count) {
+    return '$count delivered orders still need receipt confirmation.';
+  }
+
+  @override
+  String get activityBuyerMetricLabel => 'buyer actions pending';
+
+  @override
+  String get activitySellerCardTitle => 'Seller queue';
+
+  @override
+  String get activitySellerCardDescription =>
+      'Stay on top of shipment handoff after payment clears.';
+
+  @override
+  String activitySellerAwaitingShipmentSubtitle(Object count) {
+    return '$count paid orders are waiting for shipment details.';
+  }
+
+  @override
+  String get activitySellerMetricLabel => 'seller actions pending';
+
+  @override
+  String get activityNotificationsCardTitle => 'Unread updates';
+
+  @override
+  String get activityNotificationsCardDescription =>
+      'Open the inbox when bids, payment, or delivery events need attention.';
+
+  @override
+  String activityNotificationsUnreadSubtitle(Object count) {
+    return '$count unread updates are waiting in your inbox.';
+  }
+
+  @override
+  String get activityNotificationsMetricLabel => 'unread alerts';
+
+  @override
+  String get activitySignedOutDescription =>
+      'Sign in to see your live order and inbox activity.';
+
+  @override
   String get auctionDetailTitle => 'Auction detail';
 
   @override
