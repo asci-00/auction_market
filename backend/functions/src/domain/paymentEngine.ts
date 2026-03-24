@@ -26,9 +26,10 @@ export function isDevDummyPaymentEnabled(
     return false;
   }
 
+  const firestoreHost = env.FIRESTORE_EMULATOR_HOST?.trim();
   return (
     env.FUNCTIONS_EMULATOR === 'true' ||
-    typeof env.FIRESTORE_EMULATOR_HOST === 'string'
+    Boolean(firestoreHost)
   );
 }
 

@@ -71,7 +71,8 @@ class OrderSummaryCard extends StatelessWidget {
               localizedOrderStatus(context, order.orderStatus),
               style: context.textTheme.bodyMedium,
             ),
-            if (order.paymentDueAt != null) ...[
+            if (order.orderStatus == 'AWAITING_PAYMENT' &&
+                order.paymentDueAt != null) ...[
               SizedBox(height: tokens.space3),
               _PaymentDuePlate(order: order),
             ],

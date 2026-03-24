@@ -46,9 +46,9 @@ class _AppLiveCountdownTextState extends State<AppLiveCountdownText> {
   @override
   Widget build(BuildContext context) {
     final remaining = widget.targetTime.difference(DateTime.now());
-    final keyLabel = remaining.isNegative
-        ? 'expired'
-        : formatRelativeCountdown(context, remaining);
+    final isExpired = remaining <= Duration.zero;
+    final keyLabel =
+        isExpired ? 'expired' : formatRelativeCountdown(context, remaining);
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 220),
@@ -64,7 +64,7 @@ class _AppLiveCountdownTextState extends State<AppLiveCountdownText> {
           child: SlideTransition(position: offset, child: child),
         );
       },
-      child: remaining.isNegative
+      child: isExpired
           ? KeyedSubtree(
               key: const ValueKey('expired'),
               child: widget.expiredBuilder?.call(context) ?? const SizedBox(),
@@ -79,18 +79,31 @@ class _AppLiveCountdownTextState extends State<AppLiveCountdownText> {
   void _scheduleTick() {
     _timer?.cancel();
     final remaining = widget.targetTime.difference(DateTime.now());
-    if (remaining.isNegative) {
+    if (remaining <= Duration.zero) {
       return;
     }
 
     final interval = remaining.inMinutes <= 1
         ? const Duration(seconds: 1)
         : const Duration(minutes: 1);
-    _timer = Timer.periodic(interval, (_) {
+    _timer = Timer.periodic(interval, (timer) {
+      final nextRemaining = widget.targetTime.difference(DateTime.now());
+      if (nextRemaining <= Duration.zero) {
+        timer.cancel();
+      }
       if (!mounted) {
         return;
       }
       setState(() {});
+      if (nextRemaining > Duration.zero &&
+          nextRemaining.inMinutes > 1 &&
+          interval != const Duration(minutes: 1)) {
+        _scheduleTick();
+      } else if (nextRemaining > Duration.zero &&
+          nextRemaining.inMinutes <= 1 &&
+          interval != const Duration(seconds: 1)) {
+        _scheduleTick();
+      }
     });
   }
 }

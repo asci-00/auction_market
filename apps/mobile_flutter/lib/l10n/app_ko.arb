@@ -318,6 +318,7 @@
     }
   },
   "genericCountdownExpired": "만료",
+  "genericCountdownLessThanMinute": "1분 미만 남음",
   "genericCountdownMinutesRemaining": "{minutes}분 남음",
   "@genericCountdownMinutesRemaining": {
     "placeholders": {

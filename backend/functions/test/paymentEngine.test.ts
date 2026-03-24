@@ -59,6 +59,16 @@ describe('payment engine', () => {
       false,
     );
     expect(
+      isDevDummyPaymentEnabled('dev', {
+        FIRESTORE_EMULATOR_HOST: '',
+      } as NodeJS.ProcessEnv),
+    ).toBe(false);
+    expect(
+      isDevDummyPaymentEnabled('dev', {
+        FIRESTORE_EMULATOR_HOST: '   ',
+      } as NodeJS.ProcessEnv),
+    ).toBe(false);
+    expect(
       isDevDummyPaymentEnabled('staging', {
         FUNCTIONS_EMULATOR: 'true',
       } as NodeJS.ProcessEnv),

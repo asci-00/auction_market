@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'app_localization.dart';
+
 String formatKrw(BuildContext context, num amount) {
   final locale = Localizations.localeOf(context).toLanguageTag();
   return NumberFormat.currency(
@@ -17,34 +19,28 @@ String formatCompactDateTime(BuildContext context, DateTime dateTime) {
 }
 
 String formatRelativeCountdown(BuildContext context, Duration remaining) {
-  final locale = Localizations.localeOf(context).toLanguageTag();
+  final l10n = context.l10n;
   final totalSeconds = remaining.inSeconds;
   if (totalSeconds <= 0) {
-    return locale.startsWith('ko') ? '마감' : 'Closed';
+    return l10n.genericCountdownExpired;
   }
 
   if (totalSeconds < 60) {
-    return locale.startsWith('ko') ? '1분 미만 남음' : 'under 1m left';
+    return l10n.genericCountdownLessThanMinute;
   }
 
   final totalMinutes = remaining.inMinutes;
   if (totalMinutes < 60) {
-    return locale.startsWith('ko')
-        ? '$totalMinutes분 남음'
-        : '${totalMinutes}m left';
+    return l10n.genericCountdownMinutesRemaining(totalMinutes);
   }
 
   final totalHours = remaining.inHours;
   final minutes = totalMinutes.remainder(60);
   if (totalHours < 24) {
-    return locale.startsWith('ko')
-        ? '$totalHours시간 $minutes분 남음'
-        : '${totalHours}h ${minutes}m left';
+    return l10n.genericCountdownHoursRemaining(totalHours, minutes);
   }
 
   final days = remaining.inDays;
   final hours = totalHours.remainder(24);
-  return locale.startsWith('ko')
-      ? '$days일 $hours시간 남음'
-      : '${days}d ${hours}h left';
+  return l10n.genericCountdownDaysRemaining(days, hours);
 }

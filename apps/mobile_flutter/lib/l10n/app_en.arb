@@ -318,6 +318,7 @@
     }
   },
   "genericCountdownExpired": "Expired",
+  "genericCountdownLessThanMinute": "under 1m left",
   "genericCountdownMinutesRemaining": "{minutes}m left",
   "@genericCountdownMinutesRemaining": {
     "placeholders": {
