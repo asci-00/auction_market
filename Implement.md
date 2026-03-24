@@ -1,7 +1,7 @@
 # Auction Market Execution Log
 
 ## Current Task
-- Phase 3 mobile flow work is active. Sell now supports real image upload, draft save, draft reload, and auction publish, and the next unfinished product gap is the buyer payment path from order timeline through Toss confirmation.
+- Phase 3 mobile flow work is active. Orders now support live payment session preparation and payment confirmation callables from the buyer timeline, and the next unfinished product gap is the final automated Toss checkout handoff once real client key and return URL values are available.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -37,7 +37,8 @@
 - Login now splits seeded dev account data, auth action execution, error mapping, and panel widgets instead of keeping provider setup and every visual block in one file.
 - Sell now runs live Storage image uploads plus `createOrUpdateItem` and `createAuctionFromItem`, stores draft pricing metadata in Firestore, reloads saved drafts into the editor, and keeps the route screen thin by splitting panels and action logic into feature files.
 - Home, search, and my now also split Firestore document mapping, filtering helpers, and repeated section widgets away from the route screen files, so those route widgets mainly compose streams, sections, and navigation.
-- Orders now runs live shipment update and receipt confirmation callables from the mobile UI, and notifications mark themselves as read before routing when the callable succeeds.
+- Activity now reads live buyer orders, seller orders, and inbox notifications to show the next payment, shipment, receipt, and unread-alert queues instead of linking through static cards only.
+- Orders now runs live payment-session preparation, payment confirmation, shipment update, and receipt confirmation callables from the mobile UI, and notifications mark themselves as read before routing when the callable succeeds.
 - Backend callables now cover bootstrap, item draft save, auction publish, cancel, relist, bid, auto-bid, buy-now, payment session creation, Toss payment confirmation, shipment update, receipt confirmation, and notification read state.
 - Toss webhook handling now exists as `tossPaymentWebhook` and updates payment and order state idempotently.
 - Emulator seed now creates buyer and seller profiles, live and ended auctions, bids, auto-bid config, an awaiting-payment order, and inbox notifications.
@@ -63,8 +64,9 @@
 3. `cd apps/mobile_flutter && flutter run --dart-define-from-file=dart_defines.json`
 4. In `dev` emulator mode, sign in as `seller1`, save a draft with gallery and auth images, publish the auction, and verify the app opens the live auction detail route.
 5. Sign in as `buyer1`, open a live auction, place a bid or save an auto-bid ceiling, then complete buy-now and confirm the order timeline opens.
-6. Still in `dev`, sign in as `seller1` and register shipment for `order-paid`, then sign back in as `buyer1` and confirm receipt from the same order.
-7. Fill `backend/functions/.env` and `apps/mobile_flutter/dart_defines.json` with real Toss values for staging and prod verification.
+6. Still as `buyer1`, open an `AWAITING_PAYMENT` order, prepare the payment session, and verify the payment confirmation flow can accept a Toss `paymentKey` and move the order to paid escrow hold.
+7. Sign in as `seller1` and register shipment for `order-paid`, then sign back in as `buyer1` and confirm receipt from the same order.
+8. Fill `backend/functions/.env` and `apps/mobile_flutter/dart_defines.json` with real Toss values for staging and prod verification.
 
 ## Update Rules
 - Keep this file short.

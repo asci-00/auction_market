@@ -9,6 +9,8 @@ import '../../../../core/l10n/app_localization.dart';
 import '../../../../core/widgets/app_empty_state.dart';
 import '../../application/order_action_service.dart';
 import '../../data/order_summary.dart';
+import '../order_payment_confirm_dialog.dart';
+import '../order_payment_session_sheet.dart';
 import '../order_section_role.dart';
 import '../order_shipment_dialog.dart';
 import 'order_summary_card.dart';
@@ -101,6 +103,7 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
               order: order,
               role: widget.role,
               isSubmitting: _submittingOrderIds.contains(order.id),
+              onPreparePayment: () => _preparePayment(order),
               onAddShipment: () => _openShipmentDialog(order.id),
               onConfirmReceipt: () => _confirmReceipt(order.id),
             );
@@ -125,6 +128,66 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
           ),
       successMessage: context.l10n.ordersActionSuccessShipped,
     );
+  }
+
+  Future<void> _preparePayment(OrderSummary order) async {
+    setState(() {
+      _submittingOrderIds.add(order.id);
+    });
+
+    try {
+      final session = await ref
+          .read(orderActionServiceProvider)
+          .createPaymentSession(orderId: order.id);
+      if (!mounted) {
+        return;
+      }
+
+      final shouldConfirm = await showOrderPaymentSessionSheet(
+        context,
+        session: session,
+      );
+      if (!mounted || shouldConfirm != true) {
+        return;
+      }
+
+      final draft = await showOrderPaymentConfirmDialog(
+        context,
+        amount: session.amount,
+      );
+      if (!mounted || draft == null) {
+        return;
+      }
+
+      await ref.read(orderActionServiceProvider).confirmPayment(
+            orderId: order.id,
+            paymentKey: draft.paymentKey,
+            amount: session.amount,
+          );
+      if (!mounted) {
+        return;
+      }
+
+      context.showSnackBarMessage(context.l10n.ordersActionSuccessPayment);
+    } on FirebaseFunctionsException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      context.showErrorSnackBar(
+        error.message ?? context.l10n.ordersActionFailed,
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      context.showErrorSnackBar(context.l10n.ordersActionFailed);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _submittingOrderIds.remove(order.id);
+        });
+      }
+    }
   }
 
   Future<void> _confirmReceipt(String orderId) {

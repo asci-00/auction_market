@@ -73,6 +73,40 @@
   "activityOrdersSubtitle": "결제, 배송, 수령 확인이 필요한 거래를 빠르게 확인합니다.",
   "activityNotificationsTitle": "알림함과 업데이트",
   "activityNotificationsSubtitle": "입찰, 결제, 배송 소식을 알림함에서 바로 엽니다.",
+  "activityBuyerCardTitle": "구매 작업함",
+  "activityBuyerCardDescription": "결제와 수령 확인이 필요한 주문을 한 곳에서 정리합니다.",
+  "activityBuyerPendingPaymentSubtitle": "{count}건의 주문이 아직 결제 확인을 기다리고 있습니다.",
+  "@activityBuyerPendingPaymentSubtitle": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "activityBuyerAwaitingReceiptSubtitle": "{count}건의 배송 완료 주문이 수령 확인을 기다리고 있습니다.",
+  "@activityBuyerAwaitingReceiptSubtitle": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "activityBuyerMetricLabel": "구매자 액션 대기",
+  "activitySellerCardTitle": "판매 작업함",
+  "activitySellerCardDescription": "결제 완료 후 배송 등록이 필요한 주문을 바로 확인합니다.",
+  "activitySellerAwaitingShipmentSubtitle": "{count}건의 결제 완료 주문이 배송 정보를 기다리고 있습니다.",
+  "@activitySellerAwaitingShipmentSubtitle": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "activitySellerMetricLabel": "판매자 액션 대기",
+  "activityNotificationsCardTitle": "읽지 않은 업데이트",
+  "activityNotificationsCardDescription": "입찰, 결제, 배송 이벤트가 생기면 알림함에서 바로 엽니다.",
+  "activityNotificationsUnreadSubtitle": "{count}건의 읽지 않은 업데이트가 알림함에 남아 있습니다.",
+  "@activityNotificationsUnreadSubtitle": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "activityNotificationsMetricLabel": "읽지 않은 알림",
+  "activitySignedOutDescription": "로그인하면 실시간 주문과 알림 활동을 확인할 수 있습니다.",
   "auctionDetailTitle": "경매 상세",
   "auctionDetailGalleryEyebrow": "리스팅 개요",
   "auctionDetailFallbackTitle": "리스팅 정보가 곧 준비됩니다",
@@ -297,7 +331,38 @@
   "loginDevSeller": "시드 판매자 계정으로 로그인",
   "loginErrorSeedAccountUnavailable": "시드된 에뮬레이터 계정을 찾을 수 없습니다. 에뮬레이터를 시작하고 npm run seed를 다시 실행하세요.",
   "ordersActionAddShipment": "배송 정보 등록",
+  "ordersActionPreparePayment": "결제 진행",
   "ordersActionConfirmReceipt": "수령 확인",
+  "ordersPaymentSheetTitle": "결제 진행",
+  "ordersPaymentSheetReadyDescription": "이 주문은 Toss 결제 전달 준비가 완료되었습니다. 계속 진행하기 전에 세션 정보를 확인해 주세요.",
+  "ordersPaymentSheetBlockedDescription": "이 빌드는 주문 결제 세션까지는 준비할 수 있지만, 자동 Toss checkout을 위해서는 최종 client key와 return URL 구성이 더 필요합니다. 이미 payment key가 있다면 아래에서 바로 확인할 수 있습니다.",
+  "ordersPaymentEnterKeyAction": "payment key 입력",
+  "ordersPaymentConfirmTitle": "결제 확인",
+  "ordersPaymentConfirmDescription": "checkout에서 돌아온 Toss payment key를 입력하면 주문 상태를 결제 완료 에스크로 보관 단계로 전환합니다.",
+  "ordersPaymentConfirmAction": "결제 확인",
+  "ordersPaymentKeyLabel": "payment key",
+  "ordersPaymentKeyHint": "pay_...",
+  "ordersPaymentKeyRequiredError": "계속하려면 payment key를 입력해 주세요.",
+  "ordersPaymentAmountLabel": "결제 금액 · {amount}",
+  "@ordersPaymentAmountLabel": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
+  "ordersPaymentProviderLabel": "결제사",
+  "ordersPaymentEmailLabel": "구매자 이메일",
+  "ordersPaymentSuccessUrlLabel": "성공 URL · {url}",
+  "@ordersPaymentSuccessUrlLabel": {
+    "placeholders": {
+      "url": {}
+    }
+  },
+  "ordersPaymentFailUrlLabel": "실패 URL · {url}",
+  "@ordersPaymentFailUrlLabel": {
+    "placeholders": {
+      "url": {}
+    }
+  },
   "ordersShipmentDialogTitle": "배송 정보",
   "ordersShipmentCarrierLabel": "택배사",
   "ordersShipmentCarrierHint": "CJ Logistics",
@@ -306,6 +371,7 @@
   "ordersShipmentSubmit": "배송 정보 저장",
   "ordersDialogCancel": "취소",
   "ordersActionSuccessShipped": "배송 정보가 저장되었습니다.",
+  "ordersActionSuccessPayment": "결제가 확인되었습니다. 주문이 에스크로 보관 단계로 이동했습니다.",
   "ordersActionSuccessReceipt": "수령 확인이 완료되었습니다. 다음 정산 단계로 넘어갈 수 있습니다.",
   "ordersActionFailed": "주문 액션을 완료하지 못했습니다. 다시 시도하세요.",
   "ordersShipmentSummary": "{carrierName} · {trackingNumber}",
