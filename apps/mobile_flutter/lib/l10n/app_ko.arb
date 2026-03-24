@@ -342,6 +342,7 @@
   "ordersPaymentConfirmAction": "결제 확인",
   "ordersPaymentKeyLabel": "payment key",
   "ordersPaymentKeyHint": "pay_...",
+  "ordersPaymentKeyRequiredError": "계속하려면 payment key를 입력해 주세요.",
   "ordersPaymentAmountLabel": "결제 금액 · {amount}",
   "@ordersPaymentAmountLabel": {
     "placeholders": {

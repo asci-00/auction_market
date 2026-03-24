@@ -342,6 +342,7 @@
   "ordersPaymentConfirmAction": "Confirm payment",
   "ordersPaymentKeyLabel": "Payment key",
   "ordersPaymentKeyHint": "pay_...",
+  "ordersPaymentKeyRequiredError": "Enter the payment key to continue.",
   "ordersPaymentAmountLabel": "Amount · {amount}",
   "@ordersPaymentAmountLabel": {
     "placeholders": {
