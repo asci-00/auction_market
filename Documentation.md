@@ -104,6 +104,7 @@
   - `settleScheduler`
 - Critical transitions now write `auditEvents` records for user bootstrap, item and auction lifecycle, bids, payment confirmation and failure, shipment, receipt confirmation, unpaid expiry, and settlement.
 - `createPaymentSession` now returns `mode: "DEV_DUMMY"` plus a deterministic `devPaymentKey` in `dev`, so the mobile app can validate buyer payment progression without pretending to launch a production checkout.
+- The `DEV_DUMMY` payment path is emulator-only. If the backend is not running under the Firebase Emulator Suite, `createPaymentSession` falls back to `mode: "TOSS"` and requires `APP_BASE_URL` for success and fail return URLs.
 - The Toss webhook path verifies the configured webhook secret from the payload, applies idempotent payment transitions through `payment.lastWebhookEventId`, and updates the order instead of relying on a mock payment mutation.
 - The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `seller1`, and `ops1`, a live auction with bids and auto-bid config, an ended auction with an awaiting-payment order, and inbox notifications for both sides.
 - The default seeded `order-paid` document now starts in `PAID_ESCROW_HOLD` with empty shipping data, so the seller can submit shipment first and the buyer can confirm receipt afterward during emulator smoke tests.
@@ -357,9 +358,12 @@
   - End auction immediately and create the order in `AWAITING_PAYMENT`.
 - `createPaymentSession`
   - Validate order ownership and status.
-  - Return safe client payment payload for Toss widget or SDK, including success and fail return URLs when `APP_BASE_URL` is configured.
+  - Return a payment payload with `mode`.
+  - In Firebase Emulator `dev`, return `mode: "DEV_DUMMY"` plus deterministic `devPaymentKey: "dev_pay_{orderId}"` so the mobile app can confirm the seeded flow without launching Toss checkout.
+  - Outside emulator-backed `dev`, return `mode: "TOSS"` and include success and fail return URLs from `APP_BASE_URL`.
 - `confirmOrderPayment`
-  - Confirm payment against Toss `/v1/payments/confirm`.
+  - Accept the deterministic `dev_pay_{orderId}` key only for emulator-backed `DEV_DUMMY` sessions.
+  - Otherwise confirm payment against Toss `/v1/payments/confirm`.
   - Update the order idempotently and notify the seller on success.
 - `shipmentUpdate`
   - Validate seller ownership and shipping state.

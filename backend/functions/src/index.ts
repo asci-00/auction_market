@@ -18,6 +18,7 @@ import {
 import {
   buildWebhookEventMarker,
   extractWebhookSecret,
+  isDevDummyPaymentEnabled,
   isDuplicatePaymentConfirmation,
   normalizeWebhookPayment,
   toCancelledPaymentOrder,
@@ -1140,10 +1141,17 @@ export const createPaymentSession = onCall(async (req) => {
       'Order is not awaiting payment',
     );
   }
+  const allowDevDummyPayment = isDevDummyPaymentEnabled(config.appEnv);
   if (config.appEnv !== 'dev' && !config.appBaseUrl) {
     throw new HttpsError(
       'failed-precondition',
       'APP_BASE_URL is required outside dev builds.',
+    );
+  }
+  if (!allowDevDummyPayment && !config.appBaseUrl) {
+    throw new HttpsError(
+      'failed-precondition',
+      'APP_BASE_URL is required when dev dummy payment is unavailable.',
     );
   }
 
@@ -1156,7 +1164,7 @@ export const createPaymentSession = onCall(async (req) => {
 
   const response: PaymentSessionResponse = {
     provider: 'TOSS_PAYMENTS',
-    mode: config.appEnv === 'dev' ? 'DEV_DUMMY' : 'TOSS',
+    mode: allowDevDummyPayment ? 'DEV_DUMMY' : 'TOSS',
     orderId,
     amount: order.finalPrice,
     orderName: buildOrderName(order.auctionId),
@@ -1164,7 +1172,7 @@ export const createPaymentSession = onCall(async (req) => {
     customerEmail: optionalString(req.auth?.token?.email) ?? null,
     successUrl,
     failUrl,
-    devPaymentKey: config.appEnv === 'dev' ? buildDevPaymentKey(orderId) : null,
+    devPaymentKey: allowDevDummyPayment ? buildDevPaymentKey(orderId) : null,
   };
 
   return response;
@@ -1184,6 +1192,7 @@ export const confirmOrderPayment = onCall(async (req) => {
   }
 
   const config = getRuntimeConfig();
+  const allowDevDummyPayment = isDevDummyPaymentEnabled(config.appEnv);
   const orderRef = db.collection('orders').doc(orderId);
   const orderSnap = await orderRef.get();
   if (!orderSnap.exists) {
@@ -1212,7 +1221,7 @@ export const confirmOrderPayment = onCall(async (req) => {
 
   let payment: ConfirmTossPaymentResponse;
   try {
-    if (config.appEnv === 'dev' && paymentKey === buildDevPaymentKey(orderId)) {
+    if (allowDevDummyPayment && paymentKey === buildDevPaymentKey(orderId)) {
       payment = {
         paymentKey,
         method: 'DEV_DUMMY',

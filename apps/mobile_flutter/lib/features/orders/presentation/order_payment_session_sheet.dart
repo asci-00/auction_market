@@ -35,6 +35,9 @@ Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
     ),
     builder: (sheetContext) {
       final tokens = sheetContext.tokens;
+      final devPaymentKey =
+          session.isDevDummyMode ? session.devPaymentKey?.trim() : null;
+      final canDirectDevConfirm = devPaymentKey?.isNotEmpty ?? false;
 
       return SafeArea(
         child: Padding(
@@ -68,11 +71,10 @@ Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: () {
-                    if (session.isDevDummyMode &&
-                        session.devPaymentKey != null) {
+                    if (canDirectDevConfirm) {
                       Navigator.of(sheetContext).pop(
                         OrderPaymentSheetResult.directConfirm(
-                          session.devPaymentKey!,
+                          devPaymentKey!,
                         ),
                       );
                       return;
@@ -83,7 +85,7 @@ Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
                     );
                   },
                   child: Text(
-                    session.isDevDummyMode
+                    canDirectDevConfirm
                         ? context.l10n.ordersPaymentCompleteDevAction
                         : context.l10n.ordersPaymentEnterKeyAction,
                   ),
@@ -107,6 +109,8 @@ class _OrderPaymentInfoPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final devPaymentKey =
+        session.isDevDummyMode ? session.devPaymentKey?.trim() : null;
 
     return AppPanel(
       tone: AppPanelTone.surface,
@@ -150,10 +154,10 @@ class _OrderPaymentInfoPanel extends StatelessWidget {
               style: context.textTheme.bodySmall,
             ),
           ],
-          if (session.devPaymentKey?.isNotEmpty ?? false) ...[
+          if (devPaymentKey?.isNotEmpty ?? false) ...[
             SizedBox(height: tokens.space2),
             Text(
-              context.l10n.ordersPaymentDevKeyLabel(session.devPaymentKey!),
+              context.l10n.ordersPaymentDevKeyLabel(devPaymentKey!),
               style: context.textTheme.bodySmall,
             ),
           ],
