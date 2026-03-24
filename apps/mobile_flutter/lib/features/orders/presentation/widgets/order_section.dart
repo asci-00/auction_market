@@ -153,7 +153,7 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
 
       final draft = await showOrderPaymentConfirmDialog(
         context,
-        amount: order.finalPrice.toInt(),
+        amount: session.amount,
       );
       if (!mounted || draft == null) {
         return;
@@ -162,7 +162,7 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
       await ref.read(orderActionServiceProvider).confirmPayment(
             orderId: order.id,
             paymentKey: draft.paymentKey,
-            amount: order.finalPrice.toInt(),
+            amount: session.amount,
           );
       if (!mounted) {
         return;

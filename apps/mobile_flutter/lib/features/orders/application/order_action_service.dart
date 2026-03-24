@@ -16,13 +16,18 @@ class OrderActionService {
   Future<OrderPaymentSession> createPaymentSession({
     required String orderId,
   }) async {
-    final result = await _functions
-        .httpsCallable('createPaymentSession')
-        .call<Map<String, dynamic>>({
+    final result =
+        await _functions.httpsCallable('createPaymentSession').call<dynamic>({
       'orderId': orderId,
     });
 
     final data = result.data;
+    if (data is! Map<dynamic, dynamic>) {
+      throw StateError(
+        'createPaymentSession returned invalid payload: ${result.data}',
+      );
+    }
+
     return OrderPaymentSession.fromCallable(data);
   }
 

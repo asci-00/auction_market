@@ -35,8 +35,6 @@ class OrderSummaryCard extends StatelessWidget {
         order.orderStatus == 'AWAITING_PAYMENT';
     final canConfirmReceipt =
         role == OrderSectionRole.buyer && order.orderStatus == 'SHIPPED';
-    final actionCount =
-        [canPay, canShip, canConfirmReceipt].where((value) => value).length;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -102,7 +100,6 @@ class OrderSummaryCard extends StatelessWidget {
                         child: Text(context.l10n.ordersActionPreparePayment),
                       ),
                     ),
-                  if (canPay && actionCount > 1) const SizedBox(width: 12),
                   if (canShip)
                     Expanded(
                       child: OutlinedButton(
@@ -110,7 +107,6 @@ class OrderSummaryCard extends StatelessWidget {
                         child: Text(context.l10n.ordersActionAddShipment),
                       ),
                     ),
-                  if (canShip && canConfirmReceipt) const SizedBox(width: 12),
                   if (canConfirmReceipt)
                     Expanded(
                       child: FilledButton(

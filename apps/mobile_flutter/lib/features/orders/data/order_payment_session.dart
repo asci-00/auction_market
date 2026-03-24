@@ -20,15 +20,37 @@ class OrderPaymentSession {
   final String? failUrl;
 
   factory OrderPaymentSession.fromCallable(Map<dynamic, dynamic> data) {
+    String? asNullableString(dynamic value) {
+      if (value == null) {
+        return null;
+      }
+
+      final normalized = value.toString().trim();
+      return normalized.isEmpty ? null : normalized;
+    }
+
+    int asAmount(dynamic value) {
+      if (value is int) {
+        return value;
+      }
+      if (value is num) {
+        return value.toInt();
+      }
+      if (value is String) {
+        return int.tryParse(value.trim()) ?? 0;
+      }
+      return 0;
+    }
+
     return OrderPaymentSession(
-      provider: (data['provider'] as String?) ?? 'TOSS_PAYMENTS',
-      orderId: (data['orderId'] as String?) ?? '',
-      amount: (data['amount'] as num?)?.toInt() ?? 0,
-      orderName: (data['orderName'] as String?) ?? '',
-      customerName: data['customerName'] as String?,
-      customerEmail: data['customerEmail'] as String?,
-      successUrl: data['successUrl'] as String?,
-      failUrl: data['failUrl'] as String?,
+      provider: asNullableString(data['provider']) ?? 'TOSS_PAYMENTS',
+      orderId: asNullableString(data['orderId']) ?? '',
+      amount: asAmount(data['amount']),
+      orderName: asNullableString(data['orderName']) ?? '',
+      customerName: asNullableString(data['customerName']),
+      customerEmail: asNullableString(data['customerEmail']),
+      successUrl: asNullableString(data['successUrl']),
+      failUrl: asNullableString(data['failUrl']),
     );
   }
 
