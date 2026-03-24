@@ -66,7 +66,9 @@ class HomeScreen extends StatelessWidget {
                 .orderBy('endAt')
                 .limit(8)
                 .snapshots(),
-            onTapAuction: (id) => context.push('/auction/$id'),
+            heroNamespace: 'home-ending',
+            onTapAuction: (id, heroTag) =>
+                context.push('/auction/$id?heroTag=$heroTag'),
           ),
           SizedBox(height: tokens.space7),
           AppSectionHeading(
@@ -82,8 +84,10 @@ class HomeScreen extends StatelessWidget {
                 .orderBy('bidCount', descending: true)
                 .limit(8)
                 .snapshots(),
+            heroNamespace: 'home-hot',
             defaultBadge: AppStatusKind.buyNow,
-            onTapAuction: (id) => context.push('/auction/$id'),
+            onTapAuction: (id, heroTag) =>
+                context.push('/auction/$id?heroTag=$heroTag'),
           ),
         ],
       ),

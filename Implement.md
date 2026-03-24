@@ -1,7 +1,7 @@
 # Auction Market Execution Log
 
 ## Current Task
-- Phase 3 mobile flow work is active. Orders now support a `dev` server-driven dummy payment handoff from the buyer timeline, shared page transitions and entrance motion are aligned to the design contract, and the next unfinished product gap is the final automated Toss checkout handoff once real client key and return URL values are available.
+- Phase 3 mobile flow work is active. Orders now support a `dev` server-driven dummy payment handoff from the buyer timeline, shared page transitions and entrance motion are aligned to the design contract, shimmer-based loading and Hero image transitions are in place, and the next unfinished product gap is the final automated Toss checkout handoff once real client key and return URL values are available.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -30,6 +30,7 @@
 - Guarded `go_router` navigation uses `StatefulShellRoute.indexedStack` for tab preservation and supports `app://auction/{id}` and `app://orders/{id}` deep-link normalization.
 - Shared theme tokens, editorial hero patterns, auction cards, anchored bottom navigation, and sticky action bars match the updated design contract direction.
 - Shared motion now includes route-level fade and rise transitions, page entrance reveal, staggered auction card entry, live countdown-only text updates, and a tuned floating navigation surface with restrained blur.
+- User-facing loading states now prefer shimmer placeholders over centered spinners, and auction card to detail navigation can carry a Hero image tag without colliding across repeated home rails.
 - Mobile copy is generated from `app_ko.arb` and `app_en.arb`, with device-locale fallback to Korean.
 - Flutter shared context helpers now live in `core/extensions/build_context_x.dart`, so common access like snackbars, theme, text theme, media query, and navigator no longer requires repeated `ScaffoldMessenger.of(context)` or similar direct lookups in feature screens.
 - Login, home, search, auction detail, sell, activity, orders, notifications, and my screens use localized product copy and no longer expose engineering-status labels in the UI.

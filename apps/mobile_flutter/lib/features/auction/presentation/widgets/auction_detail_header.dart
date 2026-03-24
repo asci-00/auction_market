@@ -11,9 +11,11 @@ class AuctionDetailHeader extends StatelessWidget {
   const AuctionDetailHeader({
     super.key,
     required this.auction,
+    this.heroTag,
   });
 
   final AuctionDetailViewData auction;
+  final String? heroTag;
 
   @override
   Widget build(BuildContext context) {
@@ -29,15 +31,10 @@ class AuctionDetailHeader extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              if (auction.heroImageUrl != null &&
-                  auction.heroImageUrl!.isNotEmpty)
-                Image.network(
-                  auction.heroImageUrl!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const _DetailFallbackImage(),
-                )
-              else
-                const _DetailFallbackImage(),
+              _DetailHeroImage(
+                imageUrl: auction.heroImageUrl,
+                heroTag: heroTag,
+              ),
               const DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -80,6 +77,36 @@ class AuctionDetailHeader extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _DetailHeroImage extends StatelessWidget {
+  const _DetailHeroImage({
+    required this.imageUrl,
+    required this.heroTag,
+  });
+
+  final String? imageUrl;
+  final String? heroTag;
+
+  @override
+  Widget build(BuildContext context) {
+    final image = imageUrl != null && imageUrl!.isNotEmpty
+        ? Image.network(
+            imageUrl!,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => const _DetailFallbackImage(),
+          )
+        : const _DetailFallbackImage();
+
+    if (heroTag == null) {
+      return image;
+    }
+
+    return Hero(
+      tag: heroTag!,
+      child: image,
     );
   }
 }

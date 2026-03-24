@@ -42,7 +42,7 @@
   - `lib/core/extensions/build_context_x.dart` centralizes repeated `BuildContext` lookups like `Theme.of`, `ScaffoldMessenger.of`, `MediaQuery.of`, and `Navigator.of`.
   - `lib/core/routing/app_router.dart` owns guarded routing, deep-link normalization, and shared fade-plus-rise transitions for modal detail routes.
   - `lib/core/theme/app_theme.dart` applies the warm neutral, charcoal, copper, coral, and sage token system from `docs/Design.md`, including anchored navigation and sticky action sizing.
-  - `lib/core/widgets/` owns the shared editorial hero, auction card, shell, page scaffold, panel, badge, section heading, sticky action bar, empty-state, motion, and countdown primitives.
+  - `lib/core/widgets/` owns the shared editorial hero, auction card, shell, page scaffold, panel, badge, section heading, sticky action bar, empty-state, motion, countdown, and shimmer primitives.
   - `apps/mobile_flutter/analysis_options.yaml` now excludes generated localization files from manual lint noise, enables strict analyzer modes for casts, inference, and raw types, and adds a small set of project-wide lint rules for explicit return types, final locals and fields, and redundant lambda cleanup.
 - Current mobile UX and localization implementation details:
   - `apps/mobile_flutter/lib/l10n/app_ko.arb` and `apps/mobile_flutter/lib/l10n/app_en.arb` own user-facing mobile copy for `ko` and `en`.
@@ -66,6 +66,9 @@
   - Sell drafts now persist `draftAuction.startPrice`, `draftAuction.buyNowPrice`, and `draftAuction.durationDays` on `items/{itemId}`, so sellers can reload pricing intent before publishing.
   - Activity now reads `orders` and `notifications/{uid}/inbox` directly to highlight pending buyer payments, buyer receipt confirmations, seller shipment work, and unread inbox updates in one screen.
   - Home and search auction cards now reveal with a short stagger and use live countdown text instead of static end timestamps only, while orders show payment deadline and amount together through a live countdown plate.
+  - Search, orders, sell drafts, activity cards, bid history, my verification, and startup loading now use shimmer placeholders instead of centered progress spinners where the final layout is already known.
+  - Auction cards can now pass a scoped Hero tag into auction detail, and the detail header reuses that same image layer so image-first navigation feels continuous without duplicate-tag collisions across home rails.
+  - Auction detail content now reserves additional bottom inset above the sticky action bar so the final bid history and seller summary content stay readable on small safe-area devices.
   - Home, search, auction detail, orders, notifications, and my pages render from live Firestore read paths and fall back to localized empty or unavailable states when documents are missing.
 - Read data directly from Firestore and Storage-backed URLs.
 - Send mutations through Firebase Functions only.

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/firebase/firebase_providers.dart';
 import '../../../../core/l10n/app_localization.dart';
 import '../../../../core/widgets/app_empty_state.dart';
+import '../../../../core/widgets/app_shimmer.dart';
 import '../../../../core/widgets/app_status_badge.dart';
 import '../../data/activity_hub_summary.dart';
 import 'activity_stat_card.dart';
@@ -45,7 +46,7 @@ class ActivityBuyerCard extends ConsumerWidget {
         }
 
         if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return const AppShimmerCardPlaceholder(height: 148);
         }
 
         final summary = ActivityHubSummary.fromBuyerOrders(snapshot.data!.docs);

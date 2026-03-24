@@ -8,6 +8,7 @@ import '../../../../core/widgets/app_auction_card.dart';
 import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_live_countdown_text.dart';
 import '../../../../core/widgets/app_motion.dart';
+import '../../../../core/widgets/app_shimmer.dart';
 import '../../../../core/widgets/app_status_badge.dart';
 import '../../application/search_auction_filter.dart';
 import '../../data/search_auction_summary.dart';
@@ -54,7 +55,20 @@ class _SearchResultsGridState extends State<SearchResultsGrid> {
         }
 
         if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 4,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 0.64,
+            ),
+            itemBuilder: (_, __) => const AppShimmerCardPlaceholder(
+              height: double.infinity,
+            ),
+          );
         }
 
         final auctions =
@@ -117,10 +131,12 @@ class _SearchResultsGridState extends State<SearchResultsGrid> {
                       ),
                 bidCountLabel: context.l10n.genericCountBids(auction.bidCount),
                 imageUrl: auction.heroImageUrl,
+                heroTag: 'search-${auction.id}',
                 badgeKind: auction.buyNowPrice != null
                     ? AppStatusKind.buyNow
                     : AppStatusKind.live,
-                onTap: () => context.push('/auction/${auction.id}'),
+                onTap: () => context.push(
+                    '/auction/${auction.id}?heroTag=search-${auction.id}'),
               ),
             );
           },

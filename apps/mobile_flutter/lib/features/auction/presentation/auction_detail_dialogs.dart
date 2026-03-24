@@ -54,7 +54,7 @@ Future<int?> _showAuctionAmountDialog(
   );
 
   try {
-    return showDialog<int>(
+    return await showDialog<int>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(

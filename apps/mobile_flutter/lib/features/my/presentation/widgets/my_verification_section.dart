@@ -6,6 +6,7 @@ import '../../../../core/l10n/app_localization.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_section_heading.dart';
+import '../../../../core/widgets/app_shimmer.dart';
 import '../../data/my_profile_summary.dart';
 import '../my_verification_label.dart';
 import 'my_verification_row.dart';
@@ -51,7 +52,10 @@ class MyVerificationSection extends StatelessWidget {
               }
 
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return const AppShimmerListPlaceholder(
+                  itemCount: 3,
+                  itemHeight: 84,
+                );
               }
 
               if (!snapshot.hasData || !snapshot.data!.exists) {

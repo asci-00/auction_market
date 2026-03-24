@@ -93,7 +93,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/auction/:id',
         pageBuilder: (_, state) => _buildTransitionPage(
           state: state,
-          child: AuctionDetailScreen(auctionId: state.pathParameters['id']!),
+          child: AuctionDetailScreen(
+            auctionId: state.pathParameters['id']!,
+            heroTag: state.uri.queryParameters['heroTag'],
+          ),
         ),
       ),
       GoRoute(

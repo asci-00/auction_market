@@ -8,6 +8,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_panel.dart';
 import '../../../../core/widgets/app_section_heading.dart';
+import '../../../../core/widgets/app_shimmer.dart';
 import '../../../../core/widgets/app_status_badge.dart';
 import '../../data/sell_draft_summary.dart';
 
@@ -58,7 +59,10 @@ class SellRecentDraftsSection extends StatelessWidget {
               }
 
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return const AppShimmerListPlaceholder(
+                  itemCount: 3,
+                  itemHeight: 108,
+                );
               }
 
               final drafts = (snapshot.data?.docs ?? const [])

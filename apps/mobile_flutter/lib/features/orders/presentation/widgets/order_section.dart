@@ -8,6 +8,7 @@ import '../../../../core/firebase/firebase_providers.dart';
 import '../../../../core/l10n/app_localization.dart';
 import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_motion.dart';
+import '../../../../core/widgets/app_shimmer.dart';
 import '../../application/order_action_service.dart';
 import '../../data/order_summary.dart';
 import '../order_payment_confirm_dialog.dart';
@@ -84,7 +85,10 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
         }
 
         if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return const AppShimmerListPlaceholder(
+            itemCount: 3,
+            itemHeight: 172,
+          );
         }
 
         final documents = snapshot.data!.docs;
