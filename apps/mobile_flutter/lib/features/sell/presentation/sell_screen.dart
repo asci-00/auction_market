@@ -1,4 +1,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -81,7 +83,10 @@ class _SellScreenState extends ConsumerState<SellScreen> {
             tokens.screenPadding,
             tokens.space4,
             tokens.screenPadding,
-            tokens.space8,
+            math.max(
+              tokens.space8,
+              MediaQuery.viewInsetsOf(context).bottom + tokens.space4,
+            ),
           ),
           children: [
             AppEditorialHero(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/l10n/app_localization.dart';
+import '../../../core/widgets/app_keyboard_safe_inset.dart';
 
 class ShipmentDraft {
   const ShipmentDraft({
@@ -20,27 +21,36 @@ Future<ShipmentDraft?> showOrderShipmentDialog(BuildContext context) async {
     return showDialog<ShipmentDraft>(
       context: context,
       builder: (dialogContext) {
+        final bottomInset = MediaQuery.viewInsetsOf(dialogContext).bottom;
+
         return AlertDialog(
+          scrollable: true,
+          insetPadding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
           title: Text(context.l10n.ordersShipmentDialogTitle),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: carrierController,
-                decoration: InputDecoration(
-                  labelText: context.l10n.ordersShipmentCarrierLabel,
-                  hintText: context.l10n.ordersShipmentCarrierHint,
+          content: AppKeyboardSafeInset(
+            useSafeArea: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: carrierController,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: context.l10n.ordersShipmentCarrierLabel,
+                    hintText: context.l10n.ordersShipmentCarrierHint,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: trackingController,
-                decoration: InputDecoration(
-                  labelText: context.l10n.ordersShipmentTrackingLabel,
-                  hintText: context.l10n.ordersShipmentTrackingHint,
+                const SizedBox(height: 12),
+                TextField(
+                  controller: trackingController,
+                  textInputAction: TextInputAction.done,
+                  decoration: InputDecoration(
+                    labelText: context.l10n.ordersShipmentTrackingLabel,
+                    hintText: context.l10n.ordersShipmentTrackingHint,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           actions: [
             TextButton(

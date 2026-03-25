@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/extensions/build_context_x.dart';
 import '../../../core/l10n/app_formatters.dart';
 import '../../../core/l10n/app_localization.dart';
+import '../../../core/widgets/app_keyboard_safe_inset.dart';
 
 class OrderPaymentConfirmDraft {
   const OrderPaymentConfirmDraft({required this.paymentKey});
@@ -20,47 +21,54 @@ Future<OrderPaymentConfirmDraft?> showOrderPaymentConfirmDialog(
     return await showDialog<OrderPaymentConfirmDraft>(
       context: context,
       builder: (dialogContext) {
+        final bottomInset = MediaQuery.viewInsetsOf(dialogContext).bottom;
         var showValidationError = false;
 
         return StatefulBuilder(
           builder: (dialogContext, setState) {
             return AlertDialog(
+              scrollable: true,
+              insetPadding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
               title: Text(context.l10n.ordersPaymentConfirmTitle),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    context.l10n.ordersPaymentConfirmDescription,
-                    style: dialogContext.textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    context.l10n.ordersPaymentAmountLabel(
-                      formatKrw(context, amount),
+              content: AppKeyboardSafeInset(
+                useSafeArea: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.l10n.ordersPaymentConfirmDescription,
+                      style: dialogContext.textTheme.bodyMedium,
                     ),
-                    style: dialogContext.textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: controller,
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    onChanged: (_) {
-                      if (!showValidationError) {
-                        return;
-                      }
-                      setState(() => showValidationError = false);
-                    },
-                    decoration: InputDecoration(
-                      labelText: context.l10n.ordersPaymentKeyLabel,
-                      hintText: context.l10n.ordersPaymentKeyHint,
-                      errorText: showValidationError
-                          ? context.l10n.ordersPaymentKeyRequiredError
-                          : null,
+                    const SizedBox(height: 16),
+                    Text(
+                      context.l10n.ordersPaymentAmountLabel(
+                        formatKrw(context, amount),
+                      ),
+                      style: dialogContext.textTheme.bodySmall,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: controller,
+                      autocorrect: false,
+                      enableSuggestions: false,
+                      textInputAction: TextInputAction.done,
+                      onChanged: (_) {
+                        if (!showValidationError) {
+                          return;
+                        }
+                        setState(() => showValidationError = false);
+                      },
+                      decoration: InputDecoration(
+                        labelText: context.l10n.ordersPaymentKeyLabel,
+                        hintText: context.l10n.ordersPaymentKeyHint,
+                        errorText: showValidationError
+                            ? context.l10n.ordersPaymentKeyRequiredError
+                            : null,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               actions: [
                 TextButton(

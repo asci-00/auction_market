@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../core/extensions/build_context_x.dart';
 import '../../../core/l10n/app_formatters.dart';
 import '../../../core/l10n/app_localization.dart';
+import '../../../core/widgets/app_keyboard_safe_inset.dart';
 
 Future<int?> showAuctionBidAmountDialog(
   BuildContext context, {
@@ -57,27 +58,35 @@ Future<int?> _showAuctionAmountDialog(
     return await showDialog<int>(
       context: context,
       builder: (dialogContext) {
+        final bottomInset = MediaQuery.viewInsetsOf(dialogContext).bottom;
+
         return AlertDialog(
+          scrollable: true,
+          insetPadding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
           title: Text(title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                description,
-                style: dialogContext.textTheme.bodySmall,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: InputDecoration(
-                  labelText: labelText,
-                  hintText: hintText,
+          content: AppKeyboardSafeInset(
+            useSafeArea: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  description,
+                  style: dialogContext.textTheme.bodySmall,
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                TextField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: InputDecoration(
+                    labelText: labelText,
+                    hintText: hintText,
+                  ),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
