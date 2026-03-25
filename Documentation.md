@@ -18,6 +18,7 @@
 - `staging`: real Firebase project plus Toss test credentials.
 - `prod`: real Firebase project plus Toss production credentials.
 - When a third-party dependency is not ready yet, `dev` may expose server-driven dummy integration payloads so the mobile app can validate the surrounding product flow before the final real handoff is wired.
+- As of March 25, 2026, all Phase 3 product flow work that can be validated in `dev` is complete. The only remaining Phase 3 gap is the final real Toss launcher cutover, which is blocked on external values.
 - The app switches environment only through build-time public config for `APP_ENV`, emulator mode, and other non-secret app settings.
 - Backend runtime switches environment only through env variables.
 - Flutter mobile boot on iOS and Android reads Firebase app registration from native platform files instead of `dart-define` values.
@@ -131,6 +132,15 @@
 - Seller smoke test path: sign in as `seller1`, open `order-paid`, submit carrier and tracking information, and confirm the order moves to `SHIPPED`.
 - Buyer smoke test path: sign in as `buyer1`, open the same `order-paid`, confirm receipt, and verify the order moves to `CONFIRMED_RECEIPT`.
 - These accounts are for local emulator checks only. They do not validate Google or Apple browser sign-in, provider linking, redirect handling, or staging and prod auth configuration.
+
+## Phase 3 External Cutover Checklist
+- Fill `backend/functions/.env` with real `TOSS_SECRET_KEY`, `TOSS_WEBHOOK_SECRET`, and `APP_BASE_URL`.
+- Fill `apps/mobile_flutter/dart_defines.json` with real `TOSS_CLIENT_KEY`.
+- Verify `createPaymentSession` returns the real Toss mode and valid success or fail return URLs in staging.
+- Verify the mobile app can start the final Toss checkout launcher handoff without falling back to manual recovery UI.
+- Verify `/payments/success` and `/payments/fail` still route the buyer into the correct order recovery state after real Toss checkout.
+- Verify `tossPaymentWebhook` updates payment and order state idempotently with the real webhook secret.
+- Do not start Phase 4 implementation work until this checklist is either complete or explicitly accepted as blocked by missing third-party values.
 
 ## Navigation Contract
 - Public route: `/login`.

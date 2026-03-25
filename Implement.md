@@ -1,7 +1,7 @@
 # Auction Market Execution Log
 
 ## Current Task
-- Phase 3 mobile flow work is active. Orders now support a `dev` server-driven dummy payment handoff from the buyer timeline, payment return routes and deep-link normalization are in place for `/payments/success` and `/payments/fail`, the payment sheet and return screens now distinguish dev, prepared-return, and manual-recovery states with localized product copy, shared page transitions and entrance motion are aligned to the design contract, shimmer-based loading and Hero image transitions are in place, and the next unfinished product gap is the final automated Toss checkout launcher handoff once real client key and return URL values are available.
+- Phase 3 mobile flow work is active, but all `dev`-testable product work inside the milestone is now complete. Orders support a `dev` server-driven dummy payment handoff from the buyer timeline, payment return routes and deep-link normalization are in place for `/payments/success` and `/payments/fail`, the payment sheet and return screens distinguish dev, prepared-return, and manual-recovery states with localized product copy, shared page transitions and entrance motion are aligned to the design contract, shimmer-based loading and Hero image transitions are in place, and the only unfinished product gap is the final automated Toss checkout launcher handoff once real client key and return URL values are available.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -22,6 +22,7 @@
 ## Open Blockers
 - Real Toss client key, secret key, and webhook secret are not available in this repo yet.
 - Real app base URL for payment return paths and deep links is not available in this repo yet.
+- Because those real values are missing, the final Phase 3 checkout launcher cutover is blocked and Phase 4 implementation work should not begin yet.
 
 ## Validation Status
 - `apps/mobile_flutter/android` and `apps/mobile_flutter/ios` exist, so `flutter run` has native targets again.
@@ -75,6 +76,7 @@
 7. Open `app://payments/success?orderId=order-paid&paymentKey=dev_pay_order-paid&amount=230000` while signed in as `buyer1`, and verify the payment return screen confirms the order and offers the order timeline CTA.
 8. Sign in as `seller1` and register shipment for `order-paid`, then sign back in as `buyer1` and confirm receipt from the same order.
 9. Fill `backend/functions/.env` and `apps/mobile_flutter/dart_defines.json` with real Toss values for staging and prod verification.
+10. After those real values are present, wire the final automated Toss launcher handoff and repeat the staging and prod payment validation path before moving to Phase 4.
 
 ## Update Rules
 - Keep this file short.

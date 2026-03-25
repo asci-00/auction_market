@@ -79,3 +79,12 @@
 - The app must reject placeholder `TODO_...` public values for fields it still reads from `dart-define`.
 - On iOS and Android, Firebase app registration is loaded from native config files rather than `dart-define` values.
 - Functions must fail fast during startup when a required secret is missing in `staging` or `prod`.
+
+## Phase 3 Cutover Reminder
+- The last unfinished Phase 3 task is the real Toss launcher cutover.
+- That cutover must not begin until all four real values are present:
+  - `TOSS_CLIENT_KEY`
+  - `TOSS_SECRET_KEY`
+  - `TOSS_WEBHOOK_SECRET`
+  - `APP_BASE_URL`
+- Until then, `dev` remains the validation source of truth through the server-driven dummy payment path and payment return routes.

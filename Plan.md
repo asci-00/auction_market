@@ -40,7 +40,7 @@ Status: complete on March 17, 2026.
 - Payment and order state changes are idempotent and observable in logs.
 
 ## Phase 3: Core Mobile Flows
-Status: next unfinished milestone.
+Status: in progress, with only the final real Toss handoff blocked on external values as of March 25, 2026.
 - Build login, home, search, auction detail, sell, activity, orders, notifications, and my pages with real Firebase reads and localized UI copy.
 - Implement image upload, draft save, auction publish, bid flow, auto-bid flow, buy now, payment, shipment update, and receipt confirmation.
 - For dependency-heavy external integrations, keep the app testable in `dev` through server-side dummy responses or emulator-backed payloads until the real integration values are available.
@@ -49,6 +49,7 @@ Status: next unfinished milestone.
 - Remove all placeholder widgets, engineering-status copy, and non-functional primary actions.
 - Align the shared design system and screen compositions with the premium editorial direction in `docs/Design.md`.
 - Add motion and interaction polish that follows `docs/Design.md`, including page entrance timing, list stagger, bottom-sheet motion, countdown-only animation updates, and tuned surface or blur treatment where it materially improves readability and hierarchy.
+- Keep the final real Toss launcher handoff gated behind the real `TOSS_CLIENT_KEY`, `TOSS_SECRET_KEY`, `TOSS_WEBHOOK_SECRET`, and `APP_BASE_URL` values, and do not start Phase 4 implementation work until that last Phase 3 cutover is either finished or explicitly accepted as blocked.
 
 ### Done When
 - Buyer can complete browse to settlement flow in emulator and staging.
