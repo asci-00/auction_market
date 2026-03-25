@@ -823,11 +823,39 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get ordersPaymentSheetReadyDescription =>
-      '이 주문은 Toss 결제 전달 준비가 완료되었습니다. 계속 진행하기 전에 세션 정보를 확인해 주세요.';
+      '이 주문은 결제 복귀 경로 준비가 완료되었습니다. 앱 밖에서 계속 진행하기 전에 세션 정보를 확인해 주세요.';
 
   @override
   String get ordersPaymentSheetBlockedDescription =>
-      '이 빌드는 주문 결제 세션까지는 준비할 수 있지만, 자동 Toss checkout을 위해서는 최종 client key와 return URL 구성이 더 필요합니다. 이미 payment key가 있다면 아래에서 바로 확인할 수 있습니다.';
+      '복귀한 결제 결과만 있다면 이 주문을 계속 확인할 수 있습니다. 다른 곳에서 Toss checkout을 마쳤다면 아래에서 payment key를 입력해 주세요.';
+
+  @override
+  String get ordersPaymentSheetStatusDev => 'dev 더미 결제';
+
+  @override
+  String get ordersPaymentSheetStatusReady => '복귀 경로 준비 완료';
+
+  @override
+  String get ordersPaymentSheetStatusBlocked => '수동 복구 경로';
+
+  @override
+  String get ordersPaymentSheetNextStepTitle => '다음 단계';
+
+  @override
+  String get ordersPaymentSheetNextStepDev =>
+      '앱 안에서 한 번 결제를 마치고, 주문 타임라인에서 배송과 수령 확인으로 이어가세요.';
+
+  @override
+  String get ordersPaymentSheetNextStepReady =>
+      '이 빌드 밖에서 Toss checkout을 마친 뒤 결제 결과와 함께 돌아오면 이 화면에서 주문을 확인할 수 있습니다.';
+
+  @override
+  String get ordersPaymentSheetNextStepBlocked =>
+      '주문 타임라인을 복귀 지점으로 두고 진행하세요. 다른 곳에서 Toss checkout이 끝나면 돌아온 payment key로 이 화면에서 주문을 확인할 수 있습니다.';
+
+  @override
+  String get ordersPaymentFallbackHint =>
+      '앱 밖에서 Toss checkout을 마쳤다면 payment key와 함께 돌아와 이 주문 카드에서 이어가세요.';
 
   @override
   String get ordersPaymentReturnPendingTitle => '결제를 마무리하고 있습니다';
@@ -856,6 +884,11 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get ordersPaymentReturnInvalidDescription =>
       '주문을 확인하려면 order, payment, amount 정보가 모두 필요합니다.';
+
+  @override
+  String ordersPaymentReturnCodeLabel(Object code) {
+    return '복귀 코드 · $code';
+  }
 
   @override
   String get ordersPaymentReturnActionOpenOrder => '주문 타임라인 열기';

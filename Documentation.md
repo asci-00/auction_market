@@ -64,6 +64,7 @@
   - Orders now resolves payment handoff semantics through `features/orders/application/order_payment_handoff_service.dart`, so `DEV_DUMMY`, launcher-ready Toss, and manual payment-key fallback states stay out of the order list widget.
   - Buyer order cards now surface `AWAITING_PAYMENT` actions, prepare the payment session in-app, and in `dev` can complete a server-driven dummy payment key path before the final Toss checkout handoff values are available.
   - Payment return handling now lives in `features/orders/presentation/order_payment_return_screen.dart`, where `/payments/success` confirms a returned payment payload and `/payments/fail` routes the buyer back to recovery actions.
+  - The order payment sheet now presents handoff state as premium recovery UI, separating `DEV_DUMMY`, prepared return-path, and manual payment-key fallback into distinct panels and next-step guidance instead of relying on one generic status paragraph.
   - Sell uses `image_picker` plus Firebase Storage upload paths under `users/{uid}/items/{itemId}/gallery/*` and `users/{uid}/auth/{itemId}/*`, then persists draft data through `createOrUpdateItem` before publish.
   - Sell drafts now persist `draftAuction.startPrice`, `draftAuction.buyNowPrice`, and `draftAuction.durationDays` on `items/{itemId}`, so sellers can reload pricing intent before publishing.
   - Activity now reads `orders` and `notifications/{uid}/inbox` directly to highlight pending buyer payments, buyer receipt confirmations, seller shipment work, and unread inbox updates in one screen.

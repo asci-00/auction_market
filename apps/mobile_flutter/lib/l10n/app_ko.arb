@@ -367,8 +367,16 @@
   "ordersActionConfirmReceipt": "수령 확인",
   "ordersPaymentSheetTitle": "결제 진행",
   "ordersPaymentSheetDevDescription": "이 dev 주문은 서버 주도 더미 결제 흐름으로 바로 완료할 수 있습니다. 한 번 확인하면 주문이 결제 완료 에스크로 보관 단계로 이동합니다.",
-  "ordersPaymentSheetReadyDescription": "이 주문은 Toss 결제 전달 준비가 완료되었습니다. 계속 진행하기 전에 세션 정보를 확인해 주세요.",
-  "ordersPaymentSheetBlockedDescription": "이 빌드는 주문 결제 세션까지는 준비할 수 있지만, 자동 Toss checkout을 위해서는 최종 client key와 return URL 구성이 더 필요합니다. 이미 payment key가 있다면 아래에서 바로 확인할 수 있습니다.",
+  "ordersPaymentSheetReadyDescription": "이 주문은 결제 복귀 경로 준비가 완료되었습니다. 앱 밖에서 계속 진행하기 전에 세션 정보를 확인해 주세요.",
+  "ordersPaymentSheetBlockedDescription": "복귀한 결제 결과만 있다면 이 주문을 계속 확인할 수 있습니다. 다른 곳에서 Toss checkout을 마쳤다면 아래에서 payment key를 입력해 주세요.",
+  "ordersPaymentSheetStatusDev": "dev 더미 결제",
+  "ordersPaymentSheetStatusReady": "복귀 경로 준비 완료",
+  "ordersPaymentSheetStatusBlocked": "수동 복구 경로",
+  "ordersPaymentSheetNextStepTitle": "다음 단계",
+  "ordersPaymentSheetNextStepDev": "앱 안에서 한 번 결제를 마치고, 주문 타임라인에서 배송과 수령 확인으로 이어가세요.",
+  "ordersPaymentSheetNextStepReady": "이 빌드 밖에서 Toss checkout을 마친 뒤 결제 결과와 함께 돌아오면 이 화면에서 주문을 확인할 수 있습니다.",
+  "ordersPaymentSheetNextStepBlocked": "주문 타임라인을 복귀 지점으로 두고 진행하세요. 다른 곳에서 Toss checkout이 끝나면 돌아온 payment key로 이 화면에서 주문을 확인할 수 있습니다.",
+  "ordersPaymentFallbackHint": "앱 밖에서 Toss checkout을 마쳤다면 payment key와 함께 돌아와 이 주문 카드에서 이어가세요.",
   "ordersPaymentReturnPendingTitle": "결제를 마무리하고 있습니다",
   "ordersPaymentReturnPendingDescription": "복귀한 결제 결과를 확인하고 주문을 결제 완료 타임라인으로 이동합니다.",
   "ordersPaymentReturnSuccessTitle": "결제가 확인되었습니다",
@@ -377,6 +385,12 @@
   "ordersPaymentReturnFailDescription": "주문 타임라인으로 돌아가 결제를 다시 진행하거나 최신 상태를 확인해 주세요.",
   "ordersPaymentReturnInvalidTitle": "결제 복귀 정보가 부족합니다",
   "ordersPaymentReturnInvalidDescription": "주문을 확인하려면 order, payment, amount 정보가 모두 필요합니다.",
+  "ordersPaymentReturnCodeLabel": "복귀 코드 · {code}",
+  "@ordersPaymentReturnCodeLabel": {
+    "placeholders": {
+      "code": {}
+    }
+  },
   "ordersPaymentReturnActionOpenOrder": "주문 타임라인 열기",
   "ordersPaymentReturnActionBackToOrders": "주문으로 돌아가기",
   "ordersPaymentCompleteDevAction": "dev 결제 완료",

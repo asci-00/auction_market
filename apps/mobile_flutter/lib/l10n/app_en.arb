@@ -367,8 +367,16 @@
   "ordersActionConfirmReceipt": "Confirm receipt",
   "ordersPaymentSheetTitle": "Complete payment",
   "ordersPaymentSheetDevDescription": "This dev order can complete payment entirely through the server-driven dummy flow. Confirm once to move the order into paid escrow hold.",
-  "ordersPaymentSheetReadyDescription": "This order is ready for Toss handoff. Review the payment session details before you continue.",
-  "ordersPaymentSheetBlockedDescription": "This build can prepare the order, but automatic Toss checkout still needs the final client key and return URL setup. If you already have a payment key, you can still confirm it below.",
+  "ordersPaymentSheetReadyDescription": "This order already has the payment return path prepared. Review the session details before you continue outside the app.",
+  "ordersPaymentSheetBlockedDescription": "This order can still be confirmed from a returned payment result. If you already completed Toss checkout elsewhere, enter the payment key below.",
+  "ordersPaymentSheetStatusDev": "Dev dummy payment",
+  "ordersPaymentSheetStatusReady": "Return path prepared",
+  "ordersPaymentSheetStatusBlocked": "Manual recovery path",
+  "ordersPaymentSheetNextStepTitle": "Next step",
+  "ordersPaymentSheetNextStepDev": "Complete payment in-app once, then move to shipping and receipt from the order timeline.",
+  "ordersPaymentSheetNextStepReady": "Finish Toss checkout outside this build, then return with the payment result so the order can be confirmed here.",
+  "ordersPaymentSheetNextStepBlocked": "Keep the order timeline open as your recovery point. When Toss checkout finishes elsewhere, come back with the returned payment key to confirm the order here.",
+  "ordersPaymentFallbackHint": "If Toss checkout finished outside the app, return with the payment key and continue from this order card.",
   "ordersPaymentReturnPendingTitle": "Finalizing payment",
   "ordersPaymentReturnPendingDescription": "We're validating the returned payment result and moving the order into the paid timeline.",
   "ordersPaymentReturnSuccessTitle": "Payment confirmed",
@@ -377,6 +385,12 @@
   "ordersPaymentReturnFailDescription": "Return to the order timeline to retry payment or review the latest status.",
   "ordersPaymentReturnInvalidTitle": "Payment return data is incomplete",
   "ordersPaymentReturnInvalidDescription": "This return route needs order, payment, and amount details before the order can be confirmed.",
+  "ordersPaymentReturnCodeLabel": "Return code · {code}",
+  "@ordersPaymentReturnCodeLabel": {
+    "placeholders": {
+      "code": {}
+    }
+  },
   "ordersPaymentReturnActionOpenOrder": "Open order timeline",
   "ordersPaymentReturnActionBackToOrders": "Back to orders",
   "ordersPaymentCompleteDevAction": "Complete dev payment",

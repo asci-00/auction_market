@@ -21,6 +21,8 @@ class OrderPaymentHandoffPlan {
 
   bool get isDevDummy => mode == OrderPaymentHandoffMode.devDummy;
   bool get isLauncherReady => mode == OrderPaymentHandoffMode.launcherReady;
+  bool get usesManualFallback => mode == OrderPaymentHandoffMode.manualConfirm;
+  bool get requiresManualConfirmation => !isDevDummy;
 }
 
 final orderPaymentHandoffServiceProvider =

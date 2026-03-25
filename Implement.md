@@ -1,7 +1,7 @@
 # Auction Market Execution Log
 
 ## Current Task
-- Phase 3 mobile flow work is active. Orders now support a `dev` server-driven dummy payment handoff from the buyer timeline, payment return routes and deep-link normalization are in place for `/payments/success` and `/payments/fail`, shared page transitions and entrance motion are aligned to the design contract, shimmer-based loading and Hero image transitions are in place, and the next unfinished product gap is the final automated Toss checkout launcher handoff once real client key and return URL values are available.
+- Phase 3 mobile flow work is active. Orders now support a `dev` server-driven dummy payment handoff from the buyer timeline, payment return routes and deep-link normalization are in place for `/payments/success` and `/payments/fail`, the payment sheet and return screens now distinguish dev, prepared-return, and manual-recovery states with localized product copy, shared page transitions and entrance motion are aligned to the design contract, shimmer-based loading and Hero image transitions are in place, and the next unfinished product gap is the final automated Toss checkout launcher handoff once real client key and return URL values are available.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -44,6 +44,7 @@
 - Orders now runs live payment-session preparation, payment confirmation, shipment update, and receipt confirmation callables from the mobile UI, and notifications mark themselves as read before routing when the callable succeeds.
 - Orders now completes `dev` payment testing through a server-driven dummy payment key from `createPaymentSession`, so buyer smoke tests can move `AWAITING_PAYMENT` orders into paid escrow hold before real Toss checkout values exist.
 - Orders now resolves payment handoff mode through a dedicated application service, and payment return routes can confirm a returned payment result from `/payments/success` before routing the buyer back into the order timeline.
+- Orders now surfaces buyer payment recovery guidance directly in the order card, separates payment-sheet state into dev, prepared-return, and manual-recovery panels, and keeps payment return CTAs available for both success and failure states.
 - Backend callables now cover bootstrap, item draft save, auction publish, cancel, relist, bid, auto-bid, buy-now, payment session creation, Toss payment confirmation, shipment update, receipt confirmation, and notification read state.
 - Backend payment-session contract building now lives in the payment domain and normalizes `APP_BASE_URL` before constructing payment success and fail return URLs.
 - Toss webhook handling now exists as `tossPaymentWebhook` and updates payment and order state idempotently.

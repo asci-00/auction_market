@@ -75,6 +75,8 @@ class OrderSummaryCard extends StatelessWidget {
                 order.paymentDueAt != null) ...[
               SizedBox(height: tokens.space3),
               _PaymentDuePlate(order: order),
+              SizedBox(height: tokens.space3),
+              _PaymentRecoveryNote(role: role),
             ],
             if (order.hasShipmentSummary)
               Padding(
@@ -117,6 +119,51 @@ class OrderSummaryCard extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PaymentRecoveryNote extends StatelessWidget {
+  const _PaymentRecoveryNote({
+    required this.role,
+  });
+
+  final OrderSectionRole role;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    if (role != OrderSectionRole.buyer) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: EdgeInsets.all(tokens.space3),
+      decoration: BoxDecoration(
+        color: AppColors.bgSurface,
+        borderRadius: BorderRadius.circular(tokens.cardRadius - 12),
+        border: Border.all(color: AppColors.borderSoft),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 1),
+            child: Icon(
+              Icons.info_outline_rounded,
+              size: 16,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          SizedBox(width: tokens.space2),
+          Expanded(
+            child: Text(
+              context.l10n.ordersPaymentFallbackHint,
+              style: context.textTheme.bodySmall,
+            ),
+          ),
+        ],
       ),
     );
   }

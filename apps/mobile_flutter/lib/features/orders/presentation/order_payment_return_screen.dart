@@ -92,12 +92,14 @@ class _OrderPaymentReturnScreenState
             viewState: _viewState,
             orderId: widget.orderId,
             errorMessage: _errorMessage,
+            failureCode: widget.failureCode,
           ),
           SizedBox(height: tokens.space5),
           _PaymentReturnActions(
             orderId: widget.orderId,
-            showOpenOrder: _viewState == _OrderPaymentReturnViewState.success &&
-                widget.orderId != null,
+            showOpenOrder: widget.orderId != null,
+            isPrimaryOrderAction:
+                _viewState != _OrderPaymentReturnViewState.pending,
           ),
         ],
       ),
@@ -158,12 +160,14 @@ class _PaymentReturnStatusPanel extends StatelessWidget {
     required this.viewState,
     required this.orderId,
     required this.errorMessage,
+    required this.failureCode,
   });
 
   final OrderPaymentReturnRouteMode mode;
   final _OrderPaymentReturnViewState viewState;
   final String? orderId;
   final String? errorMessage;
+  final String? failureCode;
 
   @override
   Widget build(BuildContext context) {
@@ -274,6 +278,17 @@ class _PaymentReturnStatusPanel extends StatelessWidget {
               ),
             ),
           ],
+          if (failureCode?.isNotEmpty ?? false) ...[
+            SizedBox(height: tokens.space2),
+            Text(
+              context.l10n.ordersPaymentReturnCodeLabel(failureCode!),
+              style: context.textTheme.bodySmall?.copyWith(
+                color: viewState == _OrderPaymentReturnViewState.success
+                    ? AppColors.textInverse.withValues(alpha: 0.72)
+                    : AppColors.textSecondary,
+              ),
+            ),
+          ],
           if (mode == OrderPaymentReturnRouteMode.fail &&
               viewState == _OrderPaymentReturnViewState.fail &&
               errorMessage == null) ...[
@@ -319,10 +334,12 @@ class _PaymentReturnActions extends StatelessWidget {
   const _PaymentReturnActions({
     required this.orderId,
     required this.showOpenOrder,
+    required this.isPrimaryOrderAction,
   });
 
   final String? orderId;
   final bool showOpenOrder;
+  final bool isPrimaryOrderAction;
 
   @override
   Widget build(BuildContext context) {
@@ -332,15 +349,25 @@ class _PaymentReturnActions extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (showOpenOrder)
-          FilledButton(
-            onPressed: () => context.router.go('/orders/$orderId'),
-            child: Text(context.l10n.ordersPaymentReturnActionOpenOrder),
-          ),
+          isPrimaryOrderAction
+              ? FilledButton(
+                  onPressed: () => context.router.go('/orders/$orderId'),
+                  child: Text(context.l10n.ordersPaymentReturnActionOpenOrder),
+                )
+              : OutlinedButton(
+                  onPressed: () => context.router.go('/orders/$orderId'),
+                  child: Text(context.l10n.ordersPaymentReturnActionOpenOrder),
+                ),
         if (showOpenOrder) SizedBox(height: tokens.space3),
-        OutlinedButton(
-          onPressed: () => context.router.go('/orders'),
-          child: Text(context.l10n.ordersPaymentReturnActionBackToOrders),
-        ),
+        isPrimaryOrderAction
+            ? OutlinedButton(
+                onPressed: () => context.router.go('/orders'),
+                child: Text(context.l10n.ordersPaymentReturnActionBackToOrders),
+              )
+            : FilledButton.tonal(
+                onPressed: () => context.router.go('/orders'),
+                child: Text(context.l10n.ordersPaymentReturnActionBackToOrders),
+              ),
       ],
     );
   }

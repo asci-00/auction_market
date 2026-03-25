@@ -1583,14 +1583,62 @@ abstract class AppLocalizations {
   /// No description provided for @ordersPaymentSheetReadyDescription.
   ///
   /// In en, this message translates to:
-  /// **'This order is ready for Toss handoff. Review the payment session details before you continue.'**
+  /// **'This order already has the payment return path prepared. Review the session details before you continue outside the app.'**
   String get ordersPaymentSheetReadyDescription;
 
   /// No description provided for @ordersPaymentSheetBlockedDescription.
   ///
   /// In en, this message translates to:
-  /// **'This build can prepare the order, but automatic Toss checkout still needs the final client key and return URL setup. If you already have a payment key, you can still confirm it below.'**
+  /// **'This order can still be confirmed from a returned payment result. If you already completed Toss checkout elsewhere, enter the payment key below.'**
   String get ordersPaymentSheetBlockedDescription;
+
+  /// No description provided for @ordersPaymentSheetStatusDev.
+  ///
+  /// In en, this message translates to:
+  /// **'Dev dummy payment'**
+  String get ordersPaymentSheetStatusDev;
+
+  /// No description provided for @ordersPaymentSheetStatusReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Return path prepared'**
+  String get ordersPaymentSheetStatusReady;
+
+  /// No description provided for @ordersPaymentSheetStatusBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual recovery path'**
+  String get ordersPaymentSheetStatusBlocked;
+
+  /// No description provided for @ordersPaymentSheetNextStepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Next step'**
+  String get ordersPaymentSheetNextStepTitle;
+
+  /// No description provided for @ordersPaymentSheetNextStepDev.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete payment in-app once, then move to shipping and receipt from the order timeline.'**
+  String get ordersPaymentSheetNextStepDev;
+
+  /// No description provided for @ordersPaymentSheetNextStepReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish Toss checkout outside this build, then return with the payment result so the order can be confirmed here.'**
+  String get ordersPaymentSheetNextStepReady;
+
+  /// No description provided for @ordersPaymentSheetNextStepBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the order timeline open as your recovery point. When Toss checkout finishes elsewhere, come back with the returned payment key to confirm the order here.'**
+  String get ordersPaymentSheetNextStepBlocked;
+
+  /// No description provided for @ordersPaymentFallbackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'If Toss checkout finished outside the app, return with the payment key and continue from this order card.'**
+  String get ordersPaymentFallbackHint;
 
   /// No description provided for @ordersPaymentReturnPendingTitle.
   ///
@@ -1639,6 +1687,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This return route needs order, payment, and amount details before the order can be confirmed.'**
   String get ordersPaymentReturnInvalidDescription;
+
+  /// No description provided for @ordersPaymentReturnCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Return code · {code}'**
+  String ordersPaymentReturnCodeLabel(Object code);
 
   /// No description provided for @ordersPaymentReturnActionOpenOrder.
   ///

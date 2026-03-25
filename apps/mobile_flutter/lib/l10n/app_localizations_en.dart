@@ -864,11 +864,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ordersPaymentSheetReadyDescription =>
-      'This order is ready for Toss handoff. Review the payment session details before you continue.';
+      'This order already has the payment return path prepared. Review the session details before you continue outside the app.';
 
   @override
   String get ordersPaymentSheetBlockedDescription =>
-      'This build can prepare the order, but automatic Toss checkout still needs the final client key and return URL setup. If you already have a payment key, you can still confirm it below.';
+      'This order can still be confirmed from a returned payment result. If you already completed Toss checkout elsewhere, enter the payment key below.';
+
+  @override
+  String get ordersPaymentSheetStatusDev => 'Dev dummy payment';
+
+  @override
+  String get ordersPaymentSheetStatusReady => 'Return path prepared';
+
+  @override
+  String get ordersPaymentSheetStatusBlocked => 'Manual recovery path';
+
+  @override
+  String get ordersPaymentSheetNextStepTitle => 'Next step';
+
+  @override
+  String get ordersPaymentSheetNextStepDev =>
+      'Complete payment in-app once, then move to shipping and receipt from the order timeline.';
+
+  @override
+  String get ordersPaymentSheetNextStepReady =>
+      'Finish Toss checkout outside this build, then return with the payment result so the order can be confirmed here.';
+
+  @override
+  String get ordersPaymentSheetNextStepBlocked =>
+      'Keep the order timeline open as your recovery point. When Toss checkout finishes elsewhere, come back with the returned payment key to confirm the order here.';
+
+  @override
+  String get ordersPaymentFallbackHint =>
+      'If Toss checkout finished outside the app, return with the payment key and continue from this order card.';
 
   @override
   String get ordersPaymentReturnPendingTitle => 'Finalizing payment';
@@ -898,6 +926,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get ordersPaymentReturnInvalidDescription =>
       'This return route needs order, payment, and amount details before the order can be confirmed.';
+
+  @override
+  String ordersPaymentReturnCodeLabel(Object code) {
+    return 'Return code · $code';
+  }
 
   @override
   String get ordersPaymentReturnActionOpenOrder => 'Open order timeline';
