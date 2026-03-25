@@ -7,11 +7,11 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MediaQuery(
-        data: const MediaQueryData(
+      const MediaQuery(
+        data: MediaQueryData(
           viewInsets: EdgeInsets.only(bottom: 120),
         ),
-        child: const Directionality(
+        child: Directionality(
           textDirection: TextDirection.ltr,
           child: Material(
             child: AppKeyboardSafeInset(
@@ -27,7 +27,12 @@ void main() {
     final animatedPadding = tester.widget<AnimatedPadding>(
       find.byType(AnimatedPadding),
     );
-    final contentPadding = tester.widget<Padding>(find.byType(Padding));
+    final contentPadding = tester.widget<Padding>(
+      find.descendant(
+        of: find.byType(SingleChildScrollView),
+        matching: find.byType(Padding),
+      ),
+    );
 
     expect(animatedPadding.padding, const EdgeInsets.only(bottom: 120));
     expect(contentPadding.padding, const EdgeInsets.only(bottom: 24));
