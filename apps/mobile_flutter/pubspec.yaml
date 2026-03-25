@@ -26,6 +26,7 @@ dependencies:
   google_fonts: ^8.0.2
   image_picker: ^1.1.2
   shimmer: ^3.0.0
+  lottie: ^3.3.2
 
 dev_dependencies:
   flutter_test:
@@ -38,3 +39,4 @@ flutter:
   generate: true
   assets:
     - assets/translations/
+    - assets/lotties/

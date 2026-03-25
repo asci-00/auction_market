@@ -10,6 +10,7 @@ import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_editorial_hero.dart';
+import '../../../core/widgets/app_loading_overlay.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_status_badge.dart';
 import '../application/sell_flow_service.dart';
@@ -70,91 +71,97 @@ class _SellScreenState extends ConsumerState<SellScreen> {
 
     return AppPageScaffold(
       title: context.l10n.sellTitle,
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(
-          tokens.screenPadding,
-          tokens.space4,
-          tokens.screenPadding,
-          tokens.space8,
+      body: AppLoadingOverlay(
+        isLoading: _isSavingDraft || _isPublishing,
+        message: _isPublishing
+            ? context.l10n.sellPublishing
+            : context.l10n.sellSavingDraft,
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(
+            tokens.screenPadding,
+            tokens.space4,
+            tokens.screenPadding,
+            tokens.space8,
+          ),
+          children: [
+            AppEditorialHero(
+              eyebrow: context.l10n.sellHeroEyebrow,
+              title: context.l10n.sellHeroTitle,
+              description: context.l10n.sellHeroDescription,
+              badges: const [
+                AppStatusBadge(kind: AppStatusKind.pending),
+                AppStatusBadge(kind: AppStatusKind.verified),
+              ],
+            ),
+            SizedBox(height: tokens.space5),
+            const SellPolicyPanel(),
+            SizedBox(height: tokens.space6),
+            SellRecentDraftsSection(
+              userId: userId,
+              onSelectDraft: _applyDraft,
+            ),
+            SizedBox(height: tokens.space6),
+            SellCategoryPanel(
+              categoryMain: _categoryMain,
+              categorySubController: _categorySubController,
+              onCategoryMainChanged: (value) {
+                setState(() {
+                  _categoryMain = value;
+                });
+              },
+            ),
+            SizedBox(height: tokens.space4),
+            SellDetailsPanel(
+              titleController: _titleController,
+              conditionController: _conditionController,
+              tagsController: _tagsController,
+              descriptionController: _descriptionController,
+              appraisalRequested: _appraisalRequested,
+              onAppraisalChanged: (value) {
+                setState(() {
+                  _appraisalRequested = value;
+                });
+              },
+            ),
+            SizedBox(height: tokens.space4),
+            SellPricingPanel(
+              startPriceController: _startPriceController,
+              buyNowPriceController: _buyNowPriceController,
+              durationDays: _durationDays,
+              onDurationChanged: (value) {
+                setState(() {
+                  _durationDays = value;
+                });
+              },
+            ),
+            SizedBox(height: tokens.space4),
+            SellImagePickerPanel(
+              title: context.l10n.sellImageMainTitle,
+              description: context.l10n.sellImageMainDescription,
+              buttonLabel: context.l10n.sellImageMainAction,
+              existingUrls: _existingImageUrls,
+              newFiles: _newImageFiles,
+              onPickPressed: _pickGalleryImages,
+            ),
+            SizedBox(height: tokens.space4),
+            SellImagePickerPanel(
+              title: context.l10n.sellImageAuthTitle,
+              description: context.l10n.sellImageAuthDescription,
+              buttonLabel: context.l10n.sellImageAuthAction,
+              existingUrls: _existingAuthImageUrls,
+              newFiles: _newAuthImageFiles,
+              onPickPressed: _pickAuthImages,
+            ),
+            SizedBox(height: tokens.space6),
+            SellActionPanel(
+              itemId: _itemId,
+              isSavingDraft: _isSavingDraft,
+              isPublishing: _isPublishing,
+              onSaveDraft: _saveDraft,
+              onPublish: _publish,
+            ),
+          ],
         ),
-        children: [
-          AppEditorialHero(
-            eyebrow: context.l10n.sellHeroEyebrow,
-            title: context.l10n.sellHeroTitle,
-            description: context.l10n.sellHeroDescription,
-            badges: const [
-              AppStatusBadge(kind: AppStatusKind.pending),
-              AppStatusBadge(kind: AppStatusKind.verified),
-            ],
-          ),
-          SizedBox(height: tokens.space5),
-          const SellPolicyPanel(),
-          SizedBox(height: tokens.space6),
-          SellRecentDraftsSection(
-            userId: userId,
-            onSelectDraft: _applyDraft,
-          ),
-          SizedBox(height: tokens.space6),
-          SellCategoryPanel(
-            categoryMain: _categoryMain,
-            categorySubController: _categorySubController,
-            onCategoryMainChanged: (value) {
-              setState(() {
-                _categoryMain = value;
-              });
-            },
-          ),
-          SizedBox(height: tokens.space4),
-          SellDetailsPanel(
-            titleController: _titleController,
-            conditionController: _conditionController,
-            tagsController: _tagsController,
-            descriptionController: _descriptionController,
-            appraisalRequested: _appraisalRequested,
-            onAppraisalChanged: (value) {
-              setState(() {
-                _appraisalRequested = value;
-              });
-            },
-          ),
-          SizedBox(height: tokens.space4),
-          SellPricingPanel(
-            startPriceController: _startPriceController,
-            buyNowPriceController: _buyNowPriceController,
-            durationDays: _durationDays,
-            onDurationChanged: (value) {
-              setState(() {
-                _durationDays = value;
-              });
-            },
-          ),
-          SizedBox(height: tokens.space4),
-          SellImagePickerPanel(
-            title: context.l10n.sellImageMainTitle,
-            description: context.l10n.sellImageMainDescription,
-            buttonLabel: context.l10n.sellImageMainAction,
-            existingUrls: _existingImageUrls,
-            newFiles: _newImageFiles,
-            onPickPressed: _pickGalleryImages,
-          ),
-          SizedBox(height: tokens.space4),
-          SellImagePickerPanel(
-            title: context.l10n.sellImageAuthTitle,
-            description: context.l10n.sellImageAuthDescription,
-            buttonLabel: context.l10n.sellImageAuthAction,
-            existingUrls: _existingAuthImageUrls,
-            newFiles: _newAuthImageFiles,
-            onPickPressed: _pickAuthImages,
-          ),
-          SizedBox(height: tokens.space6),
-          SellActionPanel(
-            itemId: _itemId,
-            isSavingDraft: _isSavingDraft,
-            isPublishing: _isPublishing,
-            onSaveDraft: _saveDraft,
-            onPublish: _publish,
-          ),
-        ],
       ),
     );
   }
