@@ -27,4 +27,10 @@ void main() {
       '/payments/fail?orderId=order-paid&code=PAYMENT_CANCELED',
     );
   });
+
+  test('payment deep link without path falls back to orders', () {
+    final normalized = normalizeAppDeepLink(Uri.parse('app://payments'));
+
+    expect(normalized, '/orders');
+  });
 }

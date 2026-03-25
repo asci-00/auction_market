@@ -149,6 +149,16 @@ describe('payment engine', () => {
     ).toThrowError(
       'APP_BASE_URL is required when dev dummy payment is unavailable.',
     );
+
+    expect(() =>
+      buildPaymentSessionContract({
+        appEnv: 'staging',
+        appBaseUrl: 'https://app.example.com',
+        orderId: 'order-1',
+        allowDevDummyPayment: true,
+        buildDevPaymentKey: (orderId) => `dev_pay_${orderId}`,
+      }),
+    ).toThrowError('Dev dummy payment can only be enabled in dev.');
   });
 
   it('rejects invalid app base urls', () => {

@@ -64,7 +64,7 @@ class _OrderPaymentReturnScreenState
     super.initState();
     if (widget.mode == OrderPaymentReturnRouteMode.fail) {
       _viewState = _OrderPaymentReturnViewState.fail;
-      _errorMessage = widget.failureMessage;
+      _errorMessage = _mapFailureMessage(widget.failureMessage);
       return;
     }
 
@@ -141,7 +141,7 @@ class _OrderPaymentReturnScreenState
       }
       setState(() {
         _viewState = _OrderPaymentReturnViewState.fail;
-        _errorMessage = error.message;
+        _errorMessage = _mapFirebaseError(error);
       });
     } catch (_) {
       if (!mounted) {
@@ -151,6 +151,27 @@ class _OrderPaymentReturnScreenState
         _viewState = _OrderPaymentReturnViewState.fail;
       });
     }
+  }
+
+  String? _mapFailureMessage(String? rawMessage) {
+    _logInternalError('payment return fail query', rawMessage);
+    return null;
+  }
+
+  String? _mapFirebaseError(FirebaseFunctionsException error) {
+    _logInternalError(
+      'payment return confirm failure',
+      '${error.code}: ${error.message}',
+    );
+    return null;
+  }
+
+  void _logInternalError(String context, String? detail) {
+    final normalized = detail?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      return;
+    }
+    debugPrint('[$context] $normalized');
   }
 }
 
@@ -289,15 +310,6 @@ class _PaymentReturnStatusPanel extends StatelessWidget {
               ),
             ),
           ],
-          if (mode == OrderPaymentReturnRouteMode.fail &&
-              viewState == _OrderPaymentReturnViewState.fail &&
-              errorMessage == null) ...[
-            SizedBox(height: tokens.space3),
-            Text(
-              context.l10n.ordersPaymentReturnFailDescription,
-              style: context.textTheme.bodySmall,
-            ),
-          ],
         ],
       ),
     );
@@ -344,21 +356,27 @@ class _PaymentReturnActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final normalizedOrderId = orderId?.trim();
+    final encodedOrderId =
+        normalizedOrderId == null || normalizedOrderId.isEmpty
+            ? null
+            : Uri.encodeComponent(normalizedOrderId);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (showOpenOrder)
+        if (showOpenOrder && encodedOrderId != null)
           isPrimaryOrderAction
               ? FilledButton(
-                  onPressed: () => context.router.go('/orders/$orderId'),
+                  onPressed: () => context.router.go('/orders/$encodedOrderId'),
                   child: Text(context.l10n.ordersPaymentReturnActionOpenOrder),
                 )
               : OutlinedButton(
-                  onPressed: () => context.router.go('/orders/$orderId'),
+                  onPressed: () => context.router.go('/orders/$encodedOrderId'),
                   child: Text(context.l10n.ordersPaymentReturnActionOpenOrder),
                 ),
-        if (showOpenOrder) SizedBox(height: tokens.space3),
+        if (showOpenOrder && encodedOrderId != null)
+          SizedBox(height: tokens.space3),
         isPrimaryOrderAction
             ? OutlinedButton(
                 onPressed: () => context.router.go('/orders'),

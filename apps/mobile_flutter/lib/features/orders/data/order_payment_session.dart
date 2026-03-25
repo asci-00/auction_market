@@ -71,5 +71,5 @@ class OrderPaymentSession {
 
   bool get isRealTossReady => isRealTossMode && hasCheckoutHandoff;
 
-  bool get requiresManualConfirmation => !isDevDummyMode || !hasDevPaymentKey;
+  bool get requiresManualConfirmation => !isDevDummyMode;
 }

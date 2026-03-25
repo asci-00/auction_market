@@ -51,6 +51,12 @@ export function buildPaymentSessionContract({
   allowDevDummyPayment: boolean;
   buildDevPaymentKey: (orderId: string) => string;
 }): PaymentSessionContract {
+  if (appEnv !== 'dev' && allowDevDummyPayment) {
+    throw new HttpsError(
+      'failed-precondition',
+      'Dev dummy payment can only be enabled in dev.',
+    );
+  }
   if (appEnv !== 'dev' && !appBaseUrl) {
     throw new HttpsError(
       'failed-precondition',

@@ -14,7 +14,11 @@ class OrderPaymentHandoffPlan {
   const OrderPaymentHandoffPlan({
     required this.mode,
     this.paymentKey,
-  });
+  }) : assert(
+          mode != OrderPaymentHandoffMode.devDummy ||
+              (paymentKey != null && paymentKey != ''),
+          'devDummy mode requires a paymentKey',
+        );
 
   final OrderPaymentHandoffMode mode;
   final String? paymentKey;
