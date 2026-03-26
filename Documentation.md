@@ -86,7 +86,7 @@
 - Dynamic Firestore content may remain backend-authored text, but fallback labels, badges, and empty/error states must be localized in the app.
 
 ## Backend Implementation Notes
-- `backend/functions/src/config/runtime.ts` validates backend runtime env such as `APP_ENV`, `GCLOUD_PROJECT`, Toss secrets, Toss API base URL, and `APP_BASE_URL`.
+- `backend/functions/src/config/runtime.ts` validates backend runtime env such as `APP_ENV`, `GCLOUD_PROJECT`, Toss secrets, Toss API base URL, and the presence of `APP_BASE_URL` when it is required by the active payment mode.
 - `backend/functions/src/domain/paymentEngine.ts` owns payment confirmation idempotency helpers, webhook normalization, and payment state transitions.
 - `backend/functions/eslint.config.mjs` now runs ESLint for `src`, `test`, and `scripts`, while `.prettierrc.json` and package scripts provide a repeatable formatting check for TypeScript files before commit.
 - `backend/functions/src/index.ts` now exports the Phase 2 callable and scheduler surface:
@@ -111,7 +111,7 @@
 - Critical transitions now write `auditEvents` records for user bootstrap, item and auction lifecycle, bids, payment confirmation and failure, shipment, receipt confirmation, unpaid expiry, and settlement.
 - `createPaymentSession` now returns `mode: "DEV_DUMMY"` plus a deterministic `devPaymentKey` in `dev`, so the mobile app can validate buyer payment progression without pretending to launch a production checkout.
 - The `DEV_DUMMY` payment path is emulator-only. If the backend is not running under the Firebase Emulator Suite, `createPaymentSession` falls back to `mode: "TOSS"` and requires `APP_BASE_URL` for success and fail return URLs.
-- `APP_BASE_URL` is normalized inside the payment domain before success and fail URLs are built, so trailing slashes or stray query strings do not leak into `/payments/success` and `/payments/fail`.
+- The payment domain normalizes `APP_BASE_URL` before success and fail URLs are built, so trailing slashes or stray query strings do not leak into `/payments/success` and `/payments/fail`, while `runtime.ts` remains responsible only for the base environment validation.
 - The Toss webhook path verifies the configured webhook secret from the payload, applies idempotent payment transitions through `payment.lastWebhookEventId`, and updates the order instead of relying on a mock payment mutation.
 - The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `seller1`, and `ops1`, a live auction with bids and auto-bid config, an ended auction with an awaiting-payment order, and inbox notifications for both sides.
 - The default seeded `order-paid` document now starts in `PAID_ESCROW_HOLD` with empty shipping data, so the seller can submit shipment first and the buyer can confirm receipt afterward during emulator smoke tests.
@@ -127,7 +127,7 @@
 - Buyer smoke test path for auction actions: sign in as `buyer1`, open a live seeded auction, place a manual bid or save an auto-bid ceiling from the auction detail action bar, or use buy-now and verify the app routes into the created order timeline.
 - Buyer payment smoke test path: sign in as `buyer1`, open an `AWAITING_PAYMENT` order, trigger payment preparation, and use the in-app `dev` payment completion action to move the order into `PAID_ESCROW_HOLD`.
 - Buyer payment return smoke test path: while signed in as `buyer1`, open `app://payments/success?orderId=order-awaiting&paymentKey=dev_pay_order-awaiting&amount=18000` and verify the payment return screen advances that seeded `AWAITING_PAYMENT` order to `PAID_ESCROW_HOLD`, then routes back into the order timeline.
-- Buyer payment failure return smoke test path: while signed in as `buyer1`, open `app://payments/fail?orderId=order-awaiting&code=PAY_PROCESS_CANCELED&message=test` and verify the payment failure screen returns the user to payment recovery UI without changing that order from `AWAITING_PAYMENT`.
+- Buyer payment failure return smoke test path: rerun `npm run seed` first to restore `order-awaiting` to `AWAITING_PAYMENT`, then while signed in as `buyer1`, open `app://payments/fail?orderId=order-awaiting&code=PAY_PROCESS_CANCELED&message=test` and verify the payment failure screen returns the user to payment recovery UI without changing that order from `AWAITING_PAYMENT`.
 - Seller smoke test path: sign in as `seller1`, open `order-paid`, submit carrier and tracking information, and confirm the order moves to `SHIPPED`.
 - Buyer smoke test path: sign in as `buyer1`, open the same `order-paid`, confirm receipt, and verify the order moves to `CONFIRMED_RECEIPT`.
 - These accounts are for local emulator checks only. They do not validate Google or Apple browser sign-in, provider linking, redirect handling, or staging and prod auth configuration.

@@ -79,7 +79,7 @@ class OrderSummaryCard extends StatelessWidget {
               _PaymentDuePlate(order: order),
               if (role == OrderSectionRole.buyer) ...[
                 SizedBox(height: tokens.space3),
-                _PaymentRecoveryNote(role: role),
+                const _PaymentRecoveryNote(),
               ],
             ],
             if (order.hasShipmentSummary)
@@ -129,17 +129,11 @@ class OrderSummaryCard extends StatelessWidget {
 }
 
 class _PaymentRecoveryNote extends StatelessWidget {
-  const _PaymentRecoveryNote({required this.role});
-
-  final OrderSectionRole role;
+  const _PaymentRecoveryNote();
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
-    if (role != OrderSectionRole.buyer) {
-      return const SizedBox.shrink();
-    }
-
     return Container(
       padding: EdgeInsets.all(tokens.space3),
       decoration: BoxDecoration(

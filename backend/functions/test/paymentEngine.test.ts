@@ -93,6 +93,23 @@ describe('payment engine', () => {
     });
   });
 
+  it('keeps dev dummy payment contract independent from app base url', () => {
+    const contract = buildPaymentSessionContract({
+      appEnv: 'dev',
+      appBaseUrl: 'https://example.dev',
+      orderId: 'order-1',
+      allowDevDummyPayment: true,
+      buildDevPaymentKey: (orderId) => `dev_pay_${orderId}`,
+    });
+
+    expect(contract).toEqual({
+      mode: 'DEV_DUMMY',
+      successUrl: null,
+      failUrl: null,
+      devPaymentKey: 'dev_pay_order-1',
+    });
+  });
+
   it('builds toss payment session urls and trims trailing slash', () => {
     const contract = buildPaymentSessionContract({
       appEnv: 'staging',
