@@ -127,6 +127,23 @@ describe('payment engine', () => {
     );
   });
 
+  it('url-encodes order id when building payment return urls', () => {
+    const contract = buildPaymentSessionContract({
+      appEnv: 'staging',
+      appBaseUrl: 'https://app.example.com',
+      orderId: 'order&x=y',
+      allowDevDummyPayment: false,
+      buildDevPaymentKey: (orderId) => `dev_pay_${orderId}`,
+    });
+
+    expect(contract.successUrl).toBe(
+      'https://app.example.com/payments/success?orderId=order%26x%3Dy',
+    );
+    expect(contract.failUrl).toBe(
+      'https://app.example.com/payments/fail?orderId=order%26x%3Dy',
+    );
+  });
+
   it('requires app base url when toss handoff must be prepared', () => {
     expect(() =>
       buildPaymentSessionContract({

@@ -18,13 +18,13 @@ void main() {
   test('payment fail deep links normalize back to payment fail route', () {
     final normalized = normalizeAppDeepLink(
       Uri.parse(
-        'app://payments/fail?orderId=order-paid&code=PAYMENT_CANCELED',
+        'app://payments/fail?orderId=order-paid&code=PAYMENT_CANCELED&message=test',
       ),
     );
 
     expect(
       normalized,
-      '/payments/fail?orderId=order-paid&code=PAYMENT_CANCELED',
+      '/payments/fail?orderId=order-paid&code=PAYMENT_CANCELED&message=test',
     );
   });
 

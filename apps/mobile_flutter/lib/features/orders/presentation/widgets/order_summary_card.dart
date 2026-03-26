@@ -32,9 +32,11 @@ class OrderSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
-    final canShip = role == OrderSectionRole.seller &&
+    final canShip =
+        role == OrderSectionRole.seller &&
         order.orderStatus == 'PAID_ESCROW_HOLD';
-    final canPay = role == OrderSectionRole.buyer &&
+    final canPay =
+        role == OrderSectionRole.buyer &&
         order.orderStatus == 'AWAITING_PAYMENT';
     final canConfirmReceipt =
         role == OrderSectionRole.buyer && order.orderStatus == 'SHIPPED';
@@ -75,8 +77,10 @@ class OrderSummaryCard extends StatelessWidget {
                 order.paymentDueAt != null) ...[
               SizedBox(height: tokens.space3),
               _PaymentDuePlate(order: order),
-              SizedBox(height: tokens.space3),
-              _PaymentRecoveryNote(role: role),
+              if (role == OrderSectionRole.buyer) ...[
+                SizedBox(height: tokens.space3),
+                _PaymentRecoveryNote(role: role),
+              ],
             ],
             if (order.hasShipmentSummary)
               Padding(
@@ -125,9 +129,7 @@ class OrderSummaryCard extends StatelessWidget {
 }
 
 class _PaymentRecoveryNote extends StatelessWidget {
-  const _PaymentRecoveryNote({
-    required this.role,
-  });
+  const _PaymentRecoveryNote({required this.role});
 
   final OrderSectionRole role;
 
@@ -170,9 +172,7 @@ class _PaymentRecoveryNote extends StatelessWidget {
 }
 
 class _PaymentDuePlate extends StatelessWidget {
-  const _PaymentDuePlate({
-    required this.order,
-  });
+  const _PaymentDuePlate({required this.order});
 
   final OrderSummary order;
 

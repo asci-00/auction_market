@@ -126,13 +126,14 @@
 - The mobile login screen surfaces only the buyer and seller quick-login actions in `dev` emulator mode.
 - Buyer smoke test path for auction actions: sign in as `buyer1`, open a live seeded auction, place a manual bid or save an auto-bid ceiling from the auction detail action bar, or use buy-now and verify the app routes into the created order timeline.
 - Buyer payment smoke test path: sign in as `buyer1`, open an `AWAITING_PAYMENT` order, trigger payment preparation, and use the in-app `dev` payment completion action to move the order into `PAID_ESCROW_HOLD`.
-- Buyer payment return smoke test path: while signed in as `buyer1`, open `app://payments/success?orderId=order-paid&paymentKey=dev_pay_order-paid&amount=230000` and verify the payment return screen confirms the order, then routes back into the order timeline.
-- Buyer payment failure return smoke test path: while signed in as `buyer1`, open `app://payments/fail?orderId=order-paid&code=PAY_PROCESS_CANCELED&message=test` and verify the payment failure screen returns the user to payment recovery UI without changing the order state.
+- Buyer payment return smoke test path: while signed in as `buyer1`, open `app://payments/success?orderId=order-awaiting&paymentKey=dev_pay_order-awaiting&amount=18000` and verify the payment return screen advances that seeded `AWAITING_PAYMENT` order to `PAID_ESCROW_HOLD`, then routes back into the order timeline.
+- Buyer payment failure return smoke test path: while signed in as `buyer1`, open `app://payments/fail?orderId=order-awaiting&code=PAY_PROCESS_CANCELED&message=test` and verify the payment failure screen returns the user to payment recovery UI without changing that order from `AWAITING_PAYMENT`.
 - Seller smoke test path: sign in as `seller1`, open `order-paid`, submit carrier and tracking information, and confirm the order moves to `SHIPPED`.
 - Buyer smoke test path: sign in as `buyer1`, open the same `order-paid`, confirm receipt, and verify the order moves to `CONFIRMED_RECEIPT`.
 - These accounts are for local emulator checks only. They do not validate Google or Apple browser sign-in, provider linking, redirect handling, or staging and prod auth configuration.
 
 ## Navigation Contract
+
 - Public route: `/login`.
 - Authenticated tab routes: `/home`, `/search`, `/sell`, `/activity`, `/my`.
 - Authenticated detail routes: `/auction/:id`, `/orders`, `/orders/:orderId`, `/payments/success`, `/payments/fail`, `/notifications`.

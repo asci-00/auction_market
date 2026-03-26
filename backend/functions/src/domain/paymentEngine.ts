@@ -71,11 +71,12 @@ export function buildPaymentSessionContract({
   }
 
   const normalizedBaseUrl = normalizeAppBaseUrl(appBaseUrl);
+  const encodedOrderId = encodeURIComponent(orderId);
   const successUrl = normalizedBaseUrl
-    ? `${normalizedBaseUrl}/payments/success?orderId=${orderId}`
+    ? `${normalizedBaseUrl}/payments/success?orderId=${encodedOrderId}`
     : null;
   const failUrl = normalizedBaseUrl
-    ? `${normalizedBaseUrl}/payments/fail?orderId=${orderId}`
+    ? `${normalizedBaseUrl}/payments/fail?orderId=${encodedOrderId}`
     : null;
 
   return {
