@@ -49,67 +49,103 @@ Future<int?> _showAuctionAmountDialog(
   required String hintText,
   required String submitLabel,
 }) async {
-  final controller = TextEditingController(text: '$minimumBid');
-  final validationMessage = context.l10n.auctionDetailBidMinimum(
-    formatKrw(context, minimumBid),
+  return showDialog<int>(
+    context: context,
+    builder: (_) => _AuctionAmountDialog(
+      minimumBid: minimumBid,
+      title: title,
+      description: description,
+      labelText: labelText,
+      hintText: hintText,
+      submitLabel: submitLabel,
+    ),
   );
+}
 
-  try {
-    return await showDialog<int>(
-      context: context,
-      builder: (dialogContext) {
-        final bottomInset = MediaQuery.viewInsetsOf(dialogContext).bottom;
+class _AuctionAmountDialog extends StatefulWidget {
+  const _AuctionAmountDialog({
+    required this.minimumBid,
+    required this.title,
+    required this.description,
+    required this.labelText,
+    required this.hintText,
+    required this.submitLabel,
+  });
 
-        return AlertDialog(
-          scrollable: true,
-          insetPadding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
-          title: Text(title),
-          content: AppKeyboardSafeInset(
-            useSafeArea: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  description,
-                  style: dialogContext.textTheme.bodySmall,
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: controller,
-                  keyboardType: TextInputType.number,
-                  textInputAction: TextInputAction.done,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: InputDecoration(
-                    labelText: labelText,
-                    hintText: hintText,
-                  ),
-                ),
-              ],
+  final int minimumBid;
+  final String title;
+  final String description;
+  final String labelText;
+  final String hintText;
+  final String submitLabel;
+
+  @override
+  State<_AuctionAmountDialog> createState() => _AuctionAmountDialogState();
+}
+
+class _AuctionAmountDialogState extends State<_AuctionAmountDialog> {
+  late final TextEditingController _controller =
+      TextEditingController(text: '${widget.minimumBid}');
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final validationMessage = context.l10n.auctionDetailBidMinimum(
+      formatKrw(context, widget.minimumBid),
+    );
+
+    return AlertDialog(
+      scrollable: true,
+      insetPadding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
+      title: Text(widget.title),
+      content: AppKeyboardSafeInset(
+        useSafeArea: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.description,
+              style: context.textTheme.bodySmall,
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(context.l10n.auctionDetailDialogCancel),
-            ),
-            FilledButton(
-              onPressed: () {
-                final parsedAmount = int.tryParse(controller.text.trim());
-                if (parsedAmount == null || parsedAmount < minimumBid) {
-                  dialogContext.showErrorSnackBar(validationMessage);
-                  return;
-                }
-
-                Navigator.of(dialogContext).pop(parsedAmount);
-              },
-              child: Text(submitLabel),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _controller,
+              keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.done,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: InputDecoration(
+                labelText: widget.labelText,
+                hintText: widget.hintText,
+              ),
             ),
           ],
-        );
-      },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(context.l10n.auctionDetailDialogCancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            final parsedAmount = int.tryParse(_controller.text.trim());
+            if (parsedAmount == null || parsedAmount < widget.minimumBid) {
+              context.showErrorSnackBar(validationMessage);
+              return;
+            }
+
+            Navigator.of(context).pop(parsedAmount);
+          },
+          child: Text(widget.submitLabel),
+        ),
+      ],
     );
-  } finally {
-    controller.dispose();
   }
 }

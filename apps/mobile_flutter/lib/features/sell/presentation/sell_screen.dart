@@ -18,6 +18,7 @@ import '../../../core/widgets/app_status_badge.dart';
 import '../application/sell_flow_service.dart';
 import '../data/sell_draft_form_data.dart';
 import '../data/sell_draft_summary.dart';
+import 'sell_view_model.dart';
 import 'widgets/sell_action_panel.dart';
 import 'widgets/sell_category_panel.dart';
 import 'widgets/sell_details_panel.dart';
@@ -41,6 +42,7 @@ class _SellScreenState extends ConsumerState<SellScreen> {
   final _tagsController = TextEditingController();
   final _startPriceController = TextEditingController();
   final _buyNowPriceController = TextEditingController();
+  final _scrollController = ScrollController();
   final _imagePicker = ImagePicker();
 
   String? _itemId;
@@ -63,6 +65,7 @@ class _SellScreenState extends ConsumerState<SellScreen> {
     _tagsController.dispose();
     _startPriceController.dispose();
     _buyNowPriceController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -70,6 +73,8 @@ class _SellScreenState extends ConsumerState<SellScreen> {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final userId = ref.watch(firebaseAuthProvider).currentUser?.uid;
+    final sellAsync =
+        userId == null ? null : ref.watch(sellViewModelProvider(userId));
 
     return AppPageScaffold(
       title: context.l10n.sellTitle,
@@ -78,94 +83,107 @@ class _SellScreenState extends ConsumerState<SellScreen> {
         message: _isPublishing
             ? context.l10n.sellPublishing
             : context.l10n.sellSavingDraft,
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(
-            tokens.screenPadding,
-            tokens.space4,
-            tokens.screenPadding,
-            math.max(
-              tokens.space8,
-              MediaQuery.viewInsetsOf(context).bottom + tokens.space4,
+        child: NotificationListener<ScrollStartNotification>(
+          onNotification: (notification) {
+            if (defaultTargetPlatform == TargetPlatform.iOS) {
+              final focus = FocusManager.instance.primaryFocus;
+              if (focus != null && focus.hasFocus) {
+                focus.unfocus();
+              }
+            }
+            return false;
+          },
+          child: ListView(
+            controller: _scrollController,
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: EdgeInsets.fromLTRB(
+              tokens.screenPadding,
+              tokens.space4,
+              tokens.screenPadding,
+              math.max(tokens.space8, tokens.space4),
             ),
+            children: [
+              AppEditorialHero(
+                eyebrow: context.l10n.sellHeroEyebrow,
+                title: context.l10n.sellHeroTitle,
+                description: context.l10n.sellHeroDescription,
+                badges: const [
+                  AppStatusBadge(kind: AppStatusKind.pending),
+                  AppStatusBadge(kind: AppStatusKind.verified),
+                ],
+              ),
+              SizedBox(height: tokens.space5),
+              const SellPolicyPanel(),
+              SizedBox(height: tokens.space6),
+              SellRecentDraftsSection(
+                userId: userId,
+                drafts: sellAsync?.valueOrNull?.recentDrafts ?? const [],
+                isLoading: sellAsync?.isLoading ?? false,
+                hasError: sellAsync?.hasError ?? false,
+                onSelectDraft: _applyDraft,
+              ),
+              SizedBox(height: tokens.space6),
+              SellCategoryPanel(
+                categoryMain: _categoryMain,
+                categorySubController: _categorySubController,
+                onCategoryMainChanged: (value) {
+                  setState(() {
+                    _categoryMain = value;
+                  });
+                },
+              ),
+              SizedBox(height: tokens.space4),
+              SellDetailsPanel(
+                titleController: _titleController,
+                conditionController: _conditionController,
+                tagsController: _tagsController,
+                descriptionController: _descriptionController,
+                appraisalRequested: _appraisalRequested,
+                onAppraisalChanged: (value) {
+                  setState(() {
+                    _appraisalRequested = value;
+                  });
+                },
+              ),
+              SizedBox(height: tokens.space4),
+              SellPricingPanel(
+                startPriceController: _startPriceController,
+                buyNowPriceController: _buyNowPriceController,
+                durationDays: _durationDays,
+                onDurationChanged: (value) {
+                  setState(() {
+                    _durationDays = value;
+                  });
+                },
+              ),
+              SizedBox(height: tokens.space4),
+              SellImagePickerPanel(
+                title: context.l10n.sellImageMainTitle,
+                description: context.l10n.sellImageMainDescription,
+                buttonLabel: context.l10n.sellImageMainAction,
+                existingUrls: _existingImageUrls,
+                newFiles: _newImageFiles,
+                onPickPressed: _pickGalleryImages,
+              ),
+              SizedBox(height: tokens.space4),
+              SellImagePickerPanel(
+                title: context.l10n.sellImageAuthTitle,
+                description: context.l10n.sellImageAuthDescription,
+                buttonLabel: context.l10n.sellImageAuthAction,
+                existingUrls: _existingAuthImageUrls,
+                newFiles: _newAuthImageFiles,
+                onPickPressed: _pickAuthImages,
+              ),
+              SizedBox(height: tokens.space6),
+              SellActionPanel(
+                itemId: _itemId,
+                isSavingDraft: _isSavingDraft,
+                isPublishing: _isPublishing,
+                onSaveDraft: _saveDraft,
+                onPublish: _publish,
+              ),
+            ],
           ),
-          children: [
-            AppEditorialHero(
-              eyebrow: context.l10n.sellHeroEyebrow,
-              title: context.l10n.sellHeroTitle,
-              description: context.l10n.sellHeroDescription,
-              badges: const [
-                AppStatusBadge(kind: AppStatusKind.pending),
-                AppStatusBadge(kind: AppStatusKind.verified),
-              ],
-            ),
-            SizedBox(height: tokens.space5),
-            const SellPolicyPanel(),
-            SizedBox(height: tokens.space6),
-            SellRecentDraftsSection(
-              userId: userId,
-              onSelectDraft: _applyDraft,
-            ),
-            SizedBox(height: tokens.space6),
-            SellCategoryPanel(
-              categoryMain: _categoryMain,
-              categorySubController: _categorySubController,
-              onCategoryMainChanged: (value) {
-                setState(() {
-                  _categoryMain = value;
-                });
-              },
-            ),
-            SizedBox(height: tokens.space4),
-            SellDetailsPanel(
-              titleController: _titleController,
-              conditionController: _conditionController,
-              tagsController: _tagsController,
-              descriptionController: _descriptionController,
-              appraisalRequested: _appraisalRequested,
-              onAppraisalChanged: (value) {
-                setState(() {
-                  _appraisalRequested = value;
-                });
-              },
-            ),
-            SizedBox(height: tokens.space4),
-            SellPricingPanel(
-              startPriceController: _startPriceController,
-              buyNowPriceController: _buyNowPriceController,
-              durationDays: _durationDays,
-              onDurationChanged: (value) {
-                setState(() {
-                  _durationDays = value;
-                });
-              },
-            ),
-            SizedBox(height: tokens.space4),
-            SellImagePickerPanel(
-              title: context.l10n.sellImageMainTitle,
-              description: context.l10n.sellImageMainDescription,
-              buttonLabel: context.l10n.sellImageMainAction,
-              existingUrls: _existingImageUrls,
-              newFiles: _newImageFiles,
-              onPickPressed: _pickGalleryImages,
-            ),
-            SizedBox(height: tokens.space4),
-            SellImagePickerPanel(
-              title: context.l10n.sellImageAuthTitle,
-              description: context.l10n.sellImageAuthDescription,
-              buttonLabel: context.l10n.sellImageAuthAction,
-              existingUrls: _existingAuthImageUrls,
-              newFiles: _newAuthImageFiles,
-              onPickPressed: _pickAuthImages,
-            ),
-            SizedBox(height: tokens.space6),
-            SellActionPanel(
-              itemId: _itemId,
-              isSavingDraft: _isSavingDraft,
-              isPublishing: _isPublishing,
-              onSaveDraft: _saveDraft,
-              onPublish: _publish,
-            ),
-          ],
         ),
       ),
     );

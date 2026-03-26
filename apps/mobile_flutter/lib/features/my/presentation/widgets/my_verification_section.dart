@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -15,9 +14,15 @@ class MyVerificationSection extends StatelessWidget {
   const MyVerificationSection({
     super.key,
     required this.user,
+    required this.profile,
+    required this.isLoading,
+    required this.hasError,
   });
 
   final User? user;
+  final MyProfileSummary? profile;
+  final bool isLoading;
+  final bool hasError;
 
   @override
   Widget build(BuildContext context) {
@@ -36,67 +41,66 @@ class MyVerificationSection extends StatelessWidget {
             title: context.l10n.mySessionUnavailable,
             description: context.l10n.myVerificationDescription,
           )
+        else if (hasError)
+          AppEmptyState(
+            icon: Icons.error_outline_rounded,
+            title: context.l10n.genericUnavailable,
+            description: context.l10n.mySessionUnavailable,
+          )
+        else if (isLoading)
+          const AppShimmerListPlaceholder(
+            itemCount: 3,
+            itemHeight: 84,
+          )
         else
-          StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-            stream: FirebaseFirestore.instance
-                .collection('users')
-                .doc(user!.uid)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return AppEmptyState(
-                  icon: Icons.error_outline_rounded,
-                  title: context.l10n.genericUnavailable,
-                  description: context.l10n.mySessionUnavailable,
-                );
-              }
+          _VerificationBody(profile: profile),
+      ],
+    );
+  }
+}
 
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const AppShimmerListPlaceholder(
-                  itemCount: 3,
-                  itemHeight: 84,
-                );
-              }
+class _VerificationBody extends StatelessWidget {
+  const _VerificationBody({required this.profile});
 
-              if (!snapshot.hasData || !snapshot.data!.exists) {
-                return AppEmptyState(
-                  icon: Icons.person_search_outlined,
-                  title: context.l10n.mySessionUnavailable,
-                  description: context.l10n.myVerificationDescription,
-                );
-              }
+  final MyProfileSummary? profile;
 
-              final profile = MyProfileSummary.fromDocument(snapshot.data!);
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
 
-              return Column(
-                children: [
-                  MyVerificationRow(
-                    label: context.l10n.myVerificationPhone,
-                    value: myVerificationLabel(
-                      context,
-                      profile.phoneVerification,
-                    ),
-                  ),
-                  SizedBox(height: tokens.space3),
-                  MyVerificationRow(
-                    label: context.l10n.myVerificationIdentity,
-                    value: myVerificationLabel(
-                      context,
-                      profile.identityVerification,
-                    ),
-                  ),
-                  SizedBox(height: tokens.space3),
-                  MyVerificationRow(
-                    label: context.l10n.myVerificationSeller,
-                    value: myVerificationLabel(
-                      context,
-                      profile.sellerVerification,
-                    ),
-                  ),
-                ],
-              );
-            },
+    if (profile == null) {
+      return AppEmptyState(
+        icon: Icons.person_search_outlined,
+        title: context.l10n.mySessionUnavailable,
+        description: context.l10n.myVerificationDescription,
+      );
+    }
+
+    return Column(
+      children: [
+        MyVerificationRow(
+          label: context.l10n.myVerificationPhone,
+          value: myVerificationLabel(
+            context,
+            profile!.phoneVerification,
           ),
+        ),
+        SizedBox(height: tokens.space3),
+        MyVerificationRow(
+          label: context.l10n.myVerificationIdentity,
+          value: myVerificationLabel(
+            context,
+            profile!.identityVerification,
+          ),
+        ),
+        SizedBox(height: tokens.space3),
+        MyVerificationRow(
+          label: context.l10n.myVerificationSeller,
+          value: myVerificationLabel(
+            context,
+            profile!.sellerVerification,
+          ),
+        ),
       ],
     );
   }

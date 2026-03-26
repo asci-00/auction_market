@@ -78,7 +78,7 @@ class AppPageScaffold extends StatelessWidget {
               left: -60,
               child: _GlowOrb(
                 size: 180,
-                color: AppColors.accentPrimarySoft.withValues(alpha: 0.55),
+                color: AppColors.accentPrimarySoft.withValues(alpha: 0.85),
               ),
             ),
             Positioned(
@@ -86,7 +86,7 @@ class AppPageScaffold extends StatelessWidget {
               right: -70,
               child: _GlowOrb(
                 size: 200,
-                color: AppColors.sand.withValues(alpha: 0.6),
+                color: AppColors.sand.withValues(alpha: 0.9),
               ),
             ),
             SafeArea(

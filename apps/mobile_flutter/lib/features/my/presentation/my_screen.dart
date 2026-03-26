@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_status_badge.dart';
+import 'my_view_model.dart';
 import 'widgets/my_account_panel.dart';
 import 'widgets/my_verification_section.dart';
 
@@ -18,6 +19,8 @@ class MyScreen extends ConsumerWidget {
     final tokens = context.tokens;
     final auth = ref.watch(firebaseAuthProvider);
     final user = auth.currentUser;
+    final myAsync =
+        user == null ? null : ref.watch(myViewModelProvider(user.uid));
 
     return AppPageScaffold(
       title: context.l10n.myTitle,
@@ -41,7 +44,12 @@ class MyScreen extends ConsumerWidget {
           SizedBox(height: tokens.space5),
           MyAccountPanel(user: user),
           SizedBox(height: tokens.space6),
-          MyVerificationSection(user: user),
+          MyVerificationSection(
+            user: user,
+            profile: myAsync?.valueOrNull?.profile,
+            isLoading: myAsync?.isLoading ?? false,
+            hasError: myAsync?.hasError ?? false,
+          ),
           SizedBox(height: tokens.space6),
           FilledButton(
             onPressed: auth.signOut,

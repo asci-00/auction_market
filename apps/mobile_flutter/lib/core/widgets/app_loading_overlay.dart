@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -13,14 +14,14 @@ class AppLoadingOverlay extends StatefulWidget {
     super.key,
     required this.child,
     required this.isLoading,
-    required this.message,
+    this.message,
     this.delay = const Duration(milliseconds: 180),
     this.useBlur = false,
   });
 
   final Widget child;
   final bool isLoading;
-  final String message;
+  final String? message;
   final Duration delay;
   final bool useBlur;
 
@@ -119,7 +120,7 @@ class _BlurredOverlayContent extends StatelessWidget {
     required this.tokens,
   });
 
-  final String message;
+  final String? message;
   final AppThemeTokens tokens;
 
   @override
@@ -140,41 +141,62 @@ class _OverlayContent extends StatelessWidget {
     required this.tokens,
   });
 
-  final String message;
+  final String? message;
   final AppThemeTokens tokens;
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 280),
-        child: Padding(
-          padding: EdgeInsets.all(tokens.space5),
-          child: AppPanel(
-            tone: AppPanelTone.dark,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: 112,
-                  height: 112,
-                  child: Lottie.asset(
-                    'assets/lotties/loading.lottie',
-                    fit: BoxFit.contain,
-                    repeat: true,
+      child: message == null || message!.isEmpty
+          ? const _LoadingLottie()
+          : ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 280),
+              child: Padding(
+                padding: EdgeInsets.all(tokens.space5),
+                child: AppPanel(
+                  tone: AppPanelTone.dark,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const _LoadingLottie(),
+                      SizedBox(height: tokens.space2),
+                      Text(
+                        message!,
+                        textAlign: TextAlign.center,
+                        style: context.textTheme.titleMedium?.copyWith(
+                          color: AppColors.textInverse,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: tokens.space2),
-                Text(
-                  message,
-                  textAlign: TextAlign.center,
-                  style: context.textTheme.titleMedium?.copyWith(
-                    color: AppColors.textInverse,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+    );
+  }
+}
+
+class _LoadingLottie extends StatelessWidget {
+  const _LoadingLottie();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 112,
+      height: 112,
+      child: Lottie.asset(
+        'assets/lotties/loading.lottie',
+        fit: BoxFit.contain,
+        repeat: true,
+        decoder: (bytes) => LottieComposition.decodeZip(
+          bytes,
+          filePicker: (files) {
+            return files.firstWhereOrNull(
+                  (f) =>
+              f.name.startsWith('animations/') &&
+                  f.name.endsWith('.json'),
+            );
+          },
         ),
       ),
     );

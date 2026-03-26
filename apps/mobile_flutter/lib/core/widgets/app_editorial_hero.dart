@@ -30,19 +30,21 @@ class AppEditorialHero extends StatelessWidget {
     return AppPanel(
       tone: tone,
       padding: EdgeInsets.all(tokens.space6),
+      blurSigma: 18,
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           Positioned(
-            top: -20,
-            right: -16,
+            bottom: -125,
+            right: -125,
             child: Container(
-              width: 120,
-              height: 120,
+              width: 250,
+              height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.accentPrimary.withValues(alpha: 0.34),
+                    AppColors.accentPrimarySoft.withValues(alpha: 0.34),
                     Colors.transparent,
                   ],
                 ),

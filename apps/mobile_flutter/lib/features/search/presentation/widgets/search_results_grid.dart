@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/l10n/app_formatters.dart';
@@ -10,10 +10,9 @@ import '../../../../core/widgets/app_live_countdown_text.dart';
 import '../../../../core/widgets/app_motion.dart';
 import '../../../../core/widgets/app_shimmer.dart';
 import '../../../../core/widgets/app_status_badge.dart';
-import '../../application/search_auction_filter.dart';
-import '../../data/search_auction_summary.dart';
+import '../search_view_model.dart';
 
-class SearchResultsGrid extends StatefulWidget {
+class SearchResultsGrid extends ConsumerWidget {
   const SearchResultsGrid({
     super.key,
     required this.query,
@@ -24,64 +23,37 @@ class SearchResultsGrid extends StatefulWidget {
   final VoidCallback onResetQuery;
 
   @override
-  State<SearchResultsGrid> createState() => _SearchResultsGridState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final searchAsync = ref.watch(searchViewModelProvider(query));
 
-class _SearchResultsGridState extends State<SearchResultsGrid> {
-  late final Stream<QuerySnapshot<Map<String, dynamic>>> _stream;
-
-  @override
-  void initState() {
-    super.initState();
-    _stream = FirebaseFirestore.instance
-        .collection('auctions')
-        .where('status', isEqualTo: 'LIVE')
-        .orderBy('endAt')
-        .limit(24)
-        .snapshots();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: _stream,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return AppEmptyState(
-            icon: Icons.search_off_rounded,
-            title: context.l10n.genericUnavailable,
-            description: context.l10n.searchEmptyDescription,
-          );
-        }
-
-        if (!snapshot.hasData) {
-          return GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 4,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.64,
-            ),
-            itemBuilder: (_, __) => const AppShimmerCardPlaceholder(
-              height: double.infinity,
-            ),
-          );
-        }
-
-        final auctions =
-            snapshot.data!.docs.map(SearchAuctionSummary.fromDocument).toList();
-        final filtered = filterSearchAuctions(auctions, widget.query);
-
+    return searchAsync.when(
+      error: (_, __) => AppEmptyState(
+        icon: Icons.search_off_rounded,
+        title: context.l10n.genericUnavailable,
+        description: context.l10n.searchEmptyDescription,
+      ),
+      loading: () => GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: 4,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 0.64,
+        ),
+        itemBuilder: (_, __) =>
+            const AppShimmerCardPlaceholder(height: double.infinity),
+      ),
+      data: (state) {
+        final filtered = state.results;
         if (filtered.isEmpty) {
           return AppEmptyState(
             icon: Icons.grid_view_rounded,
             title: context.l10n.searchEmptyTitle,
             description: context.l10n.searchEmptyDescription,
             action: TextButton(
-              onPressed: widget.onResetQuery,
+              onPressed: onResetQuery,
               child: Text(context.l10n.searchResetAction),
             ),
           );
@@ -136,7 +108,8 @@ class _SearchResultsGridState extends State<SearchResultsGrid> {
                     ? AppStatusKind.buyNow
                     : AppStatusKind.live,
                 onTap: () => context.push(
-                    '/auction/${auction.id}?heroTag=search-${auction.id}'),
+                  '/auction/${auction.id}?heroTag=search-${auction.id}',
+                ),
               ),
             );
           },
