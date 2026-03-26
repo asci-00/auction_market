@@ -62,7 +62,8 @@ import 'app_localizations_ko.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,7 +84,8 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -1580,14 +1583,128 @@ abstract class AppLocalizations {
   /// No description provided for @ordersPaymentSheetReadyDescription.
   ///
   /// In en, this message translates to:
-  /// **'This order is ready for Toss handoff. Review the payment session details before you continue.'**
+  /// **'This order already has the payment return path prepared. Review the session details before you continue outside the app.'**
   String get ordersPaymentSheetReadyDescription;
 
   /// No description provided for @ordersPaymentSheetBlockedDescription.
   ///
   /// In en, this message translates to:
-  /// **'This build can prepare the order, but automatic Toss checkout still needs the final client key and return URL setup. If you already have a payment key, you can still confirm it below.'**
+  /// **'This order can still be confirmed from a returned payment result. If you already completed Toss checkout elsewhere, enter the payment key below.'**
   String get ordersPaymentSheetBlockedDescription;
+
+  /// No description provided for @ordersPaymentSheetStatusDev.
+  ///
+  /// In en, this message translates to:
+  /// **'Dev dummy payment'**
+  String get ordersPaymentSheetStatusDev;
+
+  /// No description provided for @ordersPaymentSheetStatusReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Return path prepared'**
+  String get ordersPaymentSheetStatusReady;
+
+  /// No description provided for @ordersPaymentSheetStatusBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual recovery path'**
+  String get ordersPaymentSheetStatusBlocked;
+
+  /// No description provided for @ordersPaymentSheetNextStepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Next step'**
+  String get ordersPaymentSheetNextStepTitle;
+
+  /// No description provided for @ordersPaymentSheetNextStepDev.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete payment in-app once, then move to shipping and receipt from the order timeline.'**
+  String get ordersPaymentSheetNextStepDev;
+
+  /// No description provided for @ordersPaymentSheetNextStepReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish Toss checkout outside this build, then return with the payment result so the order can be confirmed here.'**
+  String get ordersPaymentSheetNextStepReady;
+
+  /// No description provided for @ordersPaymentSheetNextStepBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the order timeline open as your recovery point. When Toss checkout finishes elsewhere, come back with the returned payment key to confirm the order here.'**
+  String get ordersPaymentSheetNextStepBlocked;
+
+  /// No description provided for @ordersPaymentFallbackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'If Toss checkout finished outside the app, return with the payment key and continue from this order card.'**
+  String get ordersPaymentFallbackHint;
+
+  /// No description provided for @ordersPaymentReturnPendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finalizing payment'**
+  String get ordersPaymentReturnPendingTitle;
+
+  /// No description provided for @ordersPaymentReturnPendingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'re validating the returned payment result and moving the order into the paid timeline.'**
+  String get ordersPaymentReturnPendingDescription;
+
+  /// No description provided for @ordersPaymentReturnSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment confirmed'**
+  String get ordersPaymentReturnSuccessTitle;
+
+  /// No description provided for @ordersPaymentReturnSuccessDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The order is now in paid escrow hold. Continue in the order timeline for shipping and receipt updates.'**
+  String get ordersPaymentReturnSuccessDescription;
+
+  /// No description provided for @ordersPaymentReturnFailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment was not completed'**
+  String get ordersPaymentReturnFailTitle;
+
+  /// No description provided for @ordersPaymentReturnFailDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to the order timeline to retry payment or review the latest status.'**
+  String get ordersPaymentReturnFailDescription;
+
+  /// No description provided for @ordersPaymentReturnInvalidTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment return data is incomplete'**
+  String get ordersPaymentReturnInvalidTitle;
+
+  /// No description provided for @ordersPaymentReturnInvalidDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This return route needs order, payment, and amount details before the order can be confirmed.'**
+  String get ordersPaymentReturnInvalidDescription;
+
+  /// No description provided for @ordersPaymentReturnCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Return code · {code}'**
+  String ordersPaymentReturnCodeLabel(Object code);
+
+  /// No description provided for @ordersPaymentReturnActionOpenOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Open order timeline'**
+  String get ordersPaymentReturnActionOpenOrder;
+
+  /// No description provided for @ordersPaymentReturnActionBackToOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to orders'**
+  String get ordersPaymentReturnActionBackToOrders;
 
   /// No description provided for @ordersPaymentCompleteDevAction.
   ///
@@ -1758,7 +1875,8 @@ abstract class AppLocalizations {
   String ordersShipmentSummary(Object carrierName, Object trackingNumber);
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -1767,25 +1885,25 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'ko'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'ko'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return AppLocalizationsEn();
-    case 'ko': return AppLocalizationsKo();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'ko':
+      return AppLocalizationsKo();
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

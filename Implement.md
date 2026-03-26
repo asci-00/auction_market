@@ -1,7 +1,7 @@
 # Auction Market Execution Log
 
 ## Current Task
-- Phase 3 mobile flow work is active. Orders now support a `dev` server-driven dummy payment handoff from the buyer timeline, shared page transitions and entrance motion are aligned to the design contract, shimmer-based loading and Hero image transitions are in place, and the next unfinished product gap is the final automated Toss checkout handoff once real client key and return URL values are available.
+- Phase 3 mobile flow work is active. Orders now support a `dev` server-driven dummy payment handoff from the buyer timeline, payment return routes and deep-link normalization are in place for `/payments/success` and `/payments/fail`, the payment sheet and return screens now distinguish dev, prepared-return, and manual-recovery states with localized product copy, shared page transitions and entrance motion are aligned to the design contract, shimmer-based loading and Hero image transitions are in place, and the next unfinished product gap is the final automated Toss checkout launcher handoff once real client key and return URL values are available.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -43,7 +43,10 @@
 - Activity now reads live buyer orders, seller orders, and inbox notifications to show the next payment, shipment, receipt, and unread-alert queues instead of linking through static cards only.
 - Orders now runs live payment-session preparation, payment confirmation, shipment update, and receipt confirmation callables from the mobile UI, and notifications mark themselves as read before routing when the callable succeeds.
 - Orders now completes `dev` payment testing through a server-driven dummy payment key from `createPaymentSession`, so buyer smoke tests can move `AWAITING_PAYMENT` orders into paid escrow hold before real Toss checkout values exist.
+- Orders now resolves payment handoff mode through a dedicated application service, and payment return routes can confirm a returned payment result from `/payments/success` before routing the buyer back into the order timeline.
+- Orders now surfaces buyer payment recovery guidance directly in the order card, separates payment-sheet state into dev, prepared-return, and manual-recovery panels, and keeps payment return CTAs available for both success and failure states.
 - Backend callables now cover bootstrap, item draft save, auction publish, cancel, relist, bid, auto-bid, buy-now, payment session creation, Toss payment confirmation, shipment update, receipt confirmation, and notification read state.
+- Backend payment-session contract building now lives in the payment domain and normalizes `APP_BASE_URL` before constructing payment success and fail return URLs.
 - Toss webhook handling now exists as `tossPaymentWebhook` and updates payment and order state idempotently.
 - Emulator seed now creates buyer and seller profiles, live and ended auctions, bids, auto-bid config, an awaiting-payment order, and inbox notifications.
 - Emulator seed now keeps `order-paid` in `PAID_ESCROW_HOLD`, so seller and buyer can smoke test shipment and receipt actions end-to-end in dev.
@@ -69,8 +72,9 @@
 4. In `dev` emulator mode, sign in as `seller1`, save a draft with gallery and auth images, publish the auction, and verify the app opens the live auction detail route.
 5. Sign in as `buyer1`, open a live auction, place a bid or save an auto-bid ceiling, then complete buy-now and confirm the order timeline opens.
 6. Still as `buyer1`, open an `AWAITING_PAYMENT` order, prepare the payment session, and verify the `dev` dummy payment action moves the order to paid escrow hold without leaving the app.
-7. Sign in as `seller1` and register shipment for `order-paid`, then sign back in as `buyer1` and confirm receipt from the same order.
-8. Fill `backend/functions/.env` and `apps/mobile_flutter/dart_defines.json` with real Toss values for staging and prod verification.
+7. Open `app://payments/success?orderId=order-paid&paymentKey=dev_pay_order-paid&amount=230000` while signed in as `buyer1`, and verify the payment return screen confirms the order and offers the order timeline CTA.
+8. Sign in as `seller1` and register shipment for `order-paid`, then sign back in as `buyer1` and confirm receipt from the same order.
+9. Fill `backend/functions/.env` and `apps/mobile_flutter/dart_defines.json` with real Toss values for staging and prod verification.
 
 ## Update Rules
 - Keep this file short.

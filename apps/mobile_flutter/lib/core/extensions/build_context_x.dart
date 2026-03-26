@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 extension BuildContextX on BuildContext {
   ThemeData get theme => Theme.of(this);
@@ -7,6 +8,7 @@ extension BuildContextX on BuildContext {
   MediaQueryData get mediaQuery => MediaQuery.of(this);
   ScaffoldMessengerState get messenger => ScaffoldMessenger.of(this);
   NavigatorState get navigator => Navigator.of(this);
+  GoRouter get router => GoRouter.of(this);
 
   void showSnackBarMessage(
     String message, {

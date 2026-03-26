@@ -13,6 +13,7 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/my/presentation/my_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/orders/presentation/orders_screen.dart';
+import '../../features/orders/presentation/order_payment_return_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/sell/presentation/sell_screen.dart';
 import '../firebase/firebase_providers.dart';
@@ -112,6 +113,28 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           state: state,
           child: OrdersScreen(
             highlightedOrderId: state.pathParameters['orderId'],
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/payments/success',
+        pageBuilder: (_, state) => _buildTransitionPage(
+          state: state,
+          child: OrderPaymentReturnScreen.success(
+            orderId: state.uri.queryParameters['orderId'],
+            paymentKey: state.uri.queryParameters['paymentKey'],
+            amount: int.tryParse(state.uri.queryParameters['amount'] ?? ''),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/payments/fail',
+        pageBuilder: (_, state) => _buildTransitionPage(
+          state: state,
+          child: OrderPaymentReturnScreen.fail(
+            orderId: state.uri.queryParameters['orderId'],
+            failureCode: state.uri.queryParameters['code'],
+            failureMessage: state.uri.queryParameters['message'],
           ),
         ),
       ),

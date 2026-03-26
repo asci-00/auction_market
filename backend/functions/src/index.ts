@@ -16,6 +16,7 @@ import {
   expireUnpaidOrders,
 } from './domain/orderEngine.js';
 import {
+  buildPaymentSessionContract,
   buildWebhookEventMarker,
   extractWebhookSecret,
   isDevDummyPaymentEnabled,
@@ -1142,37 +1143,25 @@ export const createPaymentSession = onCall(async (req) => {
     );
   }
   const allowDevDummyPayment = isDevDummyPaymentEnabled(config.appEnv);
-  if (config.appEnv !== 'dev' && !config.appBaseUrl) {
-    throw new HttpsError(
-      'failed-precondition',
-      'APP_BASE_URL is required outside dev builds.',
-    );
-  }
-  if (!allowDevDummyPayment && !config.appBaseUrl) {
-    throw new HttpsError(
-      'failed-precondition',
-      'APP_BASE_URL is required when dev dummy payment is unavailable.',
-    );
-  }
-
-  const successUrl = config.appBaseUrl
-    ? `${config.appBaseUrl.replace(/\/$/, '')}/payments/success?orderId=${orderId}`
-    : null;
-  const failUrl = config.appBaseUrl
-    ? `${config.appBaseUrl.replace(/\/$/, '')}/payments/fail?orderId=${orderId}`
-    : null;
+  const paymentSession = buildPaymentSessionContract({
+    appEnv: config.appEnv,
+    appBaseUrl: config.appBaseUrl,
+    orderId,
+    allowDevDummyPayment,
+    buildDevPaymentKey,
+  });
 
   const response: PaymentSessionResponse = {
     provider: 'TOSS_PAYMENTS',
-    mode: allowDevDummyPayment ? 'DEV_DUMMY' : 'TOSS',
+    mode: paymentSession.mode,
     orderId,
     amount: order.finalPrice,
     orderName: buildOrderName(order.auctionId),
     customerName: optionalString(req.auth?.token?.name) ?? null,
     customerEmail: optionalString(req.auth?.token?.email) ?? null,
-    successUrl,
-    failUrl,
-    devPaymentKey: allowDevDummyPayment ? buildDevPaymentKey(orderId) : null,
+    successUrl: paymentSession.successUrl,
+    failUrl: paymentSession.failUrl,
+    devPaymentKey: paymentSession.devPaymentKey,
   };
 
   return response;

@@ -1,3 +1,4 @@
+import { HttpsError } from 'firebase-functions/v2/https';
 import { Order } from './models.js';
 
 export interface ConfirmedPayment {
@@ -18,6 +19,13 @@ export interface TossWebhookPayment {
   approvedAt: Date | null;
 }
 
+export interface PaymentSessionContract {
+  mode: 'TOSS' | 'DEV_DUMMY';
+  successUrl: string | null;
+  failUrl: string | null;
+  devPaymentKey: string | null;
+}
+
 export function isDevDummyPaymentEnabled(
   appEnv: 'dev' | 'staging' | 'prod',
   env: NodeJS.ProcessEnv = process.env,
@@ -27,10 +35,64 @@ export function isDevDummyPaymentEnabled(
   }
 
   const firestoreHost = env.FIRESTORE_EMULATOR_HOST?.trim();
-  return (
-    env.FUNCTIONS_EMULATOR === 'true' ||
-    Boolean(firestoreHost)
-  );
+  return env.FUNCTIONS_EMULATOR === 'true' || Boolean(firestoreHost);
+}
+
+export function buildPaymentSessionContract({
+  appEnv,
+  appBaseUrl,
+  orderId,
+  allowDevDummyPayment,
+  buildDevPaymentKey,
+}: {
+  appEnv: 'dev' | 'staging' | 'prod';
+  appBaseUrl: string | null;
+  orderId: string;
+  allowDevDummyPayment: boolean;
+  buildDevPaymentKey: (orderId: string) => string;
+}): PaymentSessionContract {
+  if (appEnv !== 'dev' && allowDevDummyPayment) {
+    throw new HttpsError(
+      'failed-precondition',
+      'Dev dummy payment can only be enabled in dev.',
+    );
+  }
+  if (allowDevDummyPayment) {
+    return {
+      mode: 'DEV_DUMMY',
+      successUrl: null,
+      failUrl: null,
+      devPaymentKey: buildDevPaymentKey(orderId),
+    };
+  }
+  if (appEnv !== 'dev' && !appBaseUrl) {
+    throw new HttpsError(
+      'failed-precondition',
+      'APP_BASE_URL is required outside dev builds.',
+    );
+  }
+  if (!appBaseUrl) {
+    throw new HttpsError(
+      'failed-precondition',
+      'APP_BASE_URL is required when dev dummy payment is unavailable.',
+    );
+  }
+
+  const normalizedBaseUrl = normalizeAppBaseUrl(appBaseUrl);
+  const encodedOrderId = encodeURIComponent(orderId);
+  const successUrl = normalizedBaseUrl
+    ? `${normalizedBaseUrl}/payments/success?orderId=${encodedOrderId}`
+    : null;
+  const failUrl = normalizedBaseUrl
+    ? `${normalizedBaseUrl}/payments/fail?orderId=${encodedOrderId}`
+    : null;
+
+  return {
+    mode: 'TOSS',
+    successUrl,
+    failUrl,
+    devPaymentKey: null,
+  };
 }
 
 export function isDuplicatePaymentConfirmation(
@@ -160,4 +222,32 @@ export function normalizeWebhookPayment(
     approvedAt:
       approvedAt && !Number.isNaN(approvedAt.getTime()) ? approvedAt : null,
   };
+}
+
+function normalizeAppBaseUrl(appBaseUrl: string | null): string | null {
+  if (!appBaseUrl?.trim()) {
+    return null;
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(appBaseUrl);
+  } catch {
+    throw new HttpsError(
+      'failed-precondition',
+      'APP_BASE_URL must be a valid http or https URL.',
+    );
+  }
+
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    throw new HttpsError(
+      'failed-precondition',
+      'APP_BASE_URL must use http or https.',
+    );
+  }
+
+  parsed.pathname = parsed.pathname.replace(/\/$/, '');
+  parsed.search = '';
+  parsed.hash = '';
+  return parsed.toString().replace(/\/$/, '');
 }

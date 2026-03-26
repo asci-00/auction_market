@@ -32,9 +32,11 @@ class OrderSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
-    final canShip = role == OrderSectionRole.seller &&
+    final canShip =
+        role == OrderSectionRole.seller &&
         order.orderStatus == 'PAID_ESCROW_HOLD';
-    final canPay = role == OrderSectionRole.buyer &&
+    final canPay =
+        role == OrderSectionRole.buyer &&
         order.orderStatus == 'AWAITING_PAYMENT';
     final canConfirmReceipt =
         role == OrderSectionRole.buyer && order.orderStatus == 'SHIPPED';
@@ -75,6 +77,10 @@ class OrderSummaryCard extends StatelessWidget {
                 order.paymentDueAt != null) ...[
               SizedBox(height: tokens.space3),
               _PaymentDuePlate(order: order),
+              if (role == OrderSectionRole.buyer) ...[
+                SizedBox(height: tokens.space3),
+                const _PaymentRecoveryNote(),
+              ],
             ],
             if (order.hasShipmentSummary)
               Padding(
@@ -122,10 +128,45 @@ class OrderSummaryCard extends StatelessWidget {
   }
 }
 
+class _PaymentRecoveryNote extends StatelessWidget {
+  const _PaymentRecoveryNote();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    return Container(
+      padding: EdgeInsets.all(tokens.space3),
+      decoration: BoxDecoration(
+        color: AppColors.bgSurface,
+        borderRadius: BorderRadius.circular(tokens.cardRadius - 12),
+        border: Border.all(color: AppColors.borderSoft),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 1),
+            child: Icon(
+              Icons.info_outline_rounded,
+              size: 16,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          SizedBox(width: tokens.space2),
+          Expanded(
+            child: Text(
+              context.l10n.ordersPaymentFallbackHint,
+              style: context.textTheme.bodySmall,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _PaymentDuePlate extends StatelessWidget {
-  const _PaymentDuePlate({
-    required this.order,
-  });
+  const _PaymentDuePlate({required this.order});
 
   final OrderSummary order;
 

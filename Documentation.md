@@ -39,8 +39,8 @@
   - `lib/core/app_config/app_config.dart` validates only non-secret app defines such as `APP_ENV`, emulator mode, and Toss client key.
   - `lib/core/firebase/firebase_bootstrap.dart` initializes Firebase from native iOS and Android config files, then attaches Auth, Firestore, Functions, and Storage emulators when enabled.
   - `lib/core/l10n/app_localization.dart` resolves device locale to `ko` or `en` and exposes generated localization accessors.
-  - `lib/core/extensions/build_context_x.dart` centralizes repeated `BuildContext` lookups like `Theme.of`, `ScaffoldMessenger.of`, `MediaQuery.of`, and `Navigator.of`.
-  - `lib/core/routing/app_router.dart` owns guarded routing, deep-link normalization, and shared fade-plus-rise transitions for modal detail routes.
+  - `lib/core/extensions/build_context_x.dart` centralizes repeated `BuildContext` lookups like `Theme.of`, `ScaffoldMessenger.of`, `MediaQuery.of`, `Navigator.of`, and `GoRouter.of`.
+  - `lib/core/routing/app_router.dart` owns guarded routing, deep-link normalization, payment return routes, and shared fade-plus-rise transitions for modal detail routes.
   - `lib/core/theme/app_theme.dart` applies the warm neutral, charcoal, copper, coral, and sage token system from `docs/Design.md`, including anchored navigation and sticky action sizing.
   - `lib/core/widgets/` owns the shared editorial hero, auction card, shell, page scaffold, panel, badge, section heading, sticky action bar, empty-state, motion, countdown, and shimmer primitives.
   - `apps/mobile_flutter/analysis_options.yaml` now excludes generated localization files from manual lint noise, enables strict analyzer modes for casts, inference, and raw types, and adds a small set of project-wide lint rules for explicit return types, final locals and fields, and redundant lambda cleanup.
@@ -61,7 +61,10 @@
   - Notifications now reuse the shared app deep-link normalizer instead of carrying a screen-local route parser.
   - Auction detail now runs `placeBid`, `setAutoBid`, and `buyNow` from the sticky action bar when the viewer is an eligible buyer on a live auction, and redirects completed buy-now orders into `/orders/{orderId}`.
   - Orders now routes `createPaymentSession`, `confirmOrderPayment`, `shipmentUpdate`, and `confirmReceipt` through `features/orders/application/order_action_service.dart`, and notifications call `markNotificationRead` before deep-link navigation.
+  - Orders now resolves payment handoff semantics through `features/orders/application/order_payment_handoff_service.dart`, so `DEV_DUMMY`, launcher-ready Toss, and manual payment-key fallback states stay out of the order list widget.
   - Buyer order cards now surface `AWAITING_PAYMENT` actions, prepare the payment session in-app, and in `dev` can complete a server-driven dummy payment key path before the final Toss checkout handoff values are available.
+  - Payment return handling now lives in `features/orders/presentation/order_payment_return_screen.dart`, where `/payments/success` confirms a returned payment payload and `/payments/fail` routes the buyer back to recovery actions.
+  - The order payment sheet now presents handoff state as premium recovery UI, separating `DEV_DUMMY`, prepared return-path, and manual payment-key fallback into distinct panels and next-step guidance instead of relying on one generic status paragraph.
   - Sell uses `image_picker` plus Firebase Storage upload paths under `users/{uid}/items/{itemId}/gallery/*` and `users/{uid}/auth/{itemId}/*`, then persists draft data through `createOrUpdateItem` before publish.
   - Sell drafts now persist `draftAuction.startPrice`, `draftAuction.buyNowPrice`, and `draftAuction.durationDays` on `items/{itemId}`, so sellers can reload pricing intent before publishing.
   - Activity now reads `orders` and `notifications/{uid}/inbox` directly to highlight pending buyer payments, buyer receipt confirmations, seller shipment work, and unread inbox updates in one screen.
@@ -83,7 +86,7 @@
 - Dynamic Firestore content may remain backend-authored text, but fallback labels, badges, and empty/error states must be localized in the app.
 
 ## Backend Implementation Notes
-- `backend/functions/src/config/runtime.ts` validates backend runtime env such as `APP_ENV`, `GCLOUD_PROJECT`, Toss secrets, Toss API base URL, and `APP_BASE_URL`.
+- `backend/functions/src/config/runtime.ts` validates backend runtime env such as `APP_ENV`, `GCLOUD_PROJECT`, Toss secrets, Toss API base URL, and the presence of `APP_BASE_URL` when it is required by the active payment mode.
 - `backend/functions/src/domain/paymentEngine.ts` owns payment confirmation idempotency helpers, webhook normalization, and payment state transitions.
 - `backend/functions/eslint.config.mjs` now runs ESLint for `src`, `test`, and `scripts`, while `.prettierrc.json` and package scripts provide a repeatable formatting check for TypeScript files before commit.
 - `backend/functions/src/index.ts` now exports the Phase 2 callable and scheduler surface:
@@ -108,6 +111,7 @@
 - Critical transitions now write `auditEvents` records for user bootstrap, item and auction lifecycle, bids, payment confirmation and failure, shipment, receipt confirmation, unpaid expiry, and settlement.
 - `createPaymentSession` now returns `mode: "DEV_DUMMY"` plus a deterministic `devPaymentKey` in `dev`, so the mobile app can validate buyer payment progression without pretending to launch a production checkout.
 - The `DEV_DUMMY` payment path is emulator-only. If the backend is not running under the Firebase Emulator Suite, `createPaymentSession` falls back to `mode: "TOSS"` and requires `APP_BASE_URL` for success and fail return URLs.
+- The payment domain normalizes `APP_BASE_URL` before success and fail URLs are built, so trailing slashes or stray query strings do not leak into `/payments/success` and `/payments/fail`, while `runtime.ts` remains responsible only for the base environment validation.
 - The Toss webhook path verifies the configured webhook secret from the payload, applies idempotent payment transitions through `payment.lastWebhookEventId`, and updates the order instead of relying on a mock payment mutation.
 - The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `seller1`, and `ops1`, a live auction with bids and auto-bid config, an ended auction with an awaiting-payment order, and inbox notifications for both sides.
 - The default seeded `order-paid` document now starts in `PAID_ESCROW_HOLD` with empty shipping data, so the seller can submit shipment first and the buyer can confirm receipt afterward during emulator smoke tests.
@@ -122,19 +126,22 @@
 - The mobile login screen surfaces only the buyer and seller quick-login actions in `dev` emulator mode.
 - Buyer smoke test path for auction actions: sign in as `buyer1`, open a live seeded auction, place a manual bid or save an auto-bid ceiling from the auction detail action bar, or use buy-now and verify the app routes into the created order timeline.
 - Buyer payment smoke test path: sign in as `buyer1`, open an `AWAITING_PAYMENT` order, trigger payment preparation, and use the in-app `dev` payment completion action to move the order into `PAID_ESCROW_HOLD`.
+- Buyer payment return smoke test path: while signed in as `buyer1`, open `app://payments/success?orderId=order-awaiting&paymentKey=dev_pay_order-awaiting&amount=18000` and verify the payment return screen advances that seeded `AWAITING_PAYMENT` order to `PAID_ESCROW_HOLD`, then routes back into the order timeline.
+- Buyer payment failure return smoke test path: rerun `npm run seed` first to restore `order-awaiting` to `AWAITING_PAYMENT`, then while signed in as `buyer1`, open `app://payments/fail?orderId=order-awaiting&code=PAY_PROCESS_CANCELED&message=test` and verify the payment failure screen returns the user to payment recovery UI without changing that order from `AWAITING_PAYMENT`.
 - Seller smoke test path: sign in as `seller1`, open `order-paid`, submit carrier and tracking information, and confirm the order moves to `SHIPPED`.
 - Buyer smoke test path: sign in as `buyer1`, open the same `order-paid`, confirm receipt, and verify the order moves to `CONFIRMED_RECEIPT`.
 - These accounts are for local emulator checks only. They do not validate Google or Apple browser sign-in, provider linking, redirect handling, or staging and prod auth configuration.
 
 ## Navigation Contract
+
 - Public route: `/login`.
 - Authenticated tab routes: `/home`, `/search`, `/sell`, `/activity`, `/my`.
-- Authenticated detail routes: `/auction/:id`, `/orders`, `/orders/:orderId`, `/notifications`.
+- Authenticated detail routes: `/auction/:id`, `/orders`, `/orders/:orderId`, `/payments/success`, `/payments/fail`, `/notifications`.
 - The router must:
   - restore session before initial route selection.
   - redirect unauthenticated users to `/login`.
   - preserve tab state when switching between bottom navigation tabs.
-  - support inbox deep links such as `app://auction/{auctionId}` and `app://orders/{orderId}`.
+  - support inbox deep links such as `app://auction/{auctionId}`, `app://orders/{orderId}`, and payment return links such as `app://payments/success?...`.
 
 ## Firestore Contract
 

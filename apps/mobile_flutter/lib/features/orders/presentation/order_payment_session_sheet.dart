@@ -5,6 +5,7 @@ import '../../../core/l10n/app_formatters.dart';
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_panel.dart';
+import '../application/order_payment_handoff_service.dart';
 import '../data/order_payment_session.dart';
 
 class OrderPaymentSheetResult {
@@ -25,6 +26,7 @@ class OrderPaymentSheetResult {
 Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
   BuildContext context, {
   required OrderPaymentSession session,
+  required OrderPaymentHandoffPlan handoffPlan,
 }) {
   return showModalBottomSheet<OrderPaymentSheetResult>(
     context: context,
@@ -35,9 +37,37 @@ Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
     ),
     builder: (sheetContext) {
       final tokens = sheetContext.tokens;
-      final devPaymentKey =
-          session.isDevDummyMode ? session.devPaymentKey?.trim() : null;
-      final canDirectDevConfirm = devPaymentKey?.isNotEmpty ?? false;
+      final devPaymentKey = handoffPlan.paymentKey;
+      final canDirectDevConfirm = handoffPlan.isDevDummy;
+      final statusColor = switch (handoffPlan.mode) {
+        OrderPaymentHandoffMode.devDummy => AppColors.accentSuccess,
+        OrderPaymentHandoffMode.launcherReady => AppColors.accentPrimary,
+        OrderPaymentHandoffMode.manualConfirm => AppColors.accentUrgent,
+      };
+      final statusLabel = switch (handoffPlan.mode) {
+        OrderPaymentHandoffMode.devDummy =>
+          context.l10n.ordersPaymentSheetStatusDev,
+        OrderPaymentHandoffMode.launcherReady =>
+          context.l10n.ordersPaymentSheetStatusReady,
+        OrderPaymentHandoffMode.manualConfirm =>
+          context.l10n.ordersPaymentSheetStatusBlocked,
+      };
+      final nextStepDescription = switch (handoffPlan.mode) {
+        OrderPaymentHandoffMode.devDummy =>
+          context.l10n.ordersPaymentSheetNextStepDev,
+        OrderPaymentHandoffMode.launcherReady =>
+          context.l10n.ordersPaymentSheetNextStepReady,
+        OrderPaymentHandoffMode.manualConfirm =>
+          context.l10n.ordersPaymentSheetNextStepBlocked,
+      };
+      final description = switch (handoffPlan.mode) {
+        OrderPaymentHandoffMode.devDummy =>
+          context.l10n.ordersPaymentSheetDevDescription,
+        OrderPaymentHandoffMode.launcherReady =>
+          context.l10n.ordersPaymentSheetReadyDescription,
+        OrderPaymentHandoffMode.manualConfirm =>
+          context.l10n.ordersPaymentSheetBlockedDescription,
+      };
 
       return SafeArea(
         child: Padding(
@@ -56,13 +86,11 @@ Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
                 style: sheetContext.textTheme.headlineSmall,
               ),
               SizedBox(height: tokens.space2),
-              Text(
-                session.isDevDummyMode
-                    ? context.l10n.ordersPaymentSheetDevDescription
-                    : session.hasCheckoutHandoff
-                        ? context.l10n.ordersPaymentSheetReadyDescription
-                        : context.l10n.ordersPaymentSheetBlockedDescription,
-                style: sheetContext.textTheme.bodyMedium,
+              _OrderPaymentRoutePanel(
+                statusLabel: statusLabel,
+                description: description,
+                nextStepDescription: nextStepDescription,
+                accentColor: statusColor,
               ),
               SizedBox(height: tokens.space4),
               _OrderPaymentInfoPanel(session: session),
@@ -109,8 +137,7 @@ class _OrderPaymentInfoPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
-    final devPaymentKey =
-        session.isDevDummyMode ? session.devPaymentKey?.trim() : null;
+    final devPaymentKey = session.devPaymentKey?.trim();
 
     return AppPanel(
       tone: AppPanelTone.surface,
@@ -154,13 +181,73 @@ class _OrderPaymentInfoPanel extends StatelessWidget {
               style: context.textTheme.bodySmall,
             ),
           ],
-          if (devPaymentKey?.isNotEmpty ?? false) ...[
+          if (session.isDevDummyMode &&
+              (devPaymentKey?.isNotEmpty ?? false)) ...[
             SizedBox(height: tokens.space2),
             Text(
               context.l10n.ordersPaymentDevKeyLabel(devPaymentKey!),
               style: context.textTheme.bodySmall,
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _OrderPaymentRoutePanel extends StatelessWidget {
+  const _OrderPaymentRoutePanel({
+    required this.statusLabel,
+    required this.description,
+    required this.nextStepDescription,
+    required this.accentColor,
+  });
+
+  final String statusLabel;
+  final String description;
+  final String nextStepDescription;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
+    return AppPanel(
+      tone: AppPanelTone.elevated,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: tokens.space3,
+              vertical: tokens.space2,
+            ),
+            decoration: BoxDecoration(
+              color: accentColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              statusLabel,
+              style: context.textTheme.labelLarge?.copyWith(
+                color: accentColor,
+              ),
+            ),
+          ),
+          SizedBox(height: tokens.space3),
+          Text(
+            description,
+            style: context.textTheme.bodyMedium,
+          ),
+          SizedBox(height: tokens.space4),
+          Text(
+            context.l10n.ordersPaymentSheetNextStepTitle,
+            style: context.textTheme.titleSmall,
+          ),
+          SizedBox(height: tokens.space2),
+          Text(
+            nextStepDescription,
+            style: context.textTheme.bodySmall,
+          ),
         ],
       ),
     );
