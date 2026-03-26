@@ -6,21 +6,77 @@ class AppColors {
   static const bgSurface = Color(0xFFFFFBF5);
   static const bgElevated = Color(0xFFF1E6D8);
   static const bgMuted = Color(0xFFF9F4ED);
+  static const bgBaseDark = Color(0xFF11100E);
+  static const bgSurfaceDark = Color(0xFF1A1715);
+  static const bgElevatedDark = Color(0xFF24201D);
+  static const bgMutedDark = Color(0xFF181614);
   static const panel = Color(0xFF1E1C1A);
   static const panelSoft = Color(0xFF2B2824);
+  static const panelDark = Color(0xFF2A2521);
+  static const panelSoftDark = Color(0xFF3A342F);
   static const textPrimary = Color(0xFF201D19);
   static const textSecondary = Color(0xFF6E665F);
   static const textMuted = Color(0xFF978D84);
+  static const textPrimaryDark = Color(0xFFF4EDE3);
+  static const textSecondaryDark = Color(0xFFCBBEAE);
+  static const textMutedDark = Color(0xFF9F9489);
   static const textInverse = Color(0xFFF8F4EE);
   static const accentPrimary = Color(0xFFB86A3B);
   static const accentPrimarySoft = Color(0xFFE5C8B0);
+  static const accentPrimarySoftDark = Color(0xFF765746);
   static const accentUrgent = Color(0xFFD85B45);
   static const accentSuccess = Color(0xFF6D8A74);
   static const sand = Color(0xFFEADCC9);
   static const borderSoft = Color(0xFFE5D9CC);
   static const borderStrong = Color(0xFFD4C2AE);
+  static const borderSoftDark = Color(0xFF38322D);
+  static const borderStrongDark = Color(0xFF4A423B);
   static const overlay = Color(0x251F1A15);
+  static const overlayDark = Color(0x4020100F);
   static const panelOverlay = Color(0xCC1E1C1A);
+  static const panelOverlayDark = Color(0xE6221F1C);
+
+  static Color bgBaseFor(Brightness brightness) =>
+      brightness == Brightness.dark ? bgBaseDark : bgBase;
+
+  static Color bgSurfaceFor(Brightness brightness) =>
+      brightness == Brightness.dark ? bgSurfaceDark : bgSurface;
+
+  static Color bgElevatedFor(Brightness brightness) =>
+      brightness == Brightness.dark ? bgElevatedDark : bgElevated;
+
+  static Color bgMutedFor(Brightness brightness) =>
+      brightness == Brightness.dark ? bgMutedDark : bgMuted;
+
+  static Color panelFor(Brightness brightness) =>
+      brightness == Brightness.dark ? panelDark : panel;
+
+  static Color panelSoftFor(Brightness brightness) =>
+      brightness == Brightness.dark ? panelSoftDark : panelSoft;
+
+  static Color textPrimaryFor(Brightness brightness) =>
+      brightness == Brightness.dark ? textPrimaryDark : textPrimary;
+
+  static Color textSecondaryFor(Brightness brightness) =>
+      brightness == Brightness.dark ? textSecondaryDark : textSecondary;
+
+  static Color textMutedFor(Brightness brightness) =>
+      brightness == Brightness.dark ? textMutedDark : textMuted;
+
+  static Color borderSoftFor(Brightness brightness) =>
+      brightness == Brightness.dark ? borderSoftDark : borderSoft;
+
+  static Color borderStrongFor(Brightness brightness) =>
+      brightness == Brightness.dark ? borderStrongDark : borderStrong;
+
+  static Color overlayFor(Brightness brightness) =>
+      brightness == Brightness.dark ? overlayDark : overlay;
+
+  static Color panelOverlayFor(Brightness brightness) =>
+      brightness == Brightness.dark ? panelOverlayDark : panelOverlay;
+
+  static Color accentPrimarySoftFor(Brightness brightness) =>
+      brightness == Brightness.dark ? accentPrimarySoftDark : accentPrimarySoft;
 }
 
 @immutable
@@ -107,17 +163,26 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
     }
 
     return AppThemeTokens(
-      screenPadding:
-          Tween<double>(begin: screenPadding, end: other.screenPadding)
-              .transform(t),
-      cardRadius:
-          Tween<double>(begin: cardRadius, end: other.cardRadius).transform(t),
-      heroRadius:
-          Tween<double>(begin: heroRadius, end: other.heroRadius).transform(t),
-      sheetRadius: Tween<double>(begin: sheetRadius, end: other.sheetRadius)
-          .transform(t),
-      inputHeight: Tween<double>(begin: inputHeight, end: other.inputHeight)
-          .transform(t),
+      screenPadding: Tween<double>(
+        begin: screenPadding,
+        end: other.screenPadding,
+      ).transform(t),
+      cardRadius: Tween<double>(
+        begin: cardRadius,
+        end: other.cardRadius,
+      ).transform(t),
+      heroRadius: Tween<double>(
+        begin: heroRadius,
+        end: other.heroRadius,
+      ).transform(t),
+      sheetRadius: Tween<double>(
+        begin: sheetRadius,
+        end: other.sheetRadius,
+      ).transform(t),
+      inputHeight: Tween<double>(
+        begin: inputHeight,
+        end: other.inputHeight,
+      ).transform(t),
       primaryButtonHeight: Tween<double>(
         begin: primaryButtonHeight,
         end: other.primaryButtonHeight,
@@ -143,69 +208,75 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
 }
 
 class AppTheme {
-  static ThemeData light() {
-    const tokens = AppThemeTokens(
-      screenPadding: 20,
-      cardRadius: 26,
-      heroRadius: 34,
-      sheetRadius: 30,
-      inputHeight: 56,
-      primaryButtonHeight: 56,
-      stickyActionHeight: 104,
-      navBarHeight: 86,
-      space1: 4,
-      space2: 8,
-      space3: 12,
-      space4: 16,
-      space5: 20,
-      space6: 24,
-      space7: 32,
-      space8: 40,
-    );
+  static const _tokens = AppThemeTokens(
+    screenPadding: 20,
+    cardRadius: 26,
+    heroRadius: 34,
+    sheetRadius: 30,
+    inputHeight: 56,
+    primaryButtonHeight: 56,
+    stickyActionHeight: 104,
+    navBarHeight: 86,
+    space1: 4,
+    space2: 8,
+    space3: 12,
+    space4: 16,
+    space5: 20,
+    space6: 24,
+    space7: 32,
+    space8: 40,
+  );
 
-    const colorScheme = ColorScheme(
-      brightness: Brightness.light,
+  static ThemeData light() => _buildTheme(Brightness.light);
+
+  static ThemeData dark() => _buildTheme(Brightness.dark);
+
+  static ThemeData _buildTheme(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    final colorScheme = ColorScheme(
+      brightness: brightness,
       primary: AppColors.accentPrimary,
       onPrimary: AppColors.textInverse,
       secondary: AppColors.accentSuccess,
-      onSecondary: AppColors.textPrimary,
+      onSecondary: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
       error: AppColors.accentUrgent,
       onError: AppColors.textInverse,
-      surface: AppColors.bgSurface,
-      onSurface: AppColors.textPrimary,
+      surface: AppColors.bgSurfaceFor(brightness),
+      onSurface: AppColors.textPrimaryFor(brightness),
     );
 
-    final baseTextTheme = GoogleFonts.manropeTextTheme(
-      ThemeData(brightness: Brightness.light).textTheme,
-    ).apply(
-      bodyColor: AppColors.textPrimary,
-      displayColor: AppColors.textPrimary,
-    );
+    final baseTextTheme =
+        GoogleFonts.manropeTextTheme(
+          ThemeData(brightness: brightness).textTheme,
+        ).apply(
+          bodyColor: AppColors.textPrimaryFor(brightness),
+          displayColor: AppColors.textPrimaryFor(brightness),
+        );
     final displayTextTheme = GoogleFonts.cormorantGaramondTextTheme();
 
     final textTheme = baseTextTheme.copyWith(
       displayLarge: displayTextTheme.displayLarge?.copyWith(
         fontWeight: FontWeight.w600,
         height: 0.95,
-        color: AppColors.textPrimary,
+        color: AppColors.textPrimaryFor(brightness),
       ),
       displayMedium: displayTextTheme.displayMedium?.copyWith(
         fontWeight: FontWeight.w600,
         height: 1,
-        color: AppColors.textPrimary,
+        color: AppColors.textPrimaryFor(brightness),
       ),
       displaySmall: displayTextTheme.displaySmall?.copyWith(
         fontWeight: FontWeight.w600,
-        color: AppColors.textPrimary,
+        color: AppColors.textPrimaryFor(brightness),
       ),
       headlineLarge: displayTextTheme.headlineLarge?.copyWith(
         fontWeight: FontWeight.w600,
-        color: AppColors.textPrimary,
+        color: AppColors.textPrimaryFor(brightness),
       ),
       headlineMedium: displayTextTheme.headlineMedium?.copyWith(
         fontWeight: FontWeight.w600,
         height: 1.05,
-        color: AppColors.textPrimary,
+        color: AppColors.textPrimaryFor(brightness),
       ),
       headlineSmall: baseTextTheme.headlineSmall?.copyWith(
         fontWeight: FontWeight.w800,
@@ -220,18 +291,18 @@ class AppTheme {
       ),
       titleSmall: baseTextTheme.titleSmall?.copyWith(
         fontWeight: FontWeight.w700,
-        color: AppColors.textSecondary,
+        color: AppColors.textSecondaryFor(brightness),
       ),
       bodyLarge: baseTextTheme.bodyLarge?.copyWith(
         height: 1.55,
-        color: AppColors.textPrimary,
+        color: AppColors.textPrimaryFor(brightness),
       ),
       bodyMedium: baseTextTheme.bodyMedium?.copyWith(
-        color: AppColors.textSecondary,
+        color: AppColors.textSecondaryFor(brightness),
         height: 1.5,
       ),
       bodySmall: baseTextTheme.bodySmall?.copyWith(
-        color: AppColors.textMuted,
+        color: AppColors.textMutedFor(brightness),
         height: 1.45,
       ),
       labelLarge: baseTextTheme.labelLarge?.copyWith(
@@ -246,71 +317,75 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.light,
-      scaffoldBackgroundColor: AppColors.bgBase,
+      brightness: brightness,
+      scaffoldBackgroundColor: AppColors.bgBaseFor(brightness),
       colorScheme: colorScheme,
       textTheme: textTheme,
-      dividerColor: AppColors.borderSoft,
+      dividerColor: AppColors.borderSoftFor(brightness),
       splashFactory: InkSparkle.splashFactory,
-      extensions: const [tokens],
-      appBarTheme: const AppBarTheme(
+      extensions: const [_tokens],
+      appBarTheme: AppBarTheme(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: AppColors.textPrimaryFor(brightness),
         scrolledUnderElevation: 0,
         centerTitle: false,
         surfaceTintColor: Colors.transparent,
       ),
       cardTheme: CardThemeData(
         elevation: 0,
-        color: AppColors.bgSurface,
+        color: AppColors.bgSurfaceFor(brightness),
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(tokens.cardRadius),
-          side: const BorderSide(color: AppColors.borderSoft),
+          borderRadius: BorderRadius.circular(_tokens.cardRadius),
+          side: BorderSide(color: AppColors.borderSoftFor(brightness)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.bgSurface,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-        prefixIconColor: AppColors.textSecondary,
-        suffixIconColor: AppColors.textSecondary,
-        hintStyle: textTheme.bodyMedium?.copyWith(color: AppColors.textMuted),
+        fillColor: AppColors.bgSurfaceFor(brightness),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 18,
+        ),
+        prefixIconColor: AppColors.textSecondaryFor(brightness),
+        suffixIconColor: AppColors.textSecondaryFor(brightness),
+        hintStyle: textTheme.bodyMedium?.copyWith(
+          color: AppColors.textMutedFor(brightness),
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(tokens.cardRadius),
-          borderSide: const BorderSide(color: AppColors.borderSoft),
+          borderRadius: BorderRadius.circular(_tokens.cardRadius),
+          borderSide: BorderSide(color: AppColors.borderSoftFor(brightness)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(tokens.cardRadius),
-          borderSide: const BorderSide(color: AppColors.borderSoft),
+          borderRadius: BorderRadius.circular(_tokens.cardRadius),
+          borderSide: BorderSide(color: AppColors.borderSoftFor(brightness)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(tokens.cardRadius),
-          borderSide:
-              const BorderSide(color: AppColors.accentPrimary, width: 1.4),
+          borderRadius: BorderRadius.circular(_tokens.cardRadius),
+          borderSide: const BorderSide(
+            color: AppColors.accentPrimary,
+            width: 1.4,
+          ),
         ),
         labelStyle: textTheme.bodyMedium?.copyWith(
-          color: AppColors.textSecondary,
+          color: AppColors.textSecondaryFor(brightness),
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.bgSurface,
-        selectedColor: AppColors.accentPrimarySoft,
-        disabledColor: AppColors.bgMuted,
-        side: const BorderSide(color: AppColors.borderSoft),
+        backgroundColor: AppColors.bgSurfaceFor(brightness),
+        selectedColor: AppColors.accentPrimarySoftFor(brightness),
+        disabledColor: AppColors.bgMutedFor(brightness),
+        side: BorderSide(color: AppColors.borderSoftFor(brightness)),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(999),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         labelStyle: textTheme.labelLarge?.copyWith(
-          color: AppColors.textPrimary,
+          color: AppColors.textPrimaryFor(brightness),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: Size.fromHeight(tokens.primaryButtonHeight),
+          minimumSize: Size.fromHeight(_tokens.primaryButtonHeight),
           backgroundColor: AppColors.accentPrimary,
           foregroundColor: AppColors.textInverse,
           elevation: 0,
@@ -322,25 +397,25 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          minimumSize: Size.fromHeight(tokens.primaryButtonHeight),
-          foregroundColor: AppColors.textPrimary,
-          side: const BorderSide(color: AppColors.borderStrong),
+          minimumSize: Size.fromHeight(_tokens.primaryButtonHeight),
+          foregroundColor: AppColors.textPrimaryFor(brightness),
+          side: BorderSide(color: AppColors.borderStrongFor(brightness)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(999),
           ),
           textStyle: textTheme.labelLarge,
         ),
       ),
-      iconTheme: const IconThemeData(color: AppColors.textPrimary),
+      iconTheme: IconThemeData(color: AppColors.textPrimaryFor(brightness)),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppColors.accentPrimary,
       ),
       bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: AppColors.bgSurface,
+        backgroundColor: AppColors.bgSurfaceFor(brightness),
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
-            top: Radius.circular(tokens.sheetRadius),
+            top: Radius.circular(_tokens.sheetRadius),
           ),
         ),
       ),

@@ -43,7 +43,7 @@
   - `lib/core/l10n/app_localization.dart` resolves device locale to `ko` or `en` and exposes generated localization accessors.
   - `lib/core/extensions/build_context_x.dart` centralizes repeated `BuildContext` lookups like `Theme.of`, `ScaffoldMessenger.of`, `MediaQuery.of`, `Navigator.of`, and `GoRouter.of`.
   - `lib/core/routing/app_router.dart` owns guarded routing, deep-link normalization, payment return routes, and shared fade-plus-rise transitions for modal detail routes.
-  - `lib/core/theme/app_theme.dart` applies the warm neutral, charcoal, copper, coral, and sage token system from `docs/Design.md`, including anchored navigation and sticky action sizing.
+  - `lib/core/theme/app_theme.dart` applies the warm neutral, charcoal, copper, coral, and sage token system from `docs/Design.md`, including anchored navigation, sticky action sizing, and a dedicated warm dark-mode palette.
   - `lib/core/widgets/` owns the shared editorial hero, auction card, shell, page scaffold, panel, badge, section heading, sticky action bar, empty-state, motion, countdown, shimmer, and loading-overlay primitives.
   - `apps/mobile_flutter/analysis_options.yaml` now excludes generated localization files from manual lint noise, enables strict analyzer modes for casts, inference, and raw types, and adds a small set of project-wide lint rules for explicit return types, final locals and fields, and redundant lambda cleanup.
 - Current mobile UX and localization implementation details:
@@ -61,6 +61,8 @@
   - Keyboard-sensitive modals now use a shared inset wrapper so the orders payment sheet, orders shipment and payment-key dialogs, and auction bid amount dialogs remain scrollable and visible when the software keyboard is open.
   - Keyboard-prone modal surfaces now share a small `core/widgets/app_keyboard_safe_inset.dart` wrapper so order payment sheets, shipment dialogs, and auction amount dialogs animate with `viewInsets`, stay scrollable, and remain usable on narrow devices.
   - The sell route now increases its bottom list inset while the keyboard is open, so pricing inputs and lower form actions stay reachable without manual layout hacks.
+  - `lib/app/app.dart` now wires both light and dark themes with `ThemeMode.system`, and the shared scaffold, panel, shell, and shimmer primitives resolve warm dark tokens instead of forcing the light palette under system dark mode.
+  - Shared foundations now honor system dark mode through `MaterialApp.darkTheme`, a warm dark scaffold gradient, dark-aware panel tones, and a floating shell plate that preserves the editorial hierarchy without default Material dark chrome.
   - Activity now keeps queue summary mapping in `features/activity/data` and composes buyer, seller, and notification stream cards from dedicated widgets instead of using static navigation-only tiles.
   - Home now maps auction rail documents through `features/home/data/home_auction_summary.dart` and keeps reusable rail and action button widgets in `features/home/presentation/widgets`.
   - Search now maps Firestore records through `features/search/data/search_auction_summary.dart`, keeps filtering logic in `features/search/application/search_auction_filter.dart`, and uses dedicated query, filter-chip, and result-grid widgets.

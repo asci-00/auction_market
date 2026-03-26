@@ -13,21 +13,21 @@ class AuctionMarketApp extends ConsumerWidget {
   const AuctionMarketApp({super.key});
 
   List<LocalizationsDelegate<dynamic>> _delegates(BuildContext context) {
-    return [
-      ...context.localizationDelegates,
-      AppLocalizations.delegate,
-    ];
+    return [...context.localizationDelegates, AppLocalizations.delegate];
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = AppTheme.light();
+    final lightTheme = AppTheme.light();
+    final darkTheme = AppTheme.dark();
     final bootstrapState = ref.watch(appBootstrapProvider);
 
     return bootstrapState.when(
       data: (_) => MaterialApp.router(
         debugShowCheckedModeBanner: false,
-        theme: theme,
+        theme: lightTheme,
+        darkTheme: darkTheme,
+        themeMode: ThemeMode.system,
         onGenerateTitle: (context) => context.l10n.appTitle,
         locale: context.locale,
         localizationsDelegates: _delegates(context),
@@ -36,7 +36,9 @@ class AuctionMarketApp extends ConsumerWidget {
       ),
       loading: () => MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: theme,
+        theme: lightTheme,
+        darkTheme: darkTheme,
+        themeMode: ThemeMode.system,
         locale: context.locale,
         localizationsDelegates: _delegates(context),
         supportedLocales: context.supportedLocales,
@@ -44,7 +46,9 @@ class AuctionMarketApp extends ConsumerWidget {
       ),
       error: (error, _) => MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: theme,
+        theme: lightTheme,
+        darkTheme: darkTheme,
+        themeMode: ThemeMode.system,
         locale: context.locale,
         localizationsDelegates: _delegates(context),
         supportedLocales: context.supportedLocales,

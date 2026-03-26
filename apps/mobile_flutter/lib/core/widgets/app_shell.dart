@@ -8,22 +8,28 @@ import '../l10n/app_localization.dart';
 import '../theme/app_theme.dart';
 
 class AppShell extends StatelessWidget {
-  const AppShell({
-    super.key,
-    required this.navigationShell,
-  });
+  const AppShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
+    final plateColor = AppColors.panelOverlayFor(
+      brightness,
+    ).withValues(alpha: brightness == Brightness.dark ? 0.96 : 0.92);
+    final borderColor =
+        (brightness == Brightness.dark
+                ? AppColors.borderSoftDark
+                : AppColors.textInverse)
+            .withValues(alpha: brightness == Brightness.dark ? 0.32 : 0.08);
     final destinations = [
       (context.l10n.navHome, Icons.home_outlined, Icons.home_rounded),
       (
         context.l10n.navSearch,
         Icons.search_rounded,
-        Icons.manage_search_rounded
+        Icons.manage_search_rounded,
       ),
       (context.l10n.navSell, Icons.add_box_outlined, Icons.add_box_rounded),
       (
@@ -43,44 +49,48 @@ class AppShell extends StatelessWidget {
           tokens.screenPadding,
           tokens.space4,
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(tokens.heroRadius),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-            child: Container(
-              padding: EdgeInsets.all(tokens.space2),
-              decoration: BoxDecoration(
-                color: AppColors.panelOverlay.withValues(alpha: 0.92),
-                borderRadius: BorderRadius.circular(tokens.heroRadius),
-                border: Border.all(
-                  color: AppColors.textInverse.withValues(alpha: 0.08),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.16),
-                    blurRadius: 24,
-                    offset: const Offset(0, 16),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  for (var i = 0; i < destinations.length; i++)
-                    Expanded(
-                      child: _NavItem(
-                        label: destinations[i].$1,
-                        icon: destinations[i].$2,
-                        selectedIcon: destinations[i].$3,
-                        isSelected: i == navigationShell.currentIndex,
-                        onTap: () {
-                          navigationShell.goBranch(
-                            i,
-                            initialLocation: i == navigationShell.currentIndex,
-                          );
-                        },
+        child: Container(
+          color: Colors.red,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(tokens.heroRadius),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+              child: Container(
+                padding: EdgeInsets.all(tokens.space2),
+                decoration: BoxDecoration(
+                  color: plateColor,
+                  borderRadius: BorderRadius.circular(tokens.heroRadius),
+                  border: Border.all(color: borderColor),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(
+                        alpha: brightness == Brightness.dark ? 0.3 : 0.16,
                       ),
+                      blurRadius: 24,
+                      offset: const Offset(0, 16),
                     ),
-                ],
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    for (var i = 0; i < destinations.length; i++)
+                      Expanded(
+                        child: _NavItem(
+                          label: destinations[i].$1,
+                          icon: destinations[i].$2,
+                          selectedIcon: destinations[i].$3,
+                          isSelected: i == navigationShell.currentIndex,
+                          onTap: () {
+                            navigationShell.goBranch(
+                              i,
+                              initialLocation:
+                                  i == navigationShell.currentIndex,
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -109,6 +119,11 @@ class _NavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tokens = context.tokens;
+    final brightness = theme.brightness;
+    final foregroundColor = brightness == Brightness.dark
+        ? AppColors.textPrimaryDark
+        : AppColors.textInverse;
+    final mutedForegroundColor = foregroundColor.withValues(alpha: 0.72);
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: tokens.space1),
@@ -129,12 +144,16 @@ class _NavItem extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.textInverse.withValues(alpha: 0.08)
+                  ? foregroundColor.withValues(
+                      alpha: brightness == Brightness.dark ? 0.1 : 0.08,
+                    )
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(999),
               border: Border.all(
                 color: isSelected
-                    ? AppColors.textInverse.withValues(alpha: 0.08)
+                    ? foregroundColor.withValues(
+                        alpha: brightness == Brightness.dark ? 0.12 : 0.08,
+                      )
                     : Colors.transparent,
               ),
             ),
@@ -148,15 +167,13 @@ class _NavItem extends StatelessWidget {
                   width: isSelected ? 26 : 0,
                   margin: EdgeInsets.only(bottom: tokens.space1),
                   decoration: BoxDecoration(
-                    color: AppColors.accentPrimarySoft,
+                    color: AppColors.accentPrimarySoftFor(brightness),
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
                 Icon(
                   isSelected ? selectedIcon : icon,
-                  color: isSelected
-                      ? AppColors.textInverse
-                      : AppColors.textInverse.withValues(alpha: 0.72),
+                  color: isSelected ? foregroundColor : mutedForegroundColor,
                 ),
                 SizedBox(height: tokens.space1),
                 Text(
@@ -164,9 +181,7 @@ class _NavItem extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: isSelected
-                        ? AppColors.textInverse
-                        : AppColors.textInverse.withValues(alpha: 0.72),
+                    color: isSelected ? foregroundColor : mutedForegroundColor,
                     fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                   ),
                 ),

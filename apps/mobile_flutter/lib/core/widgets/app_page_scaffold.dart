@@ -28,6 +28,7 @@ class AppPageScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tokens = context.tokens;
+    final brightness = theme.brightness;
     final appBarActions = [
       if (actions case final customActions?) ...customActions,
       const AppLocaleMenuAction(),
@@ -54,21 +55,21 @@ class AppPageScaffold extends StatelessWidget {
                   if (subtitle != null)
                     Padding(
                       padding: EdgeInsets.only(top: tokens.space1),
-                      child: Text(
-                        subtitle!,
-                        style: theme.textTheme.bodySmall,
-                      ),
+                      child: Text(subtitle!, style: theme.textTheme.bodySmall),
                     ),
                 ],
               ),
               actions: appBarActions,
             ),
       body: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColors.bgBase, AppColors.bgSurface],
+            colors: [
+              AppColors.bgBaseFor(brightness),
+              AppColors.bgSurfaceFor(brightness),
+            ],
           ),
         ),
         child: Stack(
@@ -78,7 +79,9 @@ class AppPageScaffold extends StatelessWidget {
               left: -60,
               child: _GlowOrb(
                 size: 180,
-                color: AppColors.accentPrimarySoft.withValues(alpha: 0.85),
+                color: AppColors.accentPrimarySoftFor(brightness).withValues(
+                  alpha: brightness == Brightness.dark ? 0.32 : 0.85,
+                ),
               ),
             ),
             Positioned(
@@ -86,7 +89,13 @@ class AppPageScaffold extends StatelessWidget {
               right: -70,
               child: _GlowOrb(
                 size: 200,
-                color: AppColors.sand.withValues(alpha: 0.9),
+                color:
+                    (brightness == Brightness.dark
+                            ? AppColors.panelSoftDark
+                            : AppColors.sand)
+                        .withValues(
+                          alpha: brightness == Brightness.dark ? 0.38 : 0.9,
+                        ),
               ),
             ),
             SafeArea(
@@ -103,10 +112,7 @@ class AppPageScaffold extends StatelessWidget {
 }
 
 class _GlowOrb extends StatelessWidget {
-  const _GlowOrb({
-    required this.size,
-    required this.color,
-  });
+  const _GlowOrb({required this.size, required this.color});
 
   final double size;
   final Color color;
@@ -119,9 +125,7 @@ class _GlowOrb extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [color, color.withValues(alpha: 0)],
-          ),
+          gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
         ),
       ),
     );
