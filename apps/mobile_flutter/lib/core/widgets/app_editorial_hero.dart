@@ -25,6 +25,7 @@ class AppEditorialHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tokens = context.tokens;
+    final brightness = theme.brightness;
     final isDark = tone == AppPanelTone.dark;
 
     return AppPanel(
@@ -44,7 +45,9 @@ class AppEditorialHero extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.accentPrimarySoft.withValues(alpha: 0.34),
+                    AppColors.accentPrimarySoftFor(
+                      brightness,
+                    ).withValues(alpha: 0.34),
                     Colors.transparent,
                   ],
                 ),
@@ -62,7 +65,7 @@ class AppEditorialHero extends StatelessWidget {
                       eyebrow,
                       style: theme.textTheme.labelMedium?.copyWith(
                         color: isDark
-                            ? AppColors.accentPrimarySoft
+                            ? AppColors.accentPrimarySoftFor(brightness)
                             : AppColors.accentPrimary,
                       ),
                     ),
@@ -72,7 +75,7 @@ class AppEditorialHero extends StatelessWidget {
                       style: theme.textTheme.displaySmall?.copyWith(
                         color: isDark
                             ? AppColors.textInverse
-                            : AppColors.textPrimary,
+                            : AppColors.textPrimaryFor(brightness),
                       ),
                     ),
                     SizedBox(height: tokens.space3),
@@ -81,7 +84,7 @@ class AppEditorialHero extends StatelessWidget {
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: isDark
                             ? AppColors.textInverse.withValues(alpha: 0.82)
-                            : AppColors.textSecondary,
+                            : AppColors.textSecondaryFor(brightness),
                       ),
                     ),
                     if (badges.isNotEmpty) ...[

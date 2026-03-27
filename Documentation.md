@@ -63,6 +63,7 @@
   - The sell route now increases its bottom list inset while the keyboard is open, so pricing inputs and lower form actions stay reachable without manual layout hacks.
   - `lib/app/app.dart` now wires both light and dark themes with `ThemeMode.system`, and the shared scaffold, panel, shell, and shimmer primitives resolve warm dark tokens instead of forcing the light palette under system dark mode.
   - Shared foundations now honor system dark mode through `MaterialApp.darkTheme`, a warm dark scaffold gradient, dark-aware panel tones, and a floating shell plate that preserves the editorial hierarchy without default Material dark chrome.
+  - Shared editorial hero, empty-state, shimmer, badge, and auction-card widgets now resolve theme-aware colors too, so common reusable surfaces do not leak the light palette back into dark mode routes.
   - Activity now keeps queue summary mapping in `features/activity/data` and composes buyer, seller, and notification stream cards from dedicated widgets instead of using static navigation-only tiles.
   - Home now maps auction rail documents through `features/home/data/home_auction_summary.dart` and keeps reusable rail and action button widgets in `features/home/presentation/widgets`.
   - Search now maps Firestore records through `features/search/data/search_auction_summary.dart`, keeps filtering logic in `features/search/application/search_auction_filter.dart`, and uses dedicated query, filter-chip, and result-grid widgets.

@@ -38,6 +38,7 @@
 - Orders payment and shipment modal surfaces plus auction amount dialogs now use keyboard-aware inset handling and scrollable content, and the sell form now expands its bottom inset while the keyboard is open so lower fields remain reachable on small devices.
 - The app now enables `ThemeMode.system` with a dedicated dark theme branch, and shared scaffold, panel, shell, and shimmer surfaces resolve warm dark colors instead of falling back to the light editorial palette.
 - Dark mode foundation now exists at the shared theme level, and the app scaffold, panel surfaces, and floating shell navigation all switch to warm dark palettes under system dark mode instead of falling back to the light editorial background.
+- Shared editorial hero, empty-state, shimmer placeholder, status badge, and auction card surfaces now resolve dark-aware colors as well, so common reusable blocks no longer reintroduce light-only cards or text when the system is in dark mode.
 - Mobile copy is generated from `app_ko.arb` and `app_en.arb`, with device-locale fallback to Korean.
 - Flutter shared context helpers now live in `core/extensions/build_context_x.dart`, so common access like snackbars, theme, text theme, media query, and navigator no longer requires repeated `ScaffoldMessenger.of(context)` or similar direct lookups in feature screens.
 - Login, home, search, auction detail, sell, activity, orders, notifications, and my screens use localized product copy and no longer expose engineering-status labels in the UI.
