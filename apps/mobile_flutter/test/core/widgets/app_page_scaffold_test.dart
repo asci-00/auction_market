@@ -1,4 +1,5 @@
 import 'package:auction_market_mobile/core/theme/app_theme.dart';
+import 'package:auction_market_mobile/core/widgets/app_page_insets.dart';
 import 'package:auction_market_mobile/core/widgets/app_page_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,20 +11,19 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.light(),
-          home: const AppPageScaffold(
-            bottomBar: SizedBox(height: 84),
-            body: SizedBox.expand(),
+          home: AppPageScaffold(
+            bottomBar: const SizedBox(height: 84),
+            body: Builder(
+              builder: (context) =>
+                  Text(context.pageBottomInset.toStringAsFixed(0)),
+            ),
           ),
         ),
       );
 
-      await tester.pump();
+      await tester.pumpAndSettle();
 
-      final padding = tester.widget<Padding>(
-        find.byKey(const ValueKey<String>('app-page-scaffold-body-padding')),
-      );
-
-      expect(padding.padding, const EdgeInsets.only(bottom: 84));
+      expect(find.text('84'), findsOneWidget);
     },
   );
 }

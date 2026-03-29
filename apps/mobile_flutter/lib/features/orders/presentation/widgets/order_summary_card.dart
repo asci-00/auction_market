@@ -32,9 +32,11 @@ class OrderSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
-    final canShip = role == OrderSectionRole.seller &&
+    final canShip =
+        role == OrderSectionRole.seller &&
         order.orderStatus == 'PAID_ESCROW_HOLD';
-    final canPay = role == OrderSectionRole.buyer &&
+    final canPay =
+        role == OrderSectionRole.buyer &&
         order.orderStatus == 'AWAITING_PAYMENT';
     final canConfirmReceipt =
         role == OrderSectionRole.buyer && order.orderStatus == 'SHIPPED';
@@ -125,15 +127,14 @@ class OrderSummaryCard extends StatelessWidget {
 }
 
 class _PaymentRecoveryNote extends StatelessWidget {
-  const _PaymentRecoveryNote({
-    required this.role,
-  });
+  const _PaymentRecoveryNote({required this.role});
 
   final OrderSectionRole role;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
     if (role != OrderSectionRole.buyer) {
       return const SizedBox.shrink();
     }
@@ -141,19 +142,19 @@ class _PaymentRecoveryNote extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(tokens.space3),
       decoration: BoxDecoration(
-        color: AppColors.bgSurface,
+        color: AppColors.bgSurfaceFor(brightness),
         borderRadius: BorderRadius.circular(tokens.cardRadius - 12),
-        border: Border.all(color: AppColors.borderSoft),
+        border: Border.all(color: AppColors.borderSoftFor(brightness)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 1),
+          Padding(
+            padding: const EdgeInsets.only(top: 1),
             child: Icon(
               Icons.info_outline_rounded,
               size: 16,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryFor(brightness),
             ),
           ),
           SizedBox(width: tokens.space2),
@@ -170,22 +171,21 @@ class _PaymentRecoveryNote extends StatelessWidget {
 }
 
 class _PaymentDuePlate extends StatelessWidget {
-  const _PaymentDuePlate({
-    required this.order,
-  });
+  const _PaymentDuePlate({required this.order});
 
   final OrderSummary order;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
 
     return Container(
       padding: EdgeInsets.all(tokens.space3),
       decoration: BoxDecoration(
-        color: AppColors.bgMuted,
+        color: AppColors.bgMutedFor(brightness),
         borderRadius: BorderRadius.circular(tokens.cardRadius - 8),
-        border: Border.all(color: AppColors.borderSoft),
+        border: Border.all(color: AppColors.borderSoftFor(brightness)),
       ),
       child: Row(
         children: [
@@ -203,7 +203,7 @@ class _PaymentDuePlate extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: context.textTheme.bodySmall?.copyWith(
-                  color: AppColors.textPrimary,
+                  color: AppColors.textPrimaryFor(brightness),
                 ),
               ),
               expiredBuilder: (context) => Text(
@@ -220,7 +220,7 @@ class _PaymentDuePlate extends StatelessWidget {
           Text(
             formatKrw(context, order.finalPrice),
             style: context.textTheme.labelLarge?.copyWith(
-              color: AppColors.textPrimary,
+              color: AppColors.textPrimaryFor(brightness),
             ),
           ),
         ],
