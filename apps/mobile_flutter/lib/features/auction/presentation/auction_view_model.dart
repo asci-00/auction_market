@@ -14,19 +14,15 @@ part 'auction_view_model.g.dart';
 class AuctionViewState {
   const AuctionViewState({required this.detail, required this.bidHistory});
 
-  static const _detailSentinel = Object();
-
   final AuctionDetailViewData? detail;
   final List<AuctionBidHistoryEntry> bidHistory;
 
   AuctionViewState copyWith({
-    Object? detail = _detailSentinel,
+    AuctionDetailViewData? detail,
     List<AuctionBidHistoryEntry>? bidHistory,
   }) {
     return AuctionViewState(
-      detail: detail == _detailSentinel
-          ? this.detail
-          : detail as AuctionDetailViewData?,
+      detail: detail ?? this.detail,
       bidHistory: bidHistory ?? this.bidHistory,
     );
   }
@@ -59,7 +55,10 @@ class AuctionViewModel extends _$AuctionViewModel {
         final current =
             state.valueOrNull ??
             AuctionViewState(detail: value, bidHistory: history);
-        state = AsyncData(current.copyWith(detail: value));
+        final nextState = value == null
+            ? AuctionViewState(detail: null, bidHistory: current.bidHistory)
+            : current.copyWith(detail: value);
+        state = AsyncData(nextState);
       },
       onError: (Object error, StackTrace stackTrace) {
         state = AsyncError(error, stackTrace);

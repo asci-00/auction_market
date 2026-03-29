@@ -13,16 +13,10 @@ part 'my_view_model.g.dart';
 class MyViewState {
   const MyViewState({required this.profile});
 
-  static const _profileSentinel = Object();
-
   final MyProfileSummary? profile;
 
-  MyViewState copyWith({Object? profile = _profileSentinel}) {
-    return MyViewState(
-      profile: profile == _profileSentinel
-          ? this.profile
-          : profile as MyProfileSummary?,
-    );
+  MyViewState copyWith({MyProfileSummary? profile}) {
+    return MyViewState(profile: profile ?? this.profile);
   }
 }
 
@@ -42,7 +36,10 @@ class MyViewModel extends _$MyViewModel {
     _sub = stream.listen(
       (profile) {
         final current = state.valueOrNull ?? MyViewState(profile: profile);
-        state = AsyncData(current.copyWith(profile: profile));
+        final nextState = profile == null
+            ? const MyViewState(profile: null)
+            : current.copyWith(profile: profile);
+        state = AsyncData(nextState);
       },
       onError: (Object error, StackTrace stackTrace) {
         state = AsyncError(error, stackTrace);

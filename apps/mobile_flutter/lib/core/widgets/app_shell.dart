@@ -140,6 +140,9 @@ class _MeasureSizeState extends State<_MeasureSize> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
       final renderObject = context.findRenderObject();
       if (renderObject is! RenderBox || !renderObject.hasSize) {
         return;

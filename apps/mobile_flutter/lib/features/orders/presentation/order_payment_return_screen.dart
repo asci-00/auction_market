@@ -10,17 +10,9 @@ import '../../../core/widgets/app_panel.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../application/order_action_service.dart';
 
-enum OrderPaymentReturnRouteMode {
-  success,
-  fail,
-}
+enum OrderPaymentReturnRouteMode { success, fail }
 
-enum _OrderPaymentReturnViewState {
-  pending,
-  success,
-  fail,
-  invalid,
-}
+enum _OrderPaymentReturnViewState { pending, success, fail, invalid }
 
 class OrderPaymentReturnScreen extends ConsumerStatefulWidget {
   const OrderPaymentReturnScreen.success({
@@ -111,8 +103,10 @@ class _OrderPaymentReturnScreenState
     final paymentKey = widget.paymentKey?.trim();
     final amount = widget.amount;
 
-    if (orderId?.isEmpty != false ||
-        paymentKey?.isEmpty != false ||
+    if (orderId == null ||
+        orderId.isEmpty ||
+        paymentKey == null ||
+        paymentKey.isEmpty ||
         amount == null ||
         amount <= 0) {
       if (mounted) {
@@ -125,8 +119,8 @@ class _OrderPaymentReturnScreenState
 
     try {
       await ref.read(orderActionServiceProvider).confirmPayment(
-            orderId: orderId!,
-            paymentKey: paymentKey!,
+            orderId: orderId,
+            paymentKey: paymentKey,
             amount: amount,
           );
       if (!mounted) {

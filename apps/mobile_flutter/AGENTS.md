@@ -40,6 +40,21 @@ Introduce deeper layers only when complexity justifies them:
 
 Keep shared concerns in `core/`. Examples: Firebase providers, app config, routing, theme tokens, reusable widgets, app-wide error handling.
 
+## Event Propagation Rule
+When backend updates are not delivered by Firebase realtime listeners (for example REST-only mutation flows), use the shared app event bus instead of direct ViewModel-to-ViewModel calls.
+
+- event bus utility: `lib/core/events/event_bus.dart`
+- typed event models: `lib/core/events/app_events.dart`
+- publish from mutating side: `sendToEventBus(EventType(...))`
+- subscribe from dependent state owner: `listenEvent<EventType>(onEvent: ...)`
+
+Guidelines:
+- Keep the event bus global and private to the utility module.
+- Use typed events with minimal payload (`entityId`, `mutation`, required metadata only).
+- Emit events only after backend write success.
+- Store the returned `StreamSubscription` in the owner (ViewModel/screen) and cancel in `dispose` / `ref.onDispose`.
+- Do not replace Firebase streams with event bus when realtime listeners already solve the propagation problem with acceptable latency.
+
 ## Editing Heuristics
 When adding a new screen:
 - place the screen under `lib/features/<feature>/presentation/`

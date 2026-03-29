@@ -57,13 +57,21 @@ export function buildPaymentSessionContract({
       'Dev dummy payment can only be enabled in dev.',
     );
   }
+  if (allowDevDummyPayment) {
+    return {
+      mode: 'DEV_DUMMY',
+      successUrl: null,
+      failUrl: null,
+      devPaymentKey: buildDevPaymentKey(orderId),
+    };
+  }
   if (appEnv !== 'dev' && !appBaseUrl) {
     throw new HttpsError(
       'failed-precondition',
       'APP_BASE_URL is required outside dev builds.',
     );
   }
-  if (!allowDevDummyPayment && !appBaseUrl) {
+  if (!appBaseUrl) {
     throw new HttpsError(
       'failed-precondition',
       'APP_BASE_URL is required when dev dummy payment is unavailable.',
@@ -71,18 +79,19 @@ export function buildPaymentSessionContract({
   }
 
   const normalizedBaseUrl = normalizeAppBaseUrl(appBaseUrl);
+  const encodedOrderId = encodeURIComponent(orderId);
   const successUrl = normalizedBaseUrl
-    ? `${normalizedBaseUrl}/payments/success?orderId=${orderId}`
+    ? `${normalizedBaseUrl}/payments/success?orderId=${encodedOrderId}`
     : null;
   const failUrl = normalizedBaseUrl
-    ? `${normalizedBaseUrl}/payments/fail?orderId=${orderId}`
+    ? `${normalizedBaseUrl}/payments/fail?orderId=${encodedOrderId}`
     : null;
 
   return {
-    mode: allowDevDummyPayment ? 'DEV_DUMMY' : 'TOSS',
+    mode: 'TOSS',
     successUrl,
     failUrl,
-    devPaymentKey: allowDevDummyPayment ? buildDevPaymentKey(orderId) : null,
+    devPaymentKey: null,
   };
 }
 
