@@ -41,10 +41,6 @@ class HomeScreen extends ConsumerWidget {
           icon: Icons.wifi_tethering_error_rounded,
           title: context.l10n.genericUnavailable,
           description: context.l10n.homeEmptyDescription,
-          action: TextButton(
-            onPressed: () => ref.invalidate(homeViewModelProvider),
-            child: Text(context.l10n.homeEmptyAction),
-          ),
         ),
       ),
       loading: () => _HomeBody(

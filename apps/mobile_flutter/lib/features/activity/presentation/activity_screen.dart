@@ -53,9 +53,6 @@ class ActivityScreen extends ConsumerWidget {
               summary: activityAsync?.valueOrNull?.buyerSummary,
               isLoading: activityAsync?.isLoading ?? false,
               hasError: activityAsync?.hasError ?? false,
-              onRetry: userId == null
-                  ? null
-                  : () => ref.invalidate(activityViewModelProvider(userId)),
             ),
           ),
           SizedBox(height: tokens.space3),
@@ -66,9 +63,6 @@ class ActivityScreen extends ConsumerWidget {
               summary: activityAsync?.valueOrNull?.sellerSummary,
               isLoading: activityAsync?.isLoading ?? false,
               hasError: activityAsync?.hasError ?? false,
-              onRetry: userId == null
-                  ? null
-                  : () => ref.invalidate(activityViewModelProvider(userId)),
             ),
           ),
           SizedBox(height: tokens.space3),
@@ -79,9 +73,6 @@ class ActivityScreen extends ConsumerWidget {
               summary: activityAsync?.valueOrNull?.notificationsSummary,
               isLoading: activityAsync?.isLoading ?? false,
               hasError: activityAsync?.hasError ?? false,
-              onRetry: userId == null
-                  ? null
-                  : () => ref.invalidate(activityViewModelProvider(userId)),
             ),
           ),
         ],

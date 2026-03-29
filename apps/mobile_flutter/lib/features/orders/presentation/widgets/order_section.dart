@@ -72,10 +72,6 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
         icon: Icons.error_outline_rounded,
         title: context.l10n.genericUnavailable,
         description: context.l10n.ordersErrorDescription,
-        action: TextButton(
-          onPressed: () => ref.invalidate(ordersViewModelProvider(query)),
-          child: Text(context.l10n.retry),
-        ),
       ),
       loading: () =>
           const AppShimmerListPlaceholder(itemCount: 3, itemHeight: 172),
