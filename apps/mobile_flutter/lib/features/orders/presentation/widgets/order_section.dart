@@ -1,10 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/extensions/build_context_x.dart';
-import '../../../../core/firebase/firebase_providers.dart';
 import '../../../../core/l10n/app_localization.dart';
 import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_motion.dart';
@@ -16,6 +14,7 @@ import '../order_payment_confirm_dialog.dart';
 import '../order_payment_session_sheet.dart';
 import '../order_section_role.dart';
 import '../order_shipment_dialog.dart';
+import '../order_view_model.dart';
 import 'order_summary_card.dart';
 
 enum OrderSectionField {
@@ -45,24 +44,6 @@ class OrderSection extends ConsumerStatefulWidget {
 
 class _OrderSectionState extends ConsumerState<OrderSection> {
   final Set<String> _submittingOrderIds = <String>{};
-  Stream<QuerySnapshot<Map<String, dynamic>>>? _ordersStream;
-
-  @override
-  void initState() {
-    super.initState();
-    _ordersStream = _createOrdersStream();
-  }
-
-  @override
-  void didUpdateWidget(covariant OrderSection oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.userId != widget.userId ||
-        oldWidget.fieldName != widget.fieldName) {
-      setState(() {
-        _ordersStream = _createOrdersStream();
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,26 +55,22 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
       );
     }
 
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: _ordersStream,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return AppEmptyState(
-            icon: Icons.error_outline_rounded,
-            title: context.l10n.genericUnavailable,
-            description: context.l10n.ordersEmptyDescription,
-          );
-        }
+    final ordersAsync = ref.watch(
+      ordersViewModelProvider(
+        OrderQuery(userId: widget.userId!, fieldKey: widget.fieldName.key),
+      ),
+    );
 
-        if (!snapshot.hasData) {
-          return const AppShimmerListPlaceholder(
-            itemCount: 3,
-            itemHeight: 172,
-          );
-        }
-
-        final documents = snapshot.data!.docs;
-        if (documents.isEmpty) {
+    return ordersAsync.when(
+      error: (_, __) => AppEmptyState(
+        icon: Icons.error_outline_rounded,
+        title: context.l10n.genericUnavailable,
+        description: context.l10n.ordersErrorDescription,
+      ),
+      loading: () =>
+          const AppShimmerListPlaceholder(itemCount: 3, itemHeight: 172),
+      data: (state) {
+        if (state.orders.isEmpty) {
           return AppEmptyState(
             icon: Icons.inventory_2_outlined,
             title: context.l10n.ordersEmptyTitle,
@@ -102,10 +79,9 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
         }
 
         return Column(
-          children: documents.indexed.map((entry) {
+          children: state.orders.indexed.map((entry) {
             final index = entry.$1;
-            final document = entry.$2;
-            final order = OrderSummary.fromDocument(document);
+            final order = entry.$2;
 
             return AppStaggeredReveal(
               index: index,
@@ -132,7 +108,9 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
 
     await _runOrderAction(
       orderId: orderId,
-      action: () => ref.read(orderActionServiceProvider).submitShipment(
+      action: () => ref
+          .read(orderActionServiceProvider)
+          .submitShipment(
             orderId: orderId,
             carrierName: draft.carrierName,
             trackingNumber: draft.trackingNumber,
@@ -150,8 +128,9 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
       final session = await ref
           .read(orderActionServiceProvider)
           .createPaymentSession(orderId: order.id);
-      final handoffPlan =
-          ref.read(orderPaymentHandoffServiceProvider).buildPlan(session);
+      final handoffPlan = ref
+          .read(orderPaymentHandoffServiceProvider)
+          .buildPlan(session);
       if (!mounted) {
         return;
       }
@@ -184,7 +163,9 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
         return;
       }
 
-      await ref.read(orderActionServiceProvider).confirmPayment(
+      await ref
+          .read(orderActionServiceProvider)
+          .confirmPayment(
             orderId: order.id,
             paymentKey: paymentKey,
             amount: session.amount,
@@ -218,9 +199,8 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
   Future<void> _confirmReceipt(String orderId) {
     return _runOrderAction(
       orderId: orderId,
-      action: () => ref.read(orderActionServiceProvider).confirmReceipt(
-            orderId: orderId,
-          ),
+      action: () =>
+          ref.read(orderActionServiceProvider).confirmReceipt(orderId: orderId),
       successMessage: context.l10n.ordersActionSuccessReceipt,
     );
   }
@@ -259,20 +239,5 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
         });
       }
     }
-  }
-
-  Stream<QuerySnapshot<Map<String, dynamic>>>? _createOrdersStream() {
-    final userId = widget.userId;
-    if (userId == null) {
-      return null;
-    }
-
-    return ref
-        .read(firestoreProvider)
-        .collection('orders')
-        .where(widget.fieldName.key, isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
-        .limit(10)
-        .snapshots();
   }
 }

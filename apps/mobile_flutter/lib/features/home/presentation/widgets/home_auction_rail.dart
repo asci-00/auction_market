@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/l10n/app_formatters.dart';
@@ -14,100 +13,88 @@ import '../../data/home_auction_summary.dart';
 class HomeAuctionRail extends StatelessWidget {
   const HomeAuctionRail({
     super.key,
-    required this.stream,
+    required this.auctions,
+    required this.isLoading,
     required this.onTapAuction,
     required this.heroNamespace,
     this.defaultBadge = AppStatusKind.endingSoon,
   });
 
-  final Stream<QuerySnapshot<Map<String, dynamic>>> stream;
+  final List<HomeAuctionSummary> auctions;
+  final bool isLoading;
   final void Function(String auctionId, String heroTag) onTapAuction;
   final String heroNamespace;
   final AppStatusKind defaultBadge;
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: stream,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return AppEmptyState(
-            icon: Icons.wifi_tethering_error_rounded,
-            title: context.l10n.genericUnavailable,
-            description: context.l10n.homeEmptyDescription,
-          );
-        }
+    if (isLoading) {
+      return const _HomeAuctionRailPlaceholder();
+    }
 
-        if (!snapshot.hasData) {
-          return const _HomeAuctionRailPlaceholder();
-        }
+    if (auctions.isEmpty) {
+      return AppEmptyState(
+        icon: Icons.hourglass_bottom_rounded,
+        title: context.l10n.homeEmptyTitle,
+        description: context.l10n.homeEmptyDescription,
+      );
+    }
 
-        final auctions =
-            snapshot.data!.docs.map(HomeAuctionSummary.fromDocument).toList();
-        if (auctions.isEmpty) {
-          return AppEmptyState(
-            icon: Icons.hourglass_bottom_rounded,
-            title: context.l10n.homeEmptyTitle,
-            description: context.l10n.homeEmptyDescription,
-          );
-        }
-
-        return SizedBox(
-          height: 352,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: auctions.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 16),
-            itemBuilder: (context, index) {
-              final auction = auctions[index];
-              return SizedBox(
-                width: 236,
-                child: AppStaggeredReveal(
-                  index: index,
-                  axis: Axis.horizontal,
-                  child: AppAuctionCard(
-                    title: auction.title.isNotEmpty
-                        ? auction.title
-                        : context.l10n.genericUnavailable,
-                    priceLabel: formatKrw(context, auction.currentPrice),
-                    meta: auction.endAt != null
-                        ? AppLiveCountdownText(
-                            targetTime: auction.endAt!,
-                            builder: (context, label) => Text(
-                              label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            expiredBuilder: (context) => Text(
-                              context.l10n.genericUnavailable,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          )
-                        : Text(
-                            context.l10n.genericUnavailable,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                    bidCountLabel:
-                        context.l10n.genericCountBids(auction.bidCount),
-                    imageUrl: auction.heroImageUrl,
-                    heroTag: '$heroNamespace-${auction.id}',
-                    badgeKind: auction.buyNowPrice != null
-                        ? AppStatusKind.buyNow
-                        : defaultBadge,
-                    onTap: () => onTapAuction(
-                        auction.id, '$heroNamespace-${auction.id}'),
-                  ),
+    return SizedBox(
+      height: 352,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: auctions.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 16),
+        itemBuilder: (context, index) {
+          final auction = auctions[index];
+          return SizedBox(
+            width: 236,
+            child: AppStaggeredReveal(
+              index: index,
+              axis: Axis.horizontal,
+              child: AppAuctionCard(
+                title: auction.title.isNotEmpty
+                    ? auction.title
+                    : context.l10n.genericUnavailable,
+                priceLabel: formatKrw(context, auction.currentPrice),
+                meta: auction.endAt != null
+                    ? AppLiveCountdownText(
+                        targetTime: auction.endAt!,
+                        builder: (context, label) => Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        expiredBuilder: (context) => Text(
+                          context.l10n.genericUnavailable,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      )
+                    : Text(
+                        context.l10n.genericUnavailable,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                bidCountLabel: context.l10n.genericCountBids(auction.bidCount),
+                imageUrl: auction.heroImageUrl,
+                heroTag: '$heroNamespace-${auction.id}',
+                badgeKind: auction.buyNowPrice != null
+                    ? AppStatusKind.buyNow
+                    : defaultBadge,
+                onTap: () => onTapAuction(
+                  auction.id,
+                  '$heroNamespace-${auction.id}',
                 ),
-              );
-            },
-          ),
-        );
-      },
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

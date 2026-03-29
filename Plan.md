@@ -40,15 +40,18 @@ Status: complete on March 17, 2026.
 - Payment and order state changes are idempotent and observable in logs.
 
 ## Phase 3: Core Mobile Flows
-Status: next unfinished milestone.
+Status: in progress, with only the final real Toss handoff blocked on external values as of March 25, 2026.
 - Build login, home, search, auction detail, sell, activity, orders, notifications, and my pages with real Firebase reads and localized UI copy.
 - Implement image upload, draft save, auction publish, bid flow, auto-bid flow, buy now, payment, shipment update, and receipt confirmation.
 - For dependency-heavy external integrations, keep the app testable in `dev` through server-side dummy responses or emulator-backed payloads until the real integration values are available.
 - Schedule the final real external-integration handoff work last within the phase, after the rest of the app flow is testable in `dev`.
+- Before the final real Toss launcher handoff, continue UI and UX polish work that is independent from third-party cutover, including dark mode, overflow and keyboard-safety fixes, async feedback timing, route transition smoothness, tuned blur and barrier behavior, and localized empty or error-state refinement.
 - Add loading, empty, error, retry, and permission-denied states for every core screen.
 - Remove all placeholder widgets, engineering-status copy, and non-functional primary actions.
 - Align the shared design system and screen compositions with the premium editorial direction in `docs/Design.md`.
-- Add motion and interaction polish that follows `docs/Design.md`, including page entrance timing, list stagger, bottom-sheet motion, countdown-only animation updates, and tuned surface or blur treatment where it materially improves readability and hierarchy.
+- Add motion and interaction polish that follows `docs/Design.md`, including page entrance timing, list stagger, bottom-sheet motion, countdown-only animation updates, Hero continuity where it materially improves navigation context, and tuned surface or blur treatment where it improves readability and hierarchy.
+- Standardize async loading feedback before the final real Toss handoff, including delayed loader entry, barrier behavior, and use of `apps/mobile_flutter/assets/lotties/loading.lottie` for shared modal or full-screen loading states.
+- Keep the final real Toss launcher handoff gated behind the real `TOSS_CLIENT_KEY`, `TOSS_SECRET_KEY`, `TOSS_WEBHOOK_SECRET`, and `APP_BASE_URL` values, and do not start Phase 4 implementation work until that last Phase 3 cutover is either finished or explicitly accepted as blocked.
 
 ### Done When
 - Buyer can complete browse to settlement flow in emulator and staging.
@@ -57,6 +60,7 @@ Status: next unfinished milestone.
 - All mobile copy is localized for `ko` and `en`, with unsupported locales falling back to `ko`.
 - Navigation, empty/loading/error states, and screen compositions match the documented premium editorial direction.
 - Motion, page transitions, and high-emphasis surfaces match the documented premium editorial direction without adding decorative blur or animation that harms clarity.
+- Dark mode, shared loading overlays, keyboard-safe sheets, and overflow-prone layouts are stabilized on supported mobile form factors before the final real Toss launcher handoff.
 - External dependency handoffs that require real third-party values are the last remaining work inside the phase, not a blocker for earlier `dev` app validation.
 
 ## Phase 4: Quality, Ops, And Release

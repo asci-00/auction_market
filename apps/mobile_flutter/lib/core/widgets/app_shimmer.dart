@@ -4,18 +4,17 @@ import 'package:shimmer/shimmer.dart';
 import '../theme/app_theme.dart';
 
 class AppShimmer extends StatelessWidget {
-  const AppShimmer({
-    super.key,
-    required this.child,
-  });
+  const AppShimmer({super.key, required this.child});
 
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+
     return Shimmer.fromColors(
-      baseColor: AppColors.bgMuted,
-      highlightColor: AppColors.bgSurface,
+      baseColor: AppColors.bgMutedFor(brightness),
+      highlightColor: AppColors.bgSurfaceFor(brightness),
       child: child,
     );
   }
@@ -25,23 +24,24 @@ class AppShimmerBlock extends StatelessWidget {
   const AppShimmerBlock({
     super.key,
     this.width,
-    required this.height,
+    this.height,
     this.radius,
   });
 
   final double? width;
-  final double height;
+  final double? height;
   final double? radius;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
 
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: AppColors.bgMuted,
+        color: AppColors.bgMutedFor(brightness),
         borderRadius: BorderRadius.circular(radius ?? tokens.cardRadius),
       ),
     );
@@ -49,24 +49,22 @@ class AppShimmerBlock extends StatelessWidget {
 }
 
 class AppShimmerCardPlaceholder extends StatelessWidget {
-  const AppShimmerCardPlaceholder({
-    super.key,
-    this.height = 200,
-  });
+  const AppShimmerCardPlaceholder({super.key, this.height = 200});
 
   final double height;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
 
     return AppShimmer(
       child: Container(
         height: height,
         decoration: BoxDecoration(
-          color: AppColors.bgSurface,
+          color: AppColors.bgSurfaceFor(brightness),
           borderRadius: BorderRadius.circular(tokens.cardRadius),
-          border: Border.all(color: AppColors.borderSoft),
+          border: Border.all(color: AppColors.borderSoftFor(brightness)),
         ),
         child: Padding(
           padding: EdgeInsets.all(tokens.space4),
@@ -75,7 +73,6 @@ class AppShimmerCardPlaceholder extends StatelessWidget {
             children: [
               Expanded(
                 child: AppShimmerBlock(
-                  height: double.infinity,
                   radius: tokens.cardRadius,
                 ),
               ),

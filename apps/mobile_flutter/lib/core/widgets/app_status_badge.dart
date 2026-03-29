@@ -15,57 +15,57 @@ enum AppStatusKind {
 }
 
 class AppStatusBadge extends StatelessWidget {
-  const AppStatusBadge({
-    super.key,
-    required this.kind,
-  });
+  const AppStatusBadge({super.key, required this.kind});
 
   final AppStatusKind kind;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final brightness = Theme.of(context).brightness;
     final style = switch (kind) {
       AppStatusKind.live => (
-          AppColors.panel,
-          AppColors.textInverse,
-          l10n.badgeLive
-        ),
+        AppColors.panelFor(brightness),
+        AppColors.textInverse,
+        l10n.badgeLive,
+      ),
       AppStatusKind.endingSoon => (
-          AppColors.accentUrgent,
-          AppColors.textInverse,
-          l10n.badgeEndingSoon,
-        ),
+        AppColors.accentUrgent,
+        AppColors.textInverse,
+        l10n.badgeEndingSoon,
+      ),
       AppStatusKind.buyNow => (
-          AppColors.accentPrimary,
-          AppColors.textInverse,
-          l10n.badgeBuyNow,
-        ),
+        AppColors.accentPrimary,
+        AppColors.textInverse,
+        l10n.badgeBuyNow,
+      ),
       AppStatusKind.paid => (
-          AppColors.accentSuccess,
-          AppColors.textPrimary,
-          l10n.badgePaid,
-        ),
+        AppColors.accentSuccess,
+        AppColors.textPrimary,
+        l10n.badgePaid,
+      ),
       AppStatusKind.settled => (
-          AppColors.accentSuccess,
-          AppColors.textPrimary,
-          l10n.badgeSettled,
-        ),
+        AppColors.accentSuccess,
+        AppColors.textPrimary,
+        l10n.badgeSettled,
+      ),
       AppStatusKind.pending => (
-          AppColors.sand,
-          AppColors.textPrimary,
-          l10n.badgePending,
-        ),
+        brightness == Brightness.dark
+            ? AppColors.bgElevatedDark
+            : AppColors.sand,
+        AppColors.textPrimaryFor(brightness),
+        l10n.badgePending,
+      ),
       AppStatusKind.verified => (
-          AppColors.accentPrimarySoft,
-          AppColors.textPrimary,
-          l10n.badgeVerified,
-        ),
+        AppColors.accentPrimarySoftFor(brightness),
+        AppColors.textPrimaryFor(brightness),
+        l10n.badgeVerified,
+      ),
       AppStatusKind.unread => (
-          AppColors.accentPrimary,
-          AppColors.textInverse,
-          l10n.badgeUnread,
-        ),
+        AppColors.accentPrimary,
+        AppColors.textInverse,
+        l10n.badgeUnread,
+      ),
     };
 
     return Container(
@@ -76,9 +76,9 @@ class AppStatusBadge extends StatelessWidget {
       ),
       child: Text(
         style.$3,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: style.$2,
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.labelMedium?.copyWith(color: style.$2),
       ),
     );
   }

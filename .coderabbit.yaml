@@ -26,6 +26,15 @@ reviews:
   poem: false
   enable_prompt_for_ai_agents: true
   path_filters:
+    - "!apps/mobile_flutter/lib/**/*.g.dart"
+    - "!apps/mobile_flutter/lib/**/*.freezed.dart"
+    - "!apps/mobile_flutter/lib/**/*.gen.dart"
+    - "!apps/mobile_flutter/lib/**/*.gr.dart"
+    - "!apps/mobile_flutter/lib/**/*.mocks.dart"
+    - "!apps/mobile_flutter/lib/**/*.pb.dart"
+    - "!apps/mobile_flutter/lib/**/*.pbenum.dart"
+    - "!apps/mobile_flutter/lib/**/*.pbjson.dart"
+    - "!apps/mobile_flutter/lib/**/*.pbserver.dart"
     - "!apps/mobile_flutter/lib/l10n/app_localizations*.dart"
     - "!apps/mobile_flutter/android/app/src/main/res/mipmap-*/**"
     - "!apps/mobile_flutter/ios/Runner/Assets.xcassets/**"

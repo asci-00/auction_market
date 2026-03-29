@@ -31,11 +31,7 @@ class LoginProviderPanel extends StatelessWidget {
             onPressed:
                 isSubmitting || useFirebaseEmulators ? null : onGooglePressed,
             icon: const Icon(Icons.g_mobiledata_rounded),
-            label: Text(
-              isSubmitting
-                  ? context.l10n.loginSubmitting
-                  : context.l10n.loginContinueGoogle,
-            ),
+            label: Text(context.l10n.loginContinueGoogle),
           ),
           SizedBox(height: tokens.space3),
           OutlinedButton.icon(

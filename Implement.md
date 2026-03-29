@@ -1,7 +1,7 @@
 # Auction Market Execution Log
 
 ## Current Task
-- Phase 3 mobile flow work is active. Orders now support a `dev` server-driven dummy payment handoff from the buyer timeline, payment return routes and deep-link normalization are in place for `/payments/success` and `/payments/fail`, the payment sheet and return screens now distinguish dev, prepared-return, and manual-recovery states with localized product copy, shared page transitions and entrance motion are aligned to the design contract, shimmer-based loading and Hero image transitions are in place, and the next unfinished product gap is the final automated Toss checkout launcher handoff once real client key and return URL values are available.
+- Phase 3 mobile flow work is active. The final automated Toss checkout launcher handoff is still blocked on real external values, so the current pre-cutover focus is UI and UX polish: dark mode parity, overflow and keyboard-safety fixes, async feedback timing, blur and barrier tuning, shared loading overlay consistency, and route or sheet transition quality.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -9,6 +9,7 @@
 - TossPayments is the only payment provider for v1.
 - Apple sign in and Google sign in are the only login providers for v1.
 - Emulator seed is the default dummy data path, and dependency-blocked integrations may use server-driven dummy responses in `dev` until the real handoff is ready.
+- Shared blocking loading states use `apps/mobile_flutter/assets/lotties/loading.lottie`.
 - Secrets never live in repo files. Only example files are committed.
 - Flutter mobile boot fails fast when required public `dart-define` values are missing or still set to `TODO_...`.
 - Android uses `10.0.2.2` for Firebase emulator hosts and iOS uses `127.0.0.1`.
@@ -22,6 +23,7 @@
 ## Open Blockers
 - Real Toss client key, secret key, and webhook secret are not available in this repo yet.
 - Real app base URL for payment return paths and deep links is not available in this repo yet.
+- Because those real values are missing, the final Phase 3 checkout launcher cutover is blocked and Phase 4 implementation work should not begin yet.
 
 ## Validation Status
 - `apps/mobile_flutter/android` and `apps/mobile_flutter/ios` exist, so `flutter run` has native targets again.
@@ -30,7 +32,14 @@
 - Guarded `go_router` navigation uses `StatefulShellRoute.indexedStack` for tab preservation and supports `app://auction/{id}` and `app://orders/{id}` deep-link normalization.
 - Shared theme tokens, editorial hero patterns, auction cards, anchored bottom navigation, and sticky action bars match the updated design contract direction.
 - Shared motion now includes route-level fade and rise transitions, page entrance reveal, staggered auction card entry, live countdown-only text updates, and a tuned floating navigation surface with restrained blur.
-- User-facing loading states now prefer shimmer placeholders over centered spinners, and auction card to detail navigation can carry a Hero image tag without colliding across repeated home rails.
+- User-facing loading states now prefer shimmer placeholders over centered spinners, blocking loading overlays are expected to standardize on `apps/mobile_flutter/assets/lotties/loading.lottie`, and auction card to detail navigation can carry a Hero image tag without colliding across repeated home rails.
+- The first shared blocking loading overlay rollout now covers the sell draft and publish flow, where long Storage upload plus Functions chains justify a modal loading state without over-applying the same pattern to faster auth or bid actions.
+- Orders payment and shipment modals plus auction bid amount dialogs now use keyboard-safe inset handling, scrollable dialog bodies, and bottom-sheet inset padding so narrow screens and keyboard-open states stay usable during Phase 3 smoke tests.
+- Orders payment and shipment modal surfaces plus auction amount dialogs now use keyboard-aware inset handling and scrollable content, and the sell form now expands its bottom inset while the keyboard is open so lower fields remain reachable on small devices.
+- `AppPageScaffold` now measures page-level bottom bars and combines that height with shell insets before laying out body content, so Android edge-to-edge no longer lets detail content drift under the system navigation area or sticky action bars.
+- The app now enables `ThemeMode.system` with a dedicated dark theme branch, and shared scaffold, panel, shell, and shimmer surfaces resolve warm dark colors instead of falling back to the light editorial palette.
+- Dark mode foundation now exists at the shared theme level, and the app scaffold, panel surfaces, and floating shell navigation all switch to warm dark palettes under system dark mode instead of falling back to the light editorial background.
+- Shared editorial hero, empty-state, shimmer placeholder, status badge, and auction card surfaces now resolve dark-aware colors as well, so common reusable blocks no longer reintroduce light-only cards or text when the system is in dark mode.
 - Mobile copy is generated from `app_ko.arb` and `app_en.arb`, with device-locale fallback to Korean.
 - Flutter shared context helpers now live in `core/extensions/build_context_x.dart`, so common access like snackbars, theme, text theme, media query, and navigator no longer requires repeated `ScaffoldMessenger.of(context)` or similar direct lookups in feature screens.
 - Login, home, search, auction detail, sell, activity, orders, notifications, and my screens use localized product copy and no longer expose engineering-status labels in the UI.
@@ -60,10 +69,10 @@
 - `cd backend/functions && npm run lint` passed on March 25, 2026.
 - `cd backend/functions && npm test` passed on March 25, 2026.
 - `cd backend/functions && npm run build` passed on March 25, 2026.
-- `cd apps/mobile_flutter && flutter gen-l10n` passed on March 25, 2026.
-- `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib test` passed on March 25, 2026.
-- `cd apps/mobile_flutter && flutter analyze` passed on March 25, 2026.
-- `cd apps/mobile_flutter && flutter test` passed on March 25, 2026.
+- `cd apps/mobile_flutter && flutter gen-l10n` passed on March 26, 2026.
+- `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib test` passed on March 26, 2026.
+- `cd apps/mobile_flutter && flutter analyze` passed on March 26, 2026.
+- `cd apps/mobile_flutter && flutter test` passed on March 26, 2026.
 
 ## Next Commands
 1. `cd backend/functions && npm run serve`
@@ -75,6 +84,8 @@
 7. Open `app://payments/success?orderId=order-paid&paymentKey=dev_pay_order-paid&amount=230000` while signed in as `buyer1`, and verify the payment return screen confirms the order and offers the order timeline CTA.
 8. Sign in as `seller1` and register shipment for `order-paid`, then sign back in as `buyer1` and confirm receipt from the same order.
 9. Fill `backend/functions/.env` and `apps/mobile_flutter/dart_defines.json` with real Toss values for staging and prod verification.
+10. Before those real values arrive, finish remaining UI and UX polish work for dark mode, overflow fixes, loading overlay consistency, and transition quality.
+11. After those real values are present, wire the final automated Toss launcher handoff and repeat the staging and prod payment validation path before moving to Phase 4.
 
 ## Update Rules
 - Keep this file short.

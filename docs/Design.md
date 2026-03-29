@@ -49,6 +49,23 @@
 - Bottom sheet: spring, no bounce overshoot.
 - Countdown updates: text-only animation, no full card rebuild flash.
 - Use motion to guide action, not to decorate idle screens.
+- Route-level transitions should feel continuous across push, pop, and modal presentation. Prefer continuity over spectacle.
+- Hero transitions are allowed for image-first navigation when they improve context and do not create duplicate-tag collisions.
+
+## Dark Mode Rules
+
+- Dark mode is required.
+- Dark mode must preserve the premium editorial direction instead of falling back to default Material dark colors.
+- Use warm dark surfaces, restrained contrast jumps, and preserve badge and action hierarchy from light mode.
+- Verify cards, sheets, floating navigation, charts, forms, and sticky action areas in both light and dark themes.
+
+## Loading Rules
+
+- Shared blocking or modal loading states must use `apps/mobile_flutter/assets/lotties/loading.lottie`.
+- Do not flash the loading animation for very short async work. Delay entry enough to avoid visual noise.
+- Pair modal loading with a readable barrier and only add blur when it improves focus and does not muddy the underlying screen.
+- Prefer shimmer or skeleton states when the final layout is already known.
+- Loading copy must stay localized and short.
 
 ## Component Rules
 
@@ -76,16 +93,19 @@
 - Active tab should look anchored, not just tinted.
 - Keep tab count at 5 as already defined.
 - Navigation should sit on a dark floating plate rather than default Material chrome.
+- Blur on navigation and sticky surfaces must be subtle and tuned for readability first.
 
 ### Empty, Loading, And Error States
 - Empty and unavailable states should look premium and intentional, not like debug scaffolds.
 - Use localized product copy only. Never mention phases, Firestore, callables, or documentation files in release-facing UI.
 - Pair every quiet state with either a real read path, a navigation recovery action, or a clear informational explanation.
+- Loading overlays must use the shared `loading.lottie` asset instead of ad hoc spinners for high-latency blocking actions.
 
 ### Form Inputs
 - Use full-width fields with strong label and helper text.
 - Image upload area uses a card with visible progress and failure retry.
 - Step forms must show progress and draft-save status.
+- Keyboard entry, safe-area inset, and bottom-sheet layouts must not overflow on narrow screens or large text settings.
 
 ### Status Badges
 - `LIVE`: charcoal background with inverse text.
@@ -145,7 +165,9 @@
 - Keep settings secondary. Surface trust and selling readiness first.
 
 ## Accessibility Rules
+
 - Maintain text contrast that meets accessibility guidelines.
 - Support dynamic text without clipped buttons or broken cards.
 - Touch targets stay at or above 44pt.
 - Do not encode meaning with color alone. Pair color with label or icon.
+- Validate common overflow-prone screens with large text, narrow widths, and keyboard-open states before considering a polish task complete.

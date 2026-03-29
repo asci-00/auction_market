@@ -25,9 +25,10 @@ class AppEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tokens = context.tokens;
+    final brightness = theme.brightness;
 
     final accentColor = switch (tone) {
-      AppPanelTone.dark => AppColors.accentPrimarySoft,
+      AppPanelTone.dark => AppColors.accentPrimarySoftFor(brightness),
       AppPanelTone.elevated => AppColors.accentPrimary,
       AppPanelTone.soft => AppColors.accentUrgent,
       AppPanelTone.surface => AppColors.accentPrimary,
@@ -54,7 +55,7 @@ class AppEmptyState extends StatelessWidget {
               icon,
               color: tone == AppPanelTone.dark
                   ? AppColors.textInverse
-                  : AppColors.textPrimary,
+                  : AppColors.textPrimaryFor(brightness),
             ),
           ),
           SizedBox(height: tokens.space4),
@@ -65,7 +66,7 @@ class AppEmptyState extends StatelessWidget {
                 eyebrow!,
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: tone == AppPanelTone.dark
-                      ? AppColors.accentPrimarySoft
+                      ? AppColors.accentPrimarySoftFor(brightness)
                       : AppColors.accentPrimary,
                 ),
               ),
@@ -75,7 +76,7 @@ class AppEmptyState extends StatelessWidget {
             style: theme.textTheme.headlineSmall?.copyWith(
               color: tone == AppPanelTone.dark
                   ? AppColors.textInverse
-                  : AppColors.textPrimary,
+                  : AppColors.textPrimaryFor(brightness),
             ),
           ),
           SizedBox(height: tokens.space2),
@@ -84,7 +85,7 @@ class AppEmptyState extends StatelessWidget {
             style: theme.textTheme.bodyMedium?.copyWith(
               color: tone == AppPanelTone.dark
                   ? AppColors.textInverse.withValues(alpha: 0.82)
-                  : AppColors.textSecondary,
+                  : AppColors.textSecondaryFor(brightness),
             ),
           ),
           if (action != null)

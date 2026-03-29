@@ -1,23 +1,79 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_editorial_hero.dart';
+import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_section_heading.dart';
+import '../../../core/widgets/app_shell_insets.dart';
 import '../../../core/widgets/app_status_badge.dart';
 import 'widgets/home_action_icon_button.dart';
 import 'widgets/home_auction_rail.dart';
+import '../data/home_auction_summary.dart';
+import 'home_view_model.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final tokens = context.tokens;
+    final homeAsync = ref.watch(homeViewModelProvider);
 
+    return homeAsync.when(
+      error: (_, __) => AppPageScaffold(
+        largeTitle: context.l10n.homeLargeTitle,
+        subtitle: context.l10n.homeHeroEyebrow,
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: tokens.screenPadding),
+            child: HomeActionIconButton(
+              icon: Icons.notifications_none_rounded,
+              tooltip: context.l10n.homeOpenNotifications,
+              onPressed: () => context.push('/notifications'),
+            ),
+          ),
+        ],
+        body: AppEmptyState(
+          icon: Icons.wifi_tethering_error_rounded,
+          title: context.l10n.genericUnavailable,
+          description: context.l10n.homeEmptyDescription,
+        ),
+      ),
+      loading: () => _HomeBody(
+        tokens: tokens,
+        endingSoon: const [],
+        hot: const [],
+        isLoading: true,
+      ),
+      data: (state) => _HomeBody(
+        tokens: tokens,
+        endingSoon: state.endingSoon,
+        hot: state.hot,
+        isLoading: false,
+      ),
+    );
+  }
+}
+
+class _HomeBody extends StatelessWidget {
+  const _HomeBody({
+    required this.tokens,
+    required this.endingSoon,
+    required this.hot,
+    required this.isLoading,
+  });
+
+  final AppThemeTokens tokens;
+  final List<HomeAuctionSummary> endingSoon;
+  final List<HomeAuctionSummary> hot;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
     return AppPageScaffold(
       largeTitle: context.l10n.homeLargeTitle,
       subtitle: context.l10n.homeHeroEyebrow,
@@ -36,7 +92,7 @@ class HomeScreen extends StatelessWidget {
           tokens.screenPadding,
           tokens.space2,
           tokens.screenPadding,
-          tokens.space8,
+          tokens.space8 + context.shellBottomInset,
         ),
         children: [
           AppEditorialHero(
@@ -60,12 +116,8 @@ class HomeScreen extends StatelessWidget {
           ),
           SizedBox(height: tokens.space4),
           HomeAuctionRail(
-            stream: FirebaseFirestore.instance
-                .collection('auctions')
-                .where('status', isEqualTo: 'LIVE')
-                .orderBy('endAt')
-                .limit(8)
-                .snapshots(),
+            auctions: endingSoon,
+            isLoading: isLoading,
             heroNamespace: 'home-ending',
             onTapAuction: (id, heroTag) =>
                 context.push('/auction/$id?heroTag=$heroTag'),
@@ -78,12 +130,8 @@ class HomeScreen extends StatelessWidget {
           ),
           SizedBox(height: tokens.space4),
           HomeAuctionRail(
-            stream: FirebaseFirestore.instance
-                .collection('auctions')
-                .where('status', isEqualTo: 'LIVE')
-                .orderBy('bidCount', descending: true)
-                .limit(8)
-                .snapshots(),
+            auctions: hot,
+            isLoading: isLoading,
             heroNamespace: 'home-hot',
             defaultBadge: AppStatusKind.buyNow,
             onTapAuction: (id, heroTag) =>
