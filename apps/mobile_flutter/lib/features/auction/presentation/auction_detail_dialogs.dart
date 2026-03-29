@@ -5,6 +5,7 @@ import '../../../core/extensions/build_context_x.dart';
 import '../../../core/l10n/app_formatters.dart';
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/widgets/app_keyboard_safe_inset.dart';
+import '../../../core/widgets/app_modal.dart';
 
 Future<int?> showAuctionBidAmountDialog(
   BuildContext context, {
@@ -49,7 +50,7 @@ Future<int?> _showAuctionAmountDialog(
   required String hintText,
   required String submitLabel,
 }) async {
-  return showDialog<int>(
+  return showAppDialog<int>(
     context: context,
     builder: (_) => _AuctionAmountDialog(
       minimumBid: minimumBid,

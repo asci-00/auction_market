@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/widgets/app_keyboard_safe_inset.dart';
+import '../../../core/widgets/app_modal.dart';
 
 class ShipmentDraft {
   const ShipmentDraft({
@@ -14,7 +15,7 @@ class ShipmentDraft {
 }
 
 Future<ShipmentDraft?> showOrderShipmentDialog(BuildContext context) async {
-  return showDialog<ShipmentDraft>(
+  return showAppDialog<ShipmentDraft>(
     context: context,
     builder: (_) => const _OrderShipmentDialog(),
   );

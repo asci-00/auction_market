@@ -5,6 +5,7 @@ import '../../../core/l10n/app_formatters.dart';
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_keyboard_safe_inset.dart';
+import '../../../core/widgets/app_modal.dart';
 import '../../../core/widgets/app_panel.dart';
 import '../application/order_payment_handoff_service.dart';
 import '../data/order_payment_session.dart';
@@ -18,7 +19,7 @@ class OrderPaymentSheetResult {
   const OrderPaymentSheetResult.manualEntry() : this._(useManualEntry: true);
 
   const OrderPaymentSheetResult.directConfirm(String paymentKey)
-      : this._(useManualEntry: false, paymentKey: paymentKey);
+    : this._(useManualEntry: false, paymentKey: paymentKey);
 
   final bool useManualEntry;
   final String? paymentKey;
@@ -29,13 +30,9 @@ Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
   required OrderPaymentSession session,
   required OrderPaymentHandoffPlan handoffPlan,
 }) {
-  return showModalBottomSheet<OrderPaymentSheetResult>(
+  return showAppModalBottomSheet<OrderPaymentSheetResult>(
     context: context,
     isScrollControlled: true,
-    sheetAnimationStyle: const AnimationStyle(
-      duration: Duration(milliseconds: 320),
-      reverseDuration: Duration(milliseconds: 220),
-    ),
     builder: (sheetContext) {
       final tokens = sheetContext.tokens;
       final devPaymentKey = handoffPlan.paymentKey;
@@ -101,16 +98,14 @@ Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
                 onPressed: () {
                   if (canDirectDevConfirm) {
                     Navigator.of(sheetContext).pop(
-                      OrderPaymentSheetResult.directConfirm(
-                        devPaymentKey!,
-                      ),
+                      OrderPaymentSheetResult.directConfirm(devPaymentKey!),
                     );
                     return;
                   }
 
-                  Navigator.of(sheetContext).pop(
-                    const OrderPaymentSheetResult.manualEntry(),
-                  );
+                  Navigator.of(
+                    sheetContext,
+                  ).pop(const OrderPaymentSheetResult.manualEntry());
                 },
                 child: Text(
                   canDirectDevConfirm
@@ -127,9 +122,7 @@ Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
 }
 
 class _OrderPaymentInfoPanel extends StatelessWidget {
-  const _OrderPaymentInfoPanel({
-    required this.session,
-  });
+  const _OrderPaymentInfoPanel({required this.session});
 
   final OrderPaymentSession session;
 
@@ -143,10 +136,7 @@ class _OrderPaymentInfoPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            session.orderName,
-            style: context.textTheme.titleMedium,
-          ),
+          Text(session.orderName, style: context.textTheme.titleMedium),
           SizedBox(height: tokens.space2),
           Text(
             context.l10n.ordersPaymentAmountLabel(
@@ -227,26 +217,18 @@ class _OrderPaymentRoutePanel extends StatelessWidget {
             ),
             child: Text(
               statusLabel,
-              style: context.textTheme.labelLarge?.copyWith(
-                color: accentColor,
-              ),
+              style: context.textTheme.labelLarge?.copyWith(color: accentColor),
             ),
           ),
           SizedBox(height: tokens.space3),
-          Text(
-            description,
-            style: context.textTheme.bodyMedium,
-          ),
+          Text(description, style: context.textTheme.bodyMedium),
           SizedBox(height: tokens.space4),
           Text(
             context.l10n.ordersPaymentSheetNextStepTitle,
             style: context.textTheme.titleSmall,
           ),
           SizedBox(height: tokens.space2),
-          Text(
-            nextStepDescription,
-            style: context.textTheme.bodySmall,
-          ),
+          Text(nextStepDescription, style: context.textTheme.bodySmall),
         ],
       ),
     );

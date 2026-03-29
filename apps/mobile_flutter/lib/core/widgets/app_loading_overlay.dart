@@ -7,6 +7,7 @@ import 'package:lottie/lottie.dart';
 
 import '../extensions/build_context_x.dart';
 import '../theme/app_theme.dart';
+import 'app_modal.dart';
 import 'app_panel.dart';
 
 class AppLoadingOverlay extends StatefulWidget {
@@ -58,7 +59,7 @@ class _AppLoadingOverlayState extends State<AppLoadingOverlay> {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final brightness = Theme.of(context).brightness;
-    final barrierColor = AppColors.panelOverlayFor(
+    final barrierColor = resolveAppModalBarrierColor(
       brightness,
     ).withValues(alpha: brightness == Brightness.dark ? 0.28 : 0.18);
 

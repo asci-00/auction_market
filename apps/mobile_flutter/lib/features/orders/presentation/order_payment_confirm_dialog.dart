@@ -4,6 +4,7 @@ import '../../../core/extensions/build_context_x.dart';
 import '../../../core/l10n/app_formatters.dart';
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/widgets/app_keyboard_safe_inset.dart';
+import '../../../core/widgets/app_modal.dart';
 
 class OrderPaymentConfirmDraft {
   const OrderPaymentConfirmDraft({required this.paymentKey});
@@ -15,7 +16,7 @@ Future<OrderPaymentConfirmDraft?> showOrderPaymentConfirmDialog(
   BuildContext context, {
   required int amount,
 }) async {
-  return showDialog<OrderPaymentConfirmDraft>(
+  return showAppDialog<OrderPaymentConfirmDraft>(
     context: context,
     builder: (_) => _OrderPaymentConfirmDialog(amount: amount),
   );
