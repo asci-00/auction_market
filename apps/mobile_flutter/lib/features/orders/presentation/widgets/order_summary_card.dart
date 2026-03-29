@@ -77,8 +77,10 @@ class OrderSummaryCard extends StatelessWidget {
                 order.paymentDueAt != null) ...[
               SizedBox(height: tokens.space3),
               _PaymentDuePlate(order: order),
-              SizedBox(height: tokens.space3),
-              _PaymentRecoveryNote(role: role),
+              if (role == OrderSectionRole.buyer) ...[
+                SizedBox(height: tokens.space3),
+                _PaymentRecoveryNote(role: role),
+              ],
             ],
             if (order.hasShipmentSummary)
               Padding(

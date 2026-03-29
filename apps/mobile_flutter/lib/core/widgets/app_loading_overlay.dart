@@ -59,9 +59,7 @@ class _AppLoadingOverlayState extends State<AppLoadingOverlay> {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final brightness = Theme.of(context).brightness;
-    final barrierColor = resolveAppModalBarrierColor(
-      brightness,
-    ).withValues(alpha: brightness == Brightness.dark ? 0.28 : 0.18);
+    final barrierColor = resolveAppModalBarrierColor(brightness);
 
     return Stack(
       fit: StackFit.expand,

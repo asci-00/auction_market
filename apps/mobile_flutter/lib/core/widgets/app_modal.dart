@@ -58,7 +58,12 @@ Future<T?> showAppDialog<T>({
       );
     },
     pageBuilder: (context, animation, secondaryAnimation) {
-      return Material(type: MaterialType.transparency, child: builder(context));
+      return SafeArea(
+        child: Material(
+          type: MaterialType.transparency,
+          child: builder(context),
+        ),
+      );
     },
   );
 }

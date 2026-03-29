@@ -36,7 +36,8 @@ Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
     builder: (sheetContext) {
       final tokens = sheetContext.tokens;
       final devPaymentKey = handoffPlan.paymentKey;
-      final canDirectDevConfirm = handoffPlan.isDevDummy;
+      final canDirectDevConfirm =
+          handoffPlan.isDevDummy && (devPaymentKey?.isNotEmpty ?? false);
       final statusColor = switch (handoffPlan.mode) {
         OrderPaymentHandoffMode.devDummy => AppColors.accentSuccess,
         OrderPaymentHandoffMode.launcherReady => AppColors.accentPrimary,
