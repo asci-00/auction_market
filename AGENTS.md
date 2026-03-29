@@ -7,6 +7,7 @@
 - `Documentation.md`: implementation contract for schema, routing, and runtime behavior.
 - `docs/Design.md`: UI and UX contract.
 - `docs/Environment.md`: environment and secret-loading contract.
+- `docs/Notification.md`: push-notification scope, supported event matrix, preference model, deep-link rules, and delivery prerequisites.
 
 ## Project Structure & Module Organization
 This repository is a small monorepo for a mobile-first C2C auction MVP.

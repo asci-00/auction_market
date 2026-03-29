@@ -10,6 +10,12 @@
   - `apps/mobile_flutter/android/app/google-services.json`
 - Root `.env.example` is only a summary for local tooling and onboarding.
 
+## Note
+- Payment-provider cutover requirements are tracked only in `Plan.md` under `Phase Undecided`.
+- Push-delivery prerequisites and category rules are tracked in `docs/Notification.md`.
+- This document keeps the current runtime load paths and active scaffold variable names only because they match the codebase today.
+- If the final PG provider changes, rename provider-specific variables only when the deferred cutover work in `Plan.md` is activated.
+
 ## Root Summary File
 - Path: `.env.example`
 - Purpose: local inventory of project IDs, emulator hosts, and file locations.
@@ -58,24 +64,6 @@
 | Firebase storage bucket | `STORAGE_BUCKET` / `project_info.storage_bucket` | downloaded iOS plist or Android json | `auction-893cf.firebasestorage.app` |
 | Firebase API key | `API_KEY` / `client[0].api_key[0].current_key` | platform app config files | iOS: `AIzaSyBibwoRhELTNV-S8adq2YCVaQrE_CTfa5o`, Android: `AIzaSyBoiR18QZBPTAtPmbJaIJerhuuecuD8Gb8` |
 
-## TODO Inventory
-- `TOSS_SECRET_KEY`
-  - Source system: TossPayments dashboard.
-  - Why TODO exists: real secret is not stored in this repo.
-  - Missing value impact: release blocker for staging and prod payment flow.
-- `TOSS_WEBHOOK_SECRET`
-  - Source system: TossPayments webhook settings.
-  - Why TODO exists: real secret is not stored in this repo.
-  - Missing value impact: release blocker for staging and prod webhook verification.
-- `TOSS_CLIENT_KEY`
-  - Source system: TossPayments dashboard.
-  - Why TODO exists: public client key is not stored in this repo.
-  - Missing value impact: release blocker for staging and prod payment start.
-- `APP_BASE_URL`
-  - Source system: deployment and mobile deep-link setup.
-  - Why TODO exists: final public domain is not stored in this repo.
-  - Missing value impact: release blocker for payment return routing in staging and prod.
-
 ## Loading Rules
 - Never read backend secrets in Flutter.
 - Never read mobile public config from server env.
@@ -96,11 +84,3 @@
   - `adb reverse` is not available.
   - Use the Mac LAN IP in `FIREBASE_EMULATOR_HOST`.
   - Ensure each required emulator port is reachable from the device on the local network.
-
-## Phase 3 Cutover Reminder
-
-- Real Toss launcher cutover must not begin until all four real values are present:
-  - `TOSS_CLIENT_KEY`
-  - `TOSS_SECRET_KEY`
-  - `TOSS_WEBHOOK_SECRET`
-  - `APP_BASE_URL`
