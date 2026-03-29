@@ -20,3 +20,7 @@ class AppShellInsets extends InheritedWidget {
     return bottomInset != oldWidget.bottomInset;
   }
 }
+
+extension AppShellInsetsX on BuildContext {
+  double get shellBottomInset => AppShellInsets.maybeOf(this) ?? 0;
+}

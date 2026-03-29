@@ -1,0 +1,31 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0.08" y1="0.08" x2="0.92" y2="0.92">
+      <stop offset="0%" stop-color="#0B1324"/>
+      <stop offset="100%" stop-color="#1F2A44"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FCD34D"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="64" y="64" width="896" height="896" rx="220" fill="url(#bg)"/>
+
+  <circle cx="512" cy="512" r="314" fill="none" stroke="#E2E8F0" stroke-opacity="0.9" stroke-width="44"/>
+
+  <!-- horse-inspired mark -->
+  <path d="M364 640L436 580H522C578 580 622 536 622 486C622 452 602 422 570 406L604 336L682 372L704 332L610 286C590 276 564 282 552 302L508 372H448L392 312L334 356L388 418C344 444 314 488 314 538C314 588 334 620 364 640Z"
+        fill="url(#gold)"/>
+
+  <!-- auction hammer -->
+  <rect x="624" y="602" width="190" height="48" rx="18" transform="rotate(-24 624 602)" fill="url(#teal)"/>
+  <rect x="684" y="544" width="112" height="52" rx="16" transform="rotate(-24 684 544)" fill="#E0F2FE"/>
+
+  <!-- dynamic motion accent -->
+  <path d="M274 698C350 760 468 790 586 766" fill="none" stroke="#38BDF8" stroke-width="30" stroke-linecap="round"/>
+</svg>

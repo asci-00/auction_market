@@ -8,6 +8,7 @@ import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_section_heading.dart';
+import '../../../core/widgets/app_shell_insets.dart';
 import '../../../core/widgets/app_status_badge.dart';
 import 'widgets/home_action_icon_button.dart';
 import 'widgets/home_auction_rail.dart';
@@ -91,7 +92,7 @@ class _HomeBody extends StatelessWidget {
           tokens.screenPadding,
           tokens.space2,
           tokens.screenPadding,
-          tokens.space8,
+          tokens.space8 + context.shellBottomInset,
         ),
         children: [
           AppEditorialHero(

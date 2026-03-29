@@ -14,6 +14,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_loading_overlay.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
+import '../../../core/widgets/app_shell_insets.dart';
 import '../../../core/widgets/app_status_badge.dart';
 import '../application/sell_flow_service.dart';
 import '../data/sell_draft_form_data.dart';
@@ -73,8 +74,9 @@ class _SellScreenState extends ConsumerState<SellScreen> {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final userId = ref.watch(firebaseAuthProvider).currentUser?.uid;
-    final sellAsync =
-        userId == null ? null : ref.watch(sellViewModelProvider(userId));
+    final sellAsync = userId == null
+        ? null
+        : ref.watch(sellViewModelProvider(userId));
 
     return AppPageScaffold(
       title: context.l10n.sellTitle,
@@ -100,7 +102,7 @@ class _SellScreenState extends ConsumerState<SellScreen> {
               tokens.screenPadding,
               tokens.space4,
               tokens.screenPadding,
-              math.max(tokens.space8, tokens.space4),
+              math.max(tokens.space8 + context.shellBottomInset, tokens.space4),
             ),
             children: [
               AppEditorialHero(
@@ -249,7 +251,9 @@ class _SellScreenState extends ConsumerState<SellScreen> {
     });
 
     try {
-      final savedDraft = await ref.read(sellFlowServiceProvider).saveDraft(
+      final savedDraft = await ref
+          .read(sellFlowServiceProvider)
+          .saveDraft(
             _buildFormData(),
             newImageFiles: _newImageFiles,
             newAuthImageFiles: _newAuthImageFiles,
@@ -301,7 +305,9 @@ class _SellScreenState extends ConsumerState<SellScreen> {
     });
 
     try {
-      final auctionId = await ref.read(sellFlowServiceProvider).publishAuction(
+      final auctionId = await ref
+          .read(sellFlowServiceProvider)
+          .publishAuction(
             _buildFormData(),
             newImageFiles: _newImageFiles,
             newAuthImageFiles: _newAuthImageFiles,

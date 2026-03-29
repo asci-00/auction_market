@@ -7,7 +7,7 @@ import '../theme/app_theme.dart';
 import 'app_motion.dart';
 import 'app_shell_insets.dart';
 
-class AppPageScaffold extends StatefulWidget {
+class AppPageScaffold extends StatelessWidget {
   const AppPageScaffold({
     super.key,
     this.title,
@@ -32,48 +32,29 @@ class AppPageScaffold extends StatefulWidget {
   final Widget body;
 
   @override
-  State<AppPageScaffold> createState() => _AppPageScaffoldState();
-}
-
-class _AppPageScaffoldState extends State<AppPageScaffold> {
-  static const _bodyPaddingKey = ValueKey<String>(
-    'app-page-scaffold-body-padding',
-  );
-
-  double _localBottomBarInset = 0;
-
-  void _updateBottomBarInset(double value) {
-    if ((_localBottomBarInset - value).abs() < 0.5) {
-      return;
-    }
-    setState(() => _localBottomBarInset = value);
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tokens = context.tokens;
     final brightness = theme.brightness;
-    final hasAppBar = widget.title != null || widget.largeTitle != null;
+    final hasAppBar = title != null || largeTitle != null;
     final shellBottomInset = AppShellInsets.maybeOf(context);
-    final resolvedBottomInset =
-        (shellBottomInset ?? 0) +
-        _localBottomBarInset +
-        (widget.bottomContentInset ?? 0);
-    final useSafeAreaBottom = resolvedBottomInset == 0;
+    final useSafeAreaBottom =
+        (shellBottomInset ?? 0) == 0 &&
+        (bottomContentInset ?? 0) == 0 &&
+        bottomBar == null;
     final appBarActions = [
-      if (widget.actions case final customActions?) ...customActions,
+      if (actions case final customActions?) ...customActions,
       const AppLocaleMenuAction(),
       SizedBox(width: tokens.space2),
     ];
 
     return Scaffold(
-      extendBody: widget.extendBody,
-      extendBodyBehindAppBar: widget.extendBodyBehindAppBar,
-      appBar: widget.title == null && widget.largeTitle == null
+      extendBody: extendBody,
+      extendBodyBehindAppBar: extendBodyBehindAppBar,
+      appBar: title == null && largeTitle == null
           ? null
           : AppBar(
-              toolbarHeight: widget.largeTitle != null ? 92 : kToolbarHeight,
+              toolbarHeight: largeTitle != null ? 92 : kToolbarHeight,
               titleSpacing: tokens.screenPadding,
               backgroundColor: Colors.transparent,
               elevation: 0,
@@ -96,18 +77,15 @@ class _AppPageScaffoldState extends State<AppPageScaffold> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    widget.largeTitle ?? widget.title!,
-                    style: widget.largeTitle != null
+                    largeTitle ?? title!,
+                    style: largeTitle != null
                         ? theme.textTheme.headlineLarge
                         : theme.textTheme.titleLarge,
                   ),
-                  if (widget.subtitle != null)
+                  if (subtitle != null)
                     Padding(
                       padding: EdgeInsets.only(top: tokens.space1),
-                      child: Text(
-                        widget.subtitle!,
-                        style: theme.textTheme.bodySmall,
-                      ),
+                      child: Text(subtitle!, style: theme.textTheme.bodySmall),
                     ),
                 ],
               ),
@@ -153,58 +131,13 @@ class _AppPageScaffoldState extends State<AppPageScaffold> {
             SafeArea(
               top: hasAppBar,
               bottom: useSafeAreaBottom,
-              child: Padding(
-                key: _bodyPaddingKey,
-                padding: EdgeInsets.only(
-                  bottom: useSafeAreaBottom ? 0 : resolvedBottomInset,
-                ),
-                child: AppPageEntrance(child: widget.body),
-              ),
+              child: AppPageEntrance(child: body),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: widget.bottomBar == null
-          ? null
-          : _MeasureInset(
-              onChange: (size) => _updateBottomBarInset(size.height),
-              child: widget.bottomBar!,
-            ),
+      bottomNavigationBar: bottomBar,
     );
-  }
-}
-
-class _MeasureInset extends StatefulWidget {
-  const _MeasureInset({required this.onChange, required this.child});
-
-  final ValueChanged<Size> onChange;
-  final Widget child;
-
-  @override
-  State<_MeasureInset> createState() => _MeasureInsetState();
-}
-
-class _MeasureInsetState extends State<_MeasureInset> {
-  Size? _lastSize;
-
-  @override
-  Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final renderObject = context.findRenderObject();
-      if (renderObject is! RenderBox || !renderObject.hasSize) {
-        return;
-      }
-
-      final newSize = renderObject.size;
-      if (_lastSize == newSize) {
-        return;
-      }
-
-      _lastSize = newSize;
-      widget.onChange(newSize);
-    });
-
-    return widget.child;
   }
 }
 

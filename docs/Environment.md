@@ -34,11 +34,14 @@
 - Path: `apps/mobile_flutter/dart_defines.json`
 - Example file: `apps/mobile_flutter/dart_defines.example.json`
 - Load with `flutter run --dart-define-from-file=dart_defines.json`
+- Android physical-device default: keep `FIREBASE_EMULATOR_HOST=127.0.0.1` and use `apps/mobile_flutter/scripts/setup_android_device_emulators.sh`.
+- iOS physical-device example: `apps/mobile_flutter/dart_defines.ios_device.example.json`
 
 | Name | Secret | Required In | Example Format | Owner | Load Location | Missing Value Impact |
 | --- | --- | --- | --- | --- | --- | --- |
 | `APP_ENV` | No | dev, staging, prod | `dev` | engineering | Flutter app config | Low. Labels and config branches may be wrong. |
 | `USE_FIREBASE_EMULATORS` | No | dev | `true` | engineering | Flutter app config | Medium. App may hit real services by mistake. |
+| `FIREBASE_EMULATOR_HOST` | No | dev physical-device testing | `127.0.0.1` on Android with `adb reverse`, Mac LAN IP on iOS | engineering | Flutter app config | Medium. Physical devices cannot reach Mac localhost without either `adb reverse` or a LAN-reachable host. |
 | `TOSS_CLIENT_KEY` | No | staging, prod | `test_ck_...` or `live_ck_...` | product ops | Flutter app config | Release blocker for payment start. |
 
 ## Mobile Firebase Native Config
@@ -79,6 +82,18 @@
 - The app must reject placeholder `TODO_...` public values for fields it still reads from `dart-define`.
 - On iOS and Android, Firebase app registration is loaded from native config files rather than `dart-define` values.
 - Functions must fail fast during startup when a required secret is missing in `staging` or `prod`.
+- For Android physical-device Firebase Emulator runs, prefer `adb reverse` and keep `FIREBASE_EMULATOR_HOST=127.0.0.1`.
+- For iOS physical-device Firebase Emulator runs, set `FIREBASE_EMULATOR_HOST` to the Mac's current LAN IP and keep emulator ports reachable only on the local network.
+
+## Physical-Device Emulator Notes
+- Android over USB:
+  - Run `apps/mobile_flutter/scripts/setup_android_device_emulators.sh`.
+  - Keep `FIREBASE_EMULATOR_HOST=127.0.0.1`.
+  - This forwards device traffic to Mac localhost for ports `9099`, `8080`, `5001`, and `9199` without exposing emulator ports to the network.
+- iOS over USB or Wi-Fi:
+  - `adb reverse` is not available.
+  - Use the Mac LAN IP in `FIREBASE_EMULATOR_HOST`.
+  - Ensure each required emulator port is reachable from the device on the local network.
 
 ## Phase 3 Cutover Reminder
 - The last unfinished Phase 3 task is the real Toss launcher cutover.

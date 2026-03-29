@@ -10,33 +10,22 @@ extension BuildContextX on BuildContext {
   NavigatorState get navigator => Navigator.of(this);
   GoRouter get router => GoRouter.of(this);
 
-  void showSnackBarMessage(
-    String message, {
-    bool clearExisting = true,
-  }) {
+  void showSnackBarMessage(String message, {bool clearExisting = true}) {
     if (clearExisting) {
       messenger.hideCurrentSnackBar();
     }
 
-    messenger.showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    messenger.showSnackBar(SnackBar(content: Text(message)));
   }
 
-  void showErrorSnackBar(
-    String message, {
-    bool clearExisting = true,
-  }) {
+  void showErrorSnackBar(String message, {bool clearExisting = true}) {
     if (clearExisting) {
       messenger.hideCurrentSnackBar();
     }
 
     messenger.showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(color: colorScheme.onError),
-        ),
+        content: Text(message, style: TextStyle(color: colorScheme.onError)),
         backgroundColor: colorScheme.error,
       ),
     );

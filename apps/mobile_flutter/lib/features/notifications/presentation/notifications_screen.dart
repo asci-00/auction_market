@@ -14,6 +14,7 @@ import '../../../core/widgets/app_loading_overlay.dart';
 import '../../../core/widgets/app_motion.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_panel.dart';
+import '../../../core/widgets/app_shell_insets.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/app_status_badge.dart';
 import '../data/notification_item.dart';
@@ -55,7 +56,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             tokens.screenPadding,
             tokens.space4,
             tokens.screenPadding,
-            tokens.space8,
+            tokens.space8 + context.shellBottomInset,
           ),
           children: [
             AppEditorialHero(
@@ -110,10 +111,8 @@ class _NotificationsBody extends StatelessWidget {
         title: l10n.genericUnavailable,
         description: l10n.notificationsEmptyDescription,
       ),
-      loading: () => const AppShimmerListPlaceholder(
-        itemCount: 3,
-        itemHeight: 120,
-      ),
+      loading: () =>
+          const AppShimmerListPlaceholder(itemCount: 3, itemHeight: 120),
       data: (viewState) {
         final items = viewState.items;
         if (items.isEmpty) {
@@ -182,9 +181,7 @@ class _NotificationCard extends ConsumerWidget {
                     await ref
                         .read(functionsProvider)
                         .httpsCallable('markNotificationRead')
-                        .call<void>({
-                      'notificationId': item.id,
-                    });
+                        .call<void>({'notificationId': item.id});
                   } catch (_) {
                     // Keep navigation responsive even if the read marker fails.
                   }

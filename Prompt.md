@@ -16,7 +16,8 @@
 - Do not hardcode external IDs, tokens, or secrets.
 - Secrets live in backend runtime env only.
 - Public client values live in app config or build-time defines only.
-- The only allowed dummy data path is Firebase Emulator + seed data that uses the real schema.
+- The default and preferred dummy data path is Firebase Emulator + seed data that uses the real schema.
+- If a third-party handoff is blocked by missing real external values, `dev` may use a documented server-driven fallback only for that exact blocked handoff until the real cutover is wired.
 - Do not add fake repositories, fake network layers, fake order states, or placeholder call-to-action buttons.
 - Sensitive writes go through Firebase Functions. Firestore direct writes stay blocked for auctions, bids, orders, and server-owned user fields.
 
@@ -35,6 +36,7 @@
 - Storage provider: Firebase Storage.
 - Push and inbox notifications: Firebase Messaging + Firestore inbox documents.
 - App design direction: premium resale market, warm neutral base, charcoal surfaces, copper and coral accents.
+- Shared loading animation asset: `apps/mobile_flutter/assets/lotties/loading.lottie`.
 - Auction anti-sniping rule: bid within last 5 minutes extends end time by 5 minutes, up to 3 times.
 - Settlement model for v1: server ledger plus operator-assisted payout release.
 
@@ -45,6 +47,7 @@
 - All screens render from Firestore reads and Functions writes.
 - Emulator can boot with seed data and exercise the full buyer and seller flow.
 - Staging can boot with real Firebase and Toss test credentials.
+- Pre-cutover UI polish such as dark mode, async feedback, overflow fixes, blur tuning, and transition smoothing can ship before the final real Toss launcher handoff, as long as the blocked handoff remains clearly documented.
 - Docs are sufficient for a new engineer or agent to start `dev` and `staging`.
 
 ## Out Of Scope For v1

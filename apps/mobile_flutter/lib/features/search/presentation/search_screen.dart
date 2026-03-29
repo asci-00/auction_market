@@ -6,6 +6,7 @@ import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_panel.dart';
 import '../../../core/widgets/app_section_heading.dart';
+import '../../../core/widgets/app_shell_insets.dart';
 import '../../../core/widgets/app_status_badge.dart';
 import 'widgets/search_filter_chips.dart';
 import 'widgets/search_query_field.dart';
@@ -46,7 +47,7 @@ class _SearchScreenState extends State<SearchScreen> {
           tokens.screenPadding,
           tokens.space4,
           tokens.screenPadding,
-          tokens.space8,
+          tokens.space8 + context.shellBottomInset,
         ),
         children: [
           AppEditorialHero(
@@ -74,10 +75,7 @@ class _SearchScreenState extends State<SearchScreen> {
             subtitle: context.l10n.searchResultsSubtitle,
           ),
           SizedBox(height: tokens.space4),
-          SearchResultsGrid(
-            query: _query,
-            onResetQuery: _resetQuery,
-          ),
+          SearchResultsGrid(query: _query, onResetQuery: _resetQuery),
         ],
       ),
     );
