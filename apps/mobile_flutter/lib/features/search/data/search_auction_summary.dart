@@ -4,6 +4,7 @@ class SearchAuctionSummary {
   const SearchAuctionSummary({
     required this.id,
     required this.title,
+    required this.categoryMain,
     required this.categorySub,
     required this.currentPrice,
     required this.bidCount,
@@ -14,6 +15,7 @@ class SearchAuctionSummary {
 
   final String id;
   final String title;
+  final String categoryMain;
   final String categorySub;
   final num currentPrice;
   final int bidCount;
@@ -29,6 +31,7 @@ class SearchAuctionSummary {
     return SearchAuctionSummary(
       id: document.id,
       title: (data['titleSnapshot'] as String?) ?? '',
+      categoryMain: (data['categoryMain'] as String?) ?? 'GOODS',
       categorySub: (data['categorySub'] as String?) ?? '',
       currentPrice: (data['currentPrice'] as num?) ?? 0,
       bidCount: ((data['bidCount'] as num?) ?? 0).toInt(),

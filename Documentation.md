@@ -71,6 +71,7 @@
   - Activity now keeps queue summary mapping in `features/activity/data` and composes buyer, seller, and notification stream cards from dedicated widgets instead of using static navigation-only tiles.
   - Home now maps auction rail documents through `features/home/data/home_auction_summary.dart` and keeps reusable rail and action button widgets in `features/home/presentation/widgets`.
   - Search now maps Firestore records through `features/search/data/search_auction_summary.dart`, keeps filtering logic in `features/search/application/search_auction_filter.dart`, and uses dedicated query, filter-chip, and result-grid widgets.
+  - Search filter chips now drive real local filtering for category, price band, ending-soon urgency, and buy-now availability, so visible search controls no longer behave like decorative placeholders.
   - My now maps the user document through `features/my/data/my_profile_summary.dart`, keeps verification label logic separate, and composes account and verification blocks from dedicated widgets.
   - Notifications now reuse the shared app deep-link normalizer instead of carrying a screen-local route parser.
   - Auction detail now runs `placeBid`, `setAutoBid`, and `buyNow` from the sticky action bar when the viewer is an eligible buyer on a live auction, and redirects completed buy-now orders into `/orders/{orderId}`.
