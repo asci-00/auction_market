@@ -31,6 +31,8 @@ class _AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final fallbackInset =
+        tokens.navBarHeight + MediaQuery.viewPaddingOf(context).bottom;
     final brightness = Theme.of(context).brightness;
     final plateColor = AppColors.panelOverlayFor(
       brightness,
@@ -60,7 +62,7 @@ class _AppShellState extends State<AppShell> {
       extendBody: true,
       extendBodyBehindAppBar: true,
       body: AppShellInsets(
-        bottomInset: _bottomInset,
+        bottomInset: _bottomInset > 0 ? _bottomInset : fallbackInset,
         child: widget.navigationShell,
       ),
       bottomNavigationBar: _MeasureSize(

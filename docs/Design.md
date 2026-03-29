@@ -53,12 +53,14 @@
 - Hero transitions are allowed for image-first navigation when they improve context and do not create duplicate-tag collisions.
 
 ## Dark Mode Rules
+
 - Dark mode is required.
 - Dark mode must preserve the premium editorial direction instead of falling back to default Material dark colors.
 - Use warm dark surfaces, restrained contrast jumps, and preserve badge and action hierarchy from light mode.
 - Verify cards, sheets, floating navigation, charts, forms, and sticky action areas in both light and dark themes.
 
 ## Loading Rules
+
 - Shared blocking or modal loading states must use `apps/mobile_flutter/assets/lotties/loading.lottie`.
 - Do not flash the loading animation for very short async work. Delay entry enough to avoid visual noise.
 - Pair modal loading with a readable barrier and only add blur when it improves focus and does not muddy the underlying screen.
@@ -163,6 +165,7 @@
 - Keep settings secondary. Surface trust and selling readiness first.
 
 ## Accessibility Rules
+
 - Maintain text contrast that meets accessibility guidelines.
 - Support dynamic text without clipped buttons or broken cards.
 - Touch targets stay at or above 44pt.

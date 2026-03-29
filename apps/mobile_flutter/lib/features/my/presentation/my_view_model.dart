@@ -13,13 +13,15 @@ part 'my_view_model.g.dart';
 class MyViewState {
   const MyViewState({required this.profile});
 
+  static const _profileSentinel = Object();
+
   final MyProfileSummary? profile;
 
-  MyViewState copyWith({
-    MyProfileSummary? profile,
-  }) {
+  MyViewState copyWith({Object? profile = _profileSentinel}) {
     return MyViewState(
-      profile: profile ?? this.profile,
+      profile: profile == _profileSentinel
+          ? this.profile
+          : profile as MyProfileSummary?,
     );
   }
 }
@@ -48,12 +50,10 @@ class MyViewModel extends _$MyViewModel {
 
 Stream<MyProfileSummary?> _myProfileStream(Ref ref, String userId) {
   final firestore = ref.watch(firestoreProvider);
-  return firestore.collection('users').doc(userId).snapshots().map(
-    (snapshot) {
-      if (!snapshot.exists) {
-        return null;
-      }
-      return MyProfileSummary.fromDocument(snapshot);
-    },
-  );
+  return firestore.collection('users').doc(userId).snapshots().map((snapshot) {
+    if (!snapshot.exists) {
+      return null;
+    }
+    return MyProfileSummary.fromDocument(snapshot);
+  });
 }

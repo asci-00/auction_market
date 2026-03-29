@@ -8,6 +8,18 @@ void main() {
       expect(AppColors.bgBaseFor(Brightness.dark), AppColors.bgBaseDark);
       expect(AppColors.bgSurfaceFor(Brightness.dark), AppColors.bgSurfaceDark);
       expect(
+        AppColors.textSecondaryFor(Brightness.dark),
+        AppColors.textSecondaryDark,
+      );
+      expect(
+        AppColors.borderSoftFor(Brightness.dark),
+        AppColors.borderSoftDark,
+      );
+      expect(
+        AppColors.accentPrimarySoftFor(Brightness.dark),
+        AppColors.accentPrimarySoftDark,
+      );
+      expect(
         AppColors.panelOverlayFor(Brightness.dark),
         AppColors.panelOverlayDark,
       );
@@ -17,6 +29,15 @@ void main() {
       expect(AppColors.bgBaseFor(Brightness.light), AppColors.bgBase);
       expect(AppColors.bgSurfaceFor(Brightness.light), AppColors.bgSurface);
       expect(AppColors.textPrimaryFor(Brightness.light), AppColors.textPrimary);
+      expect(
+        AppColors.textSecondaryFor(Brightness.light),
+        AppColors.textSecondary,
+      );
+      expect(AppColors.borderSoftFor(Brightness.light), AppColors.borderSoft);
+      expect(
+        AppColors.accentPrimarySoftFor(Brightness.light),
+        AppColors.accentPrimarySoft,
+      );
     });
   });
 }

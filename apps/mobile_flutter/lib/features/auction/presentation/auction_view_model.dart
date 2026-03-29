@@ -12,20 +12,21 @@ part 'auction_view_model.g.dart';
 
 @immutable
 class AuctionViewState {
-  const AuctionViewState({
-    required this.detail,
-    required this.bidHistory,
-  });
+  const AuctionViewState({required this.detail, required this.bidHistory});
+
+  static const _detailSentinel = Object();
 
   final AuctionDetailViewData? detail;
   final List<AuctionBidHistoryEntry> bidHistory;
 
   AuctionViewState copyWith({
-    AuctionDetailViewData? detail,
+    Object? detail = _detailSentinel,
     List<AuctionBidHistoryEntry>? bidHistory,
   }) {
     return AuctionViewState(
-      detail: detail ?? this.detail,
+      detail: detail == _detailSentinel
+          ? this.detail
+          : detail as AuctionDetailViewData?,
       bidHistory: bidHistory ?? this.bidHistory,
     );
   }
@@ -50,13 +51,15 @@ class AuctionViewModel extends _$AuctionViewModel {
     });
 
     _detailSub = detailStream.listen((value) {
-      final current = state.valueOrNull ??
+      final current =
+          state.valueOrNull ??
           AuctionViewState(detail: value, bidHistory: history);
       state = AsyncData(current.copyWith(detail: value));
     });
 
     _historySub = historyStream.listen((value) {
-      final current = state.valueOrNull ??
+      final current =
+          state.valueOrNull ??
           AuctionViewState(detail: detail, bidHistory: value);
       state = AsyncData(current.copyWith(bidHistory: value));
     });
@@ -65,19 +68,16 @@ class AuctionViewModel extends _$AuctionViewModel {
   }
 }
 
-Stream<AuctionDetailViewData?> _auctionDetailStream(
-  Ref ref,
-  String auctionId,
-) {
+Stream<AuctionDetailViewData?> _auctionDetailStream(Ref ref, String auctionId) {
   final firestore = ref.watch(firestoreProvider);
-  return firestore.collection('auctions').doc(auctionId).snapshots().map(
-    (snapshot) {
-      if (!snapshot.exists) {
-        return null;
-      }
-      return AuctionDetailViewData.fromDocument(snapshot);
-    },
-  );
+  return firestore.collection('auctions').doc(auctionId).snapshots().map((
+    snapshot,
+  ) {
+    if (!snapshot.exists) {
+      return null;
+    }
+    return AuctionDetailViewData.fromDocument(snapshot);
+  });
 }
 
 Stream<List<AuctionBidHistoryEntry>> _auctionBidHistoryStream(

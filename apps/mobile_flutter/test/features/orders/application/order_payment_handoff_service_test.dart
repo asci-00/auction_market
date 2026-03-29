@@ -92,4 +92,34 @@ void main() {
     expect(plan.usesManualFallback, isTrue);
     expect(plan.isLauncherReady, isFalse);
   });
+
+  test('host override does not change dev dummy handoff selection', () {
+    const service = OrderPaymentHandoffService(
+      AppConfig(
+        environment: AppEnvironment.dev,
+        useFirebaseEmulators: true,
+        tossClientKey: null,
+        firebaseEmulatorHostOverride: '127.0.0.1',
+      ),
+    );
+
+    const session = OrderPaymentSession(
+      provider: 'TOSS_PAYMENTS',
+      mode: 'DEV_DUMMY',
+      orderId: 'order-paid',
+      amount: 230000,
+      orderName: 'Auction order',
+      customerName: null,
+      customerEmail: null,
+      successUrl: null,
+      failUrl: null,
+      devPaymentKey: 'dev_pay_order-paid',
+    );
+
+    final plan = service.buildPlan(session);
+
+    expect(plan.isDevDummy, isTrue);
+    expect(plan.requiresManualConfirmation, isFalse);
+    expect(plan.paymentKey, 'dev_pay_order-paid');
+  });
 }

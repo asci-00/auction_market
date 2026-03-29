@@ -62,8 +62,7 @@ import 'app_localizations_ko.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,8 +82,7 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -397,6 +394,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try widening your search or return when more listings go live.'**
   String get searchEmptyDescription;
+
+  /// No description provided for @searchErrorDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load search results right now. Try again shortly.'**
+  String get searchErrorDescription;
 
   /// No description provided for @searchResetAction.
   ///
@@ -901,6 +904,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Once a payment starts or a sale closes, the timeline will appear here.'**
   String get ordersEmptyDescription;
+
+  /// No description provided for @ordersErrorDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load your orders right now. Try again in a moment.'**
+  String get ordersErrorDescription;
 
   /// No description provided for @ordersHighlightedLabel.
   ///
@@ -1820,6 +1829,12 @@ abstract class AppLocalizations {
   /// **'CJ Logistics'**
   String get ordersShipmentCarrierHint;
 
+  /// No description provided for @ordersShipmentCarrierRequiredError.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a carrier name.'**
+  String get ordersShipmentCarrierRequiredError;
+
   /// No description provided for @ordersShipmentTrackingLabel.
   ///
   /// In en, this message translates to:
@@ -1831,6 +1846,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'1234567890'**
   String get ordersShipmentTrackingHint;
+
+  /// No description provided for @ordersShipmentTrackingRequiredError.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a tracking number.'**
+  String get ordersShipmentTrackingRequiredError;
 
   /// No description provided for @ordersShipmentSubmit.
   ///
@@ -1875,8 +1896,7 @@ abstract class AppLocalizations {
   String ordersShipmentSummary(Object carrierName, Object trackingNumber);
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -1885,25 +1905,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'ko'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'ko'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return AppLocalizationsEn();
-    case 'ko':
-      return AppLocalizationsKo();
+    case 'en': return AppLocalizationsEn();
+    case 'ko': return AppLocalizationsKo();
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.'
+  );
 }

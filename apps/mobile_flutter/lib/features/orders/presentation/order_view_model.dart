@@ -11,10 +11,7 @@ part 'order_view_model.g.dart';
 
 @immutable
 class OrderQuery {
-  const OrderQuery({
-    required this.userId,
-    required this.fieldKey,
-  });
+  const OrderQuery({required this.userId, required this.fieldKey});
 
   final String userId;
   final String fieldKey;
@@ -36,12 +33,8 @@ class OrdersViewState {
 
   final List<OrderSummary> orders;
 
-  OrdersViewState copyWith({
-    List<OrderSummary>? orders,
-  }) {
-    return OrdersViewState(
-      orders: orders ?? this.orders,
-    );
+  OrdersViewState copyWith({List<OrderSummary>? orders}) {
+    return OrdersViewState(orders: orders ?? this.orders);
   }
 }
 
@@ -72,9 +65,8 @@ Stream<List<OrderSummary>> _ordersStream(Ref ref, OrderQuery query) {
   return firestore
       .collection('orders')
       .where(query.fieldKey, isEqualTo: query.userId)
+      .orderBy('createdAt', descending: true)
       .limit(20)
       .snapshots()
-      .map(
-        (snapshot) => snapshot.docs.map(OrderSummary.fromDocument).toList(),
-      );
+      .map((snapshot) => snapshot.docs.map(OrderSummary.fromDocument).toList());
 }

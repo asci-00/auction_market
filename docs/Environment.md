@@ -33,9 +33,10 @@
 ## Mobile Public Build Defines
 - Path: `apps/mobile_flutter/dart_defines.json`
 - Example file: `apps/mobile_flutter/dart_defines.example.json`
+- Run commands from `apps/mobile_flutter`.
 - Load with `flutter run --dart-define-from-file=dart_defines.json`
-- Android physical-device default: keep `FIREBASE_EMULATOR_HOST=127.0.0.1` and use `apps/mobile_flutter/scripts/setup_android_device_emulators.sh`.
-- iOS physical-device example: `apps/mobile_flutter/dart_defines.ios_device.example.json`
+- Android physical-device default: keep `FIREBASE_EMULATOR_HOST=127.0.0.1` and use `./scripts/setup_android_device_emulators.sh`.
+- iOS physical-device example: `dart_defines.ios_device.example.json`
 
 | Name | Secret | Required In | Example Format | Owner | Load Location | Missing Value Impact |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -96,10 +97,8 @@
   - Ensure each required emulator port is reachable from the device on the local network.
 
 ## Phase 3 Cutover Reminder
-- The last unfinished Phase 3 task is the real Toss launcher cutover.
-- That cutover must not begin until all four real values are present:
+- Real Toss launcher cutover must not begin until all four real values are present:
   - `TOSS_CLIENT_KEY`
   - `TOSS_SECRET_KEY`
   - `TOSS_WEBHOOK_SECRET`
   - `APP_BASE_URL`
-- Until then, `dev` remains the validation source of truth through the server-driven dummy payment path and payment return routes.

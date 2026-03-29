@@ -16,7 +16,12 @@ Future<void> main() async {
     FlutterError.onError = (details) {
       FlutterError.dumpErrorToConsole(details);
       if (!kReleaseMode) {
-        _logFlutterErrorDetails(details);
+        try {
+          _logFlutterErrorDetails(details);
+        } catch (loggingError, loggingStack) {
+          debugPrint('Failed to log FlutterErrorDetails: $loggingError');
+          debugPrint('$loggingStack');
+        }
       }
       Zone.current.handleUncaughtError(
         details.exception,

@@ -44,11 +44,9 @@ class _OrderPaymentConfirmDialogState
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-
     return AlertDialog(
       scrollable: true,
-      insetPadding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
+      insetPadding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
       title: Text(context.l10n.ordersPaymentConfirmTitle),
       content: AppKeyboardSafeInset(
         useSafeArea: false,

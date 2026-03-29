@@ -65,12 +65,10 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
       error: (_, __) => AppEmptyState(
         icon: Icons.error_outline_rounded,
         title: context.l10n.genericUnavailable,
-        description: context.l10n.ordersEmptyDescription,
+        description: context.l10n.ordersErrorDescription,
       ),
-      loading: () => const AppShimmerListPlaceholder(
-        itemCount: 3,
-        itemHeight: 172,
-      ),
+      loading: () =>
+          const AppShimmerListPlaceholder(itemCount: 3, itemHeight: 172),
       data: (state) {
         if (state.orders.isEmpty) {
           return AppEmptyState(
@@ -110,7 +108,9 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
 
     await _runOrderAction(
       orderId: orderId,
-      action: () => ref.read(orderActionServiceProvider).submitShipment(
+      action: () => ref
+          .read(orderActionServiceProvider)
+          .submitShipment(
             orderId: orderId,
             carrierName: draft.carrierName,
             trackingNumber: draft.trackingNumber,
@@ -128,8 +128,9 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
       final session = await ref
           .read(orderActionServiceProvider)
           .createPaymentSession(orderId: order.id);
-      final handoffPlan =
-          ref.read(orderPaymentHandoffServiceProvider).buildPlan(session);
+      final handoffPlan = ref
+          .read(orderPaymentHandoffServiceProvider)
+          .buildPlan(session);
       if (!mounted) {
         return;
       }
@@ -162,7 +163,9 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
         return;
       }
 
-      await ref.read(orderActionServiceProvider).confirmPayment(
+      await ref
+          .read(orderActionServiceProvider)
+          .confirmPayment(
             orderId: order.id,
             paymentKey: paymentKey,
             amount: session.amount,
@@ -196,9 +199,8 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
   Future<void> _confirmReceipt(String orderId) {
     return _runOrderAction(
       orderId: orderId,
-      action: () => ref.read(orderActionServiceProvider).confirmReceipt(
-            orderId: orderId,
-          ),
+      action: () =>
+          ref.read(orderActionServiceProvider).confirmReceipt(orderId: orderId),
       successMessage: context.l10n.ordersActionSuccessReceipt,
     );
   }

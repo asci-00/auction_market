@@ -30,6 +30,8 @@ class _OrderShipmentDialog extends StatefulWidget {
 class _OrderShipmentDialogState extends State<_OrderShipmentDialog> {
   final TextEditingController _carrierController = TextEditingController();
   final TextEditingController _trackingController = TextEditingController();
+  bool _showCarrierError = false;
+  bool _showTrackingError = false;
 
   @override
   void dispose() {
@@ -40,11 +42,9 @@ class _OrderShipmentDialogState extends State<_OrderShipmentDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-
     return AlertDialog(
       scrollable: true,
-      insetPadding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
+      insetPadding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
       title: Text(context.l10n.ordersShipmentDialogTitle),
       content: AppKeyboardSafeInset(
         useSafeArea: false,
@@ -54,18 +54,36 @@ class _OrderShipmentDialogState extends State<_OrderShipmentDialog> {
             TextField(
               controller: _carrierController,
               textInputAction: TextInputAction.next,
+              onChanged: (_) {
+                if (!_showCarrierError) {
+                  return;
+                }
+                setState(() => _showCarrierError = false);
+              },
               decoration: InputDecoration(
                 labelText: context.l10n.ordersShipmentCarrierLabel,
                 hintText: context.l10n.ordersShipmentCarrierHint,
+                errorText: _showCarrierError
+                    ? context.l10n.ordersShipmentCarrierRequiredError
+                    : null,
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _trackingController,
               textInputAction: TextInputAction.done,
+              onChanged: (_) {
+                if (!_showTrackingError) {
+                  return;
+                }
+                setState(() => _showTrackingError = false);
+              },
               decoration: InputDecoration(
                 labelText: context.l10n.ordersShipmentTrackingLabel,
                 hintText: context.l10n.ordersShipmentTrackingHint,
+                errorText: _showTrackingError
+                    ? context.l10n.ordersShipmentTrackingRequiredError
+                    : null,
               ),
             ),
           ],
@@ -80,7 +98,13 @@ class _OrderShipmentDialogState extends State<_OrderShipmentDialog> {
           onPressed: () {
             final carrier = _carrierController.text.trim();
             final trackingNumber = _trackingController.text.trim();
-            if (carrier.isEmpty || trackingNumber.isEmpty) {
+            final carrierEmpty = carrier.isEmpty;
+            final trackingEmpty = trackingNumber.isEmpty;
+            if (carrierEmpty || trackingEmpty) {
+              setState(() {
+                _showCarrierError = carrierEmpty;
+                _showTrackingError = trackingEmpty;
+              });
               return;
             }
 

@@ -30,7 +30,7 @@ class SearchResultsGrid extends ConsumerWidget {
       error: (_, __) => AppEmptyState(
         icon: Icons.search_off_rounded,
         title: context.l10n.genericUnavailable,
-        description: context.l10n.searchEmptyDescription,
+        description: context.l10n.searchErrorDescription,
       ),
       loading: () => GridView.builder(
         shrinkWrap: true,

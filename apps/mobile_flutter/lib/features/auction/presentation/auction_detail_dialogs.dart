@@ -84,8 +84,9 @@ class _AuctionAmountDialog extends StatefulWidget {
 }
 
 class _AuctionAmountDialogState extends State<_AuctionAmountDialog> {
-  late final TextEditingController _controller =
-      TextEditingController(text: '${widget.minimumBid}');
+  late final TextEditingController _controller = TextEditingController(
+    text: '${widget.minimumBid}',
+  );
 
   @override
   void dispose() {
@@ -95,14 +96,13 @@ class _AuctionAmountDialogState extends State<_AuctionAmountDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     final validationMessage = context.l10n.auctionDetailBidMinimum(
       formatKrw(context, widget.minimumBid),
     );
 
     return AlertDialog(
       scrollable: true,
-      insetPadding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
+      insetPadding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
       title: Text(widget.title),
       content: AppKeyboardSafeInset(
         useSafeArea: false,
@@ -110,10 +110,7 @@ class _AuctionAmountDialogState extends State<_AuctionAmountDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.description,
-              style: context.textTheme.bodySmall,
-            ),
+            Text(widget.description, style: context.textTheme.bodySmall),
             const SizedBox(height: 12),
             TextField(
               controller: _controller,
