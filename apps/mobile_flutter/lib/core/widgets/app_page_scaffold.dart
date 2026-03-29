@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../l10n/locale_menu_action.dart';
 import '../theme/app_theme.dart';
 import 'app_motion.dart';
+import 'app_page_insets.dart';
 import 'app_shell_insets.dart';
 
 class AppPageScaffold extends StatefulWidget {
@@ -52,12 +53,12 @@ class _AppPageScaffoldState extends State<AppPageScaffold> {
     final brightness = theme.brightness;
     final hasAppBar = widget.title != null || widget.largeTitle != null;
     final shellBottomInset = AppShellInsets.maybeOf(context);
-    final bodyBottomInset =
-        widget.bottomContentInset ?? _measuredBottomBarInset;
+    final resolvedBottomInset =
+        (shellBottomInset ?? 0) +
+        _measuredBottomBarInset +
+        (widget.bottomContentInset ?? 0);
     final useSafeAreaBottom =
-        (shellBottomInset ?? 0) == 0 &&
-        bodyBottomInset == 0 &&
-        widget.bottomBar == null;
+        resolvedBottomInset == 0 && widget.bottomBar == null;
     final appBarActions = [
       if (widget.actions case final customActions?) ...customActions,
       const AppLocaleMenuAction(),
@@ -150,9 +151,8 @@ class _AppPageScaffoldState extends State<AppPageScaffold> {
             SafeArea(
               top: widget.extendBodyBehindAppBar && hasAppBar,
               bottom: useSafeAreaBottom,
-              child: Padding(
-                key: const ValueKey<String>('app-page-scaffold-body-padding'),
-                padding: EdgeInsets.only(bottom: bodyBottomInset),
+              child: AppPageInsets(
+                bottomInset: resolvedBottomInset,
                 child: AppPageEntrance(child: widget.body),
               ),
             ),
@@ -161,11 +161,47 @@ class _AppPageScaffoldState extends State<AppPageScaffold> {
       ),
       bottomNavigationBar: widget.bottomBar == null
           ? null
-          : _MeasureSize(
-              onChange: (size) => _updateBottomBarInset(size.height),
+          : _MeasuredBottomBar(
+              onSizeChanged: _updateBottomBarInset,
               child: widget.bottomBar!,
             ),
     );
+  }
+}
+
+class _MeasuredBottomBar extends StatefulWidget {
+  const _MeasuredBottomBar({required this.onSizeChanged, required this.child});
+
+  final ValueChanged<double> onSizeChanged;
+  final Widget child;
+
+  @override
+  State<_MeasuredBottomBar> createState() => _MeasuredBottomBarState();
+}
+
+class _MeasuredBottomBarState extends State<_MeasuredBottomBar> {
+  Size? _lastSize;
+
+  @override
+  Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final renderObject = context.findRenderObject();
+      if (renderObject is! RenderBox || !renderObject.hasSize) {
+        return;
+      }
+
+      final newSize = renderObject.size;
+      if (_lastSize == newSize) {
+        return;
+      }
+      _lastSize = newSize;
+      widget.onSizeChanged(newSize.height);
+    });
+
+    return widget.child;
   }
 }
 
@@ -187,37 +223,5 @@ class _GlowOrb extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _MeasureSize extends StatefulWidget {
-  const _MeasureSize({required this.onChange, required this.child});
-
-  final ValueChanged<Size> onChange;
-  final Widget child;
-
-  @override
-  State<_MeasureSize> createState() => _MeasureSizeState();
-}
-
-class _MeasureSizeState extends State<_MeasureSize> {
-  Size? _lastSize;
-
-  @override
-  Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final renderObject = context.findRenderObject();
-      if (renderObject is! RenderBox || !renderObject.hasSize) {
-        return;
-      }
-      final newSize = renderObject.size;
-      if (_lastSize == newSize) {
-        return;
-      }
-      _lastSize = newSize;
-      widget.onChange(newSize);
-    });
-
-    return widget.child;
   }
 }

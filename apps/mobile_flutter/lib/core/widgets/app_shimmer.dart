@@ -24,12 +24,12 @@ class AppShimmerBlock extends StatelessWidget {
   const AppShimmerBlock({
     super.key,
     this.width,
-    required this.height,
+    this.height,
     this.radius,
   });
 
   final double? width;
-  final double height;
+  final double? height;
   final double? radius;
 
   @override
@@ -73,7 +73,6 @@ class AppShimmerCardPlaceholder extends StatelessWidget {
             children: [
               Expanded(
                 child: AppShimmerBlock(
-                  height: double.infinity,
                   radius: tokens.cardRadius,
                 ),
               ),

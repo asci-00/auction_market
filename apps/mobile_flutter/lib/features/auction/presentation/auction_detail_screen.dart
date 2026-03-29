@@ -10,6 +10,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
+import '../../../core/widgets/app_page_insets.dart';
 import '../../../core/widgets/app_panel.dart';
 import '../../../core/widgets/app_section_heading.dart';
 import '../../../core/widgets/app_status_badge.dart';
@@ -263,56 +264,61 @@ class _AuctionDetailScaffold extends StatelessWidget {
             : () => onSetAutoBid(auction!.minimumBid),
         onBuyNow: onBuyNow,
       ),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(
-          tokens.screenPadding,
-          tokens.space4,
-          tokens.screenPadding,
-          tokens.space8,
-        ),
-        children: [
-          if (hasError)
-            AppEmptyState(
-              icon: Icons.error_outline_rounded,
-              title: context.l10n.genericUnavailable,
-              description: context.l10n.auctionDetailFallbackDescription,
-              tone: AppPanelTone.soft,
-            )
-          else if (auction == null && !isLoading)
-            AppEmptyState(
-              icon: Icons.photo_library_outlined,
-              eyebrow: context.l10n.auctionDetailGalleryEyebrow,
-              title: context.l10n.auctionDetailFallbackTitle,
-              description: context.l10n.auctionDetailFallbackDescription,
-              tone: AppPanelTone.dark,
-            ),
-          if (auction != null) ...[
-            AuctionDetailHeader(auction: auction!, heroTag: heroTag),
-            SizedBox(height: tokens.space5),
-            AuctionDetailPriceSummary(auction: auction!),
-            SizedBox(height: tokens.space5),
-            AppEditorialHero(
-              eyebrow: context.l10n.auctionDetailSellerSummary,
-              title: auction!.titleSnapshot.isEmpty
-                  ? context.l10n.genericUnavailable
-                  : auction!.titleSnapshot,
-              description: context.l10n.auctionDetailSellerDescription,
-              badges: const [
-                AppStatusBadge(kind: AppStatusKind.verified),
-                AppStatusBadge(kind: AppStatusKind.live),
-              ],
-              tone: AppPanelTone.surface,
-              trailing: _SellerSummaryPlate(sellerId: auction!.sellerId),
-            ),
-            SizedBox(height: tokens.space5),
-            AppSectionHeading(
-              title: context.l10n.auctionDetailBidHistory,
-              subtitle: context.l10n.auctionDetailBidHistorySubtitle,
-            ),
-            SizedBox(height: tokens.space4),
-            AuctionBidHistoryCard(bidHistory: bidHistory, isLoading: isLoading),
+      body: Builder(
+        builder: (bodyContext) => ListView(
+          padding: EdgeInsets.fromLTRB(
+            tokens.screenPadding,
+            tokens.space4,
+            tokens.screenPadding,
+            tokens.space8 + bodyContext.pageBottomInset,
+          ),
+          children: [
+            if (hasError)
+              AppEmptyState(
+                icon: Icons.error_outline_rounded,
+                title: context.l10n.genericUnavailable,
+                description: context.l10n.auctionDetailFallbackDescription,
+                tone: AppPanelTone.soft,
+              )
+            else if (auction == null && !isLoading)
+              AppEmptyState(
+                icon: Icons.photo_library_outlined,
+                eyebrow: context.l10n.auctionDetailGalleryEyebrow,
+                title: context.l10n.auctionDetailFallbackTitle,
+                description: context.l10n.auctionDetailFallbackDescription,
+                tone: AppPanelTone.dark,
+              ),
+            if (auction != null) ...[
+              AuctionDetailHeader(auction: auction!, heroTag: heroTag),
+              SizedBox(height: tokens.space5),
+              AuctionDetailPriceSummary(auction: auction!),
+              SizedBox(height: tokens.space5),
+              AppEditorialHero(
+                eyebrow: context.l10n.auctionDetailSellerSummary,
+                title: auction!.titleSnapshot.isEmpty
+                    ? context.l10n.genericUnavailable
+                    : auction!.titleSnapshot,
+                description: context.l10n.auctionDetailSellerDescription,
+                badges: const [
+                  AppStatusBadge(kind: AppStatusKind.verified),
+                  AppStatusBadge(kind: AppStatusKind.live),
+                ],
+                tone: AppPanelTone.surface,
+                trailing: _SellerSummaryPlate(sellerId: auction!.sellerId),
+              ),
+              SizedBox(height: tokens.space5),
+              AppSectionHeading(
+                title: context.l10n.auctionDetailBidHistory,
+                subtitle: context.l10n.auctionDetailBidHistorySubtitle,
+              ),
+              SizedBox(height: tokens.space4),
+              AuctionBidHistoryCard(
+                bidHistory: bidHistory,
+                isLoading: isLoading,
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

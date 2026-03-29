@@ -352,7 +352,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String auctionDetailBidAction(Object amount) {
-    return '$amount부터 입찰';
+    return '입찰 시작 $amount';
   }
 
   @override
