@@ -89,6 +89,8 @@ class _AppShellState extends State<AppShell> {
                       color: Colors.black.withValues(
                         alpha: brightness == Brightness.dark ? 0.3 : 0.16,
                       ),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),

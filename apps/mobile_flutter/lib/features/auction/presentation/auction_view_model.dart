@@ -42,27 +42,41 @@ class AuctionViewModel extends _$AuctionViewModel {
     final detailStream = _auctionDetailStream(ref, auctionId);
     final historyStream = _auctionBidHistoryStream(ref, auctionId);
 
-    final detail = await detailStream.first;
-    final history = await historyStream.first;
+    final initial = await Future.wait<dynamic>([
+      detailStream.first,
+      historyStream.first,
+    ]);
+    final detail = initial[0] as AuctionDetailViewData?;
+    final history = initial[1] as List<AuctionBidHistoryEntry>;
 
     ref.onDispose(() {
       _detailSub?.cancel();
       _historySub?.cancel();
     });
 
-    _detailSub = detailStream.listen((value) {
-      final current =
-          state.valueOrNull ??
-          AuctionViewState(detail: value, bidHistory: history);
-      state = AsyncData(current.copyWith(detail: value));
-    });
+    _detailSub = detailStream.listen(
+      (value) {
+        final current =
+            state.valueOrNull ??
+            AuctionViewState(detail: value, bidHistory: history);
+        state = AsyncData(current.copyWith(detail: value));
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        state = AsyncError(error, stackTrace);
+      },
+    );
 
-    _historySub = historyStream.listen((value) {
-      final current =
-          state.valueOrNull ??
-          AuctionViewState(detail: detail, bidHistory: value);
-      state = AsyncData(current.copyWith(bidHistory: value));
-    });
+    _historySub = historyStream.listen(
+      (value) {
+        final current =
+            state.valueOrNull ??
+            AuctionViewState(detail: detail, bidHistory: value);
+        state = AsyncData(current.copyWith(bidHistory: value));
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        state = AsyncError(error, stackTrace);
+      },
+    );
 
     return AuctionViewState(detail: detail, bidHistory: history);
   }

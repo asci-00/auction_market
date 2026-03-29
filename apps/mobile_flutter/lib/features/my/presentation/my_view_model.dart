@@ -39,10 +39,15 @@ class MyViewModel extends _$MyViewModel {
       _sub?.cancel();
     });
 
-    _sub = stream.listen((profile) {
-      final current = state.valueOrNull ?? MyViewState(profile: profile);
-      state = AsyncData(current.copyWith(profile: profile));
-    });
+    _sub = stream.listen(
+      (profile) {
+        final current = state.valueOrNull ?? MyViewState(profile: profile);
+        state = AsyncData(current.copyWith(profile: profile));
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        state = AsyncError(error, stackTrace);
+      },
+    );
 
     return MyViewState(profile: first);
   }

@@ -87,6 +87,7 @@
 - For iOS physical-device Firebase Emulator runs, set `FIREBASE_EMULATOR_HOST` to the Mac's current LAN IP and keep emulator ports reachable only on the local network.
 
 ## Physical-Device Emulator Notes
+
 - Android over USB:
   - Run `apps/mobile_flutter/scripts/setup_android_device_emulators.sh`.
   - Keep `FIREBASE_EMULATOR_HOST=127.0.0.1`.
@@ -97,6 +98,7 @@
   - Ensure each required emulator port is reachable from the device on the local network.
 
 ## Phase 3 Cutover Reminder
+
 - Real Toss launcher cutover must not begin until all four real values are present:
   - `TOSS_CLIENT_KEY`
   - `TOSS_SECRET_KEY`
