@@ -1,16 +1,32 @@
 import 'dart:ui';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../l10n/app_localization.dart';
 import '../theme/app_theme.dart';
+import 'app_shell_insets.dart';
 
-class AppShell extends StatelessWidget {
+class AppShell extends StatefulWidget {
   const AppShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
+
+  @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> {
+  double _bottomInset = 0;
+
+  void _updateBottomInset(double value) {
+    if ((_bottomInset - value).abs() < 0.5) {
+      return;
+    }
+    setState(() => _bottomInset = value);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +34,7 @@ class AppShell extends StatelessWidget {
     final brightness = Theme.of(context).brightness;
     final plateColor = AppColors.panelOverlayFor(
       brightness,
-    ).withValues(alpha: brightness == Brightness.dark ? 0.96 : 0.92);
+    ).withValues(alpha: brightness == Brightness.dark ? 0.78 : 0.68);
     final borderColor =
         (brightness == Brightness.dark
                 ? AppColors.borderSoftDark
@@ -41,16 +57,21 @@ class AppShell extends StatelessWidget {
     ];
 
     return Scaffold(
-      body: navigationShell,
-      bottomNavigationBar: SafeArea(
-        minimum: EdgeInsets.fromLTRB(
-          tokens.screenPadding,
-          0,
-          tokens.screenPadding,
-          tokens.space4,
-        ),
-        child: Container(
-          color: Colors.red,
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      body: AppShellInsets(
+        bottomInset: _bottomInset,
+        child: widget.navigationShell,
+      ),
+      bottomNavigationBar: _MeasureSize(
+        onChange: (size) => _updateBottomInset(size.height),
+        child: SafeArea(
+          minimum: EdgeInsets.fromLTRB(
+            tokens.screenPadding,
+            0,
+            tokens.screenPadding,
+            tokens.space4,
+          ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(tokens.heroRadius),
             child: BackdropFilter(
@@ -66,29 +87,28 @@ class AppShell extends StatelessWidget {
                       color: Colors.black.withValues(
                         alpha: brightness == Brightness.dark ? 0.3 : 0.16,
                       ),
-                      blurRadius: 24,
-                      offset: const Offset(0, 16),
                     ),
                   ],
                 ),
                 child: Row(
                   children: [
-                    for (var i = 0; i < destinations.length; i++)
-                      Expanded(
+                    ...destinations.mapIndexed(
+                      (i, destination) => Expanded(
                         child: _NavItem(
-                          label: destinations[i].$1,
-                          icon: destinations[i].$2,
-                          selectedIcon: destinations[i].$3,
-                          isSelected: i == navigationShell.currentIndex,
+                          label: destination.$1,
+                          icon: destination.$2,
+                          selectedIcon: destination.$3,
+                          isSelected: i == widget.navigationShell.currentIndex,
                           onTap: () {
-                            navigationShell.goBranch(
+                            widget.navigationShell.goBranch(
                               i,
                               initialLocation:
-                                  i == navigationShell.currentIndex,
+                                  i == widget.navigationShell.currentIndex,
                             );
                           },
                         ),
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -97,6 +117,38 @@ class AppShell extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _MeasureSize extends StatefulWidget {
+  const _MeasureSize({required this.onChange, required this.child});
+
+  final ValueChanged<Size> onChange;
+  final Widget child;
+
+  @override
+  State<_MeasureSize> createState() => _MeasureSizeState();
+}
+
+class _MeasureSizeState extends State<_MeasureSize> {
+  Size? _lastSize;
+
+  @override
+  Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final renderObject = context.findRenderObject();
+      if (renderObject is! RenderBox || !renderObject.hasSize) {
+        return;
+      }
+      final newSize = renderObject.size;
+      if (_lastSize == newSize) {
+        return;
+      }
+      _lastSize = newSize;
+      widget.onChange(newSize);
+    });
+
+    return widget.child;
   }
 }
 

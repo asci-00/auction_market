@@ -10,6 +10,7 @@ void main() {
         environment: AppEnvironment.dev,
         useFirebaseEmulators: true,
         tossClientKey: null,
+        firebaseEmulatorHostOverride: null,
       ),
     );
 
@@ -39,6 +40,7 @@ void main() {
         environment: AppEnvironment.staging,
         useFirebaseEmulators: false,
         tossClientKey: 'test_ck_example',
+        firebaseEmulatorHostOverride: null,
       ),
     );
 
@@ -68,6 +70,7 @@ void main() {
         environment: AppEnvironment.dev,
         useFirebaseEmulators: false,
         tossClientKey: null,
+        firebaseEmulatorHostOverride: null,
       ),
     );
 

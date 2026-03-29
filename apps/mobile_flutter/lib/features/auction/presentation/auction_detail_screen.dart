@@ -24,11 +24,7 @@ import 'widgets/auction_detail_header.dart';
 import 'widgets/auction_detail_price_summary.dart';
 
 class AuctionDetailScreen extends ConsumerStatefulWidget {
-  const AuctionDetailScreen({
-    super.key,
-    required this.auctionId,
-    this.heroTag,
-  });
+  const AuctionDetailScreen({super.key, required this.auctionId, this.heroTag});
 
   final String auctionId;
   final String? heroTag;
@@ -130,10 +126,9 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
     }
 
     await _runAuctionAction(
-      action: () => ref.read(auctionDetailActionServiceProvider).placeBid(
-            auctionId: widget.auctionId,
-            amount: amount,
-          ),
+      action: () => ref
+          .read(auctionDetailActionServiceProvider)
+          .placeBid(auctionId: widget.auctionId, amount: amount),
       successMessage: context.l10n.auctionDetailActionSuccessBid,
     );
   }
@@ -148,10 +143,9 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
     }
 
     await _runAuctionAction(
-      action: () => ref.read(auctionDetailActionServiceProvider).setAutoBid(
-            auctionId: widget.auctionId,
-            maxAmount: maxAmount,
-          ),
+      action: () => ref
+          .read(auctionDetailActionServiceProvider)
+          .setAutoBid(auctionId: widget.auctionId, maxAmount: maxAmount),
       successMessage: context.l10n.auctionDetailActionSuccessAutoBid,
     );
   }
@@ -261,10 +255,12 @@ class _AuctionDetailScaffold extends StatelessWidget {
         onRequireLogin: onRequireLogin,
         onReviewOrders: onReviewOrders,
         onOpenOrder: () => onOpenOrder(auction?.orderId),
-        onPlaceBid:
-            auction == null ? null : () => onPlaceBid(auction!.minimumBid),
-        onSetAutoBid:
-            auction == null ? null : () => onSetAutoBid(auction!.minimumBid),
+        onPlaceBid: auction == null
+            ? null
+            : () => onPlaceBid(auction!.minimumBid),
+        onSetAutoBid: auction == null
+            ? null
+            : () => onSetAutoBid(auction!.minimumBid),
         onBuyNow: onBuyNow,
       ),
       body: ListView(
@@ -272,10 +268,7 @@ class _AuctionDetailScaffold extends StatelessWidget {
           tokens.screenPadding,
           tokens.space4,
           tokens.screenPadding,
-          tokens.stickyActionHeight +
-              MediaQuery.paddingOf(context).bottom +
-              tokens.space8 +
-              120,
+          tokens.space8,
         ),
         children: [
           if (hasError)
@@ -294,10 +287,7 @@ class _AuctionDetailScaffold extends StatelessWidget {
               tone: AppPanelTone.dark,
             ),
           if (auction != null) ...[
-            AuctionDetailHeader(
-              auction: auction!,
-              heroTag: heroTag,
-            ),
+            AuctionDetailHeader(auction: auction!, heroTag: heroTag),
             SizedBox(height: tokens.space5),
             AuctionDetailPriceSummary(auction: auction!),
             SizedBox(height: tokens.space5),
@@ -320,10 +310,7 @@ class _AuctionDetailScaffold extends StatelessWidget {
               subtitle: context.l10n.auctionDetailBidHistorySubtitle,
             ),
             SizedBox(height: tokens.space4),
-            AuctionBidHistoryCard(
-              bidHistory: bidHistory,
-              isLoading: isLoading,
-            ),
+            AuctionBidHistoryCard(bidHistory: bidHistory, isLoading: isLoading),
           ],
         ],
       ),
@@ -332,9 +319,7 @@ class _AuctionDetailScaffold extends StatelessWidget {
 }
 
 class _SellerSummaryPlate extends StatelessWidget {
-  const _SellerSummaryPlate({
-    required this.sellerId,
-  });
+  const _SellerSummaryPlate({required this.sellerId});
 
   final String? sellerId;
 

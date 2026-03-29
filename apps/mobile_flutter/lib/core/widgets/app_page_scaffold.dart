@@ -1,10 +1,13 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../l10n/locale_menu_action.dart';
 import '../theme/app_theme.dart';
 import 'app_motion.dart';
+import 'app_shell_insets.dart';
 
-class AppPageScaffold extends StatelessWidget {
+class AppPageScaffold extends StatefulWidget {
   const AppPageScaffold({
     super.key,
     this.title,
@@ -13,6 +16,8 @@ class AppPageScaffold extends StatelessWidget {
     this.actions,
     this.bottomBar,
     this.extendBody = false,
+    this.extendBodyBehindAppBar = true,
+    this.bottomContentInset,
     required this.body,
   });
 
@@ -22,40 +27,87 @@ class AppPageScaffold extends StatelessWidget {
   final List<Widget>? actions;
   final Widget? bottomBar;
   final bool extendBody;
+  final bool extendBodyBehindAppBar;
+  final double? bottomContentInset;
   final Widget body;
+
+  @override
+  State<AppPageScaffold> createState() => _AppPageScaffoldState();
+}
+
+class _AppPageScaffoldState extends State<AppPageScaffold> {
+  static const _bodyPaddingKey = ValueKey<String>(
+    'app-page-scaffold-body-padding',
+  );
+
+  double _localBottomBarInset = 0;
+
+  void _updateBottomBarInset(double value) {
+    if ((_localBottomBarInset - value).abs() < 0.5) {
+      return;
+    }
+    setState(() => _localBottomBarInset = value);
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tokens = context.tokens;
     final brightness = theme.brightness;
+    final hasAppBar = widget.title != null || widget.largeTitle != null;
+    final shellBottomInset = AppShellInsets.maybeOf(context);
+    final resolvedBottomInset =
+        (shellBottomInset ?? 0) +
+        _localBottomBarInset +
+        (widget.bottomContentInset ?? 0);
+    final useSafeAreaBottom = resolvedBottomInset == 0;
     final appBarActions = [
-      if (actions case final customActions?) ...customActions,
+      if (widget.actions case final customActions?) ...customActions,
       const AppLocaleMenuAction(),
       SizedBox(width: tokens.space2),
     ];
 
     return Scaffold(
-      extendBody: extendBody,
-      appBar: title == null && largeTitle == null
+      extendBody: widget.extendBody,
+      extendBodyBehindAppBar: widget.extendBodyBehindAppBar,
+      appBar: widget.title == null && widget.largeTitle == null
           ? null
           : AppBar(
-              toolbarHeight: largeTitle != null ? 92 : kToolbarHeight,
+              toolbarHeight: widget.largeTitle != null ? 92 : kToolbarHeight,
               titleSpacing: tokens.screenPadding,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              surfaceTintColor: Colors.transparent,
+              flexibleSpace: ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.panelOverlayFor(brightness).withValues(
+                        alpha: brightness == Brightness.dark ? 0.82 : 0.7,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    largeTitle ?? title!,
-                    style: largeTitle != null
+                    widget.largeTitle ?? widget.title!,
+                    style: widget.largeTitle != null
                         ? theme.textTheme.headlineLarge
                         : theme.textTheme.titleLarge,
                   ),
-                  if (subtitle != null)
+                  if (widget.subtitle != null)
                     Padding(
                       padding: EdgeInsets.only(top: tokens.space1),
-                      child: Text(subtitle!, style: theme.textTheme.bodySmall),
+                      child: Text(
+                        widget.subtitle!,
+                        style: theme.textTheme.bodySmall,
+                      ),
                     ),
                 ],
               ),
@@ -99,15 +151,60 @@ class AppPageScaffold extends StatelessWidget {
               ),
             ),
             SafeArea(
-              top: false,
-              bottom: bottomBar == null,
-              child: AppPageEntrance(child: body),
+              top: hasAppBar,
+              bottom: useSafeAreaBottom,
+              child: Padding(
+                key: _bodyPaddingKey,
+                padding: EdgeInsets.only(
+                  bottom: useSafeAreaBottom ? 0 : resolvedBottomInset,
+                ),
+                child: AppPageEntrance(child: widget.body),
+              ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: bottomBar,
+      bottomNavigationBar: widget.bottomBar == null
+          ? null
+          : _MeasureInset(
+              onChange: (size) => _updateBottomBarInset(size.height),
+              child: widget.bottomBar!,
+            ),
     );
+  }
+}
+
+class _MeasureInset extends StatefulWidget {
+  const _MeasureInset({required this.onChange, required this.child});
+
+  final ValueChanged<Size> onChange;
+  final Widget child;
+
+  @override
+  State<_MeasureInset> createState() => _MeasureInsetState();
+}
+
+class _MeasureInsetState extends State<_MeasureInset> {
+  Size? _lastSize;
+
+  @override
+  Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final renderObject = context.findRenderObject();
+      if (renderObject is! RenderBox || !renderObject.hasSize) {
+        return;
+      }
+
+      final newSize = renderObject.size;
+      if (_lastSize == newSize) {
+        return;
+      }
+
+      _lastSize = newSize;
+      widget.onChange(newSize);
+    });
+
+    return widget.child;
   }
 }
 
