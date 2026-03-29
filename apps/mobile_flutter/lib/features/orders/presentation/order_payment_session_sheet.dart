@@ -4,6 +4,7 @@ import '../../../core/extensions/build_context_x.dart';
 import '../../../core/l10n/app_formatters.dart';
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_keyboard_safe_inset.dart';
 import '../../../core/widgets/app_panel.dart';
 import '../application/order_payment_handoff_service.dart';
 import '../data/order_payment_session.dart';
@@ -69,58 +70,56 @@ Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
           context.l10n.ordersPaymentSheetBlockedDescription,
       };
 
-      return SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            tokens.screenPadding,
-            tokens.space4,
-            tokens.screenPadding,
-            tokens.space6,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                context.l10n.ordersPaymentSheetTitle,
-                style: sheetContext.textTheme.headlineSmall,
-              ),
-              SizedBox(height: tokens.space2),
-              _OrderPaymentRoutePanel(
-                statusLabel: statusLabel,
-                description: description,
-                nextStepDescription: nextStepDescription,
-                accentColor: statusColor,
-              ),
-              SizedBox(height: tokens.space4),
-              _OrderPaymentInfoPanel(session: session),
-              SizedBox(height: tokens.space4),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () {
-                    if (canDirectDevConfirm) {
-                      Navigator.of(sheetContext).pop(
-                        OrderPaymentSheetResult.directConfirm(
-                          devPaymentKey!,
-                        ),
-                      );
-                      return;
-                    }
-
+      return AppKeyboardSafeInset(
+        padding: EdgeInsets.fromLTRB(
+          tokens.screenPadding,
+          tokens.space4,
+          tokens.screenPadding,
+          tokens.space6,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              context.l10n.ordersPaymentSheetTitle,
+              style: sheetContext.textTheme.headlineSmall,
+            ),
+            SizedBox(height: tokens.space2),
+            _OrderPaymentRoutePanel(
+              statusLabel: statusLabel,
+              description: description,
+              nextStepDescription: nextStepDescription,
+              accentColor: statusColor,
+            ),
+            SizedBox(height: tokens.space4),
+            _OrderPaymentInfoPanel(session: session),
+            SizedBox(height: tokens.space4),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () {
+                  if (canDirectDevConfirm) {
                     Navigator.of(sheetContext).pop(
-                      const OrderPaymentSheetResult.manualEntry(),
+                      OrderPaymentSheetResult.directConfirm(
+                        devPaymentKey!,
+                      ),
                     );
-                  },
-                  child: Text(
-                    canDirectDevConfirm
-                        ? context.l10n.ordersPaymentCompleteDevAction
-                        : context.l10n.ordersPaymentEnterKeyAction,
-                  ),
+                    return;
+                  }
+
+                  Navigator.of(sheetContext).pop(
+                    const OrderPaymentSheetResult.manualEntry(),
+                  );
+                },
+                child: Text(
+                  canDirectDevConfirm
+                      ? context.l10n.ordersPaymentCompleteDevAction
+                      : context.l10n.ordersPaymentEnterKeyAction,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     },

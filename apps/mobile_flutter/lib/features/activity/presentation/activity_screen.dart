@@ -7,7 +7,9 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_motion.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
+import '../../../core/widgets/app_shell_insets.dart';
 import '../../../core/widgets/app_status_badge.dart';
+import 'activity_view_model.dart';
 import 'widgets/activity_buyer_card.dart';
 import 'widgets/activity_notifications_card.dart';
 import 'widgets/activity_seller_card.dart';
@@ -20,6 +22,9 @@ class ActivityScreen extends ConsumerWidget {
     final l10n = context.l10n;
     final tokens = context.tokens;
     final userId = ref.watch(firebaseAuthProvider).currentUser?.uid;
+    final activityAsync = userId == null
+        ? null
+        : ref.watch(activityViewModelProvider(userId));
 
     return AppPageScaffold(
       title: l10n.activityTitle,
@@ -28,7 +33,7 @@ class ActivityScreen extends ConsumerWidget {
           tokens.screenPadding,
           tokens.space4,
           tokens.screenPadding,
-          tokens.space8,
+          tokens.space8 + context.shellBottomInset,
         ),
         children: [
           AppStaggeredItem(
@@ -45,6 +50,9 @@ class ActivityScreen extends ConsumerWidget {
             index: 1,
             child: ActivityBuyerCard(
               userId: userId,
+              summary: activityAsync?.valueOrNull?.buyerSummary,
+              isLoading: activityAsync?.isLoading ?? false,
+              hasError: activityAsync?.hasError ?? false,
             ),
           ),
           SizedBox(height: tokens.space3),
@@ -52,6 +60,9 @@ class ActivityScreen extends ConsumerWidget {
             index: 2,
             child: ActivitySellerCard(
               userId: userId,
+              summary: activityAsync?.valueOrNull?.sellerSummary,
+              isLoading: activityAsync?.isLoading ?? false,
+              hasError: activityAsync?.hasError ?? false,
             ),
           ),
           SizedBox(height: tokens.space3),
@@ -59,6 +70,9 @@ class ActivityScreen extends ConsumerWidget {
             index: 3,
             child: ActivityNotificationsCard(
               userId: userId,
+              summary: activityAsync?.valueOrNull?.notificationsSummary,
+              isLoading: activityAsync?.isLoading ?? false,
+              hasError: activityAsync?.hasError ?? false,
             ),
           ),
         ],

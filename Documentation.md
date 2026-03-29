@@ -18,6 +18,8 @@
 - `staging`: real Firebase project plus Toss test credentials.
 - `prod`: real Firebase project plus Toss production credentials.
 - When a third-party dependency is not ready yet, `dev` may expose server-driven dummy integration payloads so the mobile app can validate the surrounding product flow before the final real handoff is wired.
+- As of March 25, 2026, all Phase 3 product flow work that can be validated in `dev` is complete. The only remaining Phase 3 gap is the final real Toss launcher cutover, which is blocked on external values.
+- While that final real Toss launcher cutover is blocked, mobile UI and UX polish work should continue inside Phase 3 rather than wait for a separate milestone.
 - The app switches environment only through build-time public config for `APP_ENV`, emulator mode, and other non-secret app settings.
 - Backend runtime switches environment only through env variables.
 - Flutter mobile boot on iOS and Android reads Firebase app registration from native platform files instead of `dart-define` values.
@@ -41,8 +43,8 @@
   - `lib/core/l10n/app_localization.dart` resolves device locale to `ko` or `en` and exposes generated localization accessors.
   - `lib/core/extensions/build_context_x.dart` centralizes repeated `BuildContext` lookups like `Theme.of`, `ScaffoldMessenger.of`, `MediaQuery.of`, `Navigator.of`, and `GoRouter.of`.
   - `lib/core/routing/app_router.dart` owns guarded routing, deep-link normalization, payment return routes, and shared fade-plus-rise transitions for modal detail routes.
-  - `lib/core/theme/app_theme.dart` applies the warm neutral, charcoal, copper, coral, and sage token system from `docs/Design.md`, including anchored navigation and sticky action sizing.
-  - `lib/core/widgets/` owns the shared editorial hero, auction card, shell, page scaffold, panel, badge, section heading, sticky action bar, empty-state, motion, countdown, and shimmer primitives.
+  - `lib/core/theme/app_theme.dart` applies the warm neutral, charcoal, copper, coral, and sage token system from `docs/Design.md`, including anchored navigation, sticky action sizing, and a dedicated warm dark-mode palette.
+  - `lib/core/widgets/` owns the shared editorial hero, auction card, shell, page scaffold, panel, badge, section heading, sticky action bar, empty-state, motion, countdown, shimmer, and loading-overlay primitives.
   - `apps/mobile_flutter/analysis_options.yaml` now excludes generated localization files from manual lint noise, enables strict analyzer modes for casts, inference, and raw types, and adds a small set of project-wide lint rules for explicit return types, final locals and fields, and redundant lambda cleanup.
 - Current mobile UX and localization implementation details:
   - `apps/mobile_flutter/lib/l10n/app_ko.arb` and `apps/mobile_flutter/lib/l10n/app_en.arb` own user-facing mobile copy for `ko` and `en`.
@@ -54,6 +56,15 @@
   - Auction detail now keeps the screen in `presentation`, pushes callable writes through `features/auction/application/auction_detail_action_service.dart`, and maps Firestore documents through `features/auction/data/auction_detail_view_data.dart`.
   - Orders now keeps the screen layout in `presentation`, pushes payment, shipment, and receipt callables through `features/orders/application/order_action_service.dart`, and maps Firestore documents through `features/orders/data/order_summary.dart`.
   - Sell now keeps Functions and Storage writes in `features/sell/application/sell_flow_service.dart`, draft mapping in `features/sell/data`, and section widgets in `features/sell/presentation/widgets`, so the route screen mostly owns form state and composition.
+  - Sell draft save and publish now wrap the entire route body in a delayed blocking loading overlay backed by `assets/lotties/loading.lottie`, because image uploads plus Functions writes are the longest user-blocking action chain currently present in `dev`.
+  - Faster interactions such as auth sign-in and auction bid actions still rely on disabled controls and local feedback instead of the blocking overlay, so the loading pattern stays scoped to truly high-latency flows.
+  - Keyboard-sensitive modals now use a shared inset wrapper so the orders payment sheet, orders shipment and payment-key dialogs, and auction bid amount dialogs remain scrollable and visible when the software keyboard is open.
+  - Keyboard-prone modal surfaces now share a small `core/widgets/app_keyboard_safe_inset.dart` wrapper so order payment sheets, shipment dialogs, and auction amount dialogs animate with `viewInsets`, stay scrollable, and remain usable on narrow devices.
+  - The sell route now increases its bottom list inset while the keyboard is open, so pricing inputs and lower form actions stay reachable without manual layout hacks.
+  - `core/widgets/app_page_scaffold.dart` now measures local page-level `bottomBar` height and combines it with shell insets before padding the body, so Android edge-to-edge mode keeps scrolling content above both the OS navigation area and sticky bottom action bars without screen-level magic numbers.
+  - `lib/app/app.dart` now wires both light and dark themes with `ThemeMode.system`, and the shared scaffold, panel, shell, and shimmer primitives resolve warm dark tokens instead of forcing the light palette under system dark mode.
+  - Shared foundations now honor system dark mode through `MaterialApp.darkTheme`, a warm dark scaffold gradient, dark-aware panel tones, and a floating shell plate that preserves the editorial hierarchy without default Material dark chrome.
+  - Shared editorial hero, empty-state, shimmer, badge, and auction-card widgets now resolve theme-aware colors too, so common reusable surfaces do not leak the light palette back into dark mode routes.
   - Activity now keeps queue summary mapping in `features/activity/data` and composes buyer, seller, and notification stream cards from dedicated widgets instead of using static navigation-only tiles.
   - Home now maps auction rail documents through `features/home/data/home_auction_summary.dart` and keeps reusable rail and action button widgets in `features/home/presentation/widgets`.
   - Search now maps Firestore records through `features/search/data/search_auction_summary.dart`, keeps filtering logic in `features/search/application/search_auction_filter.dart`, and uses dedicated query, filter-chip, and result-grid widgets.
@@ -72,7 +83,9 @@
   - Search, orders, sell drafts, activity cards, bid history, my verification, and startup loading now use shimmer placeholders instead of centered progress spinners where the final layout is already known.
   - Auction cards can now pass a scoped Hero tag into auction detail, and the detail header reuses that same image layer so image-first navigation feels continuous without duplicate-tag collisions across home rails.
   - Auction detail content now reserves additional bottom inset above the sticky action bar so the final bid history and seller summary content stay readable on small safe-area devices.
-  - Home, search, auction detail, orders, notifications, and my pages render from live Firestore read paths and fall back to localized empty or unavailable states when documents are missing.
+  - Pre-cutover Phase 3 polish work should prioritize dark mode parity, overflow and keyboard-safety fixes, blur tuning, barrier tuning, async-feedback timing, and route-transition smoothness before the final real Toss launcher handoff begins.
+  - Shared blocking loading states must use `apps/mobile_flutter/assets/lotties/loading.lottie`, with shimmer preferred over modal loading when the destination layout is already known.
+- Home, search, auction detail, orders, notifications, and my pages render from live Firestore read paths and fall back to localized empty or unavailable states when documents are missing.
 - Read data directly from Firestore and Storage-backed URLs.
 - Send mutations through Firebase Functions only.
 - Native Firebase config files live at:
@@ -131,6 +144,16 @@
 - Seller smoke test path: sign in as `seller1`, open `order-paid`, submit carrier and tracking information, and confirm the order moves to `SHIPPED`.
 - Buyer smoke test path: sign in as `buyer1`, open the same `order-paid`, confirm receipt, and verify the order moves to `CONFIRMED_RECEIPT`.
 - These accounts are for local emulator checks only. They do not validate Google or Apple browser sign-in, provider linking, redirect handling, or staging and prod auth configuration.
+
+## Phase 3 External Cutover Checklist
+- Fill `backend/functions/.env` with real `TOSS_SECRET_KEY`, `TOSS_WEBHOOK_SECRET`, and `APP_BASE_URL`.
+- Fill `apps/mobile_flutter/dart_defines.json` with real `TOSS_CLIENT_KEY`.
+- Before starting the final real Toss launcher handoff, finish any still-open Phase 3 polish tasks that do not depend on those real values, especially dark mode, overflow fixes, loading overlay consistency, and route or sheet transition quality.
+- Verify `createPaymentSession` returns the real Toss mode and valid success or fail return URLs in staging.
+- Verify the mobile app can start the final Toss checkout launcher handoff without falling back to manual recovery UI.
+- Verify `/payments/success` and `/payments/fail` still route the buyer into the correct order recovery state after real Toss checkout.
+- Verify `tossPaymentWebhook` updates payment and order state idempotently with the real webhook secret.
+- Do not start Phase 4 implementation work until this checklist is either complete or explicitly accepted as blocked by missing third-party values.
 
 ## Navigation Contract
 
@@ -476,5 +499,6 @@
 - No hardcoded external values.
 - No fake repository or production-facing mock payment path. `dev` may use documented server-driven dummy integration payloads when a real third-party handoff is still pending.
 - No placeholder screens or disabled primary actions in core flows.
+- Shared blocking loading UI uses `apps/mobile_flutter/assets/lotties/loading.lottie`, and dark mode plus overflow-prone layouts are validated on supported device sizes.
 - Emulator and staging both boot from documented config only.
 - A new engineer can follow docs and run the project without tribal knowledge.

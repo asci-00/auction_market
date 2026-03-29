@@ -1,10 +1,14 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../l10n/locale_menu_action.dart';
 import '../theme/app_theme.dart';
 import 'app_motion.dart';
+import 'app_page_insets.dart';
+import 'app_shell_insets.dart';
 
-class AppPageScaffold extends StatelessWidget {
+class AppPageScaffold extends StatefulWidget {
   const AppPageScaffold({
     super.key,
     this.title,
@@ -13,6 +17,8 @@ class AppPageScaffold extends StatelessWidget {
     this.actions,
     this.bottomBar,
     this.extendBody = false,
+    this.extendBodyBehindAppBar = true,
+    this.bottomContentInset,
     required this.body,
   });
 
@@ -22,40 +28,82 @@ class AppPageScaffold extends StatelessWidget {
   final List<Widget>? actions;
   final Widget? bottomBar;
   final bool extendBody;
+  final bool extendBodyBehindAppBar;
+  final double? bottomContentInset;
   final Widget body;
+
+  @override
+  State<AppPageScaffold> createState() => _AppPageScaffoldState();
+}
+
+class _AppPageScaffoldState extends State<AppPageScaffold> {
+  double _measuredBottomBarInset = 0;
+
+  void _updateBottomBarInset(double value) {
+    if ((_measuredBottomBarInset - value).abs() < 0.5) {
+      return;
+    }
+    setState(() => _measuredBottomBarInset = value);
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tokens = context.tokens;
+    final brightness = theme.brightness;
+    final hasAppBar = widget.title != null || widget.largeTitle != null;
+    final shellBottomInset = AppShellInsets.maybeOf(context);
+    final resolvedBottomInset =
+        (shellBottomInset ?? 0) +
+        _measuredBottomBarInset +
+        (widget.bottomContentInset ?? 0);
+    final useSafeAreaBottom =
+        resolvedBottomInset == 0 && widget.bottomBar == null;
     final appBarActions = [
-      if (actions case final customActions?) ...customActions,
+      if (widget.actions case final customActions?) ...customActions,
       const AppLocaleMenuAction(),
       SizedBox(width: tokens.space2),
     ];
 
     return Scaffold(
-      extendBody: extendBody,
-      appBar: title == null && largeTitle == null
+      extendBody: widget.extendBody,
+      extendBodyBehindAppBar: widget.extendBodyBehindAppBar,
+      appBar: widget.title == null && widget.largeTitle == null
           ? null
           : AppBar(
-              toolbarHeight: largeTitle != null ? 92 : kToolbarHeight,
+              toolbarHeight: widget.largeTitle != null ? 92 : kToolbarHeight,
               titleSpacing: tokens.screenPadding,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              surfaceTintColor: Colors.transparent,
+              flexibleSpace: ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.panelOverlayFor(brightness).withValues(
+                        alpha: brightness == Brightness.dark ? 0.82 : 0.7,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    largeTitle ?? title!,
-                    style: largeTitle != null
+                    widget.largeTitle ?? widget.title!,
+                    style: widget.largeTitle != null
                         ? theme.textTheme.headlineLarge
                         : theme.textTheme.titleLarge,
                   ),
-                  if (subtitle != null)
+                  if (widget.subtitle != null)
                     Padding(
                       padding: EdgeInsets.only(top: tokens.space1),
                       child: Text(
-                        subtitle!,
+                        widget.subtitle!,
                         style: theme.textTheme.bodySmall,
                       ),
                     ),
@@ -64,11 +112,14 @@ class AppPageScaffold extends StatelessWidget {
               actions: appBarActions,
             ),
       body: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColors.bgBase, AppColors.bgSurface],
+            colors: [
+              AppColors.bgBaseFor(brightness),
+              AppColors.bgSurfaceFor(brightness),
+            ],
           ),
         ),
         child: Stack(
@@ -78,7 +129,9 @@ class AppPageScaffold extends StatelessWidget {
               left: -60,
               child: _GlowOrb(
                 size: 180,
-                color: AppColors.accentPrimarySoft.withValues(alpha: 0.55),
+                color: AppColors.accentPrimarySoftFor(brightness).withValues(
+                  alpha: brightness == Brightness.dark ? 0.32 : 0.85,
+                ),
               ),
             ),
             Positioned(
@@ -86,27 +139,74 @@ class AppPageScaffold extends StatelessWidget {
               right: -70,
               child: _GlowOrb(
                 size: 200,
-                color: AppColors.sand.withValues(alpha: 0.6),
+                color:
+                    (brightness == Brightness.dark
+                            ? AppColors.panelSoftDark
+                            : AppColors.sand)
+                        .withValues(
+                          alpha: brightness == Brightness.dark ? 0.38 : 0.9,
+                        ),
               ),
             ),
             SafeArea(
-              top: false,
-              bottom: bottomBar == null,
-              child: AppPageEntrance(child: body),
+              top: widget.extendBodyBehindAppBar && hasAppBar,
+              bottom: useSafeAreaBottom,
+              child: AppPageInsets(
+                bottomInset: resolvedBottomInset,
+                child: AppPageEntrance(child: widget.body),
+              ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: bottomBar,
+      bottomNavigationBar: widget.bottomBar == null
+          ? null
+          : _MeasuredBottomBar(
+              onSizeChanged: _updateBottomBarInset,
+              child: widget.bottomBar!,
+            ),
     );
   }
 }
 
+class _MeasuredBottomBar extends StatefulWidget {
+  const _MeasuredBottomBar({required this.onSizeChanged, required this.child});
+
+  final ValueChanged<double> onSizeChanged;
+  final Widget child;
+
+  @override
+  State<_MeasuredBottomBar> createState() => _MeasuredBottomBarState();
+}
+
+class _MeasuredBottomBarState extends State<_MeasuredBottomBar> {
+  Size? _lastSize;
+
+  @override
+  Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final renderObject = context.findRenderObject();
+      if (renderObject is! RenderBox || !renderObject.hasSize) {
+        return;
+      }
+
+      final newSize = renderObject.size;
+      if (_lastSize == newSize) {
+        return;
+      }
+      _lastSize = newSize;
+      widget.onSizeChanged(newSize.height);
+    });
+
+    return widget.child;
+  }
+}
+
 class _GlowOrb extends StatelessWidget {
-  const _GlowOrb({
-    required this.size,
-    required this.color,
-  });
+  const _GlowOrb({required this.size, required this.color});
 
   final double size;
   final Color color;
@@ -119,9 +219,7 @@ class _GlowOrb extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [color, color.withValues(alpha: 0)],
-          ),
+          gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
         ),
       ),
     );

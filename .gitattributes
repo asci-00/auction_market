@@ -1,0 +1,12 @@
+apps/mobile_flutter/lib/**/*.g.dart linguist-generated=true
+apps/mobile_flutter/lib/**/*.freezed.dart linguist-generated=true
+apps/mobile_flutter/lib/**/*.gen.dart linguist-generated=true
+apps/mobile_flutter/lib/**/*.gr.dart linguist-generated=true
+apps/mobile_flutter/lib/**/*.mocks.dart linguist-generated=true
+apps/mobile_flutter/lib/**/*.pb.dart linguist-generated=true
+apps/mobile_flutter/lib/**/*.pbenum.dart linguist-generated=true
+apps/mobile_flutter/lib/**/*.pbjson.dart linguist-generated=true
+apps/mobile_flutter/lib/**/*.pbserver.dart linguist-generated=true
+apps/mobile_flutter/lib/l10n/app_localizations*.dart linguist-generated=true
+apps/mobile_flutter/android/app/src/main/res/mipmap-*/** linguist-generated=true
+apps/mobile_flutter/ios/Runner/Assets.xcassets/** linguist-generated=true

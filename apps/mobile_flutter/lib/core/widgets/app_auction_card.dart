@@ -16,9 +16,9 @@ class AppAuctionCard extends StatelessWidget {
     this.heroTag,
     this.onTap,
   }) : assert(
-          metaLabel != null || meta != null,
-          'Either metaLabel or meta must be provided.',
-        );
+         metaLabel != null || meta != null,
+         'Either metaLabel or meta must be provided.',
+       );
 
   final String title;
   final String priceLabel;
@@ -33,6 +33,7 @@ class AppAuctionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -48,12 +49,14 @@ class AppAuctionCard extends StatelessWidget {
             onTap: onTap,
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.bgSurface,
+                color: AppColors.bgSurfaceFor(brightness),
                 borderRadius: BorderRadius.circular(tokens.cardRadius),
-                border: Border.all(color: AppColors.borderSoft),
+                border: Border.all(color: AppColors.borderSoftFor(brightness)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.overlay.withValues(alpha: 0.08),
+                    color: AppColors.overlayFor(brightness).withValues(
+                      alpha: brightness == Brightness.dark ? 0.24 : 0.08,
+                    ),
                     blurRadius: 24,
                     offset: const Offset(0, 16),
                   ),
@@ -115,10 +118,7 @@ class _AuctionCardMedia extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        _AuctionImage(
-          imageUrl: imageUrl,
-          heroTag: heroTag,
-        ),
+        _AuctionImage(imageUrl: imageUrl, heroTag: heroTag),
         const DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -173,6 +173,7 @@ class _AuctionCardDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final brightness = theme.brightness;
 
     return Padding(
       padding: EdgeInsets.all(layout.contentPadding),
@@ -185,7 +186,7 @@ class _AuctionCardDetails extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: layout.isCompact
                 ? theme.textTheme.titleSmall?.copyWith(
-                    color: AppColors.textPrimary,
+                    color: AppColors.textPrimaryFor(brightness),
                   )
                 : theme.textTheme.titleMedium,
           ),
@@ -259,10 +260,7 @@ class _AuctionCardLayout {
 }
 
 class _AuctionImage extends StatelessWidget {
-  const _AuctionImage({
-    this.imageUrl,
-    this.heroTag,
-  });
+  const _AuctionImage({this.imageUrl, this.heroTag});
 
   final String? imageUrl;
   final String? heroTag;
@@ -281,10 +279,7 @@ class _AuctionImage extends StatelessWidget {
       return image;
     }
 
-    return Hero(
-      tag: heroTag!,
-      child: image,
-    );
+    return Hero(tag: heroTag!, child: image);
   }
 }
 
@@ -293,15 +288,19 @@ class _FallbackImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const DecoratedBox(
+    final brightness = Theme.of(context).brightness;
+
+    return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.sand,
-            AppColors.accentPrimarySoft,
-            AppColors.bgSurface
+            brightness == Brightness.dark
+                ? AppColors.bgElevatedDark
+                : AppColors.sand,
+            AppColors.accentPrimarySoftFor(brightness),
+            AppColors.bgSurfaceFor(brightness),
           ],
         ),
       ),

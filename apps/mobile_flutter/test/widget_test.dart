@@ -30,6 +30,7 @@ void main() {
             environment: AppEnvironment.dev,
             useFirebaseEmulators: false,
             tossClientKey: null,
+            firebaseEmulatorHostOverride: null,
           ),
         ),
       ),
@@ -51,6 +52,7 @@ void main() {
             environment: AppEnvironment.dev,
             useFirebaseEmulators: false,
             tossClientKey: null,
+            firebaseEmulatorHostOverride: null,
           ),
         ),
       ),
@@ -89,13 +91,16 @@ void main() {
 
   test('mobile UI source no longer contains banned engineering copy', () {
     final repoRoot = Directory.current.path;
-    final targetFiles = [
-      Directory('$repoRoot/lib/features'),
-      Directory('$repoRoot/lib/core/widgets'),
-    ].expand((directory) => directory
-        .listSync(recursive: true)
-        .whereType<File>()
-        .where((file) => file.path.endsWith('.dart')));
+    final targetFiles =
+        [
+          Directory('$repoRoot/lib/features'),
+          Directory('$repoRoot/lib/core/widgets'),
+        ].expand(
+          (directory) => directory
+              .listSync(recursive: true)
+              .whereType<File>()
+              .where((file) => file.path.endsWith('.dart')),
+        );
 
     const bannedTerms = [
       'DETAIL ROUTE',
@@ -126,10 +131,7 @@ void main() {
 }
 
 class _TestApp extends StatelessWidget {
-  const _TestApp({
-    required this.child,
-    this.locale,
-  });
+  const _TestApp({required this.child, this.locale});
 
   final Widget child;
   final Locale? locale;

@@ -4,12 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 
-enum AppPanelTone {
-  surface,
-  elevated,
-  dark,
-  soft,
-}
+enum AppPanelTone { surface, elevated, dark, soft }
 
 class AppPanel extends StatelessWidget {
   const AppPanel({
@@ -30,27 +25,34 @@ class AppPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
     final palette = switch (tone) {
       AppPanelTone.surface => (
-          AppColors.bgSurface,
-          borderColor ?? AppColors.borderSoft,
-          AppColors.overlay.withValues(alpha: 0.08),
-        ),
+        AppColors.bgSurfaceFor(brightness),
+        borderColor ?? AppColors.borderSoftFor(brightness),
+        AppColors.overlayFor(
+          brightness,
+        ).withValues(alpha: brightness == Brightness.dark ? 0.24 : 0.08),
+      ),
       AppPanelTone.elevated => (
-          AppColors.bgElevated,
-          borderColor ?? AppColors.borderStrong,
-          AppColors.overlay.withValues(alpha: 0.12),
-        ),
+        AppColors.bgElevatedFor(brightness),
+        borderColor ?? AppColors.borderStrongFor(brightness),
+        AppColors.overlayFor(
+          brightness,
+        ).withValues(alpha: brightness == Brightness.dark ? 0.28 : 0.12),
+      ),
       AppPanelTone.dark => (
-          AppColors.panel,
-          borderColor ?? AppColors.panelSoft,
-          Colors.black.withValues(alpha: 0.18),
-        ),
+        AppColors.panelFor(brightness),
+        borderColor ?? AppColors.panelSoftFor(brightness),
+        Colors.black.withValues(alpha: 0.18),
+      ),
       AppPanelTone.soft => (
-          AppColors.bgMuted,
-          borderColor ?? AppColors.borderSoft,
-          AppColors.overlay.withValues(alpha: 0.04),
-        ),
+        AppColors.bgMutedFor(brightness),
+        borderColor ?? AppColors.borderSoftFor(brightness),
+        AppColors.overlayFor(
+          brightness,
+        ).withValues(alpha: brightness == Brightness.dark ? 0.18 : 0.04),
+      ),
     };
 
     final decoratedChild = DecoratedBox(

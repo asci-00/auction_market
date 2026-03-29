@@ -30,6 +30,7 @@ class AppConfig {
     required this.environment,
     required this.useFirebaseEmulators,
     required this.tossClientKey,
+    required this.firebaseEmulatorHostOverride,
   });
 
   factory AppConfig.fromEnvironment() {
@@ -43,6 +44,7 @@ class AppConfig {
       environment: environment,
       useFirebaseEmulators: useFirebaseEmulators,
       tossClientKey: _readOptional('TOSS_CLIENT_KEY'),
+      firebaseEmulatorHostOverride: _readOptional('FIREBASE_EMULATOR_HOST'),
     );
 
     if (environment != AppEnvironment.dev &&
@@ -58,6 +60,7 @@ class AppConfig {
   final AppEnvironment environment;
   final bool useFirebaseEmulators;
   final String? tossClientKey;
+  final String? firebaseEmulatorHostOverride;
 
   bool get hasMeaningfulTossClientKey => _isMeaningful(tossClientKey);
 
@@ -75,6 +78,10 @@ class AppConfig {
   }
 
   String get emulatorHost {
+    final overrideHost = firebaseEmulatorHostOverride;
+    if (_isMeaningful(overrideHost)) {
+      return overrideHost!.trim();
+    }
     if (kIsWeb) {
       return '127.0.0.1';
     }
@@ -99,6 +106,9 @@ class AppConfig {
       'APP_ENV': String.fromEnvironment('APP_ENV'),
       'USE_FIREBASE_EMULATORS': String.fromEnvironment(
         'USE_FIREBASE_EMULATORS',
+      ),
+      'FIREBASE_EMULATOR_HOST': String.fromEnvironment(
+        'FIREBASE_EMULATOR_HOST',
       ),
       'TOSS_CLIENT_KEY': String.fromEnvironment('TOSS_CLIENT_KEY'),
     };

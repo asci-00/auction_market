@@ -8,14 +8,12 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_panel.dart';
 import '../../../core/widgets/app_section_heading.dart';
+import '../../../core/widgets/app_shell_insets.dart';
 import 'order_section_role.dart';
 import 'widgets/order_section.dart';
 
 class OrdersScreen extends ConsumerWidget {
-  const OrdersScreen({
-    super.key,
-    this.highlightedOrderId,
-  });
+  const OrdersScreen({super.key, this.highlightedOrderId});
 
   final String? highlightedOrderId;
 
@@ -31,7 +29,7 @@ class OrdersScreen extends ConsumerWidget {
           tokens.screenPadding,
           tokens.space4,
           tokens.screenPadding,
-          tokens.space8,
+          tokens.space8 + context.shellBottomInset,
         ),
         children: [
           if (highlightedOrderId != null) ...[
@@ -66,9 +64,7 @@ class OrdersScreen extends ConsumerWidget {
 }
 
 class _HighlightedOrderBanner extends StatelessWidget {
-  const _HighlightedOrderBanner({
-    required this.orderId,
-  });
+  const _HighlightedOrderBanner({required this.orderId});
 
   final String orderId;
 
@@ -80,10 +76,7 @@ class _HighlightedOrderBanner extends StatelessWidget {
       tone: AppPanelTone.elevated,
       child: Row(
         children: [
-          Icon(
-            Icons.receipt_long_rounded,
-            color: context.colorScheme.primary,
-          ),
+          Icon(Icons.receipt_long_rounded, color: context.colorScheme.primary),
           SizedBox(width: tokens.space3),
           Expanded(
             child: Text(

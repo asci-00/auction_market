@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,6 +14,15 @@ Future<void> main() async {
     await EasyLocalization.ensureInitialized();
 
     FlutterError.onError = (details) {
+      FlutterError.dumpErrorToConsole(details);
+      if (!kReleaseMode) {
+        try {
+          _logFlutterErrorDetails(details);
+        } catch (loggingError, loggingStack) {
+          debugPrint('Failed to log FlutterErrorDetails: $loggingError');
+          debugPrint('$loggingStack');
+        }
+      }
       Zone.current.handleUncaughtError(
         details.exception,
         details.stack ?? StackTrace.current,
@@ -46,4 +55,29 @@ void _reportFatalError(Object error, StackTrace stackTrace) {
       context: ErrorDescription('while bootstrapping the application'),
     ),
   );
+}
+
+void _logFlutterErrorDetails(FlutterErrorDetails details) {
+  final buffer = StringBuffer()
+    ..writeln('----- FlutterError details -----')
+    ..writeln(details.exceptionAsString());
+
+  if (details.context != null) {
+    buffer.writeln('Context: ${details.context}');
+  }
+
+  if (details.stack != null) {
+    buffer.writeln('Stack trace:');
+    buffer.writeln(details.stack);
+  }
+
+  final collector = details.informationCollector;
+  if (collector != null) {
+    for (final node in collector()) {
+      buffer.writeln(node.toStringDeep());
+    }
+  }
+
+  buffer.writeln('----- End FlutterError details -----');
+  debugPrint(buffer.toString());
 }
