@@ -11,21 +11,19 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.light(),
-          home: const AppPageScaffold(
-            bottomBar: SizedBox(height: 84),
-            body: SizedBox(),
+          home: AppPageScaffold(
+            bottomBar: const SizedBox(height: 84),
+            body: Builder(
+              builder: (context) =>
+                  Text(context.pageBottomInset.toStringAsFixed(0)),
+            ),
           ),
         ),
       );
 
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
 
-      final pageInsets = tester.widget<AppPageInsets>(
-        find.byType(AppPageInsets),
-      );
-
-      expect(pageInsets.bottomInset, closeTo(84, 0.5));
+      expect(find.text('84'), findsOneWidget);
     },
   );
 }

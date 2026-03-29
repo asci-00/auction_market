@@ -16,13 +16,15 @@ class HomeActionIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+
     return Material(
-      color: AppColors.bgSurface,
+      color: AppColors.bgSurfaceFor(brightness),
       borderRadius: BorderRadius.circular(18),
       child: IconButton(
         tooltip: tooltip,
         onPressed: onPressed,
-        icon: Icon(icon, color: AppColors.textPrimary),
+        icon: Icon(icon, color: AppColors.textPrimaryFor(brightness)),
       ),
     );
   }

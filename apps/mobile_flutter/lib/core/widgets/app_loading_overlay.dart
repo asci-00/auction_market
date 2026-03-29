@@ -7,6 +7,7 @@ import 'package:lottie/lottie.dart';
 
 import '../extensions/build_context_x.dart';
 import '../theme/app_theme.dart';
+import 'app_modal.dart';
 import 'app_panel.dart';
 
 class AppLoadingOverlay extends StatefulWidget {
@@ -57,14 +58,13 @@ class _AppLoadingOverlayState extends State<AppLoadingOverlay> {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
+    final barrierColor = resolveAppModalBarrierColor(brightness);
 
     return Stack(
       fit: StackFit.expand,
       children: [
-        AbsorbPointer(
-          absorbing: widget.isLoading,
-          child: widget.child,
-        ),
+        AbsorbPointer(absorbing: widget.isLoading, child: widget.child),
         IgnorePointer(
           ignoring: !_isVisible,
           child: AnimatedOpacity(
@@ -72,18 +72,13 @@ class _AppLoadingOverlayState extends State<AppLoadingOverlay> {
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOutCubic,
             child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: AppColors.panel.withValues(alpha: 0.22),
-              ),
+              decoration: BoxDecoration(color: barrierColor),
               child: widget.useBlur
                   ? _BlurredOverlayContent(
                       message: widget.message,
                       tokens: tokens,
                     )
-                  : _OverlayContent(
-                      message: widget.message,
-                      tokens: tokens,
-                    ),
+                  : _OverlayContent(message: widget.message, tokens: tokens),
             ),
           ),
         ),
@@ -115,10 +110,7 @@ class _AppLoadingOverlayState extends State<AppLoadingOverlay> {
 }
 
 class _BlurredOverlayContent extends StatelessWidget {
-  const _BlurredOverlayContent({
-    required this.message,
-    required this.tokens,
-  });
+  const _BlurredOverlayContent({required this.message, required this.tokens});
 
   final String? message;
   final AppThemeTokens tokens;
@@ -127,19 +119,13 @@ class _BlurredOverlayContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-      child: _OverlayContent(
-        message: message,
-        tokens: tokens,
-      ),
+      child: _OverlayContent(message: message, tokens: tokens),
     );
   }
 }
 
 class _OverlayContent extends StatelessWidget {
-  const _OverlayContent({
-    required this.message,
-    required this.tokens,
-  });
+  const _OverlayContent({required this.message, required this.tokens});
 
   final String? message;
   final AppThemeTokens tokens;
@@ -192,9 +178,8 @@ class _LoadingLottie extends StatelessWidget {
           bytes,
           filePicker: (files) {
             return files.firstWhereOrNull(
-                  (f) =>
-              f.name.startsWith('animations/') &&
-                  f.name.endsWith('.json'),
+              (f) =>
+                  f.name.startsWith('animations/') && f.name.endsWith('.json'),
             );
           },
         ),

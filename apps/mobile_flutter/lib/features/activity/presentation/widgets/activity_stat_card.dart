@@ -28,6 +28,7 @@ class ActivityStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
 
     return AppPanel(
       tone: AppPanelTone.surface,
@@ -41,10 +42,10 @@ class ActivityStatCard extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: AppColors.bgElevated,
+                color: AppColors.bgElevatedFor(brightness),
                 borderRadius: BorderRadius.circular(18),
               ),
-              child: Icon(icon),
+              child: Icon(icon, color: AppColors.textPrimaryFor(brightness)),
             ),
             SizedBox(width: tokens.space4),
             Expanded(
@@ -63,20 +64,11 @@ class ActivityStatCard extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: tokens.space2),
-                  Text(
-                    subtitle,
-                    style: context.textTheme.bodyMedium,
-                  ),
+                  Text(subtitle, style: context.textTheme.bodyMedium),
                   SizedBox(height: tokens.space3),
-                  Text(
-                    primaryMetric,
-                    style: context.textTheme.headlineSmall,
-                  ),
+                  Text(primaryMetric, style: context.textTheme.headlineSmall),
                   SizedBox(height: tokens.space1),
-                  Text(
-                    metricLabel,
-                    style: context.textTheme.bodySmall,
-                  ),
+                  Text(metricLabel, style: context.textTheme.bodySmall),
                 ],
               ),
             ),
