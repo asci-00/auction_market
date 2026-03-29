@@ -6,6 +6,12 @@ This file is for agents working inside `apps/mobile_flutter`. Prefer concrete, r
 ## First Read
 Before editing, inspect these files first:
 
+- `../../Prompt.md`: product constraints
+- `../../Plan.md`: active milestone scope
+- `../../Implement.md`: live execution log
+- `../../Documentation.md`: implementation contract
+- `../../docs/Design.md`: visual and UX contract
+- `../../docs/Environment.md`: build-define and environment contract
 - `lib/main.dart`: app bootstrap, global error capture, `ProviderScope`
 - `lib/app/app.dart`: top-level app composition
 - `lib/core/routing/app_router.dart`: navigation and auth redirect rules
@@ -14,14 +20,14 @@ Before editing, inspect these files first:
 - `test/widget_test.dart`: current testing style and copy assertions
 
 ## Current Structure
-The app currently follows `core + features/*/presentation`.
+The app follows `core + features/*` with selective deeper layers where complexity already justifies them.
 
 - `lib/core/`: shared infrastructure and shared UI primitives
-- `lib/features/<feature>/presentation/`: screens and feature-local presentation logic
+- `lib/features/<feature>/{presentation,data,application}`: feature code, with some simpler features staying presentation-only
 - `lib/l10n/*.arb`: localization sources
 - `test/`: widget and regression tests
 
-There is not yet a full clean-architecture split per feature. Do not force one unless the change needs it.
+Do not force more layers than the change needs.
 
 ## Architecture Rule
 Default to MVVM-style feature code when logic is simple.
@@ -78,6 +84,7 @@ When touching Firebase usage:
 Run commands from `apps/mobile_flutter`.
 
 - `flutter pub get`: install dependencies
+- `flutter gen-l10n`: regenerate localization code after ARB edits
 - `dart format lib test`: format source and tests
 - `flutter analyze`: static analysis
 - `flutter test`: run all tests
@@ -90,8 +97,9 @@ Use `dart_defines.example.json` as the template for `dart_defines.json`.
 For any non-trivial change, aim to finish with this loop:
 
 1. `dart format lib test`
-2. `flutter analyze`
-3. `flutter test`
+2. `flutter gen-l10n` when ARB files change
+3. `flutter analyze`
+4. `flutter test`
 
 If you change only copy, localization, or startup/auth presentation, at minimum run:
 
