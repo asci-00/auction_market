@@ -1,5 +1,13 @@
 # Repository Guidelines
 
+## Source Of Truth
+- `Prompt.md`: product spec and non-negotiable constraints.
+- `Plan.md`: milestone order and current phase scope.
+- `Implement.md`: live execution log and validation history.
+- `Documentation.md`: implementation contract for schema, routing, and runtime behavior.
+- `docs/Design.md`: UI and UX contract.
+- `docs/Environment.md`: environment and secret-loading contract.
+
 ## Project Structure & Module Organization
 This repository is a small monorepo for a mobile-first C2C auction MVP.
 
@@ -14,7 +22,8 @@ Run backend commands from `backend/functions`:
 
 - `npm install`: install Functions dependencies.
 - `npm run build`: compile TypeScript with `tsc`.
-- `npm run lint`: type-check without emitting output.
+- `npm run lint`: run ESLint and TypeScript no-emit checks.
+- `npm run format:check`: verify Prettier formatting for backend TypeScript.
 - `npm test`: run Vitest tests once.
 - `npm run serve`: start Firebase emulators for Auth, Functions, Firestore, and Storage.
 - `npm run seed`: populate emulator data from `backend/emulator-seed/seed.ts`.
@@ -22,6 +31,10 @@ Run backend commands from `backend/functions`:
 Run Flutter commands from `apps/mobile_flutter`:
 
 - `flutter pub get`: install Dart packages.
+- `flutter gen-l10n`: regenerate localized app accessors after ARB changes.
+- `dart format lib test`: format Flutter source and tests.
+- `flutter analyze`: run Flutter static analysis.
+- `flutter test`: run Flutter tests.
 - `flutter run`: launch the mobile app locally.
 
 ## Coding Style & Naming Conventions
