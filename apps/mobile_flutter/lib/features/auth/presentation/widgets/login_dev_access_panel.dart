@@ -20,6 +20,7 @@ class LoginDevAccessPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
 
     return AppPanel(
       tone: AppPanelTone.elevated,
@@ -34,7 +35,7 @@ class LoginDevAccessPanel extends StatelessWidget {
           Text(
             context.l10n.loginDevAccessDescription,
             style: context.textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryFor(brightness),
             ),
           ),
           SizedBox(height: tokens.space3),

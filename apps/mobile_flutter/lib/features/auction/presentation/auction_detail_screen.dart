@@ -332,12 +332,13 @@ class _SellerSummaryPlate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
 
     return Container(
       width: 92,
       height: 112,
       decoration: BoxDecoration(
-        color: AppColors.bgElevated,
+        color: AppColors.bgElevatedFor(brightness),
         borderRadius: BorderRadius.circular(tokens.heroRadius),
       ),
       padding: EdgeInsets.all(tokens.space4),

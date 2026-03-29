@@ -20,18 +20,18 @@ class OrderPaymentReturnScreen extends ConsumerStatefulWidget {
     required this.orderId,
     required this.paymentKey,
     required this.amount,
-  })  : mode = OrderPaymentReturnRouteMode.success,
-        failureCode = null,
-        failureMessage = null;
+  }) : mode = OrderPaymentReturnRouteMode.success,
+       failureCode = null,
+       failureMessage = null;
 
   const OrderPaymentReturnScreen.fail({
     super.key,
     required this.orderId,
     this.failureCode,
     this.failureMessage,
-  })  : mode = OrderPaymentReturnRouteMode.fail,
-        paymentKey = null,
-        amount = null;
+  }) : mode = OrderPaymentReturnRouteMode.fail,
+       paymentKey = null,
+       amount = null;
 
   final OrderPaymentReturnRouteMode mode;
   final String? orderId;
@@ -118,7 +118,9 @@ class _OrderPaymentReturnScreenState
     }
 
     try {
-      await ref.read(orderActionServiceProvider).confirmPayment(
+      await ref
+          .read(orderActionServiceProvider)
+          .confirmPayment(
             orderId: orderId,
             paymentKey: paymentKey,
             amount: amount,
@@ -187,6 +189,7 @@ class _PaymentReturnStatusPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
     if (viewState == _OrderPaymentReturnViewState.pending) {
       return AppPanel(
         tone: AppPanelTone.elevated,
@@ -235,7 +238,9 @@ class _PaymentReturnStatusPanel extends StatelessWidget {
     final iconColor = switch (viewState) {
       _OrderPaymentReturnViewState.success => AppColors.accentSuccess,
       _OrderPaymentReturnViewState.fail => AppColors.accentUrgent,
-      _OrderPaymentReturnViewState.invalid => AppColors.textSecondary,
+      _OrderPaymentReturnViewState.invalid => AppColors.textSecondaryFor(
+        brightness,
+      ),
       _OrderPaymentReturnViewState.pending => AppColors.accentPrimary,
     };
 
@@ -278,7 +283,7 @@ class _PaymentReturnStatusPanel extends StatelessWidget {
               style: context.textTheme.labelLarge?.copyWith(
                 color: viewState == _OrderPaymentReturnViewState.success
                     ? AppColors.textInverse
-                    : AppColors.textSecondary,
+                    : AppColors.textSecondaryFor(brightness),
               ),
             ),
           ],
@@ -300,7 +305,7 @@ class _PaymentReturnStatusPanel extends StatelessWidget {
               style: context.textTheme.bodySmall?.copyWith(
                 color: viewState == _OrderPaymentReturnViewState.success
                     ? AppColors.textInverse.withValues(alpha: 0.72)
-                    : AppColors.textSecondary,
+                    : AppColors.textSecondaryFor(brightness),
               ),
             ),
           ],
@@ -353,8 +358,8 @@ class _PaymentReturnActions extends StatelessWidget {
     final normalizedOrderId = orderId?.trim();
     final encodedOrderId =
         normalizedOrderId == null || normalizedOrderId.isEmpty
-            ? null
-            : Uri.encodeComponent(normalizedOrderId);
+        ? null
+        : Uri.encodeComponent(normalizedOrderId);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
