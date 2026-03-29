@@ -1,6 +1,7 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/extensions/build_context_x.dart';
 import '../../../../core/l10n/app_localization.dart';
@@ -52,20 +53,29 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
         icon: Icons.receipt_long_outlined,
         title: context.l10n.ordersEmptyTitle,
         description: context.l10n.ordersEmptyDescription,
+        action: TextButton(
+          onPressed: () =>
+              context.go('/login?from=${Uri.encodeComponent('/orders')}'),
+          child: Text(context.l10n.genericSignInAction),
+        ),
       );
     }
 
-    final ordersAsync = ref.watch(
-      ordersViewModelProvider(
-        OrderQuery(userId: widget.userId!, fieldKey: widget.fieldName.key),
-      ),
+    final query = OrderQuery(
+      userId: widget.userId!,
+      fieldKey: widget.fieldName.key,
     );
+    final ordersAsync = ref.watch(ordersViewModelProvider(query));
 
     return ordersAsync.when(
       error: (_, __) => AppEmptyState(
         icon: Icons.error_outline_rounded,
         title: context.l10n.genericUnavailable,
         description: context.l10n.ordersErrorDescription,
+        action: TextButton(
+          onPressed: () => ref.invalidate(ordersViewModelProvider(query)),
+          child: Text(context.l10n.retry),
+        ),
       ),
       loading: () =>
           const AppShimmerListPlaceholder(itemCount: 3, itemHeight: 172),
@@ -75,6 +85,10 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
             icon: Icons.inventory_2_outlined,
             title: context.l10n.ordersEmptyTitle,
             description: context.l10n.ordersEmptyDescription,
+            action: TextButton(
+              onPressed: () => context.go('/search'),
+              child: Text(context.l10n.auctionDetailBrowseAction),
+            ),
           );
         }
 

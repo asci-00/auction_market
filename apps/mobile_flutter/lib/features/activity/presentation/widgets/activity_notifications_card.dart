@@ -15,12 +15,14 @@ class ActivityNotificationsCard extends StatelessWidget {
     required this.summary,
     required this.isLoading,
     required this.hasError,
+    this.onRetry,
   });
 
   final String? userId;
   final ActivityHubSummary? summary;
   final bool isLoading;
   final bool hasError;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +31,11 @@ class ActivityNotificationsCard extends StatelessWidget {
         icon: Icons.notifications_outlined,
         title: context.l10n.activityNotificationsCardTitle,
         description: context.l10n.activitySignedOutDescription,
+        action: TextButton(
+          onPressed: () =>
+              context.go('/login?from=${Uri.encodeComponent('/activity')}'),
+          child: Text(context.l10n.genericSignInAction),
+        ),
       );
     }
 
@@ -37,6 +44,7 @@ class ActivityNotificationsCard extends StatelessWidget {
         icon: Icons.error_outline_rounded,
         title: context.l10n.genericUnavailable,
         description: context.l10n.activityNotificationsCardDescription,
+        action: TextButton(onPressed: onRetry, child: Text(context.l10n.retry)),
       );
     }
 

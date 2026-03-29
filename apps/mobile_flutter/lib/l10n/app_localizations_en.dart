@@ -15,6 +15,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retry => 'Try again';
 
   @override
+  String get genericSignInAction => 'Sign in';
+
+  @override
   String get loadingApp => 'Preparing your marketplace';
 
   @override

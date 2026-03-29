@@ -107,6 +107,12 @@ abstract class AppLocalizations {
   /// **'Try again'**
   String get retry;
 
+  /// No description provided for @genericSignInAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get genericSignInAction;
+
   /// No description provided for @loadingApp.
   ///
   /// In en, this message translates to:

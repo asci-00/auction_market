@@ -15,12 +15,14 @@ class ActivityBuyerCard extends StatelessWidget {
     required this.summary,
     required this.isLoading,
     required this.hasError,
+    this.onRetry,
   });
 
   final String? userId;
   final ActivityHubSummary? summary;
   final bool isLoading;
   final bool hasError;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +31,11 @@ class ActivityBuyerCard extends StatelessWidget {
         icon: Icons.receipt_long_outlined,
         title: context.l10n.activityBuyerCardTitle,
         description: context.l10n.activitySignedOutDescription,
+        action: TextButton(
+          onPressed: () =>
+              context.go('/login?from=${Uri.encodeComponent('/activity')}'),
+          child: Text(context.l10n.genericSignInAction),
+        ),
       );
     }
 
@@ -37,6 +44,7 @@ class ActivityBuyerCard extends StatelessWidget {
         icon: Icons.error_outline_rounded,
         title: context.l10n.genericUnavailable,
         description: context.l10n.activityBuyerCardDescription,
+        action: TextButton(onPressed: onRetry, child: Text(context.l10n.retry)),
       );
     }
 
@@ -55,10 +63,10 @@ class ActivityBuyerCard extends StatelessWidget {
               summary!.pendingPaymentCount,
             )
           : summary!.awaitingReceiptCount > 0
-              ? context.l10n.activityBuyerAwaitingReceiptSubtitle(
-                  summary!.awaitingReceiptCount,
-                )
-              : context.l10n.activityBuyerCardDescription,
+          ? context.l10n.activityBuyerAwaitingReceiptSubtitle(
+              summary!.awaitingReceiptCount,
+            )
+          : context.l10n.activityBuyerCardDescription,
       primaryMetric: '$totalAttentionCount',
       metricLabel: context.l10n.activityBuyerMetricLabel,
       badgeKind: totalAttentionCount > 0

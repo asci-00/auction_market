@@ -72,6 +72,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 icon: Icons.notifications_active_outlined,
                 title: l10n.notificationsEmptyTitle,
                 description: l10n.notificationsEmptyDescription,
+                action: TextButton(
+                  onPressed: () => context.go(
+                    '/login?from=${Uri.encodeComponent('/notifications')}',
+                  ),
+                  child: Text(l10n.genericSignInAction),
+                ),
               )
             else
               _NotificationsBody(
@@ -79,6 +85,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 isNavigating: _isNavigating,
                 onNavigateStart: () => _setNavigating(true),
                 onNavigateEnd: () => _setNavigating(false),
+                onRetry: () =>
+                    ref.invalidate(notificationsViewModelProvider(user.uid)),
               ),
           ],
         ),
@@ -93,12 +101,14 @@ class _NotificationsBody extends StatelessWidget {
     required this.isNavigating,
     required this.onNavigateStart,
     required this.onNavigateEnd,
+    required this.onRetry,
   });
 
   final AsyncValue<NotificationsViewState>? state;
   final bool isNavigating;
   final VoidCallback onNavigateStart;
   final VoidCallback onNavigateEnd;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -110,6 +120,7 @@ class _NotificationsBody extends StatelessWidget {
         icon: Icons.error_outline_rounded,
         title: l10n.genericUnavailable,
         description: l10n.notificationsEmptyDescription,
+        action: TextButton(onPressed: onRetry, child: Text(l10n.retry)),
       ),
       loading: () =>
           const AppShimmerListPlaceholder(itemCount: 3, itemHeight: 120),

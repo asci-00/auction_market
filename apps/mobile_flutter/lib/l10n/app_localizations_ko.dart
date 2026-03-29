@@ -15,6 +15,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get retry => '다시 시도';
 
   @override
+  String get genericSignInAction => '로그인';
+
+  @override
   String get loadingApp => '앱 환경을 준비하고 있습니다';
 
   @override
@@ -352,7 +355,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String auctionDetailBidAction(Object amount) {
-    return '입찰 시작 $amount';
+    return '$amount부터 입찰';
   }
 
   @override

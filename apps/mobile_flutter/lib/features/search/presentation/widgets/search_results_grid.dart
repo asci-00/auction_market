@@ -31,6 +31,10 @@ class SearchResultsGrid extends ConsumerWidget {
         icon: Icons.search_off_rounded,
         title: context.l10n.genericUnavailable,
         description: context.l10n.searchErrorDescription,
+        action: TextButton(
+          onPressed: () => ref.invalidate(searchViewModelProvider(query)),
+          child: Text(context.l10n.retry),
+        ),
       ),
       loading: () => GridView.builder(
         shrinkWrap: true,
