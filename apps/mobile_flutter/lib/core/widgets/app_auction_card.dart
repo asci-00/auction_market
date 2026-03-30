@@ -174,21 +174,25 @@ class _AuctionCardDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final brightness = theme.brightness;
+    final titleTextStyle = layout.isCompact
+        ? theme.textTheme.titleSmall?.copyWith(
+            color: AppColors.textPrimaryFor(brightness),
+          )
+        : theme.textTheme.titleMedium;
 
     return Padding(
       padding: EdgeInsets.all(layout.contentPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            maxLines: layout.titleMaxLines,
-            overflow: TextOverflow.ellipsis,
-            style: layout.isCompact
-                ? theme.textTheme.titleSmall?.copyWith(
-                    color: AppColors.textPrimaryFor(brightness),
-                  )
-                : theme.textTheme.titleMedium,
+          Flexible(
+            fit: FlexFit.loose,
+            child: Text(
+              title,
+              maxLines: layout.titleMaxLines,
+              overflow: TextOverflow.ellipsis,
+              style: titleTextStyle,
+            ),
           ),
           SizedBox(height: layout.metaSpacing),
           if (meta != null)
@@ -241,7 +245,8 @@ class _AuctionCardLayout {
       contentPadding: compact ? tokens.space3 : tokens.space4,
       badgePadding: compact ? tokens.space2 : tokens.space3,
       metaSpacing: compact ? tokens.space1 : tokens.space2,
-      bidSpacing: compact ? tokens.space2 : tokens.space3,
+      // Keep vertical rhythm tighter to avoid text overflow near breakpoints.
+      bidSpacing: compact ? tokens.space1 : tokens.space2,
       titleMaxLines: compact ? 1 : 2,
       priceFontSize: compact ? 24 : 28,
       isCompact: compact,
