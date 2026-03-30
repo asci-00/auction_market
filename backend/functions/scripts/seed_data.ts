@@ -421,7 +421,8 @@ export async function seedEmulator(
       imageUrls: productImagesBySeed[item.imageSeed] ?? [
         fallbackProductImage(item.imageSeed),
       ],
-      authImageUrls: item.authImageSeed == null
+      authImageUrls:
+        item.authImageSeed == null
           ? []
           : (authImagesBySeed[item.authImageSeed] ?? []),
       isOfficialMd: item.isOfficialMd,
@@ -705,9 +706,9 @@ export async function seedEmulator(
       itemId: auction.itemId,
       sellerId: auction.sellerId,
       titleSnapshot: auction.titleSnapshot,
-      heroImageUrl:
-        (productImagesBySeed[auction.heroImageSeed] ??
-                [fallbackProductImage(auction.heroImageSeed)])[0],
+      heroImageUrl: (productImagesBySeed[auction.heroImageSeed] ?? [
+        fallbackProductImage(auction.heroImageSeed),
+      ])[0],
       categoryMain: auction.categoryMain,
       categorySub: auction.categorySub,
       startPrice: auction.startPrice,
@@ -1120,7 +1121,8 @@ export async function seedEmulator(
         provider: 'TOSS_PAYMENTS',
         paymentKey: order.paymentKey,
         method: order.method,
-        approvedAt: order.approvedAt == null ? null : asTimestamp(order.approvedAt),
+        approvedAt:
+          order.approvedAt == null ? null : asTimestamp(order.approvedAt),
         lastWebhookEventId: order.lastWebhookEventId,
       },
       shipping: {
@@ -1128,7 +1130,8 @@ export async function seedEmulator(
         carrierName: order.carrierName,
         trackingNumber: order.trackingNumber,
         trackingUrl: order.trackingUrl,
-        shippedAt: order.shippedAt == null ? null : asTimestamp(order.shippedAt),
+        shippedAt:
+          order.shippedAt == null ? null : asTimestamp(order.shippedAt),
       },
       settlement: {
         expectedAt:
