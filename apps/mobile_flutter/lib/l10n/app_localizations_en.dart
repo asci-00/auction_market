@@ -105,6 +105,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeHotSubtitle => 'See the listings collecting bids and attention first.';
 
   @override
+  String get homeCuratedGoodsTitle => 'Goods spotlight';
+
+  @override
+  String get homeCuratedGoodsSubtitle => 'Browse fast-moving general goods in a tighter lane.';
+
+  @override
+  String get homeCuratedPreciousTitle => 'Precious spotlight';
+
+  @override
+  String get homeCuratedPreciousSubtitle => 'Keep precious pieces in a separate, easier-to-scan row.';
+
+  @override
   String get homeOpenNotifications => 'Notifications';
 
   @override

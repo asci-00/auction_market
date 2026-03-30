@@ -4,6 +4,7 @@ class HomeAuctionSummary {
   const HomeAuctionSummary({
     required this.id,
     required this.title,
+    required this.categoryMain,
     required this.currentPrice,
     required this.bidCount,
     required this.heroImageUrl,
@@ -13,6 +14,7 @@ class HomeAuctionSummary {
 
   final String id;
   final String title;
+  final String categoryMain;
   final num currentPrice;
   final int bidCount;
   final String? heroImageUrl;
@@ -27,6 +29,7 @@ class HomeAuctionSummary {
     return HomeAuctionSummary(
       id: document.id,
       title: (data['titleSnapshot'] as String?) ?? '',
+      categoryMain: (data['categoryMain'] as String?) ?? 'GOODS',
       currentPrice: (data['currentPrice'] as num?) ?? 0,
       bidCount: ((data['bidCount'] as num?) ?? 0).toInt(),
       heroImageUrl: data['heroImageUrl'] as String?,

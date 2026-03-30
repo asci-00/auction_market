@@ -287,6 +287,30 @@ abstract class AppLocalizations {
   /// **'See the listings collecting bids and attention first.'**
   String get homeHotSubtitle;
 
+  /// No description provided for @homeCuratedGoodsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Goods spotlight'**
+  String get homeCuratedGoodsTitle;
+
+  /// No description provided for @homeCuratedGoodsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse fast-moving general goods in a tighter lane.'**
+  String get homeCuratedGoodsSubtitle;
+
+  /// No description provided for @homeCuratedPreciousTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Precious spotlight'**
+  String get homeCuratedPreciousTitle;
+
+  /// No description provided for @homeCuratedPreciousSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep precious pieces in a separate, easier-to-scan row.'**
+  String get homeCuratedPreciousSubtitle;
+
   /// No description provided for @homeOpenNotifications.
   ///
   /// In en, this message translates to:

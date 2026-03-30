@@ -105,6 +105,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeHotSubtitle => '입찰과 관심이 몰리는 리스팅부터 확인하세요.';
 
   @override
+  String get homeCuratedGoodsTitle => '일반 상품 큐레이션';
+
+  @override
+  String get homeCuratedGoodsSubtitle => '빠르게 움직이는 일반 상품을 별도 행에서 차분하게 둘러보세요.';
+
+  @override
+  String get homeCuratedPreciousTitle => '귀금속 큐레이션';
+
+  @override
+  String get homeCuratedPreciousSubtitle => '귀금속 경매는 따로 모아 더 쉽게 비교할 수 있게 정리합니다.';
+
+  @override
   String get homeOpenNotifications => '알림';
 
   @override

@@ -70,6 +70,7 @@
   - Auction detail header overlays and fallback gradients, sell image fallback tiles, login support copy panels, and payment return status labels now resolve brightness-aware tokens too, so dark mode no longer falls back to light-only inset colors in those live user flows.
   - Activity now keeps queue summary mapping in `features/activity/data` and composes buyer, seller, and notification stream cards from dedicated widgets instead of using static navigation-only tiles.
   - Home now maps auction rail documents through `features/home/data/home_auction_summary.dart` and keeps reusable rail and action button widgets in `features/home/presentation/widgets`.
+  - Home now also derives curated goods and precious rails client-side from the same live-auction read set used for `endingSoon` and `hot`, which closes the `docs/Design.md` home composition gap without introducing new Firestore index or query requirements.
   - Search now maps Firestore records through `features/search/data/search_auction_summary.dart`, keeps filtering logic in `features/search/application/search_auction_filter.dart`, and uses dedicated query, filter-chip, and result-grid widgets.
   - Search filter chips now drive real local filtering for category, price band, ending-soon urgency, and buy-now availability, so visible search controls no longer behave like decorative placeholders.
   - The search route now uses a sliver-based body with a pinned query-field header, keeping the primary search input visible while the result grid scrolls underneath.
