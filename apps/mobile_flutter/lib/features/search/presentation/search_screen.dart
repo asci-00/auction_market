@@ -39,7 +39,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _onQueryChanged(String value) {
     final normalized = value.trim();
-    setState(() => _query = normalized);
+    setState(() => _query = value);
 
     if (normalized.isEmpty) {
       _queryDebouncer.cancel();
@@ -101,56 +101,145 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
 
     return AppPageScaffold(
       title: context.l10n.searchTitle,
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(
-          tokens.screenPadding,
-          tokens.space4,
-          tokens.screenPadding,
-          tokens.space8 + context.shellBottomInset,
-        ),
-        children: [
-          AppEditorialHero(
-            eyebrow: context.l10n.searchHeroEyebrow,
-            title: context.l10n.searchHeroTitle,
-            description: context.l10n.searchHeroDescription,
-            badges: const [
-              AppStatusBadge(kind: AppStatusKind.pending),
-              AppStatusBadge(kind: AppStatusKind.buyNow),
-            ],
-            tone: AppPanelTone.surface,
+      extendBodyBehindAppBar: false,
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+              tokens.screenPadding,
+              tokens.space4,
+              tokens.screenPadding,
+              0,
+            ),
+            sliver: SliverToBoxAdapter(
+              child: AppEditorialHero(
+                eyebrow: context.l10n.searchHeroEyebrow,
+                title: context.l10n.searchHeroTitle,
+                description: context.l10n.searchHeroDescription,
+                badges: const [
+                  AppStatusBadge(kind: AppStatusKind.pending),
+                  AppStatusBadge(kind: AppStatusKind.buyNow),
+                ],
+                tone: AppPanelTone.surface,
+              ),
+            ),
           ),
-          SizedBox(height: tokens.space5),
-          SearchQueryField(
-            controller: _controller,
-            query: _query,
-            onChanged: _onQueryChanged,
-            onClear: _resetQuery,
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _SearchStickyQueryHeaderDelegate(
+              tokens: tokens,
+              brightness: brightness,
+              child: SearchQueryField(
+                controller: _controller,
+                query: _query,
+                onChanged: _onQueryChanged,
+                onClear: _resetQuery,
+              ),
+            ),
           ),
-          SizedBox(height: tokens.space3),
-          SearchFilterChips(
-            filters: _filters,
-            onCycleCategory: _cycleCategoryFilter,
-            onCyclePrice: _cyclePriceFilter,
-            onToggleEndingSoon: _toggleEndingSoon,
-            onToggleBuyNow: _toggleBuyNow,
-          ),
-          SizedBox(height: tokens.space6),
-          AppSectionHeading(
-            title: context.l10n.searchResultsTitle,
-            subtitle: context.l10n.searchResultsSubtitle,
-          ),
-          SizedBox(height: tokens.space4),
-          SearchResultsGrid(
-            query: _debouncedQuery,
-            filters: _filters,
-            onResetQuery: _resetQuery,
-            onResetFilters: _resetFilters,
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+              tokens.screenPadding,
+              tokens.space3,
+              tokens.screenPadding,
+              tokens.space8 + context.shellBottomInset,
+            ),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SearchFilterChips(
+                    filters: _filters,
+                    onCycleCategory: _cycleCategoryFilter,
+                    onCyclePrice: _cyclePriceFilter,
+                    onToggleEndingSoon: _toggleEndingSoon,
+                    onToggleBuyNow: _toggleBuyNow,
+                  ),
+                  SizedBox(height: tokens.space6),
+                  AppSectionHeading(
+                    title: context.l10n.searchResultsTitle,
+                    subtitle: context.l10n.searchResultsSubtitle,
+                  ),
+                  SizedBox(height: tokens.space4),
+                  SearchResultsGrid(
+                    query: _query,
+                    searchQuery: _debouncedQuery,
+                    filters: _filters,
+                    onResetQuery: _resetQuery,
+                    onResetFilters: _resetFilters,
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
     );
+  }
+}
+
+class _SearchStickyQueryHeaderDelegate extends SliverPersistentHeaderDelegate {
+  const _SearchStickyQueryHeaderDelegate({
+    required this.tokens,
+    required this.brightness,
+    required this.child,
+  });
+
+  final AppThemeTokens tokens;
+  final Brightness brightness;
+  final Widget child;
+
+  @override
+  double get minExtent => tokens.inputHeight + tokens.space4 * 2;
+
+  @override
+  double get maxExtent => tokens.inputHeight + tokens.space4 * 2;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    final borderColor = AppColors.borderSoftFor(
+      brightness,
+    ).withValues(alpha: overlapsContent ? 0.85 : 0.35);
+    final shadowColor = AppColors.overlayFor(brightness).withValues(alpha: 0.2);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.bgBaseFor(brightness).withValues(alpha: 0.94),
+        border: Border(bottom: BorderSide(color: borderColor)),
+        boxShadow: overlapsContent
+            ? [
+                BoxShadow(
+                  color: shadowColor,
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : null,
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          tokens.screenPadding,
+          tokens.space4,
+          tokens.screenPadding,
+          tokens.space4,
+        ),
+        child: child,
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _SearchStickyQueryHeaderDelegate oldDelegate) {
+    return oldDelegate.tokens != tokens ||
+        oldDelegate.brightness != brightness ||
+        oldDelegate.child != child;
   }
 }

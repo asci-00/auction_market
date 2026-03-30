@@ -25,15 +25,15 @@
 - Phase 3 polish already includes dark-theme groundwork, shared loading overlays, keyboard-safe modal handling, Hero-enabled auction continuity, and localized empty or error states.
 - Phase 3 quiet states now expose only concrete recovery actions that the current architecture can honor, such as sign-in return paths and browse recovery, instead of generic retry affordances on cached Firestore reads.
 - Search filter chips now affect live result filtering for category, price band, ending-soon urgency, and buy-now availability instead of remaining decorative UI.
+- The search route now keeps the query field pinned while results scroll, so users can refine live search results without losing the primary input control.
+- The pinned search header was revalidated after the latest query-sync fixes and now keeps raw input, clear affordance, and trimmed execution query aligned while remaining tappable below the app bar.
+- Emulator seed data now covers separate buyer and seller notification, payment, shipment, confirmed-receipt, settled, cancelled-unpaid, draft, unsold, and cancelled-listing paths without cross-linking orders to unrelated auctions.
 - Backend callables cover bootstrap, draft lifecycle, bid and auto-bid, buy now, payment-session preparation, payment confirmation, shipment update, receipt confirmation, and notification read state.
-- `cd backend/functions && npm run format:check` passed on March 25, 2026.
-- `cd backend/functions && npm run lint` passed on March 25, 2026.
-- `cd backend/functions && npm test` passed on March 25, 2026.
-- `cd backend/functions && npm run build` passed on March 25, 2026.
-- `cd apps/mobile_flutter && flutter gen-l10n` passed on March 26, 2026.
-- `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib test` passed on March 26, 2026.
-- `cd apps/mobile_flutter && flutter analyze` passed on March 26, 2026.
-- `cd apps/mobile_flutter && flutter test` passed on March 26, 2026.
+- `cd backend/functions && npm run lint` passed on March 30, 2026.
+- `cd backend/functions && npm run build` passed on March 30, 2026.
+- `cd apps/mobile_flutter && flutter analyze` passed on March 30, 2026.
+- `cd apps/mobile_flutter && flutter test` passed on March 30, 2026.
+- Manual emulator smoke for the new pinned search header and expanded seed scenarios was not rerun in this follow-up.
 
 ## Next Commands
 1. `cd backend/functions && npm run serve`
