@@ -64,7 +64,7 @@ Status: pending after Phase 3.
 - Add Android and iOS push-notification support with Firebase Messaging permission handling, token registration, foreground presentation, background tap routing, and category-aware delivery rules defined in `docs/Notification.md`.
 - Explore current buyer, seller, order, shipment, and inbox flows and support only the push events documented in `docs/Notification.md`.
 - Keep inbox documents and push delivery aligned so every supported push event also creates an inbox record and deep link.
-- Add an app-bar entry point for user settings and build settings screens for:
+- Add app-bar entry points and a persistent `My`-area fallback for user settings and build settings screens for:
   - global app-notification on and off
   - per-category notification on and off
   - theme mode selection

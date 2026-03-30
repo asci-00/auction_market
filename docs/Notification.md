@@ -124,7 +124,7 @@
   - Inbox documents are still written even when push delivery is disabled, unless the product later defines a separate inbox mute rule.
 
 ## Settings Requirements
-- Provide a settings screen reachable from the app bar.
+- Provide a settings screen reachable from the app bar and from the `My` area as a persistent fallback.
 - Show the current OS push-permission state.
 - When OS permission is denied, show a clear explanation and a way to open system settings.
 - Expose:

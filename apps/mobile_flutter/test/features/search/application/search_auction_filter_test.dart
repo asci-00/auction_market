@@ -51,6 +51,14 @@ void main() {
       SearchPriceFilter.under50k,
     );
     expect(
+      nextSearchPriceFilter(SearchPriceFilter.under50k),
+      SearchPriceFilter.between50kAnd200k,
+    );
+    expect(
+      nextSearchPriceFilter(SearchPriceFilter.between50kAnd200k),
+      SearchPriceFilter.over200k,
+    );
+    expect(
       nextSearchPriceFilter(SearchPriceFilter.over200k),
       SearchPriceFilter.all,
     );

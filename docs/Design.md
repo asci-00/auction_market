@@ -165,6 +165,7 @@
 - Keep settings secondary. Surface trust and selling readiness first.
 
 ### Settings
+
 - Settings entry should be reachable from the app bar on screens where it feels expected, and from the `My` area as a persistent fallback.
 - Group settings into clear sections:
   - notifications

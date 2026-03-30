@@ -11,6 +11,7 @@
 - Root `.env.example` is only a summary for local tooling and onboarding.
 
 ## Note
+
 - Payment-provider cutover requirements are tracked only in `Plan.md` under `Phase Undecided`.
 - Push-delivery prerequisites and category rules are tracked in `docs/Notification.md`.
 - This document keeps the current runtime load paths and active scaffold variable names only because they match the codebase today.
