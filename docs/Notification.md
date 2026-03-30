@@ -165,13 +165,16 @@
 - Keep token records scoped per signed-in user and per app installation.
 - Store token records under `users/{uid}/deviceTokens/{tokenId}` as documented in `Documentation.md`.
 - Token records should capture at least:
-  - user id
-  - platform
-  - token
-  - app version
-  - locale
-  - timezone
-  - last seen timestamp
+  - `token: string`
+  - `platform: "ANDROID" | "IOS"`
+  - `appVersion: string`
+  - `locale: string`
+  - `timezone: string`
+  - `permissionStatus: "AUTHORIZED" | "DENIED" | "PROVISIONAL" | "NOT_DETERMINED"`
+  - `isActive: boolean`
+  - `lastSeenAt: Timestamp`
+  - `createdAt: Timestamp`
+  - `updatedAt: Timestamp`
 
 ## Copy And UX Rules
 - Titles and bodies must be short, actionable, and user-facing.
