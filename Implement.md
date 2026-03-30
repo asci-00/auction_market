@@ -25,6 +25,7 @@
 - Phase 3 polish already includes dark-theme groundwork, shared loading overlays, keyboard-safe modal handling, Hero-enabled auction continuity, and localized empty or error states.
 - Phase 3 quiet states now expose only concrete recovery actions that the current architecture can honor, such as sign-in return paths and browse recovery, instead of generic retry affordances on cached Firestore reads.
 - Search filter chips now affect live result filtering for category, price band, ending-soon urgency, and buy-now availability instead of remaining decorative UI.
+- The search route now keeps the query field pinned while results scroll, so users can refine live search results without losing the primary input control.
 - Backend callables cover bootstrap, draft lifecycle, bid and auto-bid, buy now, payment-session preparation, payment confirmation, shipment update, receipt confirmation, and notification read state.
 - `cd backend/functions && npm run format:check` passed on March 25, 2026.
 - `cd backend/functions && npm run lint` passed on March 25, 2026.
