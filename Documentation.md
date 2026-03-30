@@ -73,6 +73,7 @@
   - Search now maps Firestore records through `features/search/data/search_auction_summary.dart`, keeps filtering logic in `features/search/application/search_auction_filter.dart`, and uses dedicated query, filter-chip, and result-grid widgets.
   - Search filter chips now drive real local filtering for category, price band, ending-soon urgency, and buy-now availability, so visible search controls no longer behave like decorative placeholders.
   - The search route now uses a sliver-based body with a pinned query-field header, keeping the primary search input visible while the result grid scrolls underneath.
+  - The search route now also keeps a local presentation-only layout mode, letting users switch the same filtered result set between large cards and a compact list without changing provider contracts or query behavior.
   - My now maps the user document through `features/my/data/my_profile_summary.dart`, keeps verification label logic separate, and composes account and verification blocks from dedicated widgets.
   - Notifications now reuse the shared app deep-link normalizer instead of carrying a screen-local route parser.
   - Auction detail now runs `placeBid`, `setAutoBid`, and `buyNow` from the sticky action bar when the viewer is an eligible buyer on a live auction, and redirects completed buy-now orders into `/orders/{orderId}`.

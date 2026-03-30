@@ -10,9 +10,11 @@ import '../../../core/widgets/app_section_heading.dart';
 import '../../../core/widgets/app_shell_insets.dart';
 import '../../../core/widgets/app_status_badge.dart';
 import '../application/search_auction_filter.dart';
+import 'search_results_layout.dart';
 import 'widgets/search_filter_chips.dart';
 import 'widgets/search_query_field.dart';
 import 'widgets/search_results_grid.dart';
+import 'widgets/search_results_layout_toggle.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -29,6 +31,7 @@ class _SearchScreenState extends State<SearchScreen> {
   String _query = '';
   String _debouncedQuery = '';
   SearchFilterState _filters = const SearchFilterState();
+  SearchResultsLayout _resultsLayout = SearchResultsLayout.grid;
 
   @override
   void dispose() {
@@ -98,6 +101,12 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  void _setResultsLayout(SearchResultsLayout layout) {
+    setState(() {
+      _resultsLayout = layout;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
@@ -163,10 +172,19 @@ class _SearchScreenState extends State<SearchScreen> {
                     title: context.l10n.searchResultsTitle,
                     subtitle: context.l10n.searchResultsSubtitle,
                   ),
+                  SizedBox(height: tokens.space3),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: SearchResultsLayoutToggle(
+                      layout: _resultsLayout,
+                      onChanged: _setResultsLayout,
+                    ),
+                  ),
                   SizedBox(height: tokens.space4),
-                  SearchResultsGrid(
+                  SearchResultsView(
                     query: _debouncedQuery,
                     filters: _filters,
+                    layout: _resultsLayout,
                     onResetQuery: _resetQuery,
                     onResetFilters: _resetFilters,
                   ),

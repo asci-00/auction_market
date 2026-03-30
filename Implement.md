@@ -26,6 +26,7 @@
 - Phase 3 quiet states now expose only concrete recovery actions that the current architecture can honor, such as sign-in return paths and browse recovery, instead of generic retry affordances on cached Firestore reads.
 - Search filter chips now affect live result filtering for category, price band, ending-soon urgency, and buy-now availability instead of remaining decorative UI.
 - The search route now keeps the query field pinned while results scroll, so users can refine live search results without losing the primary input control.
+- The search route now lets users switch between large auction cards and a compact list, so discovery can adapt to browsing or scanning without changing the underlying query and filter logic.
 - Backend callables cover bootstrap, draft lifecycle, bid and auto-bid, buy now, payment-session preparation, payment confirmation, shipment update, receipt confirmation, and notification read state.
 - `cd backend/functions && npm run format:check` passed on March 25, 2026.
 - `cd backend/functions && npm run lint` passed on March 25, 2026.

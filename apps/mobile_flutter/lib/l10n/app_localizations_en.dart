@@ -171,6 +171,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchResultsSubtitle => 'Live auctions are filtered in real time from your current query.';
 
   @override
+  String get searchLayoutGrid => 'Grid';
+
+  @override
+  String get searchLayoutList => 'List';
+
+  @override
   String get searchEmptyTitle => 'No auctions match yet';
 
   @override
