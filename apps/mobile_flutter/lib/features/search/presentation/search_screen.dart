@@ -171,11 +171,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   AppSectionHeading(
                     title: context.l10n.searchResultsTitle,
                     subtitle: context.l10n.searchResultsSubtitle,
-                  ),
-                  SizedBox(height: tokens.space3),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: SearchResultsLayoutToggle(
+                    trailing: SearchResultsLayoutToggle(
                       layout: _resultsLayout,
                       onChanged: _setResultsLayout,
                     ),

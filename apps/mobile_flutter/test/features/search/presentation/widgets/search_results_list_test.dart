@@ -40,22 +40,37 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('layout toggle reports the selected mode', (tester) async {
-    SearchResultsLayout? selected;
+  testWidgets('layout toggle reports both directions and flips tooltip', (
+    tester,
+  ) async {
+    SearchResultsLayout layout = SearchResultsLayout.grid;
 
-    await tester.pumpWidget(
-      _TestApp(
-        child: SearchResultsLayoutToggle(
-          layout: SearchResultsLayout.grid,
-          onChanged: (layout) => selected = layout,
+    Future<void> pumpToggle() async {
+      await tester.pumpWidget(
+        _TestApp(
+          child: SearchResultsLayoutToggle(
+            layout: layout,
+            onChanged: (nextLayout) => layout = nextLayout,
+          ),
         ),
-      ),
-    );
+      );
+      await tester.pumpAndSettle();
+    }
 
-    await tester.tap(find.text('List'));
-    await tester.pumpAndSettle();
+    await pumpToggle();
+    expect(find.byTooltip('Show list view'), findsOneWidget);
 
-    expect(selected, SearchResultsLayout.list);
+    await tester.tap(find.byTooltip('Show list view'));
+    await pumpToggle();
+
+    expect(layout, SearchResultsLayout.list);
+    expect(find.byTooltip('Show grid view'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Show grid view'));
+    await pumpToggle();
+
+    expect(layout, SearchResultsLayout.grid);
+    expect(find.byTooltip('Show list view'), findsOneWidget);
   });
 }
 

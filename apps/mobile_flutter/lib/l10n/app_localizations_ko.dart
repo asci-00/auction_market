@@ -171,10 +171,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get searchResultsSubtitle => '현재 조건에 맞는 라이브 경매를 실시간으로 정리합니다.';
 
   @override
-  String get searchLayoutGrid => '그리드';
+  String get searchLayoutSwitchToGrid => '그리드 보기로 전환';
 
   @override
-  String get searchLayoutList => '리스트';
+  String get searchLayoutSwitchToList => '리스트 보기로 전환';
 
   @override
   String get searchEmptyTitle => '아직 맞는 경매가 없습니다';

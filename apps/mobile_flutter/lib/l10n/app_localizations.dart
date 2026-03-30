@@ -419,17 +419,17 @@ abstract class AppLocalizations {
   /// **'Live auctions are filtered in real time from your current query.'**
   String get searchResultsSubtitle;
 
-  /// No description provided for @searchLayoutGrid.
+  /// No description provided for @searchLayoutSwitchToGrid.
   ///
   /// In en, this message translates to:
-  /// **'Grid'**
-  String get searchLayoutGrid;
+  /// **'Show grid view'**
+  String get searchLayoutSwitchToGrid;
 
-  /// No description provided for @searchLayoutList.
+  /// No description provided for @searchLayoutSwitchToList.
   ///
   /// In en, this message translates to:
-  /// **'List'**
-  String get searchLayoutList;
+  /// **'Show list view'**
+  String get searchLayoutSwitchToList;
 
   /// No description provided for @searchEmptyTitle.
   ///
