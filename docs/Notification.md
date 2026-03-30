@@ -137,7 +137,14 @@
   - debug-only developer settings
 
 ## Payload Contract
-- Each push payload must include:
+- Current inbox documents written by backend Functions include:
+  - `type`
+  - `title`
+  - `body`
+  - `deeplink`
+  - `isRead`
+  - `createdAt`
+- Planned Phase 4 push payloads should include:
   - `notificationId`
   - `category`
   - `deeplink`
@@ -145,7 +152,7 @@
   - `body`
   - `timestamp`
   - one related entity id such as `auctionId` or `orderId`
-- Each inbox document must keep the same logical event identity as the push payload.
+- Until the push payload contract is implemented, inbox documents keep event identity through `type`, `deeplink`, and `createdAt`.
 - Client routing must use the existing deep-link resolver and must not add a separate push-only routing format.
 
 ## Client Behavior
@@ -161,7 +168,7 @@
 ## Token Lifecycle
 - Register the device token only after sign-in and permission grant.
 - Refresh the stored token when Firebase Messaging rotates it.
-- Remove or deactivate the token on sign-out.
+- Sign-out currently calls `auth.signOut` only; token deactivation remains follow-up work before Phase 4 notification delivery is considered complete.
 - Keep token records scoped per signed-in user and per app installation.
 - Store token records under `users/{uid}/deviceTokens/{tokenId}` as documented in `Documentation.md`.
 - Token records should capture at least:
