@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/l10n/app_localization.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_section_heading.dart';
-import '../../../../core/widgets/app_status_badge.dart';
 import '../../data/home_auction_summary.dart';
 import 'home_auction_rail.dart';
 
@@ -34,7 +33,7 @@ class HomeCuratedCategoryRows extends StatelessWidget {
           title: context.l10n.homeCuratedGoodsTitle,
           subtitle: context.l10n.homeCuratedGoodsSubtitle,
           trailing: TextButton(
-            onPressed: () => context.go('/search'),
+            onPressed: () => context.go('/search?category=goods'),
             child: Text(context.l10n.homeSectionViewAll),
           ),
         ),
@@ -51,7 +50,7 @@ class HomeCuratedCategoryRows extends StatelessWidget {
           title: context.l10n.homeCuratedPreciousTitle,
           subtitle: context.l10n.homeCuratedPreciousSubtitle,
           trailing: TextButton(
-            onPressed: () => context.go('/search'),
+            onPressed: () => context.go('/search?category=precious'),
             child: Text(context.l10n.homeSectionViewAll),
           ),
         ),
@@ -60,7 +59,6 @@ class HomeCuratedCategoryRows extends StatelessWidget {
           auctions: precious,
           isLoading: isLoading,
           heroNamespace: 'home-precious',
-          defaultBadge: AppStatusKind.verified,
           onTapAuction: onTapAuction,
         ),
       ],

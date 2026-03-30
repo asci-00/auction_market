@@ -43,11 +43,14 @@ void main() {
   testWidgets('layout toggle reports both directions and flips tooltip', (
     tester,
   ) async {
+    const locale = Locale('en');
+    final l10n = await AppLocalizations.delegate.load(locale);
     SearchResultsLayout layout = SearchResultsLayout.grid;
 
     Future<void> pumpToggle() async {
       await tester.pumpWidget(
         _TestApp(
+          locale: locale,
           child: SearchResultsLayoutToggle(
             layout: layout,
             onChanged: (nextLayout) => layout = nextLayout,
@@ -58,26 +61,27 @@ void main() {
     }
 
     await pumpToggle();
-    expect(find.byTooltip('Show list view'), findsOneWidget);
+    expect(find.byTooltip(l10n.searchLayoutSwitchToList), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Show list view'));
+    await tester.tap(find.byTooltip(l10n.searchLayoutSwitchToList));
     await pumpToggle();
 
     expect(layout, SearchResultsLayout.list);
-    expect(find.byTooltip('Show grid view'), findsOneWidget);
+    expect(find.byTooltip(l10n.searchLayoutSwitchToGrid), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Show grid view'));
+    await tester.tap(find.byTooltip(l10n.searchLayoutSwitchToGrid));
     await pumpToggle();
 
     expect(layout, SearchResultsLayout.grid);
-    expect(find.byTooltip('Show list view'), findsOneWidget);
+    expect(find.byTooltip(l10n.searchLayoutSwitchToList), findsOneWidget);
   });
 }
 
 class _TestApp extends StatelessWidget {
-  const _TestApp({required this.child});
+  const _TestApp({required this.child, this.locale});
 
   final Widget child;
+  final Locale? locale;
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +89,7 @@ class _TestApp extends StatelessWidget {
       theme: AppTheme.light(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: supportedAppLocales,
+      locale: locale,
       localeResolutionCallback: resolveAppLocale,
       home: Scaffold(body: Center(child: child)),
     );

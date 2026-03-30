@@ -17,7 +17,12 @@ import 'widgets/search_results_grid.dart';
 import 'widgets/search_results_layout_toggle.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  const SearchScreen({
+    super.key,
+    this.initialCategory = SearchCategoryFilter.all,
+  });
+
+  final SearchCategoryFilter initialCategory;
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -30,8 +35,14 @@ class _SearchScreenState extends State<SearchScreen> {
   late final Debouncer _queryDebouncer = Debouncer(_searchDebounce);
   String _query = '';
   String _debouncedQuery = '';
-  SearchFilterState _filters = const SearchFilterState();
+  late SearchFilterState _filters;
   SearchResultsLayout _resultsLayout = SearchResultsLayout.grid;
+
+  @override
+  void initState() {
+    super.initState();
+    _filters = SearchFilterState(category: widget.initialCategory);
+  }
 
   @override
   void dispose() {

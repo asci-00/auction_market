@@ -85,6 +85,14 @@ SearchCategoryFilter nextSearchCategoryFilter(SearchCategoryFilter current) {
   };
 }
 
+SearchCategoryFilter parseSearchCategoryFilter(String? value) {
+  return switch (value) {
+    'goods' => SearchCategoryFilter.goods,
+    'precious' => SearchCategoryFilter.precious,
+    _ => SearchCategoryFilter.all,
+  };
+}
+
 SearchPriceFilter nextSearchPriceFilter(SearchPriceFilter current) {
   return switch (current) {
     SearchPriceFilter.all => SearchPriceFilter.under50k,

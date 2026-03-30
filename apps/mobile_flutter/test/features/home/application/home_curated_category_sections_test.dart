@@ -49,4 +49,26 @@ void main() {
     expect(sections.goods, hasLength(1));
     expect(sections.goods.single.id, 'shared-goods');
   });
+
+  test('limits each curated category to six auctions', () {
+    final sections = buildHomeCuratedCategorySections(
+      endingSoon: List.generate(
+        10,
+        (index) => auction(id: 'goods-$index', categoryMain: 'GOODS'),
+      ),
+      hot: const [],
+    );
+
+    expect(sections.goods, hasLength(6));
+  });
+
+  test('returns empty category sections when inputs are empty', () {
+    final sections = buildHomeCuratedCategorySections(
+      endingSoon: const [],
+      hot: const [],
+    );
+
+    expect(sections.goods, isEmpty);
+    expect(sections.precious, isEmpty);
+  });
 }
