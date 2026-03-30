@@ -17,19 +17,21 @@ class SearchResultsGrid extends ConsumerWidget {
   const SearchResultsGrid({
     super.key,
     required this.query,
+    required this.searchQuery,
     required this.filters,
     required this.onResetQuery,
     required this.onResetFilters,
   });
 
   final String query;
+  final String searchQuery;
   final SearchFilterState filters;
   final VoidCallback onResetQuery;
   final VoidCallback onResetFilters;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final searchAsync = ref.watch(searchViewModelProvider(query));
+    final searchAsync = ref.watch(searchViewModelProvider(searchQuery));
 
     return searchAsync.when(
       error: (_, __) => AppEmptyState(
@@ -53,7 +55,7 @@ class SearchResultsGrid extends ConsumerWidget {
       data: (state) {
         final filtered = applySearchSelectionFilters(state.results, filters);
         if (filtered.isEmpty) {
-          final hasQuery = query.trim().isNotEmpty;
+          final hasQuery = query.isNotEmpty;
           final hasFilters = filters.hasActiveSelection;
 
           return AppEmptyState(
