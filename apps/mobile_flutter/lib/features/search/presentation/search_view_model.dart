@@ -16,12 +16,8 @@ class SearchViewState {
 
   final List<SearchAuctionSummary> results;
 
-  SearchViewState copyWith({
-    List<SearchAuctionSummary>? results,
-  }) {
-    return SearchViewState(
-      results: results ?? this.results,
-    );
+  SearchViewState copyWith({List<SearchAuctionSummary>? results}) {
+    return SearchViewState(results: results ?? this.results);
   }
 }
 
@@ -33,14 +29,14 @@ class SearchViewModel extends _$SearchViewModel {
   Future<SearchViewState> build(String query) async {
     final stream = _searchAuctionsStream(ref);
     final first = await stream.first;
-    final initial = filterSearchAuctions(first, query);
+    final initial = filterSearchAuctions(first, query: query);
 
     ref.onDispose(() {
       _sub?.cancel();
     });
 
     _sub = stream.listen((auctions) {
-      final filtered = filterSearchAuctions(auctions, query);
+      final filtered = filterSearchAuctions(auctions, query: query);
       final current = state.valueOrNull ?? SearchViewState(results: filtered);
       state = AsyncData(current.copyWith(results: filtered));
     });

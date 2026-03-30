@@ -15,6 +15,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retry => 'Try again';
 
   @override
+  String get genericSignInAction => 'Sign in';
+
+  @override
   String get loadingApp => 'Preparing your marketplace';
 
   @override
@@ -141,6 +144,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchFilterPrice => 'Price';
 
   @override
+  String get searchFilterCategoryGoods => 'Goods';
+
+  @override
+  String get searchFilterCategoryPrecious => 'Precious';
+
+  @override
+  String get searchFilterPriceUnder50k => 'Under ₩50k';
+
+  @override
+  String get searchFilterPrice50kTo200k => '₩50k to ₩200k';
+
+  @override
+  String get searchFilterPriceOver200k => 'Over ₩200k';
+
+  @override
   String get searchFilterEndingSoon => 'Ending soon';
 
   @override
@@ -163,6 +181,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchResetAction => 'Clear query';
+
+  @override
+  String get searchResetFiltersAction => 'Reset filters';
 
   @override
   String get loginHeroEyebrow => 'Trusted access';

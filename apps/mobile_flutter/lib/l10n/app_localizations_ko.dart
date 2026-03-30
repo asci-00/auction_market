@@ -15,6 +15,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get retry => '다시 시도';
 
   @override
+  String get genericSignInAction => '로그인';
+
+  @override
   String get loadingApp => '앱 환경을 준비하고 있습니다';
 
   @override
@@ -141,6 +144,21 @@ class AppLocalizationsKo extends AppLocalizations {
   String get searchFilterPrice => '가격대';
 
   @override
+  String get searchFilterCategoryGoods => '일반 상품';
+
+  @override
+  String get searchFilterCategoryPrecious => '귀금속';
+
+  @override
+  String get searchFilterPriceUnder50k => '5만원 이하';
+
+  @override
+  String get searchFilterPrice50kTo200k => '5만~20만원';
+
+  @override
+  String get searchFilterPriceOver200k => '20만원 초과';
+
+  @override
   String get searchFilterEndingSoon => '마감 임박';
 
   @override
@@ -163,6 +181,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get searchResetAction => '검색 초기화';
+
+  @override
+  String get searchResetFiltersAction => '필터 초기화';
 
   @override
   String get loginHeroEyebrow => '안전한 시작';
@@ -352,7 +373,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String auctionDetailBidAction(Object amount) {
-    return '입찰 시작 $amount';
+    return '$amount부터 입찰';
   }
 
   @override

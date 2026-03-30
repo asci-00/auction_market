@@ -71,13 +71,9 @@ class SellImagePickerPanel extends StatelessWidget {
 }
 
 class _ImagePreviewTile extends StatelessWidget {
-  const _ImagePreviewTile.network({
-    required this.url,
-  }) : path = null;
+  const _ImagePreviewTile.network({required this.url}) : path = null;
 
-  const _ImagePreviewTile.local({
-    required this.path,
-  }) : url = null;
+  const _ImagePreviewTile.local({required this.path}) : url = null;
 
   final String? url;
   final String? path;
@@ -110,10 +106,17 @@ class _ImageFallbackTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox.expand(
+    final brightness = Theme.of(context).brightness;
+
+    return SizedBox.expand(
       child: DecoratedBox(
-        decoration: BoxDecoration(color: AppColors.bgMuted),
-        child: Center(child: Icon(Icons.broken_image_outlined)),
+        decoration: BoxDecoration(color: AppColors.bgMutedFor(brightness)),
+        child: Center(
+          child: Icon(
+            Icons.broken_image_outlined,
+            color: AppColors.textSecondaryFor(brightness),
+          ),
+        ),
       ),
     );
   }

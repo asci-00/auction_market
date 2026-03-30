@@ -29,6 +29,11 @@ class ActivitySellerCard extends StatelessWidget {
         icon: Icons.local_shipping_outlined,
         title: context.l10n.activitySellerCardTitle,
         description: context.l10n.activitySignedOutDescription,
+        action: TextButton(
+          onPressed: () =>
+              context.go('/login?from=${Uri.encodeComponent('/activity')}'),
+          child: Text(context.l10n.genericSignInAction),
+        ),
       );
     }
 

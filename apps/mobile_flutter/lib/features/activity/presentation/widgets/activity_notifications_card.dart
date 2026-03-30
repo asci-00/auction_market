@@ -29,6 +29,11 @@ class ActivityNotificationsCard extends StatelessWidget {
         icon: Icons.notifications_outlined,
         title: context.l10n.activityNotificationsCardTitle,
         description: context.l10n.activitySignedOutDescription,
+        action: TextButton(
+          onPressed: () =>
+              context.go('/login?from=${Uri.encodeComponent('/activity')}'),
+          child: Text(context.l10n.genericSignInAction),
+        ),
       );
     }
 

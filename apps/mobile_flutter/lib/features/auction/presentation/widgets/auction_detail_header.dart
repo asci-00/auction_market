@@ -8,11 +8,7 @@ import '../../../../core/widgets/app_status_badge.dart';
 import '../../data/auction_detail_view_data.dart';
 
 class AuctionDetailHeader extends StatelessWidget {
-  const AuctionDetailHeader({
-    super.key,
-    required this.auction,
-    this.heroTag,
-  });
+  const AuctionDetailHeader({super.key, required this.auction, this.heroTag});
 
   final AuctionDetailViewData auction;
   final String? heroTag;
@@ -20,6 +16,7 @@ class AuctionDetailHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
 
     return AppPanel(
       tone: AppPanelTone.dark,
@@ -34,13 +31,17 @@ class AuctionDetailHeader extends StatelessWidget {
               _DetailHeroImage(
                 imageUrl: auction.heroImageUrl,
                 heroTag: heroTag,
+                brightness: brightness,
               ),
-              const DecoratedBox(
+              DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, AppColors.panelOverlay],
+                    colors: [
+                      Colors.transparent,
+                      AppColors.panelOverlayFor(brightness),
+                    ],
                   ),
                 ),
               ),
@@ -85,10 +86,12 @@ class _DetailHeroImage extends StatelessWidget {
   const _DetailHeroImage({
     required this.imageUrl,
     required this.heroTag,
+    required this.brightness,
   });
 
   final String? imageUrl;
   final String? heroTag;
+  final Brightness brightness;
 
   @override
   Widget build(BuildContext context) {
@@ -96,35 +99,35 @@ class _DetailHeroImage extends StatelessWidget {
         ? Image.network(
             imageUrl!,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const _DetailFallbackImage(),
+            errorBuilder: (_, __, ___) =>
+                _DetailFallbackImage(brightness: brightness),
           )
-        : const _DetailFallbackImage();
+        : _DetailFallbackImage(brightness: brightness);
 
     if (heroTag == null) {
       return image;
     }
 
-    return Hero(
-      tag: heroTag!,
-      child: image,
-    );
+    return Hero(tag: heroTag!, child: image);
   }
 }
 
 class _DetailFallbackImage extends StatelessWidget {
-  const _DetailFallbackImage();
+  const _DetailFallbackImage({required this.brightness});
+
+  final Brightness brightness;
 
   @override
   Widget build(BuildContext context) {
-    return const DecoratedBox(
+    return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.sand,
-            AppColors.accentPrimarySoft,
-            AppColors.panel,
+            AppColors.bgMutedFor(brightness),
+            AppColors.accentPrimarySoftFor(brightness),
+            AppColors.panelFor(brightness),
           ],
         ),
       ),

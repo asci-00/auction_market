@@ -29,6 +29,11 @@ class ActivityBuyerCard extends StatelessWidget {
         icon: Icons.receipt_long_outlined,
         title: context.l10n.activityBuyerCardTitle,
         description: context.l10n.activitySignedOutDescription,
+        action: TextButton(
+          onPressed: () =>
+              context.go('/login?from=${Uri.encodeComponent('/activity')}'),
+          child: Text(context.l10n.genericSignInAction),
+        ),
       );
     }
 
@@ -55,10 +60,10 @@ class ActivityBuyerCard extends StatelessWidget {
               summary!.pendingPaymentCount,
             )
           : summary!.awaitingReceiptCount > 0
-              ? context.l10n.activityBuyerAwaitingReceiptSubtitle(
-                  summary!.awaitingReceiptCount,
-                )
-              : context.l10n.activityBuyerCardDescription,
+          ? context.l10n.activityBuyerAwaitingReceiptSubtitle(
+              summary!.awaitingReceiptCount,
+            )
+          : context.l10n.activityBuyerCardDescription,
       primaryMetric: '$totalAttentionCount',
       metricLabel: context.l10n.activityBuyerMetricLabel,
       badgeKind: totalAttentionCount > 0

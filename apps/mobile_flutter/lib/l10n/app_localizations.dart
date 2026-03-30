@@ -107,6 +107,12 @@ abstract class AppLocalizations {
   /// **'Try again'**
   String get retry;
 
+  /// No description provided for @genericSignInAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get genericSignInAction;
+
   /// No description provided for @loadingApp.
   ///
   /// In en, this message translates to:
@@ -359,6 +365,36 @@ abstract class AppLocalizations {
   /// **'Price'**
   String get searchFilterPrice;
 
+  /// No description provided for @searchFilterCategoryGoods.
+  ///
+  /// In en, this message translates to:
+  /// **'Goods'**
+  String get searchFilterCategoryGoods;
+
+  /// No description provided for @searchFilterCategoryPrecious.
+  ///
+  /// In en, this message translates to:
+  /// **'Precious'**
+  String get searchFilterCategoryPrecious;
+
+  /// No description provided for @searchFilterPriceUnder50k.
+  ///
+  /// In en, this message translates to:
+  /// **'Under ₩50k'**
+  String get searchFilterPriceUnder50k;
+
+  /// No description provided for @searchFilterPrice50kTo200k.
+  ///
+  /// In en, this message translates to:
+  /// **'₩50k to ₩200k'**
+  String get searchFilterPrice50kTo200k;
+
+  /// No description provided for @searchFilterPriceOver200k.
+  ///
+  /// In en, this message translates to:
+  /// **'Over ₩200k'**
+  String get searchFilterPriceOver200k;
+
   /// No description provided for @searchFilterEndingSoon.
   ///
   /// In en, this message translates to:
@@ -406,6 +442,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear query'**
   String get searchResetAction;
+
+  /// No description provided for @searchResetFiltersAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset filters'**
+  String get searchResetFiltersAction;
 
   /// No description provided for @loginHeroEyebrow.
   ///

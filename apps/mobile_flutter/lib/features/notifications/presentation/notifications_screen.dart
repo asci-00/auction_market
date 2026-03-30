@@ -72,6 +72,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 icon: Icons.notifications_active_outlined,
                 title: l10n.notificationsEmptyTitle,
                 description: l10n.notificationsEmptyDescription,
+                action: TextButton(
+                  onPressed: () => context.go(
+                    '/login?from=${Uri.encodeComponent('/notifications')}',
+                  ),
+                  child: Text(l10n.genericSignInAction),
+                ),
               )
             else
               _NotificationsBody(

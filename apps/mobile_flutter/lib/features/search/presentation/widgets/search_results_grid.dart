@@ -10,17 +10,22 @@ import '../../../../core/widgets/app_live_countdown_text.dart';
 import '../../../../core/widgets/app_motion.dart';
 import '../../../../core/widgets/app_shimmer.dart';
 import '../../../../core/widgets/app_status_badge.dart';
+import '../../application/search_auction_filter.dart';
 import '../search_view_model.dart';
 
 class SearchResultsGrid extends ConsumerWidget {
   const SearchResultsGrid({
     super.key,
     required this.query,
+    required this.filters,
     required this.onResetQuery,
+    required this.onResetFilters,
   });
 
   final String query;
+  final SearchFilterState filters;
   final VoidCallback onResetQuery;
+  final VoidCallback onResetFilters;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -46,16 +51,33 @@ class SearchResultsGrid extends ConsumerWidget {
             const AppShimmerCardPlaceholder(height: double.infinity),
       ),
       data: (state) {
-        final filtered = state.results;
+        final filtered = applySearchSelectionFilters(state.results, filters);
         if (filtered.isEmpty) {
+          final hasQuery = query.trim().isNotEmpty;
+          final hasFilters = filters.hasActiveSelection;
+
           return AppEmptyState(
             icon: Icons.grid_view_rounded,
             title: context.l10n.searchEmptyTitle,
             description: context.l10n.searchEmptyDescription,
-            action: TextButton(
-              onPressed: onResetQuery,
-              child: Text(context.l10n.searchResetAction),
-            ),
+            action: hasQuery || hasFilters
+                ? Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      if (hasFilters)
+                        TextButton(
+                          onPressed: onResetFilters,
+                          child: Text(context.l10n.searchResetFiltersAction),
+                        ),
+                      if (hasQuery)
+                        TextButton(
+                          onPressed: onResetQuery,
+                          child: Text(context.l10n.searchResetAction),
+                        ),
+                    ],
+                  )
+                : null,
           );
         }
 

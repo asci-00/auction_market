@@ -164,6 +164,20 @@
 - Show profile, verification states, seller grade summary, and settings.
 - Keep settings secondary. Surface trust and selling readiness first.
 
+### Settings
+
+- Settings entry should be reachable from the app bar on screens where it feels expected, and from the `My` area as a persistent fallback.
+- Group settings into clear sections:
+  - notifications
+  - appearance
+  - language
+  - app info
+  - developer options in debug builds only
+- Use switch rows for notification preferences and segmented or radio-style selection for theme and language where the choice count is small.
+- Show OS notification-permission status with a short explanation and a direct recovery action when permission is denied.
+- App version and open-source licenses belong in a quiet informational section near the bottom.
+- Developer settings must never appear in release builds.
+
 ## Accessibility Rules
 
 - Maintain text contrast that meets accessibility guidelines.

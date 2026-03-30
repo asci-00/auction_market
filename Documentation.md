@@ -4,6 +4,7 @@
 - This file is the implementation contract for schema, write paths, environment loading, and operations.
 - `docs/Design.md` is the visual and UX contract.
 - `docs/Environment.md` is the external config contract.
+- `docs/Notification.md` is the push-notification and inbox-delivery contract.
 - `Implement.md` is the live execution log.
 
 ## Repo Layout
@@ -15,15 +16,14 @@
 
 ## Environment Model
 - `dev`: local emulator for Auth, Functions, Firestore, and Storage. Uses seeded data only.
-- `staging`: real Firebase project plus Toss test credentials.
-- `prod`: real Firebase project plus Toss production credentials.
+- `staging`: real Firebase project plus the selected payment-provider test credentials after cutover is explicitly activated.
+- `prod`: real Firebase project plus the selected payment-provider production credentials after cutover is explicitly activated.
 - When a third-party dependency is not ready yet, `dev` may expose server-driven dummy integration payloads so the mobile app can validate the surrounding product flow before the final real handoff is wired.
-- As of March 25, 2026, all Phase 3 product flow work that can be validated in `dev` is complete. The only remaining Phase 3 gap is the final real Toss launcher cutover, which is blocked on external values.
-- While that final real Toss launcher cutover is blocked, mobile UI and UX polish work should continue inside Phase 3 rather than wait for a separate milestone.
+- External PG cutover planning is tracked only in `Plan.md` under `Phase Undecided`.
 - The app switches environment only through build-time public config for `APP_ENV`, emulator mode, and other non-secret app settings.
 - Backend runtime switches environment only through env variables.
 - Flutter mobile boot on iOS and Android reads Firebase app registration from native platform files instead of `dart-define` values.
-- Mobile locale selection follows the device locale and falls back to Korean when the device language is unsupported.
+- Mobile locale selection defaults to the device locale and falls back to Korean when the device language is unsupported. When a persisted in-app override is added, it may only select `ko` or `en`.
 
 ## Mobile App Architecture
 - Use feature-first folders with `presentation`, `application`, `domain`, and `data`.
@@ -38,7 +38,7 @@
   - `widgets`: reusable layout and interaction components.
 - Current Phase 1 implementation details:
   - `lib/main.dart` installs zoned startup error capture for Flutter framework and platform errors.
-  - `lib/core/app_config/app_config.dart` validates only non-secret app defines such as `APP_ENV`, emulator mode, and Toss client key.
+  - `lib/core/app_config/app_config.dart` validates only non-secret app defines such as `APP_ENV`, emulator mode, and the currently wired payment launch key when the active adapter needs one.
   - `lib/core/firebase/firebase_bootstrap.dart` initializes Firebase from native iOS and Android config files, then attaches Auth, Firestore, Functions, and Storage emulators when enabled.
   - `lib/core/l10n/app_localization.dart` resolves device locale to `ko` or `en` and exposes generated localization accessors.
   - `lib/core/extensions/build_context_x.dart` centralizes repeated `BuildContext` lookups like `Theme.of`, `ScaffoldMessenger.of`, `MediaQuery.of`, `Navigator.of`, and `GoRouter.of`.
@@ -67,17 +67,20 @@
   - Shared editorial hero, empty-state, shimmer, badge, and auction-card widgets now resolve theme-aware colors too, so common reusable surfaces do not leak the light palette back into dark mode routes.
   - Shared loading-overlay barriers, order payment helper plates, activity stat icon tiles, and home action buttons now resolve theme-aware nested surfaces as well, so dark mode no longer mixes bright inset cards into otherwise warm dark flows.
   - Transactional order dialogs, payment sheets, and auction amount dialogs now route through a shared `core/widgets/app_modal.dart` helper, which keeps modal barrier tone and fade-plus-rise presentation aligned with route transitions and loading overlays.
+  - Auction detail header overlays and fallback gradients, sell image fallback tiles, login support copy panels, and payment return status labels now resolve brightness-aware tokens too, so dark mode no longer falls back to light-only inset colors in those live user flows.
   - Activity now keeps queue summary mapping in `features/activity/data` and composes buyer, seller, and notification stream cards from dedicated widgets instead of using static navigation-only tiles.
   - Home now maps auction rail documents through `features/home/data/home_auction_summary.dart` and keeps reusable rail and action button widgets in `features/home/presentation/widgets`.
   - Search now maps Firestore records through `features/search/data/search_auction_summary.dart`, keeps filtering logic in `features/search/application/search_auction_filter.dart`, and uses dedicated query, filter-chip, and result-grid widgets.
+  - Search filter chips now drive real local filtering for category, price band, ending-soon urgency, and buy-now availability, so visible search controls no longer behave like decorative placeholders.
   - My now maps the user document through `features/my/data/my_profile_summary.dart`, keeps verification label logic separate, and composes account and verification blocks from dedicated widgets.
   - Notifications now reuse the shared app deep-link normalizer instead of carrying a screen-local route parser.
   - Auction detail now runs `placeBid`, `setAutoBid`, and `buyNow` from the sticky action bar when the viewer is an eligible buyer on a live auction, and redirects completed buy-now orders into `/orders/{orderId}`.
   - Orders now routes `createPaymentSession`, `confirmOrderPayment`, `shipmentUpdate`, and `confirmReceipt` through `features/orders/application/order_action_service.dart`, and notifications call `markNotificationRead` before deep-link navigation.
-  - Orders now resolves payment handoff semantics through `features/orders/application/order_payment_handoff_service.dart`, so `DEV_DUMMY`, launcher-ready Toss, and manual payment-key fallback states stay out of the order list widget.
-  - Buyer order cards now surface `AWAITING_PAYMENT` actions, prepare the payment session in-app, and in `dev` can complete a server-driven dummy payment key path before the final Toss checkout handoff values are available.
+  - Orders now resolves payment handoff semantics through `features/orders/application/order_payment_handoff_service.dart`, so `DEV_DUMMY`, provider-launch-ready mode, and manual payment-key fallback states stay out of the order list widget.
+  - Buyer order cards now surface `AWAITING_PAYMENT` actions, prepare the payment session in-app, and in `dev` can complete a server-driven dummy payment key path before the final real provider handoff values are available.
   - Payment return handling now lives in `features/orders/presentation/order_payment_return_screen.dart`, where `/payments/success` confirms a returned payment payload and `/payments/fail` routes the buyer back to recovery actions.
   - The order payment sheet now presents handoff state as premium recovery UI, separating `DEV_DUMMY`, prepared return-path, and manual payment-key fallback into distinct panels and next-step guidance instead of relying on one generic status paragraph.
+  - Orders, notifications, and activity quiet states now attach only architecture-valid navigation recovery actions such as signed-in return routing or browse recovery, instead of generic retry affordances on cached Firestore read paths.
   - Sell uses `image_picker` plus Firebase Storage upload paths under `users/{uid}/items/{itemId}/gallery/*` and `users/{uid}/auth/{itemId}/*`, then persists draft data through `createOrUpdateItem` before publish.
   - Sell drafts now persist `draftAuction.startPrice`, `draftAuction.buyNowPrice`, and `draftAuction.durationDays` on `items/{itemId}`, so sellers can reload pricing intent before publishing.
   - Activity now reads `orders` and `notifications/{uid}/inbox` directly to highlight pending buyer payments, buyer receipt confirmations, seller shipment work, and unread inbox updates in one screen.
@@ -85,7 +88,7 @@
   - Search, orders, sell drafts, activity cards, bid history, my verification, and startup loading now use shimmer placeholders instead of centered progress spinners where the final layout is already known.
   - Auction cards can now pass a scoped Hero tag into auction detail, and the detail header reuses that same image layer so image-first navigation feels continuous without duplicate-tag collisions across home rails.
   - Auction detail content now reserves additional bottom inset above the sticky action bar so the final bid history and seller summary content stay readable on small safe-area devices.
-  - Pre-cutover Phase 3 polish work should prioritize dark mode parity, overflow and keyboard-safety fixes, blur tuning, barrier tuning, async-feedback timing, and route-transition smoothness before the final real Toss launcher handoff begins.
+  - Pre-cutover Phase 3 polish work should prioritize dark mode parity, overflow and keyboard-safety fixes, blur tuning, barrier tuning, async-feedback timing, and route-transition smoothness before any explicit real PG cutover begins.
   - Shared blocking loading states must use `apps/mobile_flutter/assets/lotties/loading.lottie`, with shimmer preferred over modal loading when the destination layout is already known.
 - Home, search, auction detail, orders, notifications, and my pages render from live Firestore read paths and fall back to localized empty or unavailable states when documents are missing.
 - Read data directly from Firestore and Storage-backed URLs.
@@ -96,13 +99,13 @@
 
 ## Localization Contract
 - Supported locales are `ko` and `en` only.
-- Locale resolution is device-driven. The app does not persist a manual locale override in v1.
+- Locale resolution defaults to the device locale. When a settings override exists, it wins over the device locale but may only select `ko` or `en`.
 - Static user-facing copy must come from generated localizations, not hardcoded strings in widgets.
 - Dynamic Firestore content may remain backend-authored text, but fallback labels, badges, and empty/error states must be localized in the app.
 
 ## Backend Implementation Notes
-- `backend/functions/src/config/runtime.ts` validates backend runtime env such as `APP_ENV`, `GCLOUD_PROJECT`, Toss secrets, Toss API base URL, and the presence of `APP_BASE_URL` when it is required by the active payment mode.
-- `backend/functions/src/domain/paymentEngine.ts` owns payment confirmation idempotency helpers, webhook normalization, and payment state transitions.
+- `backend/functions/src/config/runtime.ts` validates backend runtime env such as `APP_ENV`, `GCLOUD_PROJECT`, provider secrets for the active payment adapter, provider API base URL, and the presence of `APP_BASE_URL` when it is required by the active payment mode.
+- `backend/functions/src/domain/paymentEngine.ts` owns payment confirmation idempotency helpers, provider webhook normalization, and payment state transitions.
 - `backend/functions/eslint.config.mjs` now runs ESLint for `src`, `test`, and `scripts`, while `.prettierrc.json` and package scripts provide a repeatable formatting check for TypeScript files before commit.
 - `backend/functions/src/index.ts` now exports the Phase 2 callable and scheduler surface:
   - `bootstrapUserProfile`
@@ -125,9 +128,9 @@
   - `settleScheduler`
 - Critical transitions now write `auditEvents` records for user bootstrap, item and auction lifecycle, bids, payment confirmation and failure, shipment, receipt confirmation, unpaid expiry, and settlement.
 - `createPaymentSession` now returns `mode: "DEV_DUMMY"` plus a deterministic `devPaymentKey` in `dev`, so the mobile app can validate buyer payment progression without pretending to launch a production checkout.
-- The `DEV_DUMMY` payment path is emulator-only. If the backend is not running under the Firebase Emulator Suite, `createPaymentSession` falls back to `mode: "TOSS"` and requires `APP_BASE_URL` for success and fail return URLs.
+- The `DEV_DUMMY` payment path is emulator-only. If the backend is not running under the Firebase Emulator Suite, `createPaymentSession` falls back to the currently wired real provider mode and requires `APP_BASE_URL` for success and fail return URLs.
 - The payment domain normalizes `APP_BASE_URL` before success and fail URLs are built, so trailing slashes or stray query strings do not leak into `/payments/success` and `/payments/fail`, while `runtime.ts` remains responsible only for the base environment validation.
-- The Toss webhook path verifies the configured webhook secret from the payload, applies idempotent payment transitions through `payment.lastWebhookEventId`, and updates the order instead of relying on a mock payment mutation.
+- The active provider webhook path verifies the configured webhook secret from the payload, applies idempotent payment transitions through `payment.lastWebhookEventId`, and updates the order instead of relying on a mock payment mutation.
 - The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `seller1`, and `ops1`, a live auction with bids and auto-bid config, an ended auction with an awaiting-payment order, and inbox notifications for both sides.
 - The default seeded `order-paid` document now starts in `PAID_ESCROW_HOLD` with empty shipping data, so the seller can submit shipment first and the buyer can confirm receipt afterward during emulator smoke tests.
 
@@ -147,15 +150,6 @@
 - Buyer smoke test path: sign in as `buyer1`, open the same `order-paid`, confirm receipt, and verify the order moves to `CONFIRMED_RECEIPT`.
 - These accounts are for local emulator checks only. They do not validate Google or Apple browser sign-in, provider linking, redirect handling, or staging and prod auth configuration.
 
-## Phase 3 External Cutover Checklist
-- Fill `backend/functions/.env` with real `TOSS_SECRET_KEY`, `TOSS_WEBHOOK_SECRET`, and `APP_BASE_URL`.
-- Fill `apps/mobile_flutter/dart_defines.json` with real `TOSS_CLIENT_KEY`.
-- Before starting the final real Toss launcher handoff, finish any still-open Phase 3 polish tasks that do not depend on those real values, especially dark mode, overflow fixes, loading overlay consistency, and route or sheet transition quality.
-- Verify `createPaymentSession` returns the real Toss mode and valid success or fail return URLs in staging.
-- Verify the mobile app can start the final Toss checkout launcher handoff without falling back to manual recovery UI.
-- Verify `/payments/success` and `/payments/fail` still route the buyer into the correct order recovery state after real Toss checkout.
-- Verify `tossPaymentWebhook` updates payment and order state idempotently with the real webhook secret.
-- Do not start Phase 4 implementation work until this checklist is either complete or explicitly accepted as blocked by missing third-party values.
 
 ## Navigation Contract
 
@@ -181,6 +175,11 @@
   - `bio: string | null`
   - `preferences.languageCode: string`
   - `preferences.pushEnabled: boolean`
+  - `preferences.themeMode: "SYSTEM" | "LIGHT" | "DARK"`
+  - `preferences.notificationCategories.auctionActivity: boolean`
+  - `preferences.notificationCategories.orderPayment: boolean`
+  - `preferences.notificationCategories.shippingAndReceipt: boolean`
+  - `preferences.notificationCategories.system: boolean`
   - `verification.phone: "UNVERIFIED" | "PENDING" | "VERIFIED" | "REJECTED"`
   - `verification.id: "UNVERIFIED" | "PENDING" | "VERIFIED" | "REJECTED"`
   - `verification.preciousSeller: "UNVERIFIED" | "PENDING" | "VERIFIED" | "REJECTED"`
@@ -208,6 +207,27 @@
   - `sellerStats.*`
   - `penaltyStats.*`
   - `ops.*`
+- Rules:
+  - `preferences.pushEnabled` remains the master notification switch.
+  - Category toggles only apply when `preferences.pushEnabled == true`.
+
+### `users/{uid}/deviceTokens/{tokenId}`
+- Purpose: signed-in device tokens for push delivery.
+- Required fields:
+  - `token: string`
+  - `platform: "ANDROID" | "IOS"`
+  - `locale: string`
+  - `timezone: string`
+  - `appVersion: string`
+  - `permissionStatus: "AUTHORIZED" | "DENIED" | "PROVISIONAL" | "NOT_DETERMINED"`
+  - `isActive: boolean`
+  - `lastSeenAt: Timestamp`
+  - `createdAt: Timestamp`
+  - `updatedAt: Timestamp`
+- Rules:
+  - User can read only their own device tokens.
+  - Client must not write tokens directly.
+  - Token registration and deactivation go through Functions so server delivery code can trust token ownership and token shape.
 
 ### `items/{itemId}`
 - Purpose: seller-owned listing draft and item content record.
@@ -296,7 +316,7 @@
   - `paymentStatus: "UNPAID" | "PENDING" | "PAID" | "FAILED" | "CANCELLED" | "REFUNDED"`
   - `orderStatus: "AWAITING_PAYMENT" | "PAID_ESCROW_HOLD" | "SHIPPED" | "CONFIRMED_RECEIPT" | "SETTLED" | "CANCELLED_UNPAID" | "CANCELLED"`
   - `paymentDueAt: Timestamp`
-  - `payment.provider: "TOSS_PAYMENTS"`
+  - `payment.provider: string`
   - `payment.paymentKey: string | null`
   - `payment.method: string | null`
   - `payment.approvedAt: Timestamp | null`
@@ -323,14 +343,18 @@
 - Purpose: in-app inbox.
 - Required fields:
   - `type: string`
+  - `category: "auctionActivity" | "orderPayment" | "shippingAndReceipt" | "system"`
   - `title: string`
   - `body: string`
   - `deeplink: string`
+  - `entityType: "AUCTION" | "ORDER" | "SYSTEM"`
+  - `entityId: string | null`
   - `isRead: boolean`
   - `createdAt: Timestamp`
 - Rules:
   - User can read and mark their own notifications as read.
   - Server creates notification documents.
+  - Every supported push event must have a matching inbox document with the same logical event identity.
 
 ### `auditEvents/{eventId}`
 - Purpose: server-only event trace for payment, auction, order, and scheduler transitions.
@@ -364,9 +388,9 @@
   - use `collectionGroup("bids")` filtered by `bidderId == currentUserId`.
 
 ## Current Phase 2 Implementation Details
-- `backend/functions/src/index.ts` now exports the documented callable write surface for profile bootstrap, item save, auction publish/cancel/relist, bidding, buy-now, payment session creation, Toss payment confirmation, shipment, receipt confirmation, and inbox read state.
-- `backend/functions/src/index.ts` also exports `tossPaymentWebhook` and the four scheduler handlers with full order-schema writes.
-- `backend/functions/src/domain/paymentEngine.ts` owns webhook normalization, idempotency detection, and order-state mapping for confirmed and cancelled Toss payment events.
+- `backend/functions/src/index.ts` now exports the documented callable write surface for profile bootstrap, item save, auction publish/cancel/relist, bidding, buy-now, payment session creation, payment confirmation, shipment, receipt confirmation, and inbox read state.
+- `backend/functions/src/index.ts` also exports the current provider-specific webhook endpoint and the four scheduler handlers with full order-schema writes.
+- `backend/functions/src/domain/paymentEngine.ts` owns webhook normalization, idempotency detection, and order-state mapping for confirmed and cancelled payment events.
 - `backend/functions/src/domain/orderEngine.ts` now owns fee calculation in addition to unpaid-order expiry and penalty calculation.
 - `backend/emulator-seed/seed.ts` now matches the documented schema for users, items, auctions, bids, orders, and notifications.
 - Legacy item payload compatibility remains accepted at the callable boundary:
@@ -394,11 +418,11 @@
 - `createPaymentSession`
   - Validate order ownership and status.
   - Return a payment payload with `mode`.
-  - In Firebase Emulator `dev`, return `mode: "DEV_DUMMY"` plus deterministic `devPaymentKey: "dev_pay_{orderId}"` so the mobile app can confirm the seeded flow without launching Toss checkout.
-  - Outside emulator-backed `dev`, return `mode: "TOSS"` and include success and fail return URLs from `APP_BASE_URL`.
+  - In Firebase Emulator `dev`, return `mode: "DEV_DUMMY"` plus deterministic `devPaymentKey: "dev_pay_{orderId}"` so the mobile app can confirm the seeded flow without launching real provider checkout.
+  - Outside emulator-backed `dev`, return the currently wired real provider mode and include success and fail return URLs from `APP_BASE_URL`.
 - `confirmOrderPayment`
   - Accept the deterministic `dev_pay_{orderId}` key only for emulator-backed `DEV_DUMMY` sessions.
-  - Otherwise confirm payment against Toss `/v1/payments/confirm`.
+  - Otherwise confirm payment against the active provider confirm endpoint.
   - Update the order idempotently and notify the seller on success.
 - `shipmentUpdate`
   - Validate seller ownership and shipping state.
@@ -406,10 +430,15 @@
   - Validate buyer ownership and move order toward settlement.
 - `markNotificationRead`
   - Mark one inbox document as read for the current user.
+- `registerDeviceToken`
+  - Register or refresh one signed-in device token for the current user.
+  - Persist locale, timezone, app version, and permission status for delivery diagnostics.
+- `deactivateDeviceToken`
+  - Deactivate one device token on sign-out, uninstall signal, or explicit notification disable flow.
 
 ## HTTP And Webhook Contract
 - `tossPaymentWebhook`
-  - Accept Toss payment webhook events over HTTPS.
+  - Accept current provider webhook events over HTTPS through the current provider-specific endpoint name.
   - Verify the configured webhook secret from the payload.
   - Use an event marker plus `payment.lastWebhookEventId` to avoid double-processing.
   - Transition orders for `DONE`, `CANCELED`, `ABORTED`, and `EXPIRED` payment events.
@@ -439,6 +468,8 @@
   - Item mutation payloads reference only files already uploaded for the same owner.
 
 ## Notification And Deep Link Contract
+- Push-delivery scope, categories, payload rules, and preference behavior are defined in `docs/Notification.md`.
+- Every supported push event must also create a Firestore inbox document for the same user-visible event.
 - Auction outbid: `app://auction/{auctionId}`
 - Auction won: `app://orders/{orderId}`
 - Payment completed: `app://orders/{orderId}`

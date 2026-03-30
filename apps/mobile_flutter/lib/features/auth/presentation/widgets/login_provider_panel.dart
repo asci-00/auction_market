@@ -22,21 +22,24 @@ class LoginProviderPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
 
     return AppPanel(
       tone: AppPanelTone.surface,
       child: Column(
         children: [
           FilledButton.icon(
-            onPressed:
-                isSubmitting || useFirebaseEmulators ? null : onGooglePressed,
+            onPressed: isSubmitting || useFirebaseEmulators
+                ? null
+                : onGooglePressed,
             icon: const Icon(Icons.g_mobiledata_rounded),
             label: Text(context.l10n.loginContinueGoogle),
           ),
           SizedBox(height: tokens.space3),
           OutlinedButton.icon(
-            onPressed:
-                isSubmitting || useFirebaseEmulators ? null : onApplePressed,
+            onPressed: isSubmitting || useFirebaseEmulators
+                ? null
+                : onApplePressed,
             icon: const Icon(Icons.apple_rounded),
             label: Text(context.l10n.loginContinueApple),
           ),
@@ -45,7 +48,7 @@ class LoginProviderPanel extends StatelessWidget {
             Text(
               context.l10n.loginEmulatorWarning,
               style: context.textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
+                color: AppColors.textSecondaryFor(brightness),
               ),
             ),
           ],
