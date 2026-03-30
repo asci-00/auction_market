@@ -178,7 +178,9 @@ class _AuctionCardDetails extends StatelessWidget {
         ? theme.textTheme.titleSmall?.copyWith(
             color: AppColors.textPrimaryFor(brightness),
           )
-        : theme.textTheme.titleMedium;
+        : theme.textTheme.titleMedium?.copyWith(
+            color: AppColors.textPrimaryFor(brightness),
+          );
 
     return Padding(
       padding: EdgeInsets.all(layout.contentPadding),

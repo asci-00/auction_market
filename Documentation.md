@@ -134,16 +134,24 @@
 - The `DEV_DUMMY` payment path is emulator-only. If the backend is not running under the Firebase Emulator Suite, `createPaymentSession` falls back to the currently wired real provider mode and requires `APP_BASE_URL` for success and fail return URLs.
 - The payment domain normalizes `APP_BASE_URL` before success and fail URLs are built, so trailing slashes or stray query strings do not leak into `/payments/success` and `/payments/fail`, while `runtime.ts` remains responsible only for the base environment validation.
 - The active provider webhook path verifies the configured webhook secret from the payload, applies idempotent payment transitions through `payment.lastWebhookEventId`, and updates the order instead of relying on a mock payment mutation.
-- The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `seller1`, and `ops1`, a live auction with bids and auto-bid config, an ended auction with an awaiting-payment order, and inbox notifications for both sides.
-- The default seeded `order-paid` document now starts in `PAID_ESCROW_HOLD` with empty shipping data, so the seller can submit shipment first and the buyer can confirm receipt afterward during emulator smoke tests.
+- The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `buyer2`, `seller1`, `seller2`, and `ops1`.
+- The seeded auction and order scenarios now cover live bidding, awaiting payment, seller shipment required, buyer receipt confirmed, settled payout, unpaid cancellation, unsold inventory, cancelled listings, and inbox notifications for both buyer and seller paths.
+- The default seeded orders now include both `seller1` and `seller2` shipment-required scenarios, plus separate ended-auction records for awaiting-payment, confirmed-receipt, and unpaid-cancelled flows so emulator smoke tests stay internally consistent.
 
 ## Dev Emulator Accounts
 - `npm run seed` now provisions Auth Emulator users and Firestore seed data together.
 - `npm run serve` must start `auth`, `functions`, `firestore`, and `storage`, because the seed script writes fixed email/password users into Auth Emulator before seeding Firestore.
-- Seeded accounts for smoke tests:
+- Seeded sign-in accounts:
   - `buyer1@test.local` with password `buyer-pass-1234`
+  - `buyer2@test.local` with password `buyer-pass-1234`
   - `seller1@test.local` with password `seller-pass-1234`
+  - `seller2@test.local` with password `seller-pass-1234`
   - `ops1@test.local` with password `ops-pass-1234`
+- Key seeded smoke paths:
+  - buyer awaiting payment: `order-awaiting`
+  - seller shipment required: `order-paid`, `order-paid-seller2`
+  - buyer shipped and confirmed receipt: `order-shipped`, `order-confirmed`
+  - settled payout and unpaid cancellation: `order-settled`, `order-cancelled-unpaid`
 - The mobile login screen surfaces only the buyer and seller quick-login actions in `dev` emulator mode.
 - Buyer smoke test path for auction actions: sign in as `buyer1`, open a live seeded auction, place a manual bid or save an auto-bid ceiling from the auction detail action bar, or use buy-now and verify the app routes into the created order timeline.
 - Buyer payment smoke test path: sign in as `buyer1`, open an `AWAITING_PAYMENT` order, trigger payment preparation, and use the in-app `dev` payment completion action to move the order into `PAID_ESCROW_HOLD`.

@@ -42,7 +42,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _onQueryChanged(String value) {
     final normalized = value.trim();
-    setState(() => _query = normalized);
+    setState(() => _query = value);
 
     if (normalized.isEmpty) {
       _queryDebouncer.cancel();
@@ -114,6 +114,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
     return AppPageScaffold(
       title: context.l10n.searchTitle,
+      extendBodyBehindAppBar: false,
       body: CustomScrollView(
         slivers: [
           SliverPadding(
@@ -178,7 +179,8 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   SizedBox(height: tokens.space4),
                   SearchResultsView(
-                    query: _debouncedQuery,
+                    query: _query,
+                    searchQuery: _debouncedQuery,
                     filters: _filters,
                     layout: _resultsLayout,
                     onResetQuery: _resetQuery,

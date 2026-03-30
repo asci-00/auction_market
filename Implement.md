@@ -28,15 +28,14 @@
 - The search route now keeps the query field pinned while results scroll, so users can refine live search results without losing the primary input control.
 - The search route now lets users switch between large auction cards and a compact list, so discovery can adapt to browsing or scanning without changing the underlying query and filter logic.
 - The home route now fills the design-contract gap for curated category rows by deriving separate goods and precious rails from the live auctions it already reads, without adding new backend query contracts.
+- The pinned search header was revalidated after the latest query-sync fixes and now keeps raw input, clear affordance, and trimmed execution query aligned while remaining tappable below the app bar.
+- Emulator seed data now covers separate buyer and seller notification, payment, shipment, confirmed-receipt, settled, cancelled-unpaid, draft, unsold, and cancelled-listing paths without cross-linking orders to unrelated auctions.
 - Backend callables cover bootstrap, draft lifecycle, bid and auto-bid, buy now, payment-session preparation, payment confirmation, shipment update, receipt confirmation, and notification read state.
-- `cd backend/functions && npm run format:check` passed on March 25, 2026.
-- `cd backend/functions && npm run lint` passed on March 25, 2026.
-- `cd backend/functions && npm test` passed on March 25, 2026.
-- `cd backend/functions && npm run build` passed on March 25, 2026.
-- `cd apps/mobile_flutter && flutter gen-l10n` passed on March 26, 2026.
-- `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib test` passed on March 26, 2026.
-- `cd apps/mobile_flutter && flutter analyze` passed on March 26, 2026.
-- `cd apps/mobile_flutter && flutter test` passed on March 26, 2026.
+- `cd backend/functions && npm run lint` passed on March 30, 2026.
+- `cd backend/functions && npm run build` passed on March 30, 2026.
+- `cd apps/mobile_flutter && flutter analyze` passed on March 30, 2026.
+- `cd apps/mobile_flutter && flutter test` passed on March 30, 2026.
+- Manual emulator smoke for the new pinned search header and expanded seed scenarios was not rerun in this follow-up.
 
 ## Next Commands
 1. `cd backend/functions && npm run serve`

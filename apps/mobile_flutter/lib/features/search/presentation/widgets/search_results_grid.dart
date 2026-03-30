@@ -20,6 +20,7 @@ class SearchResultsView extends ConsumerWidget {
   const SearchResultsView({
     super.key,
     required this.query,
+    required this.searchQuery,
     required this.filters,
     required this.layout,
     required this.onResetQuery,
@@ -27,6 +28,7 @@ class SearchResultsView extends ConsumerWidget {
   });
 
   final String query;
+  final String searchQuery;
   final SearchFilterState filters;
   final SearchResultsLayout layout;
   final VoidCallback onResetQuery;
@@ -34,7 +36,7 @@ class SearchResultsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final searchAsync = ref.watch(searchViewModelProvider(query));
+    final searchAsync = ref.watch(searchViewModelProvider(searchQuery));
 
     return searchAsync.when(
       error: (_, __) => AppEmptyState(
@@ -67,7 +69,7 @@ class SearchResultsView extends ConsumerWidget {
       data: (state) {
         final filtered = applySearchSelectionFilters(state.results, filters);
         if (filtered.isEmpty) {
-          final hasQuery = query.trim().isNotEmpty;
+          final hasQuery = query.isNotEmpty;
           final hasFilters = filters.hasActiveSelection;
 
           return AppEmptyState(
