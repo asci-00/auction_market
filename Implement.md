@@ -1,9 +1,9 @@
 # Auction Market Execution Log
 
 ## Current Task
-- Phase 3 mobile flow work is complete in code and automated validation.
-- The last close-out slice hardened auction detail stream joining and gallery state updates so the latest detail composition work is protected by targeted regression coverage.
-- Phase 4 can now start on a new branch, because the remaining payment-gateway cutover is still deferred outside milestone flow in `Plan.md` under `Phase Undecided`.
+- Phase 3 final close review is active.
+- The implementation work is largely complete, and the latest close-out slice hardened auction detail stream joining and gallery state updates with targeted regression coverage.
+- Final close still depends on reviewing the remaining Phase 3 acceptance criteria and the documented buyer and seller smoke paths before Phase 4 starts.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
