@@ -327,6 +327,8 @@
   "sellValidationImages": "Publishing requires at least one gallery image.",
   "sellValidationStartPrice": "Enter a valid start price before publishing.",
   "sellValidationBuyNowPrice": "Buy now price must be greater than the start price.",
+  "sellValidationSummaryDraftTitle": "Complete these details before saving the draft",
+  "sellValidationSummaryPublishTitle": "Complete these details before publishing the auction",
   "genericUnavailable": "Unavailable",
   "genericUnknownSeller": "Seller",
   "genericUnknownUser": "Member",

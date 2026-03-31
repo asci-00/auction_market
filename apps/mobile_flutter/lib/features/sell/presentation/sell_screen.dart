@@ -19,6 +19,7 @@ import '../../../core/widgets/app_status_badge.dart';
 import '../application/sell_flow_service.dart';
 import '../data/sell_draft_form_data.dart';
 import '../data/sell_draft_summary.dart';
+import 'sell_validation_state.dart';
 import 'sell_view_model.dart';
 import 'widgets/sell_action_panel.dart';
 import 'widgets/sell_category_panel.dart';
@@ -56,6 +57,7 @@ class _SellScreenState extends ConsumerState<SellScreen> {
   bool _hasUnsavedChanges = false;
   bool _suppressDirtyTracking = false;
   DateTime? _lastSavedAt;
+  SellValidationState _validationState = const SellValidationState.empty();
   List<String> _existingImageUrls = <String>[];
   List<String> _existingAuthImageUrls = <String>[];
   List<XFile> _newImageFiles = <XFile>[];
@@ -154,10 +156,14 @@ class _SellScreenState extends ConsumerState<SellScreen> {
               SellCategoryPanel(
                 categoryMain: _categoryMain,
                 categorySubController: _categorySubController,
+                categorySubError: _validationState.errorFor(
+                  SellValidationField.categorySub,
+                ),
                 onCategoryMainChanged: (value) {
                   setState(() {
                     _categoryMain = value;
                     _hasUnsavedChanges = true;
+                    _syncValidationState();
                   });
                 },
               ),
@@ -168,10 +174,20 @@ class _SellScreenState extends ConsumerState<SellScreen> {
                 tagsController: _tagsController,
                 descriptionController: _descriptionController,
                 appraisalRequested: _appraisalRequested,
+                titleError: _validationState.errorFor(
+                  SellValidationField.title,
+                ),
+                conditionError: _validationState.errorFor(
+                  SellValidationField.condition,
+                ),
+                descriptionError: _validationState.errorFor(
+                  SellValidationField.description,
+                ),
                 onAppraisalChanged: (value) {
                   setState(() {
                     _appraisalRequested = value;
                     _hasUnsavedChanges = true;
+                    _syncValidationState();
                   });
                 },
               ),
@@ -180,10 +196,17 @@ class _SellScreenState extends ConsumerState<SellScreen> {
                 startPriceController: _startPriceController,
                 buyNowPriceController: _buyNowPriceController,
                 durationDays: _durationDays,
+                startPriceError: _validationState.errorFor(
+                  SellValidationField.startPrice,
+                ),
+                buyNowPriceError: _validationState.errorFor(
+                  SellValidationField.buyNowPrice,
+                ),
                 onDurationChanged: (value) {
                   setState(() {
                     _durationDays = value;
                     _hasUnsavedChanges = true;
+                    _syncValidationState();
                   });
                 },
               ),
@@ -195,6 +218,9 @@ class _SellScreenState extends ConsumerState<SellScreen> {
                 existingUrls: _existingImageUrls,
                 newFiles: _newImageFiles,
                 onPickPressed: _pickGalleryImages,
+                errorText: _validationState.errorFor(
+                  SellValidationField.galleryImages,
+                ),
               ),
               SizedBox(height: tokens.space4),
               SellImagePickerPanel(
@@ -204,6 +230,9 @@ class _SellScreenState extends ConsumerState<SellScreen> {
                 existingUrls: _existingAuthImageUrls,
                 newFiles: _newAuthImageFiles,
                 onPickPressed: _pickAuthImages,
+                errorText: _validationState.errorFor(
+                  SellValidationField.authImages,
+                ),
               ),
               SizedBox(height: tokens.space6),
               SellActionPanel(
@@ -212,6 +241,8 @@ class _SellScreenState extends ConsumerState<SellScreen> {
                 isPublishing: _isPublishing,
                 onSaveDraft: _saveDraft,
                 onPublish: _publish,
+                validationMode: _validationState.mode,
+                validationSummary: _validationState.summaryErrors,
               ),
             ],
           ),
@@ -235,6 +266,7 @@ class _SellScreenState extends ConsumerState<SellScreen> {
     setState(() {
       _newImageFiles = [..._newImageFiles, ...picked.take(remainingSlots)];
       _hasUnsavedChanges = true;
+      _syncValidationState();
     });
   }
 
@@ -247,6 +279,7 @@ class _SellScreenState extends ConsumerState<SellScreen> {
     setState(() {
       _newAuthImageFiles = [..._newAuthImageFiles, ...picked].toList();
       _hasUnsavedChanges = true;
+      _syncValidationState();
     });
   }
 
@@ -272,18 +305,22 @@ class _SellScreenState extends ConsumerState<SellScreen> {
       _newAuthImageFiles = <XFile>[];
       _hasUnsavedChanges = false;
       _lastSavedAt = draft.updatedAt;
+      _validationState = const SellValidationState.empty();
     });
   }
 
   Future<void> _saveDraft() async {
-    final validationError = _validateForDraft();
-    if (validationError != null) {
-      context.showErrorSnackBar(validationError);
+    final validationState = _buildValidationState(SellValidationMode.draft);
+    if (validationState.hasErrors) {
+      setState(() {
+        _validationState = validationState;
+      });
       return;
     }
 
     setState(() {
       _isSavingDraft = true;
+      _validationState = const SellValidationState.empty();
     });
 
     try {
@@ -306,6 +343,7 @@ class _SellScreenState extends ConsumerState<SellScreen> {
         _newAuthImageFiles = <XFile>[];
         _hasUnsavedChanges = false;
         _lastSavedAt = DateTime.now();
+        _validationState = const SellValidationState.empty();
       });
 
       context.showSnackBarMessage(context.l10n.sellActionSaved);
@@ -332,14 +370,17 @@ class _SellScreenState extends ConsumerState<SellScreen> {
   }
 
   Future<void> _publish() async {
-    final validationError = _validateForPublish();
-    if (validationError != null) {
-      context.showErrorSnackBar(validationError);
+    final validationState = _buildValidationState(SellValidationMode.publish);
+    if (validationState.hasErrors) {
+      setState(() {
+        _validationState = validationState;
+      });
       return;
     }
 
     setState(() {
       _isPublishing = true;
+      _validationState = const SellValidationState.empty();
     });
 
     try {
@@ -402,52 +443,6 @@ class _SellScreenState extends ConsumerState<SellScreen> {
     );
   }
 
-  String? _validateForDraft() {
-    if (_categorySubController.text.trim().isEmpty) {
-      return context.l10n.sellValidationCategorySub;
-    }
-    if (_titleController.text.trim().isEmpty) {
-      return context.l10n.sellValidationTitle;
-    }
-    if (_conditionController.text.trim().isEmpty) {
-      return context.l10n.sellValidationCondition;
-    }
-    if (_descriptionController.text.trim().isEmpty) {
-      return context.l10n.sellValidationDescription;
-    }
-    if (_categoryMain == 'GOODS' &&
-        _existingAuthImageUrls.isEmpty &&
-        _newAuthImageFiles.isEmpty) {
-      return context.l10n.sellValidationAuthImages;
-    }
-
-    return null;
-  }
-
-  String? _validateForPublish() {
-    final draftError = _validateForDraft();
-    if (draftError != null) {
-      return draftError;
-    }
-    if (_existingImageUrls.isEmpty && _newImageFiles.isEmpty) {
-      return context.l10n.sellValidationImages;
-    }
-
-    final startPrice = int.tryParse(_startPriceController.text.trim());
-    final buyNowPrice = _buyNowPriceController.text.trim().isEmpty
-        ? null
-        : int.tryParse(_buyNowPriceController.text.trim());
-
-    if (startPrice == null || startPrice <= 0) {
-      return context.l10n.sellValidationStartPrice;
-    }
-    if (buyNowPrice != null && buyNowPrice <= startPrice) {
-      return context.l10n.sellValidationBuyNowPrice;
-    }
-
-    return null;
-  }
-
   List<TextEditingController> get _formControllers => [
     _categorySubController,
     _titleController,
@@ -465,7 +460,74 @@ class _SellScreenState extends ConsumerState<SellScreen> {
 
     setState(() {
       _hasUnsavedChanges = true;
+      _syncValidationState();
     });
+  }
+
+  void _syncValidationState() {
+    if (_validationState.mode == SellValidationMode.none) {
+      return;
+    }
+    _validationState = _buildValidationState(_validationState.mode);
+  }
+
+  SellValidationState _buildValidationState(SellValidationMode mode) {
+    if (mode == SellValidationMode.none) {
+      return const SellValidationState.empty();
+    }
+
+    final errors = <SellValidationField, String>{};
+
+    if (_categorySubController.text.trim().isEmpty) {
+      errors[SellValidationField.categorySub] =
+          context.l10n.sellValidationCategorySub;
+    }
+    if (_titleController.text.trim().isEmpty) {
+      errors[SellValidationField.title] = context.l10n.sellValidationTitle;
+    }
+    if (_conditionController.text.trim().isEmpty) {
+      errors[SellValidationField.condition] =
+          context.l10n.sellValidationCondition;
+    }
+    if (_descriptionController.text.trim().isEmpty) {
+      errors[SellValidationField.description] =
+          context.l10n.sellValidationDescription;
+    }
+    if (_categoryMain == 'GOODS' &&
+        _existingAuthImageUrls.isEmpty &&
+        _newAuthImageFiles.isEmpty) {
+      errors[SellValidationField.authImages] =
+          context.l10n.sellValidationAuthImages;
+    }
+
+    if (mode == SellValidationMode.publish) {
+      if (_existingImageUrls.isEmpty && _newImageFiles.isEmpty) {
+        errors[SellValidationField.galleryImages] =
+            context.l10n.sellValidationImages;
+      }
+
+      final startPrice = int.tryParse(_startPriceController.text.trim());
+      final buyNowPrice = _buyNowPriceController.text.trim().isEmpty
+          ? null
+          : int.tryParse(_buyNowPriceController.text.trim());
+
+      if (startPrice == null || startPrice <= 0) {
+        errors[SellValidationField.startPrice] =
+            context.l10n.sellValidationStartPrice;
+      }
+      if (startPrice != null &&
+          buyNowPrice != null &&
+          buyNowPrice <= startPrice) {
+        errors[SellValidationField.buyNowPrice] =
+            context.l10n.sellValidationBuyNowPrice;
+      }
+    }
+
+    return SellValidationState(
+      mode: mode,
+      fieldErrors: errors,
+      summaryErrors: errors.values.toList(growable: false),
+    );
   }
 
   bool get _categoryReady => _categorySubController.text.trim().isNotEmpty;

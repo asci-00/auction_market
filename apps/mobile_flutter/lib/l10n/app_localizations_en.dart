@@ -831,6 +831,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Buy now price must be greater than the start price.';
 
   @override
+  String get sellValidationSummaryDraftTitle =>
+      'Complete these details before saving the draft';
+
+  @override
+  String get sellValidationSummaryPublishTitle =>
+      'Complete these details before publishing the auction';
+
+  @override
   String get genericUnavailable => 'Unavailable';
 
   @override

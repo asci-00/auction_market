@@ -1526,6 +1526,18 @@ abstract class AppLocalizations {
   /// **'Buy now price must be greater than the start price.'**
   String get sellValidationBuyNowPrice;
 
+  /// No description provided for @sellValidationSummaryDraftTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete these details before saving the draft'**
+  String get sellValidationSummaryDraftTitle;
+
+  /// No description provided for @sellValidationSummaryPublishTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete these details before publishing the auction'**
+  String get sellValidationSummaryPublishTitle;
+
   /// No description provided for @genericUnavailable.
   ///
   /// In en, this message translates to:

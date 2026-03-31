@@ -787,6 +787,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sellValidationBuyNowPrice => '즉시 구매가는 시작가보다 높아야 합니다.';
 
   @override
+  String get sellValidationSummaryDraftTitle => '드래프트 저장 전에 아래 항목을 확인해 주세요';
+
+  @override
+  String get sellValidationSummaryPublishTitle => '경매 발행 전에 아래 항목을 모두 채워 주세요';
+
+  @override
   String get genericUnavailable => '정보 없음';
 
   @override

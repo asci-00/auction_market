@@ -13,12 +13,16 @@ class SellPricingPanel extends StatelessWidget {
     required this.buyNowPriceController,
     required this.durationDays,
     required this.onDurationChanged,
+    this.startPriceError,
+    this.buyNowPriceError,
   });
 
   final TextEditingController startPriceController;
   final TextEditingController buyNowPriceController;
   final int durationDays;
   final ValueChanged<int> onDurationChanged;
+  final String? startPriceError;
+  final String? buyNowPriceError;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +44,7 @@ class SellPricingPanel extends StatelessWidget {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             decoration: InputDecoration(
               labelText: context.l10n.sellFormStartPriceLabel,
+              errorText: startPriceError,
             ),
           ),
           SizedBox(height: tokens.space3),
@@ -49,6 +54,7 @@ class SellPricingPanel extends StatelessWidget {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             decoration: InputDecoration(
               labelText: context.l10n.sellFormBuyNowPriceLabel,
+              errorText: buyNowPriceError,
             ),
           ),
           SizedBox(height: tokens.space3),
