@@ -1022,6 +1022,36 @@ abstract class AppLocalizations {
   /// **'Unread updates stay visible so you can move straight to the next relevant screen.'**
   String get notificationsHeroDescription;
 
+  /// No description provided for @notificationsDestinationAuction.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens auction detail'**
+  String get notificationsDestinationAuction;
+
+  /// No description provided for @notificationsDestinationOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens order timeline'**
+  String get notificationsDestinationOrder;
+
+  /// No description provided for @notificationsDestinationInbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Stays in inbox'**
+  String get notificationsDestinationInbox;
+
+  /// No description provided for @notificationsDestinationPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens payment recovery'**
+  String get notificationsDestinationPayment;
+
+  /// No description provided for @notificationsDestinationUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens the next relevant screen'**
+  String get notificationsDestinationUnknown;
+
   /// No description provided for @notificationsEmptyTitle.
   ///
   /// In en, this message translates to:

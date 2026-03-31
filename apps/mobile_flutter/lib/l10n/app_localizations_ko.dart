@@ -510,6 +510,21 @@ class AppLocalizationsKo extends AppLocalizations {
       '읽지 않은 업데이트를 또렷하게 남겨 다음 액션으로 바로 이동할 수 있게 합니다.';
 
   @override
+  String get notificationsDestinationAuction => '경매 상세로 이동';
+
+  @override
+  String get notificationsDestinationOrder => '주문 타임라인으로 이동';
+
+  @override
+  String get notificationsDestinationInbox => '알림함에 머무름';
+
+  @override
+  String get notificationsDestinationPayment => '결제 복구 화면으로 이동';
+
+  @override
+  String get notificationsDestinationUnknown => '다음 관련 화면으로 이동';
+
+  @override
   String get notificationsEmptyTitle => '알림함이 조용합니다';
 
   @override

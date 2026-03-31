@@ -18,6 +18,7 @@ import '../../../core/widgets/app_shell_insets.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/app_status_badge.dart';
 import '../data/notification_item.dart';
+import 'notification_destination.dart';
 import 'notifications_view_model.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
@@ -171,6 +172,10 @@ class _NotificationCard extends ConsumerWidget {
     final tokens = context.tokens;
     final l10n = context.l10n;
     final isRead = item.isRead;
+    final destinationLabel = describeNotificationDestination(
+      l10n,
+      item.deeplink,
+    );
 
     return AppPanel(
       tone: isRead ? AppPanelTone.surface : AppPanelTone.elevated,
@@ -218,6 +223,25 @@ class _NotificationCard extends ConsumerWidget {
                         ? item.body
                         : l10n.notificationsEmptyDescription,
                     style: context.textTheme.bodyMedium,
+                  ),
+                  SizedBox(height: tokens.space2),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.arrow_outward_rounded,
+                        size: 16,
+                        color: context.colorScheme.primary,
+                      ),
+                      SizedBox(width: tokens.space2),
+                      Flexible(
+                        child: Text(
+                          destinationLabel,
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: context.colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

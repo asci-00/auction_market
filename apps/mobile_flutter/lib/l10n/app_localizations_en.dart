@@ -540,6 +540,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'Unread updates stay visible so you can move straight to the next relevant screen.';
 
   @override
+  String get notificationsDestinationAuction => 'Opens auction detail';
+
+  @override
+  String get notificationsDestinationOrder => 'Opens order timeline';
+
+  @override
+  String get notificationsDestinationInbox => 'Stays in inbox';
+
+  @override
+  String get notificationsDestinationPayment => 'Opens payment recovery';
+
+  @override
+  String get notificationsDestinationUnknown =>
+      'Opens the next relevant screen';
+
+  @override
   String get notificationsEmptyTitle => 'Your inbox is quiet';
 
   @override
