@@ -34,12 +34,37 @@ class _AuctionDetailHeaderState extends State<AuctionDetailHeader> {
   }
 
   @override
+  void didUpdateWidget(covariant AuctionDetailHeader oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldLength = _imagesFor(oldWidget.auction).length;
+    final newLength = _imagesFor(widget.auction).length;
+    if (newLength == oldLength) {
+      return;
+    }
+
+    final nextIndex = newLength == 0
+        ? 0
+        : _activeIndex.clamp(0, newLength - 1).toInt();
+    if (nextIndex != _activeIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _activeIndex = nextIndex;
+        });
+        if (_pageController.hasClients) {
+          _pageController.jumpToPage(nextIndex);
+        }
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final brightness = Theme.of(context).brightness;
-    final images = widget.auction.imageUrls.isNotEmpty
-        ? widget.auction.imageUrls
-        : <String?>[widget.auction.heroImageUrl];
+    final images = _imagesFor(widget.auction);
 
     return AppPanel(
       tone: AppPanelTone.dark,
@@ -152,6 +177,12 @@ class _AuctionDetailHeaderState extends State<AuctionDetailHeader> {
       ),
     );
   }
+}
+
+List<String?> _imagesFor(AuctionDetailViewData auction) {
+  return auction.imageUrls.isNotEmpty
+      ? auction.imageUrls
+      : <String?>[auction.heroImageUrl];
 }
 
 class _DetailGalleryImage extends StatelessWidget {

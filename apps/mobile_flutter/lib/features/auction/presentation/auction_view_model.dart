@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/firebase/firebase_providers.dart';
 import '../data/auction_bid_history_entry.dart';
+import '../data/auction_detail_stream.dart';
 import '../data/auction_detail_view_data.dart';
 
 part 'auction_view_model.g.dart';
@@ -87,70 +87,27 @@ Stream<AuctionDetailViewData?> _auctionDetailStream(Ref ref, String auctionId) {
   final auctions = firestore.collection('auctions');
   final items = firestore.collection('items');
 
-  return Stream<AuctionDetailViewData?>.multi((controller) {
-    StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? itemSub;
-    DocumentSnapshot<Map<String, dynamic>>? latestAuction;
-    DocumentSnapshot<Map<String, dynamic>>? latestItem;
-    String? currentItemId;
-
-    void emitCombined() {
-      final auctionSnapshot = latestAuction;
-      if (auctionSnapshot == null || !auctionSnapshot.exists) {
-        controller.add(null);
-        return;
-      }
-
-      controller.add(
-        AuctionDetailViewData.fromDocuments(
-          auctionDocument: auctionSnapshot,
-          itemDocument: latestItem?.exists == true ? latestItem : null,
+  return bindAuctionDetailStreams(
+    auctionStream: auctions
+        .doc(auctionId)
+        .snapshots()
+        .map(
+          (snapshot) => AuctionDetailDocument(
+            id: snapshot.id,
+            exists: snapshot.exists,
+            data: snapshot.data() ?? const <String, dynamic>{},
+          ),
         ),
-      );
-    }
-
-    final auctionSub = auctions.doc(auctionId).snapshots().listen((
-      auctionSnapshot,
-    ) {
-      latestAuction = auctionSnapshot;
-      if (!auctionSnapshot.exists) {
-        currentItemId = null;
-        latestItem = null;
-        itemSub?.cancel();
-        itemSub = null;
-        controller.add(null);
-        return;
-      }
-
-      final auctionData = auctionSnapshot.data() ?? const <String, dynamic>{};
-      final nextItemId = (auctionData['itemId'] as String?)?.trim() ?? '';
-
-      if (nextItemId.isEmpty) {
-        currentItemId = null;
-        latestItem = null;
-        itemSub?.cancel();
-        itemSub = null;
-        emitCombined();
-        return;
-      }
-
-      if (currentItemId != nextItemId) {
-        currentItemId = nextItemId;
-        latestItem = null;
-        itemSub?.cancel();
-        itemSub = items.doc(nextItemId).snapshots().listen((itemSnapshot) {
-          latestItem = itemSnapshot;
-          emitCombined();
-        }, onError: controller.addError);
-      }
-
-      emitCombined();
-    }, onError: controller.addError);
-
-    controller.onCancel = () async {
-      await auctionSub.cancel();
-      await itemSub?.cancel();
-    };
-  });
+    itemStreamFor: (itemId) => items
+        .doc(itemId)
+        .snapshots()
+        .map(
+          (snapshot) => AuctionItemDocument(
+            exists: snapshot.exists,
+            data: snapshot.data() ?? const <String, dynamic>{},
+          ),
+        ),
+  );
 }
 
 Stream<List<AuctionBidHistoryEntry>> _auctionBidHistoryStream(

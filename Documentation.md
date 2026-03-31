@@ -55,6 +55,8 @@
   - Login now keeps seeded account constants in `features/auth/data`, auth mutations in `features/auth/application`, and each major visual block in `features/auth/presentation/widgets`.
   - Auction detail now keeps the screen in `presentation`, pushes callable writes through `features/auction/application/auction_detail_action_service.dart`, and maps Firestore documents through `features/auction/data/auction_detail_view_data.dart`.
   - Auction detail now combines `auctions/{auctionId}` with the linked `items/{itemId}` document so the screen can render a real image gallery, item description, and lightweight item metadata above bid history.
+  - Auction detail now binds the auction stream and linked item stream through `features/auction/data/auction_detail_stream.dart`, so item enrichment does not suppress later auction updates when price, order, or status changes continue in Firestore.
+  - Auction detail header now clamps its gallery index when the backing image list shrinks, preventing stale page state from surviving a live image-list update.
   - Orders now keeps the screen layout in `presentation`, pushes payment, shipment, and receipt callables through `features/orders/application/order_action_service.dart`, and maps Firestore documents through `features/orders/data/order_summary.dart`.
   - Sell now keeps Functions and Storage writes in `features/sell/application/sell_flow_service.dart`, draft mapping in `features/sell/data`, and section widgets in `features/sell/presentation/widgets`, so the route screen mostly owns form state and composition.
   - Sell now also renders a dedicated `SellProgressPanel` that tracks category, details, pricing, image, and publish readiness plus current draft-save state, so the `docs/Design.md` requirement for visible step progress and draft-save status is met without turning the route into a full wizard.
@@ -96,6 +98,7 @@
   - Search, orders, sell drafts, activity cards, bid history, my verification, and startup loading now use shimmer placeholders instead of centered progress spinners where the final layout is already known.
   - Auction cards can now pass a scoped Hero tag into auction detail, and the detail header reuses that same image layer so image-first navigation feels continuous without duplicate-tag collisions across home rails.
   - Auction detail content now reserves additional bottom inset above the sticky action bar so the final bid history and seller summary content stay readable on small safe-area devices.
+  - Auction detail stream-join behavior and gallery shrink handling now have dedicated widget and data tests under `test/features/auction/`, so late Phase 3 polish on the detail route is protected by direct regression coverage.
   - Pre-cutover Phase 3 polish work should prioritize dark mode parity, overflow and keyboard-safety fixes, blur tuning, barrier tuning, async-feedback timing, and route-transition smoothness before any explicit real PG cutover begins.
   - Shared blocking loading states must use `apps/mobile_flutter/assets/lotties/loading.lottie`, with shimmer preferred over modal loading when the destination layout is already known.
 - Home, search, auction detail, orders, notifications, and my pages render from live Firestore read paths and fall back to localized empty or unavailable states when documents are missing.

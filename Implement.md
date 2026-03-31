@@ -1,9 +1,9 @@
 # Auction Market Execution Log
 
 ## Current Task
-- Phase 3 mobile flow work is active.
-- The focus is UI and UX polish: dark mode parity, overflow and keyboard-safety fixes, async feedback timing, blur and barrier tuning, shared loading overlay consistency, and route or sheet transition quality.
-- Deferred external payment-gateway cutover remains outside milestone flow and lives only in `Plan.md` under `Phase Undecided`.
+- Phase 3 mobile flow work is complete in code and automated validation.
+- The last close-out slice hardened auction detail stream joining and gallery state updates so the latest detail composition work is protected by targeted regression coverage.
+- Phase 4 can now start on a new branch, because the remaining payment-gateway cutover is still deferred outside milestone flow in `Plan.md` under `Phase Undecided`.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -33,21 +33,23 @@
 - Notification inbox rows now show a destination hint derived from each deeplink, so title, body, time, and next destination are all visible before the user taps through.
 - Remaining sell empty-state copy no longer exposes `Firestore` in release-facing UI, so the drafts panel stays aligned with the product-copy contract.
 - Auction detail now reads the linked item document so the top of the screen can show a true image gallery plus product description and item metadata instead of a single auction snapshot image.
+- Auction detail now joins auction and item streams through a dedicated binding helper instead of `asyncExpand`, so live auction changes keep propagating after item subscription starts.
+- Auction detail gallery state now clamps safely when the image list shrinks, and dedicated widget and data tests cover both the stream join behavior and the gallery index reset path.
 - The pinned search header was revalidated after the latest query-sync fixes and now keeps raw input, clear affordance, and trimmed execution query aligned while remaining tappable below the app bar.
 - Emulator seed data now covers separate buyer and seller notification, payment, shipment, confirmed-receipt, settled, cancelled-unpaid, draft, unsold, and cancelled-listing paths without cross-linking orders to unrelated auctions.
 - Backend callables cover bootstrap, draft lifecycle, bid and auto-bid, buy now, payment-session preparation, payment confirmation, shipment update, receipt confirmation, and notification read state.
 - `cd backend/functions && npm run lint` passed on March 30, 2026.
 - `cd backend/functions && npm run build` passed on March 30, 2026.
-- `cd apps/mobile_flutter && flutter analyze` passed on March 30, 2026.
-- `cd apps/mobile_flutter && flutter test` passed on March 30, 2026.
-- Manual emulator smoke for the new pinned search header and expanded seed scenarios was not rerun in this follow-up.
+- `cd apps/mobile_flutter && flutter analyze` passed on April 1, 2026.
+- `cd apps/mobile_flutter && flutter test` passed on April 1, 2026.
+- Manual emulator smoke for the latest auction-detail hardening was not rerun in this follow-up, but the previously seeded buyer and seller Phase 3 paths remain documented in `Documentation.md`.
 
 ## Next Commands
 1. `cd backend/functions && npm run serve`
 2. `cd backend/functions && npm run seed`
 3. `cd apps/mobile_flutter && flutter run --dart-define-from-file=dart_defines.json`
-4. Finish Phase 3 UI and UX polish and rerun the Phase 3 smoke tests.
-5. Start Phase 4 notification, settings, and product-hardening work after Phase 3 is complete.
+4. Start Phase 4 notification, settings, and product-hardening work on a new branch.
+5. Rerun the documented buyer and seller smoke paths when a manual release-candidate check is needed.
 6. Start deferred payment-provider cutover only when the user explicitly activates it.
 
 ## Update Rules

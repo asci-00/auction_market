@@ -37,16 +37,27 @@ class AuctionDetailViewData {
     required DocumentSnapshot<Map<String, dynamic>> auctionDocument,
     DocumentSnapshot<Map<String, dynamic>>? itemDocument,
   }) {
-    final auctionData = auctionDocument.data() ?? const <String, dynamic>{};
-    final itemData = itemDocument?.data() ?? const <String, dynamic>{};
+    return AuctionDetailViewData.fromMaps(
+      auctionId: auctionDocument.id,
+      auctionData: auctionDocument.data() ?? const <String, dynamic>{},
+      itemData: itemDocument?.data(),
+    );
+  }
+
+  factory AuctionDetailViewData.fromMaps({
+    required String auctionId,
+    required Map<String, dynamic> auctionData,
+    Map<String, dynamic>? itemData,
+  }) {
+    final itemPayload = itemData ?? const <String, dynamic>{};
     final heroImageUrl = auctionData['heroImageUrl'] as String?;
     final galleryImages = {
       if (heroImageUrl != null && heroImageUrl.trim().isNotEmpty) heroImageUrl,
-      ..._stringList(itemData['imageUrls']),
+      ..._stringList(itemPayload['imageUrls']),
     }.toList(growable: false);
 
     return AuctionDetailViewData(
-      id: auctionDocument.id,
+      id: auctionId,
       itemId: (auctionData['itemId'] as String?) ?? '',
       titleSnapshot:
           (auctionData['titleSnapshot'] as String?)?.trim().isNotEmpty == true
@@ -54,12 +65,12 @@ class AuctionDetailViewData {
           : '',
       heroImageUrl: heroImageUrl,
       imageUrls: galleryImages,
-      description: (itemData['description'] as String?)?.trim() ?? '',
+      description: (itemPayload['description'] as String?)?.trim() ?? '',
       categorySub:
-          (itemData['categorySub'] as String?) ??
+          (itemPayload['categorySub'] as String?) ??
           (auctionData['categorySub'] as String?) ??
           '',
-      condition: (itemData['condition'] as String?) ?? '',
+      condition: (itemPayload['condition'] as String?) ?? '',
       sellerId: auctionData['sellerId'] as String?,
       status: (auctionData['status'] as String?) ?? 'DRAFT',
       currentPrice: (auctionData['currentPrice'] as num?) ?? 0,
