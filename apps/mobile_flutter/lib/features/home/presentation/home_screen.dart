@@ -10,8 +10,10 @@ import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_section_heading.dart';
 import '../../../core/widgets/app_shell_insets.dart';
 import '../../../core/widgets/app_status_badge.dart';
+import '../application/home_curated_category_sections.dart';
 import 'widgets/home_action_icon_button.dart';
 import 'widgets/home_auction_rail.dart';
+import 'widgets/home_curated_category_rows.dart';
 import '../data/home_auction_summary.dart';
 import 'home_view_model.dart';
 
@@ -74,6 +76,11 @@ class _HomeBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final curated = buildHomeCuratedCategorySections(
+      endingSoon: endingSoon,
+      hot: hot,
+    );
+
     return AppPageScaffold(
       largeTitle: context.l10n.homeLargeTitle,
       subtitle: context.l10n.homeHeroEyebrow,
@@ -134,6 +141,14 @@ class _HomeBody extends StatelessWidget {
             isLoading: isLoading,
             heroNamespace: 'home-hot',
             defaultBadge: AppStatusKind.buyNow,
+            onTapAuction: (id, heroTag) =>
+                context.push('/auction/$id?heroTag=$heroTag'),
+          ),
+          SizedBox(height: tokens.space7),
+          HomeCuratedCategoryRows(
+            goods: curated.goods,
+            precious: curated.precious,
+            isLoading: isLoading,
             onTapAuction: (id, heroTag) =>
                 context.push('/auction/$id?heroTag=$heroTag'),
           ),

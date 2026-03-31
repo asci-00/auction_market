@@ -14,6 +14,7 @@ import '../../features/my/presentation/my_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/orders/presentation/orders_screen.dart';
 import '../../features/orders/presentation/order_payment_return_screen.dart';
+import '../../features/search/application/search_auction_filter.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/sell/presentation/sell_screen.dart';
 import '../firebase/firebase_providers.dart';
@@ -34,9 +35,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/login',
         pageBuilder: (_, state) => _buildTransitionPage(
           state: state,
-          child: LoginScreen(
-            returnTo: state.uri.queryParameters['from'],
-          ),
+          child: LoginScreen(returnTo: state.uri.queryParameters['from']),
         ),
       ),
       StatefulShellRoute.indexedStack(
@@ -56,8 +55,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/search',
-                pageBuilder: (_, __) =>
-                    const NoTransitionPage(child: SearchScreen()),
+                pageBuilder: (_, state) => NoTransitionPage(
+                  child: SearchScreen(
+                    initialCategory: parseSearchCategoryFilter(
+                      state.uri.queryParameters['category'],
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -102,10 +106,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/orders',
-        pageBuilder: (_, state) => _buildTransitionPage(
-          state: state,
-          child: const OrdersScreen(),
-        ),
+        pageBuilder: (_, state) =>
+            _buildTransitionPage(state: state, child: const OrdersScreen()),
       ),
       GoRoute(
         path: '/orders/:orderId',

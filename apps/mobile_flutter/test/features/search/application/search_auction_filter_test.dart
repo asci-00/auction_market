@@ -64,6 +64,16 @@ void main() {
     );
   });
 
+  test('category parser maps supported query values and defaults to all', () {
+    expect(parseSearchCategoryFilter('goods'), SearchCategoryFilter.goods);
+    expect(
+      parseSearchCategoryFilter('precious'),
+      SearchCategoryFilter.precious,
+    );
+    expect(parseSearchCategoryFilter('unknown'), SearchCategoryFilter.all);
+    expect(parseSearchCategoryFilter(null), SearchCategoryFilter.all);
+  });
+
   test('selection-only filtering keeps query result set stable', () {
     const filters = SearchFilterState(price: SearchPriceFilter.over200k);
 

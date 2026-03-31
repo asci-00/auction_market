@@ -62,7 +62,8 @@ import 'app_localizations_ko.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,17 +84,18 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('ko')
+    Locale('ko'),
   ];
 
   /// No description provided for @appTitle.
@@ -287,6 +290,30 @@ abstract class AppLocalizations {
   /// **'See the listings collecting bids and attention first.'**
   String get homeHotSubtitle;
 
+  /// No description provided for @homeCuratedGoodsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Goods spotlight'**
+  String get homeCuratedGoodsTitle;
+
+  /// No description provided for @homeCuratedGoodsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse fast-moving general goods in a tighter lane.'**
+  String get homeCuratedGoodsSubtitle;
+
+  /// No description provided for @homeCuratedPreciousTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Precious spotlight'**
+  String get homeCuratedPreciousTitle;
+
+  /// No description provided for @homeCuratedPreciousSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep precious pieces in a separate, easier-to-scan row.'**
+  String get homeCuratedPreciousSubtitle;
+
   /// No description provided for @homeOpenNotifications.
   ///
   /// In en, this message translates to:
@@ -418,6 +445,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Live auctions are filtered in real time from your current query.'**
   String get searchResultsSubtitle;
+
+  /// No description provided for @searchLayoutSwitchToGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Show grid view'**
+  String get searchLayoutSwitchToGrid;
+
+  /// No description provided for @searchLayoutSwitchToList.
+  ///
+  /// In en, this message translates to:
+  /// **'Show list view'**
+  String get searchLayoutSwitchToList;
 
   /// No description provided for @searchEmptyTitle.
   ///
@@ -1169,6 +1208,18 @@ abstract class AppLocalizations {
   /// **'Check the story, pricing, and urgency cues together before you send the auction live.'**
   String get sellStepPublishDescription;
 
+  /// No description provided for @sellProgressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Publishing progress'**
+  String get sellProgressTitle;
+
+  /// No description provided for @sellProgressSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed} of {total} steps ready'**
+  String sellProgressSubtitle(int completed, int total);
+
   /// No description provided for @sellDraftsTitle.
   ///
   /// In en, this message translates to:
@@ -1222,6 +1273,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Editing draft #{itemId}'**
   String sellCurrentDraftLabel(Object itemId);
+
+  /// No description provided for @sellDraftStatusNotSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Not saved yet'**
+  String get sellDraftStatusNotSaved;
+
+  /// No description provided for @sellDraftStatusNotSavedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Save the draft once the item basics feel ready to keep your progress anchored.'**
+  String get sellDraftStatusNotSavedDescription;
+
+  /// No description provided for @sellDraftStatusUnsaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsaved changes'**
+  String get sellDraftStatusUnsaved;
+
+  /// No description provided for @sellDraftStatusUnsavedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The current form is ahead of the latest saved draft. Save again before you publish.'**
+  String get sellDraftStatusUnsavedDescription;
+
+  /// No description provided for @sellDraftStatusSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft saved'**
+  String get sellDraftStatusSaved;
+
+  /// No description provided for @sellDraftStatusSavedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest save: {time}'**
+  String sellDraftStatusSavedDescription(Object time);
 
   /// No description provided for @sellCategoryGoods.
   ///
@@ -1938,7 +2025,8 @@ abstract class AppLocalizations {
   String ordersShipmentSummary(Object carrierName, Object trackingNumber);
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -1947,25 +2035,26 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'ko'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'ko'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return AppLocalizationsEn();
-    case 'ko': return AppLocalizationsKo();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'ko':
+      return AppLocalizationsKo();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
+    'that was used.',
   );
 }

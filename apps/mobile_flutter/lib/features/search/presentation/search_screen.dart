@@ -10,12 +10,19 @@ import '../../../core/widgets/app_section_heading.dart';
 import '../../../core/widgets/app_shell_insets.dart';
 import '../../../core/widgets/app_status_badge.dart';
 import '../application/search_auction_filter.dart';
+import 'search_results_layout.dart';
 import 'widgets/search_filter_chips.dart';
 import 'widgets/search_query_field.dart';
 import 'widgets/search_results_grid.dart';
+import 'widgets/search_results_layout_toggle.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  const SearchScreen({
+    super.key,
+    this.initialCategory = SearchCategoryFilter.all,
+  });
+
+  final SearchCategoryFilter initialCategory;
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -28,7 +35,14 @@ class _SearchScreenState extends State<SearchScreen> {
   late final Debouncer _queryDebouncer = Debouncer(_searchDebounce);
   String _query = '';
   String _debouncedQuery = '';
-  SearchFilterState _filters = const SearchFilterState();
+  late SearchFilterState _filters;
+  SearchResultsLayout _resultsLayout = SearchResultsLayout.grid;
+
+  @override
+  void initState() {
+    super.initState();
+    _filters = SearchFilterState(category: widget.initialCategory);
+  }
 
   @override
   void dispose() {
@@ -98,6 +112,12 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  void _setResultsLayout(SearchResultsLayout layout) {
+    setState(() {
+      _resultsLayout = layout;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
@@ -163,12 +183,17 @@ class _SearchScreenState extends State<SearchScreen> {
                   AppSectionHeading(
                     title: context.l10n.searchResultsTitle,
                     subtitle: context.l10n.searchResultsSubtitle,
+                    trailing: SearchResultsLayoutToggle(
+                      layout: _resultsLayout,
+                      onChanged: _setResultsLayout,
+                    ),
                   ),
                   SizedBox(height: tokens.space4),
-                  SearchResultsGrid(
+                  SearchResultsView(
                     query: _query,
                     searchQuery: _debouncedQuery,
                     filters: _filters,
+                    layout: _resultsLayout,
                     onResetQuery: _resetQuery,
                     onResetFilters: _resetFilters,
                   ),

@@ -32,6 +32,10 @@
   "homeEndingSoonSubtitle": "Stay on top of auctions with the shortest remaining time.",
   "homeHotTitle": "Hot right now",
   "homeHotSubtitle": "See the listings collecting bids and attention first.",
+  "homeCuratedGoodsTitle": "Goods spotlight",
+  "homeCuratedGoodsSubtitle": "Browse fast-moving general goods in a tighter lane.",
+  "homeCuratedPreciousTitle": "Precious spotlight",
+  "homeCuratedPreciousSubtitle": "Keep precious pieces in a separate, easier-to-scan row.",
   "homeOpenNotifications": "Notifications",
   "homeEmptyTitle": "New auctions will appear here",
   "homeEmptyDescription": "Live listings will surface in this space as soon as they are published.",
@@ -54,6 +58,8 @@
   "searchFilterBuyNow": "Buy now",
   "searchResultsTitle": "Results",
   "searchResultsSubtitle": "Live auctions are filtered in real time from your current query.",
+  "searchLayoutSwitchToGrid": "Show grid view",
+  "searchLayoutSwitchToList": "Show list view",
   "searchEmptyTitle": "No auctions match yet",
   "searchEmptyDescription": "Try widening your search or return when more listings go live.",
   "searchErrorDescription": "We couldn't load search results right now. Try again shortly.",
@@ -236,6 +242,18 @@
   "sellStepImagesDescription": "Main photos and any required authentication images should feel complete before publishing.",
   "sellStepPublishTitle": "Preview and publish",
   "sellStepPublishDescription": "Check the story, pricing, and urgency cues together before you send the auction live.",
+  "sellProgressTitle": "Publishing progress",
+  "sellProgressSubtitle": "{completed} of {total} steps ready",
+  "@sellProgressSubtitle": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "sellDraftsTitle": "Recent drafts",
   "sellDraftsSubtitle": "Return to saved item content before you publish a live auction.",
   "sellDraftEmptyTitle": "No saved drafts yet",
@@ -253,6 +271,17 @@
   "@sellCurrentDraftLabel": {
     "placeholders": {
       "itemId": {}
+    }
+  },
+  "sellDraftStatusNotSaved": "Not saved yet",
+  "sellDraftStatusNotSavedDescription": "Save the draft once the item basics feel ready to keep your progress anchored.",
+  "sellDraftStatusUnsaved": "Unsaved changes",
+  "sellDraftStatusUnsavedDescription": "The current form is ahead of the latest saved draft. Save again before you publish.",
+  "sellDraftStatusSaved": "Draft saved",
+  "sellDraftStatusSavedDescription": "Latest save: {time}",
+  "@sellDraftStatusSavedDescription": {
+    "placeholders": {
+      "time": {}
     }
   },
   "sellCategoryGoods": "Goods",
