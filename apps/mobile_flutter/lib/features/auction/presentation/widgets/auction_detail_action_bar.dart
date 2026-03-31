@@ -162,9 +162,7 @@ class _BuyerAuctionActions extends StatelessWidget {
 }
 
 class _BrowseHomeAction extends StatelessWidget {
-  const _BrowseHomeAction({
-    required this.onPressed,
-  });
+  const _BrowseHomeAction({required this.onPressed});
 
   final VoidCallback onPressed;
 
@@ -178,10 +176,7 @@ class _BrowseHomeAction extends StatelessWidget {
 }
 
 class _PrimaryActionButton extends StatelessWidget {
-  const _PrimaryActionButton({
-    required this.label,
-    required this.onPressed,
-  });
+  const _PrimaryActionButton({required this.label, required this.onPressed});
 
   final String label;
   final VoidCallback? onPressed;
@@ -199,10 +194,7 @@ class _PrimaryActionButton extends StatelessWidget {
 }
 
 class _SecondaryActionButton extends StatelessWidget {
-  const _SecondaryActionButton({
-    required this.label,
-    required this.onPressed,
-  });
+  const _SecondaryActionButton({required this.label, required this.onPressed});
 
   final String label;
   final VoidCallback? onPressed;

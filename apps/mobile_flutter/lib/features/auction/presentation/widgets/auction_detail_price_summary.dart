@@ -8,10 +8,7 @@ import '../../../../core/widgets/app_panel.dart';
 import '../../data/auction_detail_view_data.dart';
 
 class AuctionDetailPriceSummary extends StatelessWidget {
-  const AuctionDetailPriceSummary({
-    super.key,
-    required this.auction,
-  });
+  const AuctionDetailPriceSummary({super.key, required this.auction});
 
   final AuctionDetailViewData auction;
 
@@ -48,10 +45,7 @@ class AuctionDetailPriceSummary extends StatelessWidget {
 }
 
 class _MetricBlock extends StatelessWidget {
-  const _MetricBlock({
-    required this.label,
-    required this.value,
-  });
+  const _MetricBlock({required this.label, required this.value});
 
   final String label;
   final String value;

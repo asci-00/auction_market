@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -83,13 +84,72 @@ class AuctionViewModel extends _$AuctionViewModel {
 
 Stream<AuctionDetailViewData?> _auctionDetailStream(Ref ref, String auctionId) {
   final firestore = ref.watch(firestoreProvider);
-  return firestore.collection('auctions').doc(auctionId).snapshots().map((
-    snapshot,
-  ) {
-    if (!snapshot.exists) {
-      return null;
+  final auctions = firestore.collection('auctions');
+  final items = firestore.collection('items');
+
+  return Stream<AuctionDetailViewData?>.multi((controller) {
+    StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? itemSub;
+    DocumentSnapshot<Map<String, dynamic>>? latestAuction;
+    DocumentSnapshot<Map<String, dynamic>>? latestItem;
+    String? currentItemId;
+
+    void emitCombined() {
+      final auctionSnapshot = latestAuction;
+      if (auctionSnapshot == null || !auctionSnapshot.exists) {
+        controller.add(null);
+        return;
+      }
+
+      controller.add(
+        AuctionDetailViewData.fromDocuments(
+          auctionDocument: auctionSnapshot,
+          itemDocument: latestItem?.exists == true ? latestItem : null,
+        ),
+      );
     }
-    return AuctionDetailViewData.fromDocument(snapshot);
+
+    final auctionSub = auctions.doc(auctionId).snapshots().listen((
+      auctionSnapshot,
+    ) {
+      latestAuction = auctionSnapshot;
+      if (!auctionSnapshot.exists) {
+        currentItemId = null;
+        latestItem = null;
+        itemSub?.cancel();
+        itemSub = null;
+        controller.add(null);
+        return;
+      }
+
+      final auctionData = auctionSnapshot.data() ?? const <String, dynamic>{};
+      final nextItemId = (auctionData['itemId'] as String?)?.trim() ?? '';
+
+      if (nextItemId.isEmpty) {
+        currentItemId = null;
+        latestItem = null;
+        itemSub?.cancel();
+        itemSub = null;
+        emitCombined();
+        return;
+      }
+
+      if (currentItemId != nextItemId) {
+        currentItemId = nextItemId;
+        latestItem = null;
+        itemSub?.cancel();
+        itemSub = items.doc(nextItemId).snapshots().listen((itemSnapshot) {
+          latestItem = itemSnapshot;
+          emitCombined();
+        }, onError: controller.addError);
+      }
+
+      emitCombined();
+    }, onError: controller.addError);
+
+    controller.onCancel = () async {
+      await auctionSub.cancel();
+      await itemSub?.cancel();
+    };
   });
 }
 

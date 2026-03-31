@@ -21,6 +21,7 @@ import 'auction_view_model.dart';
 import 'auction_detail_dialogs.dart';
 import 'widgets/auction_bid_history_card.dart';
 import 'widgets/auction_detail_action_bar.dart';
+import 'widgets/auction_detail_description_panel.dart';
 import 'widgets/auction_detail_header.dart';
 import 'widgets/auction_detail_price_summary.dart';
 
@@ -306,6 +307,8 @@ class _AuctionDetailScaffold extends StatelessWidget {
                 tone: AppPanelTone.surface,
                 trailing: _SellerSummaryPlate(sellerId: auction!.sellerId),
               ),
+              SizedBox(height: tokens.space5),
+              AuctionDetailDescriptionPanel(auction: auction!),
               SizedBox(height: tokens.space5),
               AppSectionHeading(
                 title: context.l10n.auctionDetailBidHistory,

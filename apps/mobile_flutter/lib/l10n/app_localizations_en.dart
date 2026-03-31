@@ -376,6 +376,53 @@ class AppLocalizationsEn extends AppLocalizations {
       'Trust signals, category fit, and shipping readiness stay visible before you place a bid.';
 
   @override
+  String get auctionDetailDescriptionTitle => 'Item details';
+
+  @override
+  String get auctionDetailDescriptionSubtitle =>
+      'Condition, category fit, and seller notes stay visible before you act.';
+
+  @override
+  String get auctionDetailDescriptionFallback =>
+      'Seller notes will appear here as soon as the linked item record is available.';
+
+  @override
+  String get auctionDetailMetaCondition => 'Condition';
+
+  @override
+  String get auctionDetailMetaCategory => 'Category';
+
+  @override
+  String get auctionDetailConditionNew => 'New';
+
+  @override
+  String get auctionDetailConditionLikeNew => 'Like new';
+
+  @override
+  String get auctionDetailConditionGood => 'Good';
+
+  @override
+  String get auctionDetailConditionFair => 'Fair';
+
+  @override
+  String get auctionDetailConditionPoor => 'Poor';
+
+  @override
+  String get auctionDetailCategoryIdolMd => 'Idol merchandise';
+
+  @override
+  String get auctionDetailCategoryWatch => 'Watch';
+
+  @override
+  String get auctionDetailCategorySneakers => 'Sneakers';
+
+  @override
+  String get auctionDetailCategoryBullion => 'Bullion';
+
+  @override
+  String get auctionDetailCategoryCamera => 'Camera';
+
+  @override
   String get auctionDetailBidHistory => 'Bid history';
 
   @override
@@ -681,7 +728,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sellDraftEmptyDescription =>
-      'Your saved item drafts will appear here when they are written to Firestore.';
+      'Your saved item drafts will appear here after you save item details.';
 
   @override
   String get sellDraftLoadAction => 'Load';

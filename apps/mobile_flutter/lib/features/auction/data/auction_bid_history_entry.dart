@@ -1,10 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuctionBidHistoryEntry {
-  const AuctionBidHistoryEntry({
-    required this.amount,
-    required this.createdAt,
-  });
+  const AuctionBidHistoryEntry({required this.amount, required this.createdAt});
 
   final num amount;
   final DateTime? createdAt;

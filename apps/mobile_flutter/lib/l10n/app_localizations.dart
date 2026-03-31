@@ -752,6 +752,96 @@ abstract class AppLocalizations {
   /// **'Trust signals, category fit, and shipping readiness stay visible before you place a bid.'**
   String get auctionDetailSellerDescription;
 
+  /// No description provided for @auctionDetailDescriptionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Item details'**
+  String get auctionDetailDescriptionTitle;
+
+  /// No description provided for @auctionDetailDescriptionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Condition, category fit, and seller notes stay visible before you act.'**
+  String get auctionDetailDescriptionSubtitle;
+
+  /// No description provided for @auctionDetailDescriptionFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller notes will appear here as soon as the linked item record is available.'**
+  String get auctionDetailDescriptionFallback;
+
+  /// No description provided for @auctionDetailMetaCondition.
+  ///
+  /// In en, this message translates to:
+  /// **'Condition'**
+  String get auctionDetailMetaCondition;
+
+  /// No description provided for @auctionDetailMetaCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get auctionDetailMetaCategory;
+
+  /// No description provided for @auctionDetailConditionNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get auctionDetailConditionNew;
+
+  /// No description provided for @auctionDetailConditionLikeNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Like new'**
+  String get auctionDetailConditionLikeNew;
+
+  /// No description provided for @auctionDetailConditionGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get auctionDetailConditionGood;
+
+  /// No description provided for @auctionDetailConditionFair.
+  ///
+  /// In en, this message translates to:
+  /// **'Fair'**
+  String get auctionDetailConditionFair;
+
+  /// No description provided for @auctionDetailConditionPoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Poor'**
+  String get auctionDetailConditionPoor;
+
+  /// No description provided for @auctionDetailCategoryIdolMd.
+  ///
+  /// In en, this message translates to:
+  /// **'Idol merchandise'**
+  String get auctionDetailCategoryIdolMd;
+
+  /// No description provided for @auctionDetailCategoryWatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch'**
+  String get auctionDetailCategoryWatch;
+
+  /// No description provided for @auctionDetailCategorySneakers.
+  ///
+  /// In en, this message translates to:
+  /// **'Sneakers'**
+  String get auctionDetailCategorySneakers;
+
+  /// No description provided for @auctionDetailCategoryBullion.
+  ///
+  /// In en, this message translates to:
+  /// **'Bullion'**
+  String get auctionDetailCategoryBullion;
+
+  /// No description provided for @auctionDetailCategoryCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get auctionDetailCategoryCamera;
+
   /// No description provided for @auctionDetailBidHistory.
   ///
   /// In en, this message translates to:
@@ -1271,7 +1361,7 @@ abstract class AppLocalizations {
   /// No description provided for @sellDraftEmptyDescription.
   ///
   /// In en, this message translates to:
-  /// **'Your saved item drafts will appear here when they are written to Firestore.'**
+  /// **'Your saved item drafts will appear here after you save item details.'**
   String get sellDraftEmptyDescription;
 
   /// No description provided for @sellDraftLoadAction.

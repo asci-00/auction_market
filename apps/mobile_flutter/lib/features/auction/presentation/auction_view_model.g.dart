@@ -33,9 +33,7 @@ abstract class _$AuctionViewModel
     extends BuildlessAutoDisposeAsyncNotifier<AuctionViewState> {
   late final String auctionId;
 
-  FutureOr<AuctionViewState> build(
-    String auctionId,
-  );
+  FutureOr<AuctionViewState> build(String auctionId);
 }
 
 /// See also [AuctionViewModel].
@@ -48,21 +46,15 @@ class AuctionViewModelFamily extends Family<AsyncValue<AuctionViewState>> {
   const AuctionViewModelFamily();
 
   /// See also [AuctionViewModel].
-  AuctionViewModelProvider call(
-    String auctionId,
-  ) {
-    return AuctionViewModelProvider(
-      auctionId,
-    );
+  AuctionViewModelProvider call(String auctionId) {
+    return AuctionViewModelProvider(auctionId);
   }
 
   @override
   AuctionViewModelProvider getProviderOverride(
     covariant AuctionViewModelProvider provider,
   ) {
-    return call(
-      provider.auctionId,
-    );
+    return call(provider.auctionId);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -81,24 +73,26 @@ class AuctionViewModelFamily extends Family<AsyncValue<AuctionViewState>> {
 }
 
 /// See also [AuctionViewModel].
-class AuctionViewModelProvider extends AutoDisposeAsyncNotifierProviderImpl<
-    AuctionViewModel, AuctionViewState> {
+class AuctionViewModelProvider
+    extends
+        AutoDisposeAsyncNotifierProviderImpl<
+          AuctionViewModel,
+          AuctionViewState
+        > {
   /// See also [AuctionViewModel].
-  AuctionViewModelProvider(
-    String auctionId,
-  ) : this._internal(
-          () => AuctionViewModel()..auctionId = auctionId,
-          from: auctionViewModelProvider,
-          name: r'auctionViewModelProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$auctionViewModelHash,
-          dependencies: AuctionViewModelFamily._dependencies,
-          allTransitiveDependencies:
-              AuctionViewModelFamily._allTransitiveDependencies,
-          auctionId: auctionId,
-        );
+  AuctionViewModelProvider(String auctionId)
+    : this._internal(
+        () => AuctionViewModel()..auctionId = auctionId,
+        from: auctionViewModelProvider,
+        name: r'auctionViewModelProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$auctionViewModelHash,
+        dependencies: AuctionViewModelFamily._dependencies,
+        allTransitiveDependencies:
+            AuctionViewModelFamily._allTransitiveDependencies,
+        auctionId: auctionId,
+      );
 
   AuctionViewModelProvider._internal(
     super._createNotifier, {
@@ -116,9 +110,7 @@ class AuctionViewModelProvider extends AutoDisposeAsyncNotifierProviderImpl<
   FutureOr<AuctionViewState> runNotifierBuild(
     covariant AuctionViewModel notifier,
   ) {
-    return notifier.build(
-      auctionId,
-    );
+    return notifier.build(auctionId);
   }
 
   @override
@@ -139,7 +131,7 @@ class AuctionViewModelProvider extends AutoDisposeAsyncNotifierProviderImpl<
 
   @override
   AutoDisposeAsyncNotifierProviderElement<AuctionViewModel, AuctionViewState>
-      createElement() {
+  createElement() {
     return _AuctionViewModelProviderElement(this);
   }
 
@@ -166,12 +158,17 @@ mixin AuctionViewModelRef
 }
 
 class _AuctionViewModelProviderElement
-    extends AutoDisposeAsyncNotifierProviderElement<AuctionViewModel,
-        AuctionViewState> with AuctionViewModelRef {
+    extends
+        AutoDisposeAsyncNotifierProviderElement<
+          AuctionViewModel,
+          AuctionViewState
+        >
+    with AuctionViewModelRef {
   _AuctionViewModelProviderElement(super.provider);
 
   @override
   String get auctionId => (origin as AuctionViewModelProvider).auctionId;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

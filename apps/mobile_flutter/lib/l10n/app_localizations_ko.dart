@@ -357,6 +357,53 @@ class AppLocalizationsKo extends AppLocalizations {
       '입찰 전에도 신뢰 신호, 카테고리 적합성, 배송 준비 상태를 바로 확인할 수 있어야 합니다.';
 
   @override
+  String get auctionDetailDescriptionTitle => '상품 상세';
+
+  @override
+  String get auctionDetailDescriptionSubtitle =>
+      '상태, 카테고리 맥락, 셀러 메모를 액션 전에 바로 확인할 수 있어야 합니다.';
+
+  @override
+  String get auctionDetailDescriptionFallback =>
+      '연결된 상품 문서가 준비되면 셀러 메모가 이곳에 표시됩니다.';
+
+  @override
+  String get auctionDetailMetaCondition => '상태';
+
+  @override
+  String get auctionDetailMetaCategory => '카테고리';
+
+  @override
+  String get auctionDetailConditionNew => '새 상품';
+
+  @override
+  String get auctionDetailConditionLikeNew => '거의 새 상품';
+
+  @override
+  String get auctionDetailConditionGood => '좋음';
+
+  @override
+  String get auctionDetailConditionFair => '사용감 있음';
+
+  @override
+  String get auctionDetailConditionPoor => '상태 낮음';
+
+  @override
+  String get auctionDetailCategoryIdolMd => '아이돌 굿즈';
+
+  @override
+  String get auctionDetailCategoryWatch => '시계';
+
+  @override
+  String get auctionDetailCategorySneakers => '스니커즈';
+
+  @override
+  String get auctionDetailCategoryBullion => '불리온';
+
+  @override
+  String get auctionDetailCategoryCamera => '카메라';
+
+  @override
   String get auctionDetailBidHistory => '입찰 흐름';
 
   @override
@@ -646,7 +693,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sellDraftEmptyTitle => '저장된 드래프트가 아직 없습니다';
 
   @override
-  String get sellDraftEmptyDescription => '상품 초안을 Firestore에 저장하면 이 영역에 나타납니다.';
+  String get sellDraftEmptyDescription => '상품 기본 정보를 저장하면 드래프트가 이 영역에 나타납니다.';
 
   @override
   String get sellDraftLoadAction => '불러오기';

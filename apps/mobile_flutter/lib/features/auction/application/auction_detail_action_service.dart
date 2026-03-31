@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/firebase/firebase_providers.dart';
 
-final auctionDetailActionServiceProvider =
-    Provider<AuctionDetailActionService>((ref) {
-  return AuctionDetailActionService(ref.watch(functionsProvider));
-});
+final auctionDetailActionServiceProvider = Provider<AuctionDetailActionService>(
+  (ref) {
+    return AuctionDetailActionService(ref.watch(functionsProvider));
+  },
+);
 
 class AuctionDetailActionService {
   const AuctionDetailActionService(this._functions);
@@ -45,9 +46,7 @@ class AuctionDetailActionService {
     });
   }
 
-  Future<String?> buyNow({
-    required String auctionId,
-  }) async {
+  Future<String?> buyNow({required String auctionId}) async {
     final result = await _functions.httpsCallable('buyNow').call<dynamic>({
       'auctionId': auctionId,
     });
