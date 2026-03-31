@@ -242,6 +242,18 @@
   "sellStepImagesDescription": "Main photos and any required authentication images should feel complete before publishing.",
   "sellStepPublishTitle": "Preview and publish",
   "sellStepPublishDescription": "Check the story, pricing, and urgency cues together before you send the auction live.",
+  "sellProgressTitle": "Publishing progress",
+  "sellProgressSubtitle": "{completed} of {total} steps ready",
+  "@sellProgressSubtitle": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "sellDraftsTitle": "Recent drafts",
   "sellDraftsSubtitle": "Return to saved item content before you publish a live auction.",
   "sellDraftEmptyTitle": "No saved drafts yet",
@@ -259,6 +271,17 @@
   "@sellCurrentDraftLabel": {
     "placeholders": {
       "itemId": {}
+    }
+  },
+  "sellDraftStatusNotSaved": "Not saved yet",
+  "sellDraftStatusNotSavedDescription": "Save the draft once the item basics feel ready to keep your progress anchored.",
+  "sellDraftStatusUnsaved": "Unsaved changes",
+  "sellDraftStatusUnsavedDescription": "The current form is ahead of the latest saved draft. Save again before you publish.",
+  "sellDraftStatusSaved": "Draft saved",
+  "sellDraftStatusSavedDescription": "Latest save: {time}",
+  "@sellDraftStatusSavedDescription": {
+    "placeholders": {
+      "time": {}
     }
   },
   "sellCategoryGoods": "Goods",

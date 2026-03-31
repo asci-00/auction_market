@@ -25,6 +25,7 @@ import 'widgets/sell_category_panel.dart';
 import 'widgets/sell_details_panel.dart';
 import 'widgets/sell_image_picker_panel.dart';
 import 'widgets/sell_policy_panel.dart';
+import 'widgets/sell_progress_panel.dart';
 import 'widgets/sell_pricing_panel.dart';
 import 'widgets/sell_recent_drafts_section.dart';
 
@@ -52,13 +53,27 @@ class _SellScreenState extends ConsumerState<SellScreen> {
   bool _appraisalRequested = false;
   bool _isSavingDraft = false;
   bool _isPublishing = false;
+  bool _hasUnsavedChanges = false;
+  bool _suppressDirtyTracking = false;
+  DateTime? _lastSavedAt;
   List<String> _existingImageUrls = <String>[];
   List<String> _existingAuthImageUrls = <String>[];
   List<XFile> _newImageFiles = <XFile>[];
   List<XFile> _newAuthImageFiles = <XFile>[];
 
   @override
+  void initState() {
+    super.initState();
+    for (final controller in _formControllers) {
+      controller.addListener(_handleFormChanged);
+    }
+  }
+
+  @override
   void dispose() {
+    for (final controller in _formControllers) {
+      controller.removeListener(_handleFormChanged);
+    }
     _categorySubController.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
@@ -117,6 +132,17 @@ class _SellScreenState extends ConsumerState<SellScreen> {
               SizedBox(height: tokens.space5),
               const SellPolicyPanel(),
               SizedBox(height: tokens.space6),
+              SellProgressPanel(
+                categoryReady: _categoryReady,
+                detailsReady: _detailsReady,
+                pricingReady: _pricingReady,
+                imagesReady: _imagesReady,
+                publishReady: _publishReady,
+                currentDraftId: _itemId,
+                hasUnsavedChanges: _hasUnsavedChanges,
+                lastSavedAt: _lastSavedAt,
+              ),
+              SizedBox(height: tokens.space6),
               SellRecentDraftsSection(
                 userId: userId,
                 drafts: sellAsync?.valueOrNull?.recentDrafts ?? const [],
@@ -131,6 +157,7 @@ class _SellScreenState extends ConsumerState<SellScreen> {
                 onCategoryMainChanged: (value) {
                   setState(() {
                     _categoryMain = value;
+                    _hasUnsavedChanges = true;
                   });
                 },
               ),
@@ -144,6 +171,7 @@ class _SellScreenState extends ConsumerState<SellScreen> {
                 onAppraisalChanged: (value) {
                   setState(() {
                     _appraisalRequested = value;
+                    _hasUnsavedChanges = true;
                   });
                 },
               ),
@@ -155,6 +183,7 @@ class _SellScreenState extends ConsumerState<SellScreen> {
                 onDurationChanged: (value) {
                   setState(() {
                     _durationDays = value;
+                    _hasUnsavedChanges = true;
                   });
                 },
               ),
@@ -205,6 +234,7 @@ class _SellScreenState extends ConsumerState<SellScreen> {
 
     setState(() {
       _newImageFiles = [..._newImageFiles, ...picked.take(remainingSlots)];
+      _hasUnsavedChanges = true;
     });
   }
 
@@ -216,26 +246,32 @@ class _SellScreenState extends ConsumerState<SellScreen> {
 
     setState(() {
       _newAuthImageFiles = [..._newAuthImageFiles, ...picked].toList();
+      _hasUnsavedChanges = true;
     });
   }
 
   void _applyDraft(SellDraftSummary draft) {
+    _suppressDirtyTracking = true;
+    _categorySubController.text = draft.categorySub;
+    _titleController.text = draft.title;
+    _descriptionController.text = draft.description;
+    _conditionController.text = draft.condition;
+    _tagsController.text = draft.tags.join(', ');
+    _startPriceController.text = draft.startPrice?.toString() ?? '';
+    _buyNowPriceController.text = draft.buyNowPrice?.toString() ?? '';
+    _suppressDirtyTracking = false;
+
     setState(() {
       _itemId = draft.id;
       _categoryMain = draft.categoryMain;
-      _categorySubController.text = draft.categorySub;
-      _titleController.text = draft.title;
-      _descriptionController.text = draft.description;
-      _conditionController.text = draft.condition;
-      _tagsController.text = draft.tags.join(', ');
       _appraisalRequested = draft.appraisalRequested;
-      _startPriceController.text = draft.startPrice?.toString() ?? '';
-      _buyNowPriceController.text = draft.buyNowPrice?.toString() ?? '';
       _durationDays = draft.durationDays;
       _existingImageUrls = draft.imageUrls;
       _existingAuthImageUrls = draft.authImageUrls;
       _newImageFiles = <XFile>[];
       _newAuthImageFiles = <XFile>[];
+      _hasUnsavedChanges = false;
+      _lastSavedAt = draft.updatedAt;
     });
   }
 
@@ -268,6 +304,8 @@ class _SellScreenState extends ConsumerState<SellScreen> {
         _existingAuthImageUrls = savedDraft.authImageUrls;
         _newImageFiles = <XFile>[];
         _newAuthImageFiles = <XFile>[];
+        _hasUnsavedChanges = false;
+        _lastSavedAt = DateTime.now();
       });
 
       context.showSnackBarMessage(context.l10n.sellActionSaved);
@@ -409,4 +447,56 @@ class _SellScreenState extends ConsumerState<SellScreen> {
 
     return null;
   }
+
+  List<TextEditingController> get _formControllers => [
+    _categorySubController,
+    _titleController,
+    _descriptionController,
+    _conditionController,
+    _tagsController,
+    _startPriceController,
+    _buyNowPriceController,
+  ];
+
+  void _handleFormChanged() {
+    if (_suppressDirtyTracking || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _hasUnsavedChanges = true;
+    });
+  }
+
+  bool get _categoryReady => _categorySubController.text.trim().isNotEmpty;
+
+  bool get _detailsReady =>
+      _titleController.text.trim().isNotEmpty &&
+      _conditionController.text.trim().isNotEmpty &&
+      _descriptionController.text.trim().isNotEmpty;
+
+  bool get _pricingReady {
+    final startPrice = int.tryParse(_startPriceController.text.trim());
+    final buyNowPrice = _buyNowPriceController.text.trim().isEmpty
+        ? null
+        : int.tryParse(_buyNowPriceController.text.trim());
+
+    return startPrice != null &&
+        startPrice > 0 &&
+        (buyNowPrice == null || buyNowPrice > startPrice);
+  }
+
+  bool get _imagesReady {
+    final hasGallery =
+        _existingImageUrls.isNotEmpty || _newImageFiles.isNotEmpty;
+    final hasRequiredAuth =
+        _categoryMain != 'GOODS' ||
+        _existingAuthImageUrls.isNotEmpty ||
+        _newAuthImageFiles.isNotEmpty;
+
+    return hasGallery && hasRequiredAuth;
+  }
+
+  bool get _publishReady =>
+      _categoryReady && _detailsReady && _pricingReady && _imagesReady;
 }
