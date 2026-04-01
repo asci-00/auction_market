@@ -835,6 +835,26 @@ class AppLocalizationsEn extends AppLocalizations {
       'Goods drafts need at least one authentication image.';
 
   @override
+  String get sellValidationCategorySubPublish =>
+      'Add a category detail before publishing the auction.';
+
+  @override
+  String get sellValidationTitlePublish =>
+      'Add an item title before publishing the auction.';
+
+  @override
+  String get sellValidationConditionPublish =>
+      'Add the item condition before publishing the auction.';
+
+  @override
+  String get sellValidationDescriptionPublish =>
+      'Add the item description before publishing the auction.';
+
+  @override
+  String get sellValidationAuthImagesPublish =>
+      'Goods auctions need at least one authentication image before publishing.';
+
+  @override
   String get sellValidationImages =>
       'Publishing requires at least one gallery image.';
 
@@ -845,6 +865,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get sellValidationBuyNowPrice =>
       'Buy now price must be greater than the start price.';
+
+  @override
+  String get sellValidationBuyNowPriceInvalid =>
+      'Enter a valid whole-number buy now price before publishing.';
 
   @override
   String get sellValidationSummaryDraftTitle =>

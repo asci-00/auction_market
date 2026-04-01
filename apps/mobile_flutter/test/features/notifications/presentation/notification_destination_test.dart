@@ -8,8 +8,20 @@ void main() {
     final l10n = lookupAppLocalizations(const Locale('en'));
 
     expect(
+      describeNotificationDestination(l10n, null),
+      'Opens the next relevant screen',
+    );
+    expect(
+      describeNotificationDestination(l10n, '   '),
+      'Opens the next relevant screen',
+    );
+    expect(
       describeNotificationDestination(l10n, 'app://auction/auction-1'),
       'Opens auction detail',
+    );
+    expect(
+      describeNotificationDestination(l10n, 'app://auction'),
+      'Opens the next relevant screen',
     );
     expect(
       describeNotificationDestination(l10n, 'app://orders/order-1'),
@@ -25,6 +37,13 @@ void main() {
         'app://payments/fail?orderId=order-1',
       ),
       'Opens payment recovery',
+    );
+    expect(
+      describeNotificationDestination(
+        l10n,
+        'https://example.com/orders/order-1',
+      ),
+      'Opens order timeline',
     );
     expect(
       describeNotificationDestination(l10n, 'not-a-valid-link'),

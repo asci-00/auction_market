@@ -793,6 +793,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sellValidationAuthImages => '일반 상품 드래프트에는 인증 이미지가 최소 1장 필요합니다.';
 
   @override
+  String get sellValidationCategorySubPublish => '경매 발행 전에 세부 카테고리를 입력해 주세요.';
+
+  @override
+  String get sellValidationTitlePublish => '경매 발행 전에 상품 제목을 입력해 주세요.';
+
+  @override
+  String get sellValidationConditionPublish => '경매 발행 전에 상품 상태를 입력해 주세요.';
+
+  @override
+  String get sellValidationDescriptionPublish => '경매 발행 전에 상품 설명을 입력해 주세요.';
+
+  @override
+  String get sellValidationAuthImagesPublish =>
+      '일반 상품 경매를 발행하려면 인증 이미지가 최소 1장 필요합니다.';
+
+  @override
   String get sellValidationImages => '경매 발행 전에는 대표 이미지가 최소 1장 필요합니다.';
 
   @override
@@ -800,6 +816,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get sellValidationBuyNowPrice => '즉시 구매가는 시작가보다 높아야 합니다.';
+
+  @override
+  String get sellValidationBuyNowPriceInvalid =>
+      '발행 전에 올바른 정수 즉시 구매가를 입력해 주세요.';
 
   @override
   String get sellValidationSummaryDraftTitle => '드래프트 저장 전에 아래 항목을 확인해 주세요';
