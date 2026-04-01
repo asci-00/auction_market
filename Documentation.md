@@ -169,6 +169,12 @@
 - Buyer payment failure return smoke test path: rerun `npm run seed` first to restore `order-awaiting` to `AWAITING_PAYMENT`, then while signed in as `buyer1`, open `app://payments/fail?orderId=order-awaiting&code=PAY_PROCESS_CANCELED&message=test` and verify the payment failure screen returns the user to payment recovery UI without changing that order from `AWAITING_PAYMENT`.
 - Seller smoke test path: sign in as `seller1`, open `order-paid`, submit carrier and tracking information, and confirm the order moves to `SHIPPED`.
 - Buyer smoke test path: sign in as `buyer1`, open the same `order-paid`, confirm receipt, and verify the order moves to `CONFIRMED_RECEIPT`.
+- Phase 3 close-review checklist:
+  - Start or reuse the local emulator suite, then run `npm run seed` so seeded auth and Firestore data are in a known state.
+  - Buyer close check: sign in as `buyer1`, browse into a live auction, verify bid or buy-now still routes into an order timeline, then verify `order-awaiting` payment preparation and the `app://payments/success?...` recovery path still advance the order correctly.
+  - Seller close check: sign in as `seller1`, save or reopen a draft, publish a live auction, then open `order-paid` and verify shipment submission still advances the order to `SHIPPED`.
+  - Shared close check: reopen the same shipped order as `buyer1`, confirm receipt, and verify the order advances to `CONFIRMED_RECEIPT`.
+  - Phase 3 may move to complete only after those manual smoke steps are reviewed together with the latest automated validation run.
 - These accounts are for local emulator checks only. They do not validate Google or Apple browser sign-in, provider linking, redirect handling, or staging and prod auth configuration.
 
 

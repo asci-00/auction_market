@@ -2,8 +2,8 @@
 
 ## Current Task
 - Phase 3 final close review is active.
-- The implementation work is largely complete, and the latest close-out slice hardened auction detail stream joining and gallery state updates with targeted regression coverage.
-- Final close still depends on reviewing the remaining Phase 3 acceptance criteria and the documented buyer and seller smoke paths before Phase 4 starts.
+- The implementation work is complete enough for close review, and the latest close-out slices now cover auction detail stream joining, gallery state updates, and screen-level detail composition with targeted regression coverage.
+- The only remaining Phase 3 gate is the documented manual buyer and seller smoke review before Phase 4 starts.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -39,18 +39,24 @@
 - The pinned search header was revalidated after the latest query-sync fixes and now keeps raw input, clear affordance, and trimmed execution query aligned while remaining tappable below the app bar.
 - Emulator seed data now covers separate buyer and seller notification, payment, shipment, confirmed-receipt, settled, cancelled-unpaid, draft, unsold, and cancelled-listing paths without cross-linking orders to unrelated auctions.
 - Backend callables cover bootstrap, draft lifecycle, bid and auto-bid, buy now, payment-session preparation, payment confirmation, shipment update, receipt confirmation, and notification read state.
-- `cd backend/functions && npm run lint` passed on March 30, 2026.
-- `cd backend/functions && npm run build` passed on March 30, 2026.
-- `cd apps/mobile_flutter && flutter analyze` passed on April 1, 2026.
-- `cd apps/mobile_flutter && flutter test` passed on April 1, 2026.
-- Manual emulator smoke for the latest auction-detail hardening was not rerun in this follow-up, but the previously seeded buyer and seller Phase 3 paths remain documented in `Documentation.md`.
+- `cd backend/functions && npm run format:check` passed on April 2, 2026.
+- `cd backend/functions && npm run lint` passed on April 2, 2026.
+- `cd backend/functions && npm run build` passed on April 2, 2026.
+- `cd backend/functions && npm test` passed on April 2, 2026.
+- `cd apps/mobile_flutter && flutter gen-l10n` ran on April 2, 2026 without contract changes.
+- `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib test` required no retained source changes for the current close-review slice on April 2, 2026.
+- `cd apps/mobile_flutter && flutter analyze` passed on April 2, 2026.
+- `cd apps/mobile_flutter && flutter test` passed on April 2, 2026.
+- `cd backend/functions && npm run seed` succeeded on April 2, 2026 against an already running local emulator suite.
+- `cd backend/functions && npm run serve` could not be restarted on April 2, 2026 because emulator ports were already occupied locally; this was an environment condition, not a repo failure.
+- Manual buyer and seller Phase 3 smoke paths are still the remaining close gate and stay documented in `Documentation.md`.
 
 ## Next Commands
 1. `cd backend/functions && npm run serve`
 2. `cd backend/functions && npm run seed`
 3. `cd apps/mobile_flutter && flutter run --dart-define-from-file=dart_defines.json`
-4. Start Phase 4 notification, settings, and product-hardening work on a new branch.
-5. Rerun the documented buyer and seller smoke paths when a manual release-candidate check is needed.
+4. Rerun the documented buyer and seller smoke paths when a manual Phase 3 close check is needed.
+5. Flip `Plan.md` Phase 3 status to complete only after that smoke review is signed off.
 6. Start deferred payment-provider cutover only when the user explicitly activates it.
 
 ## Update Rules
