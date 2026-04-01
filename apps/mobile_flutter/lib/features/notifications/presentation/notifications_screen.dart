@@ -172,15 +172,16 @@ class _NotificationCard extends ConsumerWidget {
     final tokens = context.tokens;
     final l10n = context.l10n;
     final isRead = item.isRead;
-    final destinationLabel = describeNotificationDestination(
-      l10n,
-      item.deeplink,
-    );
+    final deeplink = item.deeplink?.trim();
+    final canNavigate = deeplink != null && deeplink.isNotEmpty;
+    final destinationLabel = canNavigate
+        ? describeNotificationDestination(l10n, deeplink)
+        : null;
 
     return AppPanel(
       tone: isRead ? AppPanelTone.surface : AppPanelTone.elevated,
       child: InkWell(
-        onTap: item.deeplink == null || item.deeplink!.isEmpty
+        onTap: !canNavigate
             ? null
             : () async {
                 if (isNavigating) {
@@ -200,7 +201,7 @@ class _NotificationCard extends ConsumerWidget {
 
                 onNavigateEnd();
                 if (!context.mounted) return;
-                context.push(resolveAppDeepLinkPath(item.deeplink!));
+                context.push(resolveAppDeepLinkPath(deeplink));
               },
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,25 +225,27 @@ class _NotificationCard extends ConsumerWidget {
                         : l10n.notificationsEmptyDescription,
                     style: context.textTheme.bodyMedium,
                   ),
-                  SizedBox(height: tokens.space2),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.arrow_outward_rounded,
-                        size: 16,
-                        color: context.colorScheme.primary,
-                      ),
-                      SizedBox(width: tokens.space2),
-                      Flexible(
-                        child: Text(
-                          destinationLabel,
-                          style: context.textTheme.bodySmall?.copyWith(
-                            color: context.colorScheme.primary,
+                  if (destinationLabel != null) ...[
+                    SizedBox(height: tokens.space2),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.arrow_outward_rounded,
+                          size: 16,
+                          color: context.colorScheme.primary,
+                        ),
+                        SizedBox(width: tokens.space2),
+                        Flexible(
+                          child: Text(
+                            destinationLabel,
+                            style: context.textTheme.bodySmall?.copyWith(
+                              color: context.colorScheme.primary,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -32,6 +32,7 @@ class SellImagePickerPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final hasImages = existingUrls.isNotEmpty || newFiles.isNotEmpty;
+    final hasErrorText = errorText?.trim().isNotEmpty ?? false;
 
     return AppPanel(
       tone: AppPanelTone.surface,
@@ -47,7 +48,7 @@ class SellImagePickerPanel extends StatelessWidget {
             icon: const Icon(Icons.photo_library_outlined),
             label: Text(buttonLabel),
           ),
-          if (errorText != null) ...[
+          if (hasErrorText) ...[
             SizedBox(height: tokens.space3),
             Container(
               width: double.infinity,

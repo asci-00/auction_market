@@ -420,6 +420,8 @@ class _SellScreenState extends ConsumerState<SellScreen> {
   }
 
   SellDraftFormData _buildFormData() {
+    final buyNowPriceText = _buyNowPriceController.text.trim();
+
     return SellDraftFormData(
       itemId: _itemId,
       categoryMain: _categoryMain,
@@ -436,9 +438,9 @@ class _SellScreenState extends ConsumerState<SellScreen> {
       existingAuthImageUrls: _existingAuthImageUrls,
       appraisalRequested: _appraisalRequested,
       startPrice: int.tryParse(_startPriceController.text.trim()),
-      buyNowPrice: _buyNowPriceController.text.trim().isEmpty
+      buyNowPrice: buyNowPriceText.isEmpty
           ? null
-          : int.tryParse(_buyNowPriceController.text.trim()),
+          : int.tryParse(buyNowPriceText),
       durationDays: _durationDays,
     );
   }
@@ -479,25 +481,27 @@ class _SellScreenState extends ConsumerState<SellScreen> {
     final errors = <SellValidationField, String>{};
 
     if (_categorySubController.text.trim().isEmpty) {
-      errors[SellValidationField.categorySub] =
-          context.l10n.sellValidationCategorySub;
+      errors[SellValidationField.categorySub] = _categorySubValidationMessage(
+        mode,
+      );
     }
     if (_titleController.text.trim().isEmpty) {
-      errors[SellValidationField.title] = context.l10n.sellValidationTitle;
+      errors[SellValidationField.title] = _titleValidationMessage(mode);
     }
     if (_conditionController.text.trim().isEmpty) {
-      errors[SellValidationField.condition] =
-          context.l10n.sellValidationCondition;
+      errors[SellValidationField.condition] = _conditionValidationMessage(mode);
     }
     if (_descriptionController.text.trim().isEmpty) {
-      errors[SellValidationField.description] =
-          context.l10n.sellValidationDescription;
+      errors[SellValidationField.description] = _descriptionValidationMessage(
+        mode,
+      );
     }
     if (_categoryMain == 'GOODS' &&
         _existingAuthImageUrls.isEmpty &&
         _newAuthImageFiles.isEmpty) {
-      errors[SellValidationField.authImages] =
-          context.l10n.sellValidationAuthImages;
+      errors[SellValidationField.authImages] = _authImagesValidationMessage(
+        mode,
+      );
     }
 
     if (mode == SellValidationMode.publish) {
@@ -507,15 +511,19 @@ class _SellScreenState extends ConsumerState<SellScreen> {
       }
 
       final startPrice = int.tryParse(_startPriceController.text.trim());
-      final buyNowPrice = _buyNowPriceController.text.trim().isEmpty
+      final buyNowPriceText = _buyNowPriceController.text.trim();
+      final buyNowPrice = buyNowPriceText.isEmpty
           ? null
-          : int.tryParse(_buyNowPriceController.text.trim());
+          : int.tryParse(buyNowPriceText);
 
       if (startPrice == null || startPrice <= 0) {
         errors[SellValidationField.startPrice] =
             context.l10n.sellValidationStartPrice;
       }
-      if (startPrice != null &&
+      if (buyNowPriceText.isNotEmpty && buyNowPrice == null) {
+        errors[SellValidationField.buyNowPrice] =
+            context.l10n.sellValidationBuyNowPriceInvalid;
+      } else if (startPrice != null &&
           buyNowPrice != null &&
           buyNowPrice <= startPrice) {
         errors[SellValidationField.buyNowPrice] =
@@ -539,12 +547,14 @@ class _SellScreenState extends ConsumerState<SellScreen> {
 
   bool get _pricingReady {
     final startPrice = int.tryParse(_startPriceController.text.trim());
-    final buyNowPrice = _buyNowPriceController.text.trim().isEmpty
+    final buyNowPriceText = _buyNowPriceController.text.trim();
+    final buyNowPrice = buyNowPriceText.isEmpty
         ? null
-        : int.tryParse(_buyNowPriceController.text.trim());
+        : int.tryParse(buyNowPriceText);
 
     return startPrice != null &&
         startPrice > 0 &&
+        (buyNowPriceText.isEmpty || buyNowPrice != null) &&
         (buyNowPrice == null || buyNowPrice > startPrice);
   }
 
@@ -561,4 +571,42 @@ class _SellScreenState extends ConsumerState<SellScreen> {
 
   bool get _publishReady =>
       _categoryReady && _detailsReady && _pricingReady && _imagesReady;
+
+  String _categorySubValidationMessage(SellValidationMode mode) {
+    return switch (mode) {
+      SellValidationMode.publish =>
+        context.l10n.sellValidationCategorySubPublish,
+      _ => context.l10n.sellValidationCategorySub,
+    };
+  }
+
+  String _titleValidationMessage(SellValidationMode mode) {
+    return switch (mode) {
+      SellValidationMode.publish => context.l10n.sellValidationTitlePublish,
+      _ => context.l10n.sellValidationTitle,
+    };
+  }
+
+  String _conditionValidationMessage(SellValidationMode mode) {
+    return switch (mode) {
+      SellValidationMode.publish => context.l10n.sellValidationConditionPublish,
+      _ => context.l10n.sellValidationCondition,
+    };
+  }
+
+  String _descriptionValidationMessage(SellValidationMode mode) {
+    return switch (mode) {
+      SellValidationMode.publish =>
+        context.l10n.sellValidationDescriptionPublish,
+      _ => context.l10n.sellValidationDescription,
+    };
+  }
+
+  String _authImagesValidationMessage(SellValidationMode mode) {
+    return switch (mode) {
+      SellValidationMode.publish =>
+        context.l10n.sellValidationAuthImagesPublish,
+      _ => context.l10n.sellValidationAuthImages,
+    };
+  }
 }
