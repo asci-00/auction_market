@@ -17,6 +17,7 @@ class SellImagePickerPanel extends StatelessWidget {
     required this.existingUrls,
     required this.newFiles,
     required this.onPickPressed,
+    this.errorText,
   });
 
   final String title;
@@ -25,11 +26,13 @@ class SellImagePickerPanel extends StatelessWidget {
   final List<String> existingUrls;
   final List<XFile> newFiles;
   final VoidCallback onPickPressed;
+  final String? errorText;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final hasImages = existingUrls.isNotEmpty || newFiles.isNotEmpty;
+    final hasErrorText = errorText?.trim().isNotEmpty ?? false;
 
     return AppPanel(
       tone: AppPanelTone.surface,
@@ -45,6 +48,39 @@ class SellImagePickerPanel extends StatelessWidget {
             icon: const Icon(Icons.photo_library_outlined),
             label: Text(buttonLabel),
           ),
+          if (hasErrorText) ...[
+            SizedBox(height: tokens.space3),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(tokens.space3),
+              decoration: BoxDecoration(
+                color: context.colorScheme.error.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: context.colorScheme.error.withValues(alpha: 0.24),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.error_outline_rounded,
+                    size: 18,
+                    color: context.colorScheme.error,
+                  ),
+                  SizedBox(width: tokens.space2),
+                  Expanded(
+                    child: Text(
+                      errorText!,
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.colorScheme.error,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           SizedBox(height: tokens.space3),
           if (!hasImages)
             Text(

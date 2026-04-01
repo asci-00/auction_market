@@ -14,6 +14,9 @@ class SellDetailsPanel extends StatelessWidget {
     required this.descriptionController,
     required this.appraisalRequested,
     required this.onAppraisalChanged,
+    this.titleError,
+    this.conditionError,
+    this.descriptionError,
   });
 
   final TextEditingController titleController;
@@ -22,6 +25,9 @@ class SellDetailsPanel extends StatelessWidget {
   final TextEditingController descriptionController;
   final bool appraisalRequested;
   final ValueChanged<bool> onAppraisalChanged;
+  final String? titleError;
+  final String? conditionError;
+  final String? descriptionError;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +47,7 @@ class SellDetailsPanel extends StatelessWidget {
             controller: titleController,
             decoration: InputDecoration(
               labelText: context.l10n.sellFormTitleLabel,
+              errorText: titleError,
             ),
           ),
           SizedBox(height: tokens.space3),
@@ -48,6 +55,7 @@ class SellDetailsPanel extends StatelessWidget {
             controller: conditionController,
             decoration: InputDecoration(
               labelText: context.l10n.sellFormConditionLabel,
+              errorText: conditionError,
             ),
           ),
           SizedBox(height: tokens.space3),
@@ -65,6 +73,7 @@ class SellDetailsPanel extends StatelessWidget {
             decoration: InputDecoration(
               labelText: context.l10n.sellFormDescriptionLabel,
               alignLabelWithHint: true,
+              errorText: descriptionError,
             ),
           ),
           SizedBox(height: tokens.space3),

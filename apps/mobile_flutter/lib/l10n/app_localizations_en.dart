@@ -540,6 +540,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'Unread updates stay visible so you can move straight to the next relevant screen.';
 
   @override
+  String get notificationsDestinationAuction => 'Opens auction detail';
+
+  @override
+  String get notificationsDestinationOrder => 'Opens order timeline';
+
+  @override
+  String get notificationsDestinationInbox => 'Stays in inbox';
+
+  @override
+  String get notificationsDestinationPayment => 'Opens payment recovery';
+
+  @override
+  String get notificationsDestinationUnknown =>
+      'Opens the next relevant screen';
+
+  @override
   String get notificationsEmptyTitle => 'Your inbox is quiet';
 
   @override
@@ -819,6 +835,26 @@ class AppLocalizationsEn extends AppLocalizations {
       'Goods drafts need at least one authentication image.';
 
   @override
+  String get sellValidationCategorySubPublish =>
+      'Add a category detail before publishing the auction.';
+
+  @override
+  String get sellValidationTitlePublish =>
+      'Add an item title before publishing the auction.';
+
+  @override
+  String get sellValidationConditionPublish =>
+      'Add the item condition before publishing the auction.';
+
+  @override
+  String get sellValidationDescriptionPublish =>
+      'Add the item description before publishing the auction.';
+
+  @override
+  String get sellValidationAuthImagesPublish =>
+      'Goods auctions need at least one authentication image before publishing.';
+
+  @override
   String get sellValidationImages =>
       'Publishing requires at least one gallery image.';
 
@@ -829,6 +865,18 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get sellValidationBuyNowPrice =>
       'Buy now price must be greater than the start price.';
+
+  @override
+  String get sellValidationBuyNowPriceInvalid =>
+      'Enter a valid whole-number buy now price before publishing.';
+
+  @override
+  String get sellValidationSummaryDraftTitle =>
+      'Complete these details before saving the draft';
+
+  @override
+  String get sellValidationSummaryPublishTitle =>
+      'Complete these details before publishing the auction';
 
   @override
   String get genericUnavailable => 'Unavailable';

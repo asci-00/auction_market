@@ -1022,6 +1022,36 @@ abstract class AppLocalizations {
   /// **'Unread updates stay visible so you can move straight to the next relevant screen.'**
   String get notificationsHeroDescription;
 
+  /// No description provided for @notificationsDestinationAuction.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens auction detail'**
+  String get notificationsDestinationAuction;
+
+  /// No description provided for @notificationsDestinationOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens order timeline'**
+  String get notificationsDestinationOrder;
+
+  /// No description provided for @notificationsDestinationInbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Stays in inbox'**
+  String get notificationsDestinationInbox;
+
+  /// No description provided for @notificationsDestinationPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens payment recovery'**
+  String get notificationsDestinationPayment;
+
+  /// No description provided for @notificationsDestinationUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens the next relevant screen'**
+  String get notificationsDestinationUnknown;
+
   /// No description provided for @notificationsEmptyTitle.
   ///
   /// In en, this message translates to:
@@ -1508,6 +1538,36 @@ abstract class AppLocalizations {
   /// **'Goods drafts need at least one authentication image.'**
   String get sellValidationAuthImages;
 
+  /// No description provided for @sellValidationCategorySubPublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a category detail before publishing the auction.'**
+  String get sellValidationCategorySubPublish;
+
+  /// No description provided for @sellValidationTitlePublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an item title before publishing the auction.'**
+  String get sellValidationTitlePublish;
+
+  /// No description provided for @sellValidationConditionPublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the item condition before publishing the auction.'**
+  String get sellValidationConditionPublish;
+
+  /// No description provided for @sellValidationDescriptionPublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the item description before publishing the auction.'**
+  String get sellValidationDescriptionPublish;
+
+  /// No description provided for @sellValidationAuthImagesPublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Goods auctions need at least one authentication image before publishing.'**
+  String get sellValidationAuthImagesPublish;
+
   /// No description provided for @sellValidationImages.
   ///
   /// In en, this message translates to:
@@ -1525,6 +1585,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Buy now price must be greater than the start price.'**
   String get sellValidationBuyNowPrice;
+
+  /// No description provided for @sellValidationBuyNowPriceInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid whole-number buy now price before publishing.'**
+  String get sellValidationBuyNowPriceInvalid;
+
+  /// No description provided for @sellValidationSummaryDraftTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete these details before saving the draft'**
+  String get sellValidationSummaryDraftTitle;
+
+  /// No description provided for @sellValidationSummaryPublishTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete these details before publishing the auction'**
+  String get sellValidationSummaryPublishTitle;
 
   /// No description provided for @genericUnavailable.
   ///

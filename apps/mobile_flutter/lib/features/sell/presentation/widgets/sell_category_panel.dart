@@ -11,11 +11,13 @@ class SellCategoryPanel extends StatelessWidget {
     required this.categoryMain,
     required this.categorySubController,
     required this.onCategoryMainChanged,
+    this.categorySubError,
   });
 
   final String categoryMain;
   final TextEditingController categorySubController;
   final ValueChanged<String> onCategoryMainChanged;
+  final String? categorySubError;
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +60,7 @@ class SellCategoryPanel extends StatelessWidget {
             controller: categorySubController,
             decoration: InputDecoration(
               labelText: context.l10n.sellFormCategorySubLabel,
+              errorText: categorySubError,
             ),
           ),
         ],
