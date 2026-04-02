@@ -1,37 +1,37 @@
 {
   "project_info": {
-    "project_number": "918877996410",
-    "project_id": "auction-893cf",
-    "storage_bucket": "auction-893cf.firebasestorage.app"
+    "project_number": "YOUR_FIREBASE_PROJECT_NUMBER",
+    "project_id": "YOUR_FIREBASE_PROJECT_ID",
+    "storage_bucket": "YOUR_FIREBASE_STORAGE_BUCKET"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:918877996410:android:97d00863c1cf22dc4302c3",
+        "mobilesdk_app_id": "YOUR_ANDROID_APP_ID",
         "android_client_info": {
           "package_name": "com.auction.market"
         }
       },
       "oauth_client": [
         {
-          "client_id": "918877996410-068lt2ll5bt3ielqhmbs46d331kdnfp5.apps.googleusercontent.com",
+          "client_id": "YOUR_ANDROID_OAUTH_CLIENT_ID.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBoiR18QZBPTAtPmbJaIJerhuuecuD8Gb8"
+          "current_key": "YOUR_ANDROID_FIREBASE_API_KEY"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "918877996410-068lt2ll5bt3ielqhmbs46d331kdnfp5.apps.googleusercontent.com",
+              "client_id": "YOUR_ANDROID_OAUTH_CLIENT_ID.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "918877996410-imuqjpcc0rdja6dcbco5qrc4pcoigfpf.apps.googleusercontent.com",
+              "client_id": "YOUR_IOS_OAUTH_CLIENT_ID.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "com.auction.market"
