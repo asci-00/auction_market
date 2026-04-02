@@ -125,6 +125,10 @@ String _localizedCategory(BuildContext context, String raw) {
     'SNEAKERS' => context.l10n.auctionDetailCategorySneakers,
     'BULLION' => context.l10n.auctionDetailCategoryBullion,
     'CAMERA' => context.l10n.auctionDetailCategoryCamera,
+    'JEWELRY' => context.l10n.auctionDetailCategoryJewelry,
+    'PHOTO_CARD' => context.l10n.auctionDetailCategoryPhotoCard,
+    'GAME_CONSOLE' => context.l10n.auctionDetailCategoryGameConsole,
+    'FIGURE' => context.l10n.auctionDetailCategoryFigure,
     _ => _humanizeToken(raw),
   };
 }

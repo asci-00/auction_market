@@ -63,7 +63,7 @@ void main() {
       );
       await pumpEventQueue();
 
-      expect(events, <String?>['13200', '13200', '14800']);
+      expect(events, <String?>['13200', '14800']);
 
       await subscription.cancel();
       await auctionController.close();
@@ -107,6 +107,41 @@ void main() {
     await pumpEventQueue();
 
     expect(events, <String?>['Signed Album', null]);
+
+    await subscription.cancel();
+    await auctionController.close();
+  });
+
+  test('bindAuctionDetailStreams forwards item stream errors', () async {
+    final auctionController = StreamController<AuctionDetailDocument>();
+    final stream = bindAuctionDetailStreams(
+      auctionStream: auctionController.stream,
+      itemStreamFor: (_) =>
+          Stream<AuctionItemDocument>.error(Exception('item stream failed')),
+    );
+
+    final errors = <Object>[];
+    final subscription = stream.listen(
+      (_) {},
+      onError: errors.add,
+    );
+
+    auctionController.add(
+      const AuctionDetailDocument(
+        id: 'auction-live',
+        exists: true,
+        data: <String, dynamic>{
+          'itemId': 'item-live',
+          'titleSnapshot': 'Signed Album',
+          'status': 'LIVE',
+          'currentPrice': 13200,
+        },
+      ),
+    );
+    await pumpEventQueue();
+
+    expect(errors, hasLength(1));
+    expect(errors.single, isA<Exception>());
 
     await subscription.cancel();
     await auctionController.close();

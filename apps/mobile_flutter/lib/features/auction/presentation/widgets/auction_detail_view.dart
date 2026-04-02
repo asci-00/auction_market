@@ -89,6 +89,23 @@ class AuctionDetailView extends StatelessWidget {
                 description: context.l10n.auctionDetailFallbackDescription,
                 tone: AppPanelTone.soft,
               )
+            else if (auction == null && isLoading)
+              AppPanel(
+                tone: AppPanelTone.surface,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: tokens.space6),
+                  child: Center(
+                    child: SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        color: context.colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ),
+              )
             else if (auction == null && !isLoading)
               AppEmptyState(
                 icon: Icons.photo_library_outlined,

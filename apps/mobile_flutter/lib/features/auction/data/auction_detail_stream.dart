@@ -30,11 +30,16 @@ Stream<AuctionDetailViewData?> bindAuctionDetailStreams({
     AuctionDetailDocument? latestAuction;
     AuctionItemDocument? latestItem;
     String? currentItemId;
+    var hasReceivedItemSnapshot = false;
 
     void emitCombined() {
       final auction = latestAuction;
       if (auction == null || !auction.exists) {
         controller.add(null);
+        return;
+      }
+
+      if (currentItemId != null && !hasReceivedItemSnapshot) {
         return;
       }
 
@@ -52,6 +57,7 @@ Stream<AuctionDetailViewData?> bindAuctionDetailStreams({
       if (!auction.exists) {
         currentItemId = null;
         latestItem = null;
+        hasReceivedItemSnapshot = false;
         itemSub?.cancel();
         itemSub = null;
         controller.add(null);
@@ -62,6 +68,7 @@ Stream<AuctionDetailViewData?> bindAuctionDetailStreams({
       if (nextItemId.isEmpty) {
         currentItemId = null;
         latestItem = null;
+        hasReceivedItemSnapshot = false;
         itemSub?.cancel();
         itemSub = null;
         emitCombined();
@@ -71,9 +78,11 @@ Stream<AuctionDetailViewData?> bindAuctionDetailStreams({
       if (currentItemId != nextItemId) {
         currentItemId = nextItemId;
         latestItem = null;
+        hasReceivedItemSnapshot = false;
         itemSub?.cancel();
         itemSub = itemStreamFor(nextItemId).listen((item) {
           latestItem = item;
+          hasReceivedItemSnapshot = true;
           emitCombined();
         }, onError: controller.addError);
       }

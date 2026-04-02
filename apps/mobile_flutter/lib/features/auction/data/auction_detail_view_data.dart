@@ -59,10 +59,7 @@ class AuctionDetailViewData {
     return AuctionDetailViewData(
       id: auctionId,
       itemId: (auctionData['itemId'] as String?) ?? '',
-      titleSnapshot:
-          (auctionData['titleSnapshot'] as String?)?.trim().isNotEmpty == true
-          ? auctionData['titleSnapshot'] as String
-          : '',
+      titleSnapshot: (auctionData['titleSnapshot'] as String?)?.trim() ?? '',
       heroImageUrl: heroImageUrl,
       imageUrls: galleryImages,
       description: (itemPayload['description'] as String?)?.trim() ?? '',

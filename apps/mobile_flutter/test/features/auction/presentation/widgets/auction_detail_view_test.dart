@@ -114,6 +114,34 @@ void main() {
     expect(find.text('Browse live auctions'), findsOneWidget);
     expect(find.text('Item details'), findsNothing);
   });
+
+  testWidgets('renders error fallback when detail fails to load', (tester) async {
+    await tester.pumpWidget(
+      _TestApp(
+        child: AuctionDetailView(
+          heroTag: null,
+          userId: null,
+          isSubmitting: false,
+          auction: null,
+          hasError: true,
+          bidHistory: const [],
+          isLoading: false,
+          onBrowseHome: () {},
+          onRequireLogin: () {},
+          onReviewOrders: () {},
+          onOpenOrder: (_) {},
+          onPlaceBid: (_) {},
+          onSetAutoBid: (_) {},
+          onBuyNow: () {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Unavailable'), findsOneWidget);
+    expect(find.text('Browse live auctions'), findsOneWidget);
+    expect(find.text('Item details'), findsNothing);
+  });
 }
 
 class _TestApp extends StatelessWidget {
