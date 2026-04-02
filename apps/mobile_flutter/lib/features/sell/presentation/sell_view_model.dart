@@ -15,12 +15,8 @@ class SellViewState {
 
   final List<SellDraftSummary> recentDrafts;
 
-  SellViewState copyWith({
-    List<SellDraftSummary>? recentDrafts,
-  }) {
-    return SellViewState(
-      recentDrafts: recentDrafts ?? this.recentDrafts,
-    );
+  SellViewState copyWith({List<SellDraftSummary>? recentDrafts}) {
+    return SellViewState(recentDrafts: recentDrafts ?? this.recentDrafts);
   }
 }
 
@@ -40,9 +36,13 @@ class SellViewModel extends _$SellViewModel {
     _sub = stream.listen((drafts) {
       final current = state.valueOrNull ?? SellViewState(recentDrafts: drafts);
       state = AsyncData(current.copyWith(recentDrafts: drafts));
-    });
+    }, onError: _handleStreamError);
 
     return SellViewState(recentDrafts: first);
+  }
+
+  void _handleStreamError(Object error, StackTrace stackTrace) {
+    state = AsyncError(error, stackTrace);
   }
 }
 

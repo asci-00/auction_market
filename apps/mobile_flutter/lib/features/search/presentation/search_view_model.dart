@@ -39,9 +39,13 @@ class SearchViewModel extends _$SearchViewModel {
       final filtered = filterSearchAuctions(auctions, query: query);
       final current = state.valueOrNull ?? SearchViewState(results: filtered);
       state = AsyncData(current.copyWith(results: filtered));
-    });
+    }, onError: _handleStreamError);
 
     return SearchViewState(results: initial);
+  }
+
+  void _handleStreamError(Object error, StackTrace stackTrace) {
+    state = AsyncError(error, stackTrace);
   }
 }
 

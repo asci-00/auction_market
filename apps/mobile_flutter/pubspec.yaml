@@ -29,6 +29,7 @@ dependencies:
   shimmer: ^3.0.0
   event_bus: ^2.0.1
   lottie: ^3.3.2
+  fluttertoast: ^8.2.6
   collection: ^1.19.1
 
 dev_dependencies:

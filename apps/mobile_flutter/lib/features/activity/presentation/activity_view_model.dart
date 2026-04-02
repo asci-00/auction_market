@@ -57,40 +57,47 @@ class ActivityViewModel extends _$ActivityViewModel {
     });
 
     _buyerSub = buyerStream.listen((value) {
-      final current = state.valueOrNull ??
+      final current =
+          state.valueOrNull ??
           ActivityViewState(
             buyerSummary: value,
             sellerSummary: seller,
             notificationsSummary: notifications,
           );
       state = AsyncData(current.copyWith(buyerSummary: value));
-    });
+    }, onError: _handleStreamError);
 
     _sellerSub = sellerStream.listen((value) {
-      final current = state.valueOrNull ??
+      final current =
+          state.valueOrNull ??
           ActivityViewState(
             buyerSummary: buyer,
             sellerSummary: value,
             notificationsSummary: notifications,
           );
       state = AsyncData(current.copyWith(sellerSummary: value));
-    });
+    }, onError: _handleStreamError);
 
     _notificationsSub = notificationsStream.listen((value) {
-      final current = state.valueOrNull ??
+      final current =
+          state.valueOrNull ??
           ActivityViewState(
             buyerSummary: buyer,
             sellerSummary: seller,
             notificationsSummary: value,
           );
       state = AsyncData(current.copyWith(notificationsSummary: value));
-    });
+    }, onError: _handleStreamError);
 
     return ActivityViewState(
       buyerSummary: buyer,
       sellerSummary: seller,
       notificationsSummary: notifications,
     );
+  }
+
+  void _handleStreamError(Object error, StackTrace stackTrace) {
+    state = AsyncError(error, stackTrace);
   }
 }
 
@@ -114,10 +121,7 @@ Stream<ActivityHubSummary> _sellerSummaryStream(Ref ref, String userId) {
       .map((snapshot) => ActivityHubSummary.fromSellerOrders(snapshot.docs));
 }
 
-Stream<ActivityHubSummary> _notificationsSummaryStream(
-  Ref ref,
-  String userId,
-) {
+Stream<ActivityHubSummary> _notificationsSummaryStream(Ref ref, String userId) {
   final firestore = ref.watch(firestoreProvider);
   return firestore
       .collection('notifications')
