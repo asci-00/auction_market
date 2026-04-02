@@ -40,7 +40,7 @@ Status: complete on March 17, 2026.
 - Payment and order state changes are idempotent and observable in logs.
 
 ## Phase 3: Core Mobile Flows
-Status: in progress.
+Status: in progress, close candidate pending final smoke review.
 - Build login, home, search, auction detail, sell, activity, orders, notifications, and my pages with real Firebase reads and localized UI copy.
 - Implement image upload, draft save, auction publish, bid flow, auto-bid flow, buy now, order timeline behavior, shipment update, and receipt confirmation.
 - Continue UI and UX polish work, including dark mode, overflow and keyboard-safety fixes, async feedback timing, route transition smoothness, tuned blur and barrier behavior, and localized empty or error-state refinement.

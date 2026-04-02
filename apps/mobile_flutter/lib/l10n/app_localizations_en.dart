@@ -30,12 +30,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unknownStartupTitle => 'Something unexpected happened';
 
   @override
-  String get configRequiredDetails =>
-      'Check your dart_defines.json values and reopen the app.';
+  String get configRequiredDetails => 'Check your dart_defines.json values and reopen the app.';
 
   @override
-  String get unknownStartupMessage =>
-      'There was a problem while opening the app. Check your configuration and network, then try again.';
+  String get unknownStartupMessage => 'There was a problem while opening the app. Check your configuration and network, then try again.';
 
   @override
   String get navHome => 'Home';
@@ -83,12 +81,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeHeroEyebrow => 'Premium resale';
 
   @override
-  String get homeHeroTitle =>
-      'Move quickly on trusted auctions without losing the calm.';
+  String get homeHeroTitle => 'Move quickly on trusted auctions without losing the calm.';
 
   @override
-  String get homeHeroDescription =>
-      'Track the pieces ending first, the sellers drawing momentum, and the categories worth revisiting today.';
+  String get homeHeroDescription => 'Track the pieces ending first, the sellers drawing momentum, and the categories worth revisiting today.';
 
   @override
   String get homeHeroChipUrgency => 'Timed bidding';
@@ -100,29 +96,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeEndingSoonTitle => 'Ending soon';
 
   @override
-  String get homeEndingSoonSubtitle =>
-      'Stay on top of auctions with the shortest remaining time.';
+  String get homeEndingSoonSubtitle => 'Stay on top of auctions with the shortest remaining time.';
 
   @override
   String get homeHotTitle => 'Hot right now';
 
   @override
-  String get homeHotSubtitle =>
-      'See the listings collecting bids and attention first.';
+  String get homeHotSubtitle => 'See the listings collecting bids and attention first.';
 
   @override
   String get homeCuratedGoodsTitle => 'Goods spotlight';
 
   @override
-  String get homeCuratedGoodsSubtitle =>
-      'Browse fast-moving general goods in a tighter lane.';
+  String get homeCuratedGoodsSubtitle => 'Browse fast-moving general goods in a tighter lane.';
 
   @override
   String get homeCuratedPreciousTitle => 'Precious spotlight';
 
   @override
-  String get homeCuratedPreciousSubtitle =>
-      'Keep precious pieces in a separate, easier-to-scan row.';
+  String get homeCuratedPreciousSubtitle => 'Keep precious pieces in a separate, easier-to-scan row.';
 
   @override
   String get homeOpenNotifications => 'Notifications';
@@ -131,8 +123,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeEmptyTitle => 'New auctions will appear here';
 
   @override
-  String get homeEmptyDescription =>
-      'Live listings will surface in this space as soon as they are published.';
+  String get homeEmptyDescription => 'Live listings will surface in this space as soon as they are published.';
 
   @override
   String get homeEmptyAction => 'Refresh feed';
@@ -150,8 +141,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchHeroTitle => 'Search by taste, not only by keywords.';
 
   @override
-  String get searchHeroDescription =>
-      'Use focused filters to narrow down price, urgency, and instant-purchase availability in one pass.';
+  String get searchHeroDescription => 'Use focused filters to narrow down price, urgency, and instant-purchase availability in one pass.';
 
   @override
   String get searchFieldLabel => 'Search query';
@@ -190,8 +180,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchResultsTitle => 'Results';
 
   @override
-  String get searchResultsSubtitle =>
-      'Live auctions are filtered in real time from your current query.';
+  String get searchResultsSubtitle => 'Live auctions are filtered in real time from your current query.';
 
   @override
   String get searchLayoutSwitchToGrid => 'Show grid view';
@@ -203,12 +192,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchEmptyTitle => 'No auctions match yet';
 
   @override
-  String get searchEmptyDescription =>
-      'Try widening your search or return when more listings go live.';
+  String get searchEmptyDescription => 'Try widening your search or return when more listings go live.';
 
   @override
-  String get searchErrorDescription =>
-      'We couldn\'t load search results right now. Try again shortly.';
+  String get searchErrorDescription => 'We couldn\'t load search results right now. Try again shortly.';
 
   @override
   String get searchResetAction => 'Clear query';
@@ -220,12 +207,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginHeroEyebrow => 'Trusted access';
 
   @override
-  String get loginHeroTitle =>
-      'Enter a quieter marketplace for serious bidding.';
+  String get loginHeroTitle => 'Enter a quieter marketplace for serious bidding.';
 
   @override
-  String get loginHeroDescription =>
-      'Sign in with a supported provider to restore your session, inbox, orders, and selling tools securely.';
+  String get loginHeroDescription => 'Sign in with a supported provider to restore your session, inbox, orders, and selling tools securely.';
 
   @override
   String get loginContinueGoogle => 'Continue with Google';
@@ -237,35 +222,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginSubmitting => 'Signing you in...';
 
   @override
-  String get loginReturnNotice =>
-      'After sign-in, you\'ll go back to the screen you requested.';
+  String get loginReturnNotice => 'After sign-in, you\'ll go back to the screen you requested.';
 
   @override
-  String get loginTrustNote =>
-      'Only Apple and Google sign-in are available in v1.';
+  String get loginTrustNote => 'Only Apple and Google sign-in are available in v1.';
 
   @override
-  String get loginEmulatorWarning =>
-      'When Firebase Emulator mode is on, this build does not run the mobile Google or Apple browser sign-in flow. Run with USE_FIREBASE_EMULATORS=false to verify real social sign-in.';
+  String get loginEmulatorWarning => 'When Firebase Emulator mode is on, this build does not run the mobile Google or Apple browser sign-in flow. Run with USE_FIREBASE_EMULATORS=false to verify real social sign-in.';
 
   @override
-  String get loginEmulatorUnsupportedProvider =>
-      'This build is connected to Firebase Auth Emulator, so it cannot complete the mobile Google or Apple browser sign-in flow. Run again with USE_FIREBASE_EMULATORS=false to verify real social sign-in.';
+  String get loginEmulatorUnsupportedProvider => 'This build is connected to Firebase Auth Emulator, so it cannot complete the mobile Google or Apple browser sign-in flow. Run again with USE_FIREBASE_EMULATORS=false to verify real social sign-in.';
 
   @override
-  String get loginGenericError =>
-      'Sign-in failed. Check your Firebase project setup and try again.';
+  String get loginGenericError => 'Sign-in failed. Check your Firebase project setup and try again.';
 
   @override
   String get loginErrorNetwork => 'Check your connection and try again.';
 
   @override
-  String get loginErrorProviderDisabled =>
-      'That sign-in provider is not enabled in Firebase Auth yet.';
+  String get loginErrorProviderDisabled => 'That sign-in provider is not enabled in Firebase Auth yet.';
 
   @override
-  String get loginErrorAccountExists =>
-      'This account already exists with a different sign-in method.';
+  String get loginErrorAccountExists => 'This account already exists with a different sign-in method.';
 
   @override
   String get activityTitle => 'Activity';
@@ -274,33 +252,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityHeroEyebrow => 'At-a-glance status';
 
   @override
-  String get activityHeroTitle =>
-      'Keep payment, shipping, and inbox movement in one place.';
+  String get activityHeroTitle => 'Keep payment, shipping, and inbox movement in one place.';
 
   @override
-  String get activityHeroDescription =>
-      'Jump to the next operational step quickly instead of hunting across screens.';
+  String get activityHeroDescription => 'Jump to the next operational step quickly instead of hunting across screens.';
 
   @override
   String get activityOrdersTitle => 'Orders and payments';
 
   @override
-  String get activityOrdersSubtitle =>
-      'Track what needs payment, shipment, or confirmation next.';
+  String get activityOrdersSubtitle => 'Track what needs payment, shipment, or confirmation next.';
 
   @override
   String get activityNotificationsTitle => 'Inbox and alerts';
 
   @override
-  String get activityNotificationsSubtitle =>
-      'Open bid, payment, and delivery updates from your inbox.';
+  String get activityNotificationsSubtitle => 'Open bid, payment, and delivery updates from your inbox.';
 
   @override
   String get activityBuyerCardTitle => 'Buyer queue';
 
   @override
-  String get activityBuyerCardDescription =>
-      'Keep up with payment and receipt actions from one place.';
+  String get activityBuyerCardDescription => 'Keep up with payment and receipt actions from one place.';
 
   @override
   String activityBuyerPendingPaymentSubtitle(Object count) {
@@ -319,8 +292,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activitySellerCardTitle => 'Seller queue';
 
   @override
-  String get activitySellerCardDescription =>
-      'Stay on top of shipment handoff after payment clears.';
+  String get activitySellerCardDescription => 'Stay on top of shipment handoff after payment clears.';
 
   @override
   String activitySellerAwaitingShipmentSubtitle(Object count) {
@@ -334,8 +306,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityNotificationsCardTitle => 'Unread updates';
 
   @override
-  String get activityNotificationsCardDescription =>
-      'Open the inbox when bids, payment, or delivery events need attention.';
+  String get activityNotificationsCardDescription => 'Open the inbox when bids, payment, or delivery events need attention.';
 
   @override
   String activityNotificationsUnreadSubtitle(Object count) {
@@ -346,8 +317,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityNotificationsMetricLabel => 'unread alerts';
 
   @override
-  String get activitySignedOutDescription =>
-      'Sign in to see your live order and inbox activity.';
+  String get activitySignedOutDescription => 'Sign in to see your live order and inbox activity.';
 
   @override
   String get auctionDetailTitle => 'Auction detail';
@@ -359,8 +329,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get auctionDetailFallbackTitle => 'Listing details are on the way';
 
   @override
-  String get auctionDetailFallbackDescription =>
-      'When this auction document is available, images, seller trust, and bid history will appear in this layout.';
+  String get auctionDetailFallbackDescription => 'When this auction document is available, images, seller trust, and bid history will appear in this layout.';
 
   @override
   String get auctionDetailCurrentBid => 'Current bid';
@@ -372,23 +341,76 @@ class AppLocalizationsEn extends AppLocalizations {
   String get auctionDetailSellerSummary => 'Seller summary';
 
   @override
-  String get auctionDetailSellerDescription =>
-      'Trust signals, category fit, and shipping readiness stay visible before you place a bid.';
+  String get auctionDetailSellerDescription => 'Trust signals, category fit, and shipping readiness stay visible before you place a bid.';
+
+  @override
+  String get auctionDetailDescriptionTitle => 'Item details';
+
+  @override
+  String get auctionDetailDescriptionSubtitle => 'Condition, category fit, and seller notes stay visible before you act.';
+
+  @override
+  String get auctionDetailDescriptionFallback => 'Seller notes will appear here as soon as the linked item record is available.';
+
+  @override
+  String get auctionDetailMetaCondition => 'Condition';
+
+  @override
+  String get auctionDetailMetaCategory => 'Category';
+
+  @override
+  String get auctionDetailConditionNew => 'New';
+
+  @override
+  String get auctionDetailConditionLikeNew => 'Like new';
+
+  @override
+  String get auctionDetailConditionGood => 'Good';
+
+  @override
+  String get auctionDetailConditionFair => 'Fair';
+
+  @override
+  String get auctionDetailConditionPoor => 'Poor';
+
+  @override
+  String get auctionDetailCategoryIdolMd => 'Idol merchandise';
+
+  @override
+  String get auctionDetailCategoryWatch => 'Watch';
+
+  @override
+  String get auctionDetailCategorySneakers => 'Sneakers';
+
+  @override
+  String get auctionDetailCategoryBullion => 'Bullion';
+
+  @override
+  String get auctionDetailCategoryCamera => 'Camera';
+
+  @override
+  String get auctionDetailCategoryJewelry => 'Jewelry';
+
+  @override
+  String get auctionDetailCategoryPhotoCard => 'Photo card';
+
+  @override
+  String get auctionDetailCategoryGameConsole => 'Game console';
+
+  @override
+  String get auctionDetailCategoryFigure => 'Figure';
 
   @override
   String get auctionDetailBidHistory => 'Bid history';
 
   @override
-  String get auctionDetailBidHistorySubtitle =>
-      'Recent price movement is presented without extra noise.';
+  String get auctionDetailBidHistorySubtitle => 'Recent price movement is presented without extra noise.';
 
   @override
-  String get auctionDetailNoBidHistory =>
-      'Bid updates will appear after the first accepted bid.';
+  String get auctionDetailNoBidHistory => 'Bid updates will appear after the first accepted bid.';
 
   @override
-  String get auctionDetailActionHint =>
-      'Bidding and instant purchase actions appear here as soon as a live auction record is available.';
+  String get auctionDetailActionHint => 'Bidding and instant purchase actions appear here as soon as a live auction record is available.';
 
   @override
   String get auctionDetailBrowseAction => 'Browse live auctions';
@@ -404,26 +426,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get auctionDetailSellerOwnedFallback =>
-      'Your listing is live. Order and settlement updates will appear when a buyer closes the auction.';
+  String get auctionDetailSellerOwnedFallback => 'Your listing is live. Order and settlement updates will appear when a buyer closes the auction.';
 
   @override
   String get auctionDetailSellerOwnedAction => 'Review orders';
 
   @override
-  String get auctionDetailOrderReadyHint =>
-      'This auction already has an order. Open the order timeline to continue payment or fulfillment.';
+  String get auctionDetailOrderReadyHint => 'This auction already has an order. Open the order timeline to continue payment or fulfillment.';
 
   @override
-  String get auctionDetailEndedHint =>
-      'This auction is no longer open for bidding. Browse other live listings instead.';
+  String get auctionDetailEndedHint => 'This auction is no longer open for bidding. Browse other live listings instead.';
 
   @override
   String get auctionDetailViewOrder => 'Open order timeline';
 
   @override
-  String get auctionDetailLoginHint =>
-      'Sign in to place bids, set an auto-bid ceiling, or complete buy now.';
+  String get auctionDetailLoginHint => 'Sign in to place bids, set an auto-bid ceiling, or complete buy now.';
 
   @override
   String get auctionDetailSignInAction => 'Sign in to bid';
@@ -457,8 +475,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get auctionDetailAutoBidAmountLabel => 'Maximum auto-bid';
 
   @override
-  String get auctionDetailAutoBidAmountHint =>
-      'Highest amount you want the system to defend';
+  String get auctionDetailAutoBidAmountHint => 'Highest amount you want the system to defend';
 
   @override
   String auctionDetailBidMinimum(Object amount) {
@@ -483,16 +500,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get auctionDetailActionSuccessBid => 'Your bid was submitted.';
 
   @override
-  String get auctionDetailActionSuccessAutoBid =>
-      'Your auto-bid ceiling was saved.';
+  String get auctionDetailActionSuccessAutoBid => 'Your auto-bid ceiling was saved.';
 
   @override
-  String get auctionDetailActionSuccessBuyNow =>
-      'Buy now is complete. Continue in the order timeline.';
+  String get auctionDetailActionSuccessBuyNow => 'Buy now is complete. Continue in the order timeline.';
 
   @override
-  String get auctionDetailActionFailed =>
-      'We couldn\'t complete that auction action. Try again.';
+  String get auctionDetailActionFailed => 'We couldn\'t complete that auction action. Try again.';
 
   @override
   String get ordersTitle => 'Orders';
@@ -504,23 +518,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ordersSellerTitle => 'Selling';
 
   @override
-  String get ordersBuyerSubtitle =>
-      'Payments, shipments, and confirmations for purchases you made.';
+  String get ordersBuyerSubtitle => 'Payments, shipments, and confirmations for purchases you made.';
 
   @override
-  String get ordersSellerSubtitle =>
-      'Shipment and settlement progress for the auctions you sold.';
+  String get ordersSellerSubtitle => 'Shipment and settlement progress for the auctions you sold.';
 
   @override
   String get ordersEmptyTitle => 'No order activity yet';
 
   @override
-  String get ordersEmptyDescription =>
-      'Once a payment starts or a sale closes, the timeline will appear here.';
+  String get ordersEmptyDescription => 'Once a payment starts or a sale closes, the timeline will appear here.';
 
   @override
-  String get ordersErrorDescription =>
-      'We couldn\'t load your orders right now. Try again in a moment.';
+  String get ordersErrorDescription => 'We couldn\'t load your orders right now. Try again in a moment.';
 
   @override
   String get ordersHighlightedLabel => 'Focused order';
@@ -532,12 +542,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsHeroEyebrow => 'Inbox';
 
   @override
-  String get notificationsHeroTitle =>
-      'Important changes, without noisy blue alerts.';
+  String get notificationsHeroTitle => 'Important changes, without noisy blue alerts.';
 
   @override
-  String get notificationsHeroDescription =>
-      'Unread updates stay visible so you can move straight to the next relevant screen.';
+  String get notificationsHeroDescription => 'Unread updates stay visible so you can move straight to the next relevant screen.';
 
   @override
   String get notificationsDestinationAuction => 'Opens auction detail';
@@ -552,15 +560,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsDestinationPayment => 'Opens payment recovery';
 
   @override
-  String get notificationsDestinationUnknown =>
-      'Opens the next relevant screen';
+  String get notificationsDestinationUnknown => 'Opens the next relevant screen';
 
   @override
   String get notificationsEmptyTitle => 'Your inbox is quiet';
 
   @override
-  String get notificationsEmptyDescription =>
-      'Bid, payment, and shipment updates will land here as soon as activity begins.';
+  String get notificationsEmptyDescription => 'Bid, payment, and shipment updates will land here as soon as activity begins.';
 
   @override
   String get myTitle => 'My';
@@ -572,8 +578,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myHeroTitle => 'Keep your profile ready for buying and selling.';
 
   @override
-  String get myHeroDescription =>
-      'Verification, seller momentum, and account preferences should feel close at hand, not buried in settings.';
+  String get myHeroDescription => 'Verification, seller momentum, and account preferences should feel close at hand, not buried in settings.';
 
   @override
   String get mySignedInAs => 'Signed in as';
@@ -582,8 +587,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myVerificationTitle => 'Verification status';
 
   @override
-  String get myVerificationDescription =>
-      'Review the trust checks that shape how confidently others trade with you.';
+  String get myVerificationDescription => 'Review the trust checks that shape how confidently others trade with you.';
 
   @override
   String get myVerificationPhone => 'Phone';
@@ -612,54 +616,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sellHeroEyebrow => 'Seller studio';
 
   @override
-  String get sellHeroTitle =>
-      'Shape a listing that feels deliberate before it goes live.';
+  String get sellHeroTitle => 'Shape a listing that feels deliberate before it goes live.';
 
   @override
-  String get sellHeroDescription =>
-      'Walk through the item story, pricing, schedule, and images with a cleaner publishing rhythm.';
+  String get sellHeroDescription => 'Walk through the item story, pricing, schedule, and images with a cleaner publishing rhythm.';
 
   @override
   String get sellPolicyTitle => 'Auction timing policy';
 
   @override
-  String get sellPolicyDescription =>
-      'A bid placed within the last five minutes extends the closing time by five minutes, up to three times.';
+  String get sellPolicyDescription => 'A bid placed within the last five minutes extends the closing time by five minutes, up to three times.';
 
   @override
   String get sellStepCategoryTitle => 'Choose a category';
 
   @override
-  String get sellStepCategoryDescription =>
-      'Start in the right path for goods or precious items so the required fields stay aligned.';
+  String get sellStepCategoryDescription => 'Start in the right path for goods or precious items so the required fields stay aligned.';
 
   @override
   String get sellStepDetailsTitle => 'Describe the item clearly';
 
   @override
-  String get sellStepDetailsDescription =>
-      'Title, condition, tags, and description should make the listing easy to trust at a glance.';
+  String get sellStepDetailsDescription => 'Title, condition, tags, and description should make the listing easy to trust at a glance.';
 
   @override
   String get sellStepPricingTitle => 'Set price and schedule';
 
   @override
-  String get sellStepPricingDescription =>
-      'Start price, buy-now price, and closing time need to communicate urgency without confusion.';
+  String get sellStepPricingDescription => 'Start price, buy-now price, and closing time need to communicate urgency without confusion.';
 
   @override
   String get sellStepImagesTitle => 'Prepare image coverage';
 
   @override
-  String get sellStepImagesDescription =>
-      'Main photos and any required authentication images should feel complete before publishing.';
+  String get sellStepImagesDescription => 'Main photos and any required authentication images should feel complete before publishing.';
 
   @override
   String get sellStepPublishTitle => 'Preview and publish';
 
   @override
-  String get sellStepPublishDescription =>
-      'Check the story, pricing, and urgency cues together before you send the auction live.';
+  String get sellStepPublishDescription => 'Check the story, pricing, and urgency cues together before you send the auction live.';
 
   @override
   String get sellProgressTitle => 'Publishing progress';
@@ -673,15 +669,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sellDraftsTitle => 'Recent drafts';
 
   @override
-  String get sellDraftsSubtitle =>
-      'Return to saved item content before you publish a live auction.';
+  String get sellDraftsSubtitle => 'Return to saved item content before you publish a live auction.';
 
   @override
   String get sellDraftEmptyTitle => 'No saved drafts yet';
 
   @override
-  String get sellDraftEmptyDescription =>
-      'Your saved item drafts will appear here when they are written to Firestore.';
+  String get sellDraftEmptyDescription => 'Your saved item drafts will appear here after you save item details.';
 
   @override
   String get sellDraftLoadAction => 'Load';
@@ -706,15 +700,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sellDraftStatusNotSaved => 'Not saved yet';
 
   @override
-  String get sellDraftStatusNotSavedDescription =>
-      'Save the draft once the item basics feel ready to keep your progress anchored.';
+  String get sellDraftStatusNotSavedDescription => 'Save the draft once the item basics feel ready to keep your progress anchored.';
 
   @override
   String get sellDraftStatusUnsaved => 'Unsaved changes';
 
   @override
-  String get sellDraftStatusUnsavedDescription =>
-      'The current form is ahead of the latest saved draft. Save again before you publish.';
+  String get sellDraftStatusUnsavedDescription => 'The current form is ahead of the latest saved draft. Save again before you publish.';
 
   @override
   String get sellDraftStatusSaved => 'Draft saved';
@@ -772,8 +764,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sellImageMainTitle => 'Listing gallery';
 
   @override
-  String get sellImageMainDescription =>
-      'Upload up to 10 main images for the public auction card and detail page.';
+  String get sellImageMainDescription => 'Upload up to 10 main images for the public auction card and detail page.';
 
   @override
   String get sellImageMainAction => 'Choose gallery images';
@@ -782,8 +773,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sellImageAuthTitle => 'Authentication images';
 
   @override
-  String get sellImageAuthDescription =>
-      'Goods listings require at least one authentication image before draft save and publish.';
+  String get sellImageAuthDescription => 'Goods listings require at least one authentication image before draft save and publish.';
 
   @override
   String get sellImageAuthAction => 'Choose authentication images';
@@ -807,76 +797,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sellActionSaved => 'Draft saved to your seller workspace.';
 
   @override
-  String get sellActionPublished =>
-      'Auction published. Opening the live listing now.';
+  String get sellActionPublished => 'Auction published. Opening the live listing now.';
 
   @override
-  String get sellActionFailed =>
-      'We couldn\'t complete that seller action. Check the form and try again.';
+  String get sellActionFailed => 'We couldn\'t complete that seller action. Check the form and try again.';
 
   @override
-  String get sellValidationCategorySub =>
-      'Add a category detail before saving the draft.';
+  String get sellValidationCategorySub => 'Add a category detail before saving the draft.';
 
   @override
-  String get sellValidationTitle =>
-      'Add an item title before saving the draft.';
+  String get sellValidationTitle => 'Add an item title before saving the draft.';
 
   @override
-  String get sellValidationCondition =>
-      'Add the item condition before saving the draft.';
+  String get sellValidationCondition => 'Add the item condition before saving the draft.';
 
   @override
-  String get sellValidationDescription =>
-      'Add the item description before saving the draft.';
+  String get sellValidationDescription => 'Add the item description before saving the draft.';
 
   @override
-  String get sellValidationAuthImages =>
-      'Goods drafts need at least one authentication image.';
+  String get sellValidationAuthImages => 'Goods drafts need at least one authentication image.';
 
   @override
-  String get sellValidationCategorySubPublish =>
-      'Add a category detail before publishing the auction.';
+  String get sellValidationCategorySubPublish => 'Add a category detail before publishing the auction.';
 
   @override
-  String get sellValidationTitlePublish =>
-      'Add an item title before publishing the auction.';
+  String get sellValidationTitlePublish => 'Add an item title before publishing the auction.';
 
   @override
-  String get sellValidationConditionPublish =>
-      'Add the item condition before publishing the auction.';
+  String get sellValidationConditionPublish => 'Add the item condition before publishing the auction.';
 
   @override
-  String get sellValidationDescriptionPublish =>
-      'Add the item description before publishing the auction.';
+  String get sellValidationDescriptionPublish => 'Add the item description before publishing the auction.';
 
   @override
-  String get sellValidationAuthImagesPublish =>
-      'Goods auctions need at least one authentication image before publishing.';
+  String get sellValidationAuthImagesPublish => 'Goods auctions need at least one authentication image before publishing.';
 
   @override
-  String get sellValidationImages =>
-      'Publishing requires at least one gallery image.';
+  String get sellValidationImages => 'Publishing requires at least one gallery image.';
 
   @override
-  String get sellValidationStartPrice =>
-      'Enter a valid start price before publishing.';
+  String get sellValidationStartPrice => 'Enter a valid start price before publishing.';
 
   @override
-  String get sellValidationBuyNowPrice =>
-      'Buy now price must be greater than the start price.';
+  String get sellValidationBuyNowPrice => 'Buy now price must be greater than the start price.';
 
   @override
-  String get sellValidationBuyNowPriceInvalid =>
-      'Enter a valid whole-number buy now price before publishing.';
+  String get sellValidationBuyNowPriceInvalid => 'Enter a valid whole-number buy now price before publishing.';
 
   @override
-  String get sellValidationSummaryDraftTitle =>
-      'Complete these details before saving the draft';
+  String get sellValidationSummaryDraftTitle => 'Complete these details before saving the draft';
 
   @override
-  String get sellValidationSummaryPublishTitle =>
-      'Complete these details before publishing the auction';
+  String get sellValidationSummaryPublishTitle => 'Complete these details before publishing the auction';
 
   @override
   String get genericUnavailable => 'Unavailable';
@@ -960,8 +932,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginDevAccessTitle => 'Quick access for emulator checks';
 
   @override
-  String get loginDevAccessDescription =>
-      'Use the seeded buyer and seller accounts only for local smoke tests in dev emulator mode.';
+  String get loginDevAccessDescription => 'Use the seeded buyer and seller accounts only for local smoke tests in dev emulator mode.';
 
   @override
   String get loginDevBuyer => 'Sign in as seeded buyer';
@@ -970,8 +941,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginDevSeller => 'Sign in as seeded seller';
 
   @override
-  String get loginErrorSeedAccountUnavailable =>
-      'The seeded emulator account is unavailable. Start the emulators and run npm run seed again.';
+  String get loginErrorSeedAccountUnavailable => 'The seeded emulator account is unavailable. Start the emulators and run npm run seed again.';
 
   @override
   String get ordersActionAddShipment => 'Add shipment';
@@ -986,16 +956,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ordersPaymentSheetTitle => 'Complete payment';
 
   @override
-  String get ordersPaymentSheetDevDescription =>
-      'This dev order can complete payment entirely through the server-driven dummy flow. Confirm once to move the order into paid escrow hold.';
+  String get ordersPaymentSheetDevDescription => 'This dev order can complete payment entirely through the server-driven dummy flow. Confirm once to move the order into paid escrow hold.';
 
   @override
-  String get ordersPaymentSheetReadyDescription =>
-      'This order already has the payment return path prepared. Review the session details before you continue outside the app.';
+  String get ordersPaymentSheetReadyDescription => 'This order already has the payment return path prepared. Review the session details before you continue outside the app.';
 
   @override
-  String get ordersPaymentSheetBlockedDescription =>
-      'This order can still be confirmed from a returned payment result. If you already completed Toss checkout elsewhere, enter the payment key below.';
+  String get ordersPaymentSheetBlockedDescription => 'This order can still be confirmed from a returned payment result. If you already completed Toss checkout elsewhere, enter the payment key below.';
 
   @override
   String get ordersPaymentSheetStatusDev => 'Dev dummy payment';
@@ -1010,49 +977,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ordersPaymentSheetNextStepTitle => 'Next step';
 
   @override
-  String get ordersPaymentSheetNextStepDev =>
-      'Complete payment in-app once, then move to shipping and receipt from the order timeline.';
+  String get ordersPaymentSheetNextStepDev => 'Complete payment in-app once, then move to shipping and receipt from the order timeline.';
 
   @override
-  String get ordersPaymentSheetNextStepReady =>
-      'Finish Toss checkout outside this build, then return with the payment result so the order can be confirmed here.';
+  String get ordersPaymentSheetNextStepReady => 'Finish Toss checkout outside this build, then return with the payment result so the order can be confirmed here.';
 
   @override
-  String get ordersPaymentSheetNextStepBlocked =>
-      'Keep the order timeline open as your recovery point. When Toss checkout finishes elsewhere, come back with the returned payment key to confirm the order here.';
+  String get ordersPaymentSheetNextStepBlocked => 'Keep the order timeline open as your recovery point. When Toss checkout finishes elsewhere, come back with the returned payment key to confirm the order here.';
 
   @override
-  String get ordersPaymentFallbackHint =>
-      'If Toss checkout finished outside the app, return with the payment key and continue from this order card.';
+  String get ordersPaymentFallbackHint => 'If Toss checkout finished outside the app, return with the payment key and continue from this order card.';
 
   @override
   String get ordersPaymentReturnPendingTitle => 'Finalizing payment';
 
   @override
-  String get ordersPaymentReturnPendingDescription =>
-      'We\'re validating the returned payment result and moving the order into the paid timeline.';
+  String get ordersPaymentReturnPendingDescription => 'We\'re validating the returned payment result and moving the order into the paid timeline.';
 
   @override
   String get ordersPaymentReturnSuccessTitle => 'Payment confirmed';
 
   @override
-  String get ordersPaymentReturnSuccessDescription =>
-      'The order is now in paid escrow hold. Continue in the order timeline for shipping and receipt updates.';
+  String get ordersPaymentReturnSuccessDescription => 'The order is now in paid escrow hold. Continue in the order timeline for shipping and receipt updates.';
 
   @override
   String get ordersPaymentReturnFailTitle => 'Payment was not completed';
 
   @override
-  String get ordersPaymentReturnFailDescription =>
-      'Return to the order timeline to retry payment or review the latest status.';
+  String get ordersPaymentReturnFailDescription => 'Return to the order timeline to retry payment or review the latest status.';
 
   @override
-  String get ordersPaymentReturnInvalidTitle =>
-      'Payment return data is incomplete';
+  String get ordersPaymentReturnInvalidTitle => 'Payment return data is incomplete';
 
   @override
-  String get ordersPaymentReturnInvalidDescription =>
-      'This return route needs order, payment, and amount details before the order can be confirmed.';
+  String get ordersPaymentReturnInvalidDescription => 'This return route needs order, payment, and amount details before the order can be confirmed.';
 
   @override
   String ordersPaymentReturnCodeLabel(Object code) {
@@ -1075,8 +1033,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ordersPaymentConfirmTitle => 'Confirm payment';
 
   @override
-  String get ordersPaymentConfirmDescription =>
-      'Enter the Toss payment key that came back from checkout to move the order into paid escrow hold.';
+  String get ordersPaymentConfirmDescription => 'Enter the Toss payment key that came back from checkout to move the order into paid escrow hold.';
 
   @override
   String get ordersPaymentConfirmAction => 'Confirm payment';
@@ -1088,8 +1045,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ordersPaymentKeyHint => 'pay_...';
 
   @override
-  String get ordersPaymentKeyRequiredError =>
-      'Enter the payment key to continue.';
+  String get ordersPaymentKeyRequiredError => 'Enter the payment key to continue.';
 
   @override
   String ordersPaymentAmountLabel(Object amount) {
@@ -1156,16 +1112,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ordersActionSuccessShipped => 'Shipment details were saved.';
 
   @override
-  String get ordersActionSuccessPayment =>
-      'Payment confirmed. The order is now held in escrow.';
+  String get ordersActionSuccessPayment => 'Payment confirmed. The order is now held in escrow.';
 
   @override
-  String get ordersActionSuccessReceipt =>
-      'Receipt confirmed. Settlement can proceed next.';
+  String get ordersActionSuccessReceipt => 'Receipt confirmed. Settlement can proceed next.';
 
   @override
-  String get ordersActionFailed =>
-      'We couldn\'t complete that order action. Try again.';
+  String get ordersActionFailed => 'We couldn\'t complete that order action. Try again.';
 
   @override
   String ordersShipmentSummary(Object carrierName, Object trackingNumber) {

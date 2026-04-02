@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/firebase/firebase_providers.dart';
 import '../data/auction_bid_history_entry.dart';
+import '../data/auction_detail_stream.dart';
 import '../data/auction_detail_view_data.dart';
 
 part 'auction_view_model.g.dart';
@@ -83,14 +84,30 @@ class AuctionViewModel extends _$AuctionViewModel {
 
 Stream<AuctionDetailViewData?> _auctionDetailStream(Ref ref, String auctionId) {
   final firestore = ref.watch(firestoreProvider);
-  return firestore.collection('auctions').doc(auctionId).snapshots().map((
-    snapshot,
-  ) {
-    if (!snapshot.exists) {
-      return null;
-    }
-    return AuctionDetailViewData.fromDocument(snapshot);
-  });
+  final auctions = firestore.collection('auctions');
+  final items = firestore.collection('items');
+
+  return bindAuctionDetailStreams(
+    auctionStream: auctions
+        .doc(auctionId)
+        .snapshots()
+        .map(
+          (snapshot) => AuctionDetailDocument(
+            id: snapshot.id,
+            exists: snapshot.exists,
+            data: snapshot.data() ?? const <String, dynamic>{},
+          ),
+        ),
+    itemStreamFor: (itemId) => items
+        .doc(itemId)
+        .snapshots()
+        .map(
+          (snapshot) => AuctionItemDocument(
+            exists: snapshot.exists,
+            data: snapshot.data() ?? const <String, dynamic>{},
+          ),
+        ),
+  );
 }
 
 Stream<List<AuctionBidHistoryEntry>> _auctionBidHistoryStream(

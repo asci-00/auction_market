@@ -31,10 +31,7 @@ class AuctionBidHistoryCard extends StatelessWidget {
         child: AppShimmer(
           child: Column(
             children: [
-              AppShimmerBlock(
-                height: 180,
-                radius: tokens.cardRadius,
-              ),
+              AppShimmerBlock(height: 180, radius: tokens.cardRadius),
               SizedBox(height: tokens.space4),
               ...List<Widget>.generate(
                 3,
@@ -42,10 +39,7 @@ class AuctionBidHistoryCard extends StatelessWidget {
                   padding: EdgeInsets.only(
                     bottom: index == 2 ? 0 : tokens.space3,
                   ),
-                  child: const AppShimmerBlock(
-                    height: 18,
-                    radius: 12,
-                  ),
+                  child: const AppShimmerBlock(height: 18, radius: 12),
                 ),
               ),
             ],
