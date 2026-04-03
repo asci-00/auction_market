@@ -7,12 +7,14 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_sticky_action_bar.dart';
 import '../../data/auction_detail_view_data.dart';
 
+enum AuctionDetailSubmissionState { idle, bidding, savingAutoBid, buyingNow }
+
 class AuctionDetailActionBar extends StatelessWidget {
   const AuctionDetailActionBar({
     super.key,
     required this.auction,
     required this.userId,
-    required this.isSubmitting,
+    required this.submissionState,
     required this.onBrowseHome,
     required this.onRequireLogin,
     required this.onReviewOrders,
@@ -24,7 +26,7 @@ class AuctionDetailActionBar extends StatelessWidget {
 
   final AuctionDetailViewData? auction;
   final String? userId;
-  final bool isSubmitting;
+  final AuctionDetailSubmissionState submissionState;
   final VoidCallback onBrowseHome;
   final VoidCallback onRequireLogin;
   final VoidCallback onReviewOrders;
@@ -90,40 +92,55 @@ class AuctionDetailActionBar extends StatelessWidget {
 
     return AppStickyActionBar(
       title: currentPrice,
-      subtitle: auction!.endAt != null
-          ? l10n.auctionDetailLiveActionHint(
-              formatKrw(context, auction!.minimumBid),
-              formatCompactDateTime(context, auction!.endAt!),
-            )
-          : l10n.auctionDetailActionHint,
+      subtitle: _subtitleFor(context, auction!),
       child: _BuyerAuctionActions(
         auction: auction!,
-        isSubmitting: isSubmitting,
+        submissionState: submissionState,
         onPlaceBid: onPlaceBid,
         onSetAutoBid: onSetAutoBid,
         onBuyNow: onBuyNow,
       ),
     );
   }
+
+  String _subtitleFor(BuildContext context, AuctionDetailViewData auction) {
+    switch (submissionState) {
+      case AuctionDetailSubmissionState.bidding:
+        return context.l10n.auctionDetailSubmittingBidSubtitle;
+      case AuctionDetailSubmissionState.savingAutoBid:
+        return context.l10n.auctionDetailSubmittingAutoBidSubtitle;
+      case AuctionDetailSubmissionState.buyingNow:
+        return context.l10n.auctionDetailSubmittingBuyNowSubtitle;
+      case AuctionDetailSubmissionState.idle:
+        return auction.endAt != null
+            ? context.l10n.auctionDetailLiveActionHint(
+                formatKrw(context, auction.minimumBid),
+                formatCompactDateTime(context, auction.endAt!),
+              )
+            : context.l10n.auctionDetailActionHint;
+    }
+  }
 }
 
 class _BuyerAuctionActions extends StatelessWidget {
   const _BuyerAuctionActions({
     required this.auction,
-    required this.isSubmitting,
+    required this.submissionState,
     required this.onPlaceBid,
     required this.onSetAutoBid,
     required this.onBuyNow,
   });
 
   final AuctionDetailViewData auction;
-  final bool isSubmitting;
+  final AuctionDetailSubmissionState submissionState;
   final VoidCallback? onPlaceBid;
   final VoidCallback? onSetAutoBid;
   final VoidCallback onBuyNow;
 
   @override
   Widget build(BuildContext context) {
+    final isSubmitting = submissionState != AuctionDetailSubmissionState.idle;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -132,9 +149,11 @@ class _BuyerAuctionActions extends StatelessWidget {
           children: [
             Expanded(
               child: _PrimaryActionButton(
-                label: context.l10n.auctionDetailBidAction(
-                  formatKrw(context, auction.minimumBid),
-                ),
+                label: submissionState == AuctionDetailSubmissionState.bidding
+                    ? context.l10n.auctionDetailSubmittingBidAction
+                    : context.l10n.auctionDetailBidAction(
+                        formatKrw(context, auction.minimumBid),
+                      ),
                 onPressed: isSubmitting ? null : onPlaceBid,
               ),
             ),
@@ -142,9 +161,12 @@ class _BuyerAuctionActions extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _SecondaryActionButton(
-                  label: context.l10n.auctionDetailBuyNowAction(
-                    formatKrw(context, auction.buyNowPrice!),
-                  ),
+                  label:
+                      submissionState == AuctionDetailSubmissionState.buyingNow
+                      ? context.l10n.auctionDetailSubmittingBuyNowAction
+                      : context.l10n.auctionDetailBuyNowAction(
+                          formatKrw(context, auction.buyNowPrice!),
+                        ),
                   onPressed: isSubmitting ? null : onBuyNow,
                 ),
               ),
@@ -154,7 +176,11 @@ class _BuyerAuctionActions extends StatelessWidget {
         const SizedBox(height: 12),
         TextButton(
           onPressed: isSubmitting ? null : onSetAutoBid,
-          child: Text(context.l10n.auctionDetailAutoBidAction),
+          child: Text(
+            submissionState == AuctionDetailSubmissionState.savingAutoBid
+                ? context.l10n.auctionDetailSubmittingAutoBidAction
+                : context.l10n.auctionDetailAutoBidAction,
+          ),
         ),
       ],
     );

@@ -186,6 +186,12 @@
     }
   },
   "auctionDetailAutoBidAction": "Set auto-bid ceiling",
+  "auctionDetailSubmittingBidAction": "Submitting bid...",
+  "auctionDetailSubmittingAutoBidAction": "Saving auto-bid...",
+  "auctionDetailSubmittingBuyNowAction": "Processing buy now...",
+  "auctionDetailSubmittingBidSubtitle": "Submitting your bid now. Other actions will reopen as soon as this step finishes.",
+  "auctionDetailSubmittingAutoBidSubtitle": "Saving your auto-bid ceiling now. Other actions will reopen as soon as this step finishes.",
+  "auctionDetailSubmittingBuyNowSubtitle": "Processing buy now. Other actions will reopen as soon as this step finishes.",
   "auctionDetailBidDialogTitle": "Place a bid",
   "auctionDetailBidAmountLabel": "Bid amount",
   "auctionDetailBidAmountHint": "Enter your offer in KRW",

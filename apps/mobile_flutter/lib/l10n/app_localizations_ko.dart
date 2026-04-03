@@ -448,7 +448,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String auctionDetailBidAction(Object amount) {
-    return '입찰 시작 $amount';
+    return '$amount부터 입찰';
   }
 
   @override
@@ -458,6 +458,24 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get auctionDetailAutoBidAction => '자동입찰 상한 설정';
+
+  @override
+  String get auctionDetailSubmittingBidAction => '입찰 제출 중...';
+
+  @override
+  String get auctionDetailSubmittingAutoBidAction => '자동입찰 저장 중...';
+
+  @override
+  String get auctionDetailSubmittingBuyNowAction => '즉시 구매 처리 중...';
+
+  @override
+  String get auctionDetailSubmittingBidSubtitle => '입찰을 접수하고 있습니다. 이 단계가 끝나면 다른 액션도 다시 열립니다.';
+
+  @override
+  String get auctionDetailSubmittingAutoBidSubtitle => '자동입찰 상한을 저장하고 있습니다. 이 단계가 끝나면 다른 액션도 다시 열립니다.';
+
+  @override
+  String get auctionDetailSubmittingBuyNowSubtitle => '즉시 구매를 처리하고 있습니다. 이 단계가 끝나면 다른 액션도 다시 열립니다.';
 
   @override
   String get auctionDetailBidDialogTitle => '입찰하기';
