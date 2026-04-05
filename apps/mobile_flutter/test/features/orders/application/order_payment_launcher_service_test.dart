@@ -35,7 +35,6 @@ void main() {
     expect(uri.toString(), contains('clientKey=test_ck_example'));
     expect(uri.toString(), contains('customerKey=buyer_uid-1'));
     expect(uri.toString(), contains('amount=230000'));
-    expect(uri.toString(), contains('customerEmail=buyer%40example.com'));
     expect(
       uri.toString(),
       contains(
@@ -48,6 +47,8 @@ void main() {
         'failUrl=https%3A%2F%2Fapp.example.com%2Fpayments%2Ffail%3ForderId%3Dorder-paid',
       ),
     );
+    expect(uri.toString(), isNot(contains('customerEmail=')));
+    expect(uri.toString(), isNot(contains('customerName=')));
   });
 
   test('buildCheckoutUri throws when toss client key is missing', () {

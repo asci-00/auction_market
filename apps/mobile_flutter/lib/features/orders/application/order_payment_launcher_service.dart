@@ -55,16 +55,6 @@ class OrderPaymentLauncherService {
       'failUrl': failUrl,
     };
 
-    final customerName = session.customerName?.trim();
-    if (customerName != null && customerName.isNotEmpty) {
-      queryParameters['customerName'] = customerName;
-    }
-
-    final customerEmail = session.customerEmail?.trim();
-    if (customerEmail != null && customerEmail.isNotEmpty) {
-      queryParameters['customerEmail'] = customerEmail;
-    }
-
     return baseUri.replace(queryParameters: queryParameters);
   }
 

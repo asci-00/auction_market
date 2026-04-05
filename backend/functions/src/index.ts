@@ -519,14 +519,13 @@ function readQueryString(
 
 function readQueryAmount(value: unknown): number {
   const amountText = readQueryString(value, 'amount');
-  const amount = Number(amountText);
-  if (!Number.isFinite(amount) || amount <= 0) {
+  if (!/^[1-9]\d*$/.test(amountText)) {
     throw new HttpsError(
       'invalid-argument',
-      'amount query must be a positive number.',
+      'amount query must be a positive integer.',
     );
   }
-  return Math.round(amount);
+  return Number(amountText);
 }
 
 function readOptionalQueryString(value: unknown): string | null {
@@ -702,8 +701,6 @@ function buildPaymentLaunchHtml(input: {
   orderName: string;
   successUrl: string;
   failUrl: string;
-  customerName: string | null;
-  customerEmail: string | null;
   useDevCardOnlyWindow: boolean;
 }): string {
   const values = {
@@ -714,12 +711,6 @@ function buildPaymentLaunchHtml(input: {
     orderName: encodeJsString(input.orderName),
     successUrl: encodeJsString(input.successUrl),
     failUrl: encodeJsString(input.failUrl),
-    customerName:
-      input.customerName != null ? encodeJsString(input.customerName) : 'null',
-    customerEmail:
-      input.customerEmail != null
-        ? encodeJsString(input.customerEmail)
-        : 'null',
     cardCompany: input.useDevCardOnlyWindow
       ? encodeJsString('11|21|31|33|41|51|61|71|91')
       : 'null',
@@ -749,11 +740,39 @@ function buildPaymentLaunchHtml(input: {
       <script>
         const launchButton = document.getElementById('launch');
         const retryAppButton = document.getElementById('retry-app');
-        const tossPayments = TossPayments(${values.clientKey});
-        const payment = tossPayments.payment({
-          customerKey: ${values.customerKey},
-        });
+        const failUrl = ${values.failUrl};
+        const orderId = ${values.orderId};
         let isLaunching = false;
+
+        function buildFailureUrl(error) {
+          const fallback = '결제창을 열지 못했습니다. 다시 시도해 주세요.';
+          let message = fallback;
+          if (
+            error &&
+            typeof error === 'object' &&
+            typeof error.message === 'string' &&
+            error.message.length > 0
+          ) {
+            message = error.message;
+          }
+          const code =
+            error &&
+            typeof error === 'object' &&
+            typeof error.code === 'string' &&
+            error.code.length > 0
+              ? error.code
+              : 'LAUNCH_FAILED';
+
+          const nextUrl = new URL(failUrl);
+          nextUrl.searchParams.set('orderId', orderId);
+          nextUrl.searchParams.set('code', code);
+          nextUrl.searchParams.set('message', message);
+          return nextUrl.toString();
+        }
+
+        function openFailPage(error) {
+          window.location.href = buildFailureUrl(error);
+        }
 
         async function startPayment() {
           if (isLaunching) return;
@@ -761,6 +780,10 @@ function buildPaymentLaunchHtml(input: {
           launchButton.disabled = true;
           launchButton.textContent = '결제창 여는 중...';
           try {
+            const tossPayments = TossPayments(${values.clientKey});
+            const payment = tossPayments.payment({
+              customerKey: ${values.customerKey},
+            });
             await payment.requestPayment({
               method: 'CARD',
               amount: {
@@ -771,8 +794,6 @@ function buildPaymentLaunchHtml(input: {
               orderName: ${values.orderName},
               successUrl: ${values.successUrl},
               failUrl: ${values.failUrl},
-              customerName: ${values.customerName},
-              customerEmail: ${values.customerEmail},
               card: {
                 flowMode: 'DEFAULT',
                 cardCompany: ${values.cardCompany},
@@ -784,20 +805,16 @@ function buildPaymentLaunchHtml(input: {
             launchButton.disabled = false;
             launchButton.textContent = 'Toss 결제 계속';
             retryAppButton.hidden = false;
-            const message =
-              typeof error?.message === 'string' && error.message.length > 0
-                ? error.message
-                : '결제창을 열지 못했습니다. 다시 시도해 주세요.';
-            alert(message);
+            openFailPage(error);
           }
         }
 
         launchButton.addEventListener('click', startPayment);
+        retryAppButton.addEventListener('click', () => {
+          openFailPage({ code: 'USER_RETRY', message: '사용자가 앱 복귀를 선택했습니다.' });
+        });
         window.addEventListener('load', () => {
           setTimeout(startPayment, 80);
-        });
-        retryAppButton.addEventListener('click', () => {
-          window.location.href = 'app://orders';
         });
       </script>`,
   });
@@ -1629,10 +1646,13 @@ export const tossPaymentBridge = onRequest(async (req, res) => {
       const orderName = readQueryString(req.query.orderName, 'orderName');
       const successUrl = readQueryString(req.query.successUrl, 'successUrl');
       const failUrl = readQueryString(req.query.failUrl, 'failUrl');
-      const customerName = readOptionalQueryString(req.query.customerName);
-      const customerEmail = readOptionalQueryString(req.query.customerEmail);
 
-      res.status(200).contentType('text/html; charset=utf-8').send(
+      res
+        .status(200)
+        .set('Cache-Control', 'no-store')
+        .set('Pragma', 'no-cache')
+        .contentType('text/html; charset=utf-8')
+        .send(
         buildPaymentLaunchHtml({
           clientKey,
           customerKey,
@@ -1641,11 +1661,9 @@ export const tossPaymentBridge = onRequest(async (req, res) => {
           orderName,
           successUrl,
           failUrl,
-          customerName,
-          customerEmail,
           useDevCardOnlyWindow,
         }),
-      );
+        );
       return;
     }
 
@@ -1661,6 +1679,8 @@ export const tossPaymentBridge = onRequest(async (req, res) => {
 
       res
         .status(200)
+        .set('Cache-Control', 'no-store')
+        .set('Pragma', 'no-cache')
         .contentType('text/html; charset=utf-8')
         .send(
           buildPaymentReturnHtml({
@@ -1687,6 +1707,8 @@ export const tossPaymentBridge = onRequest(async (req, res) => {
 
       res
         .status(200)
+        .set('Cache-Control', 'no-store')
+        .set('Pragma', 'no-cache')
         .contentType('text/html; charset=utf-8')
         .send(
           buildPaymentReturnHtml({
