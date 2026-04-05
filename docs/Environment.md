@@ -5,9 +5,13 @@
 - Never commit real secrets.
 - Backend secrets live in `backend/functions/.env`.
 - Mobile public values live in `apps/mobile_flutter/dart_defines.json`.
-- Mobile Firebase platform registration lives in native files:
-  - `apps/mobile_flutter/ios/Runner/GoogleService-Info.plist`
-  - `apps/mobile_flutter/android/app/google-services.json`
+- Mobile Firebase native registration must stay local-only:
+  - committed examples:
+    - `apps/mobile_flutter/ios/Runner/GoogleService-Info.example.plist`
+    - `apps/mobile_flutter/android/app/google-services.example.json`
+  - ignored real files:
+    - `apps/mobile_flutter/ios/Runner/GoogleService-Info.plist`
+    - `apps/mobile_flutter/android/app/google-services.json`
 - Root `.env.example` is only a summary for local tooling and onboarding.
 
 ## Note
@@ -53,24 +57,28 @@
 | `TOSS_CLIENT_KEY` | No | staging, prod | `test_ck_...` or `live_ck_...` | product ops | Flutter app config | Release blocker for payment start. |
 
 ## Mobile Firebase Native Config
-- iOS source: `apps/mobile_flutter/ios/Runner/GoogleService-Info.plist`
-- Android source: `apps/mobile_flutter/android/app/google-services.json`
+- Committed iOS example: `apps/mobile_flutter/ios/Runner/GoogleService-Info.example.plist`
+- Committed Android example: `apps/mobile_flutter/android/app/google-services.example.json`
+- Local real iOS file: `apps/mobile_flutter/ios/Runner/GoogleService-Info.plist`
+- Local real Android file: `apps/mobile_flutter/android/app/google-services.json`
+- Provision the real files by downloading them from Firebase Console for the target app IDs.
 
 | Value | Source Key | Where It Comes From | Current Local Value |
 | --- | --- | --- | --- |
-| Firebase project ID | `PROJECT_ID` / `project_info.project_id` | downloaded iOS plist or Android json | `auction-893cf` |
-| Firebase iOS app ID | `GOOGLE_APP_ID` | `GoogleService-Info.plist` | `1:918877996410:ios:01977f2a50303e364302c3` |
-| Firebase Android app ID | `client[0].client_info.mobilesdk_app_id` | `google-services.json` | `1:918877996410:android:97d00863c1cf22dc4302c3` |
-| Firebase sender ID | `GCM_SENDER_ID` / `project_info.project_number` | downloaded iOS plist or Android json | `918877996410` |
-| Firebase storage bucket | `STORAGE_BUCKET` / `project_info.storage_bucket` | downloaded iOS plist or Android json | `auction-893cf.firebasestorage.app` |
-| Firebase API key | `API_KEY` / `client[0].api_key[0].current_key` | platform app config files | iOS: `AIzaSyBibwoRhELTNV-S8adq2YCVaQrE_CTfa5o`, Android: `AIzaSyBoiR18QZBPTAtPmbJaIJerhuuecuD8Gb8` |
+| Firebase project ID | `PROJECT_ID` / `project_info.project_id` | downloaded iOS plist or Android json | local-only |
+| Firebase iOS app ID | `GOOGLE_APP_ID` | `GoogleService-Info.plist` | local-only |
+| Firebase Android app ID | `client[0].client_info.mobilesdk_app_id` | `google-services.json` | local-only |
+| Firebase sender ID | `GCM_SENDER_ID` / `project_info.project_number` | downloaded iOS plist or Android json | local-only |
+| Firebase storage bucket | `STORAGE_BUCKET` / `project_info.storage_bucket` | downloaded iOS plist or Android json | local-only |
+| Firebase API key | `API_KEY` / `client[0].api_key[0].current_key` | platform app config files | local-only |
 
 ## Loading Rules
 - Never read backend secrets in Flutter.
 - Never read mobile public config from server env.
 - The app must fail early with a readable startup error when a required public define such as `APP_ENV` is missing.
 - The app must reject placeholder `TODO_...` public values for fields it still reads from `dart-define`.
-- On iOS and Android, Firebase app registration is loaded from native config files rather than `dart-define` values.
+- On iOS and Android, Firebase app registration is loaded from local native config files rather than `dart-define` values.
+- The real native Firebase config files must remain gitignored; commit only the example files.
 - Functions must fail fast during startup when a required secret is missing in `staging` or `prod`.
 - For Android physical-device Firebase Emulator runs, prefer `adb reverse` and keep `FIREBASE_EMULATOR_HOST=127.0.0.1`.
 - For iOS physical-device Firebase Emulator runs, set `FIREBASE_EMULATOR_HOST` to the Mac's current LAN IP and keep emulator ports reachable only on the local network.
