@@ -720,18 +720,18 @@ function buildPaymentLaunchHtml(input: {
       input.customerEmail != null
         ? encodeJsString(input.customerEmail)
         : 'null',
-    cardCompany:
-      input.useDevCardOnlyWindow
-        ? encodeJsString('11|21|31|33|41|51|61|71|91')
-        : 'null',
+    cardCompany: input.useDevCardOnlyWindow
+      ? encodeJsString('11|21|31|33|41|51|61|71|91')
+      : 'null',
   };
 
   return paymentBridgeHtml({
     title: '결제창을 준비하고 있습니다',
     description:
       'Toss 테스트 결제창을 여는 중입니다. 자동으로 진행되지 않으면 아래 버튼을 눌러 계속하세요.',
-    body: `${input.useDevCardOnlyWindow
-      ? `<section class="notice">
+    body: `${
+      input.useDevCardOnlyWindow
+        ? `<section class="notice">
         <strong>개발 테스트 안내</strong>
         <ul>
           <li>이 화면은 카드 결제 확인용으로만 사용합니다.</li>
@@ -739,7 +739,8 @@ function buildPaymentLaunchHtml(input: {
           <li>통합 결제창이 열리면 일반 카드 입력 경로로만 진행해 주세요.</li>
         </ul>
       </section>`
-      : ''}<div class="stack">
+        : ''
+    }<div class="stack">
         <button id="launch" class="button" type="button">Toss 결제 계속</button>
         <button id="retry-app" class="button secondary" type="button" hidden>앱으로 돌아가기</button>
       </div>

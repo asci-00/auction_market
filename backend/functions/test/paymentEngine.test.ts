@@ -165,7 +165,9 @@ describe('payment engine', () => {
       buildDevPaymentKey: (orderId) => `dev_pay_${orderId}`,
     });
 
-    expect(contract.successUrl).toBe('https://app.example.com/payments/success');
+    expect(contract.successUrl).toBe(
+      'https://app.example.com/payments/success',
+    );
     expect(contract.failUrl).toBe('https://app.example.com/payments/fail');
     expect(contract.checkoutUrl).toBe(
       'https://app.example.com/payments/launch?orderId=order%26x%3Dy',
