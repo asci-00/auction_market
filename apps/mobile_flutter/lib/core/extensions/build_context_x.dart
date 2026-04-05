@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart' show SemanticsService;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 
@@ -29,38 +30,45 @@ extension BuildContextX on BuildContext {
     final scheme = colorScheme;
     final backgroundColor = isError ? scheme.error : scheme.inverseSurface;
     final foregroundColor = isError ? scheme.onError : scheme.onInverseSurface;
-    final fToast = (_fToast ??= FToast()..init(this));
+    final fToast = _fToast ??= FToast();
+    fToast.init(this);
 
     if (clearExisting) {
       fToast.removeCustomToast();
       fToast.removeQueuedCustomToasts();
     }
 
+    final direction = Directionality.maybeOf(this) ?? TextDirection.ltr;
+    SemanticsService.announce(message, direction);
+
     fToast.showToast(
       gravity: ToastGravity.BOTTOM,
       toastDuration: const Duration(milliseconds: 2200),
       isDismissible: true,
-      child: Container(
-        width: mediaQuery.size.width * 0.9,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x33000000),
-              blurRadius: 10,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Text(
-            message,
-            textAlign: TextAlign.center,
-            style: textTheme.bodyMedium?.copyWith(
-              color: foregroundColor,
-              fontWeight: FontWeight.w600,
+      child: Semantics(
+        liveRegion: true,
+        child: Container(
+          width: mediaQuery.size.width * 0.9,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x33000000),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Text(
+              message,
+              textAlign: TextAlign.center,
+              style: textTheme.bodyMedium?.copyWith(
+                color: foregroundColor,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),

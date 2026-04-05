@@ -119,7 +119,7 @@ void main() {
         child: AuctionDetailView(
           heroTag: null,
           userId: null,
-          isSubmitting: false,
+          submissionState: AuctionDetailSubmissionState.idle,
           auction: null,
           hasError: true,
           bidHistory: const [],

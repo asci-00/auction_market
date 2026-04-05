@@ -13,16 +13,59 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('buy now shows pending state then returns to idle after success', (
+  testWidgets(
+    'buy now shows pending state then navigates with returned order id',
+    (tester) async {
+      final completer = Completer<String?>();
+      final actionService = _FakeAuctionDetailActionService(
+        buyNowHandler: ({required auctionId}) => completer.future,
+      );
+
+      await tester.pumpWidget(
+        _buildScreen(
+          actionService: actionService,
+          auctionState: _sampleState(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(OutlinedButton).first);
+      await tester.pump();
+
+      expect(find.text('Processing buy now...'), findsOneWidget);
+      expect(
+        find.text(
+          'Processing buy now. Other actions will reopen as soon as this step finishes.',
+        ),
+        findsOneWidget,
+      );
+
+      completer.complete('order-123');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Order route: order-123'), findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 2300));
+      await tester.pumpAndSettle();
+    },
+  );
+
+  testWidgets('buy now failure clears pending state and shows error feedback', (
     tester,
   ) async {
-    final completer = Completer<String?>();
     final actionService = _FakeAuctionDetailActionService(
-      buyNowHandler: ({required auctionId}) => completer.future,
+      buyNowHandler: ({required auctionId}) async {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        throw FirebaseFunctionsException(
+          code: 'internal',
+          message: 'Please try again',
+        );
+      },
     );
 
     await tester.pumpWidget(
@@ -32,28 +75,15 @@ void main() {
 
     await tester.tap(find.byType(OutlinedButton).first);
     await tester.pump();
-
     expect(find.text('Processing buy now...'), findsOneWidget);
-    expect(
-      find.text(
-        'Processing buy now. Other actions will reopen as soon as this step finishes.',
-      ),
-      findsOneWidget,
-    );
 
-    completer.complete(null);
     await tester.pumpAndSettle();
-
     expect(find.text('Processing buy now...'), findsNothing);
+    expect(find.text('Please try again'), findsOneWidget);
     expect(
       find.widgetWithText(OutlinedButton, 'Buy now ₩18,000'),
       findsOneWidget,
     );
-    expect(
-      find.text('Buy now is complete. Continue in the order timeline.'),
-      findsOneWidget,
-    );
-
     await tester.pump(const Duration(milliseconds: 2300));
     await tester.pumpAndSettle();
   });
@@ -73,13 +103,29 @@ Widget _buildScreen({
       ).overrideWith(() => _FakeAuctionViewModel(auctionState)),
       auctionDetailActionServiceProvider.overrideWith((ref) => actionService),
     ],
-    child: MaterialApp(
+    child: MaterialApp.router(
+      builder: FToastBuilder(),
       locale: const Locale('en'),
       theme: AppTheme.light(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: supportedAppLocales,
       localeResolutionCallback: resolveAppLocale,
-      home: const AuctionDetailScreen(auctionId: 'auction-live'),
+      routerConfig: GoRouter(
+        initialLocation: '/auction/auction-live',
+        routes: [
+          GoRoute(
+            path: '/auction/:auctionId',
+            builder: (context, state) => AuctionDetailScreen(
+              auctionId: state.pathParameters['auctionId']!,
+            ),
+          ),
+          GoRoute(
+            path: '/orders/:orderId',
+            builder: (context, state) =>
+                Text('Order route: ${state.pathParameters['orderId']}'),
+          ),
+        ],
+      ),
     ),
   );
 }
