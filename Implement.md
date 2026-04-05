@@ -1,10 +1,8 @@
 # Auction Market Execution Log
 
 ## Current Task
-- Phase 3 final close review is active.
-- The current slice wires Toss sandbox handoff for dev testing without activating the deferred production cutover work.
-- Dev Toss sandbox checkout, public bridge return routing, and in-app payment confirmation were verified on the current implementation slice.
-- The remaining Phase 3 gate is the documented manual buyer and seller smoke review on a clean local run.
+- Phase 3 is complete as of April 6, 2026.
+- The current transition task is Phase 4 readiness with the existing Toss sandbox dev flow kept stable.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -59,13 +57,23 @@
 - `cd apps/mobile_flutter && flutter analyze` passed on April 3, 2026.
 - `cd apps/mobile_flutter && flutter test` passed on April 3, 2026.
 - `cd backend/functions && npm run format:check && npm run lint && npm run build && npm test` passed on April 5, 2026 after the Toss sandbox bridge changes.
+- `cd backend/functions && npm run format:check && npm run lint && npm run build && npm test` passed on April 6, 2026 during Phase 3 close review.
 - `cd apps/mobile_flutter && dart analyze <orders payment files>` passed on April 5, 2026.
 - `cd apps/mobile_flutter && flutter test test/features/orders/application/order_payment_handoff_service_test.dart test/features/orders/application/order_payment_launcher_service_test.dart test/features/orders/data/order_payment_session_test.dart test/core/routing/app_deeplink_test.dart` passed on April 5, 2026.
+- `cd apps/mobile_flutter && flutter analyze` passed on April 6, 2026 for the current close-review checkpoint.
+- `cd apps/mobile_flutter && flutter test` passed on April 6, 2026 for the current close-review checkpoint.
 - `cd backend/functions && npm run seed` succeeded on April 2, 2026 against an already running local emulator suite.
 - `cd backend/functions && npm run seed` succeeded on April 5, 2026 against the current emulator suite.
+- `./node_modules/.bin/tsx ./scripts/seed.ts` reset the running local emulator data on April 6, 2026, even though the local shell process did not terminate cleanly after writes completed.
+- A headless April 6 close-review smoke against the running emulator suite verified these callable paths on seeded buyer and seller accounts:
+  - `buyNow` created a new `AWAITING_PAYMENT` order from `auction-live-camera`.
+  - `createPaymentSession` returned a Toss bridge checkout contract for `order-awaiting`.
+  - `createOrUpdateItem` plus `createAuctionFromItem` created and published a new seller-owned live auction.
+  - `shipmentUpdate` moved `order-paid` to `SHIPPED`.
+  - `confirmReceipt` moved the same order to `CONFIRMED_RECEIPT`.
 - `cd backend/functions && npm run serve` could not be restarted on April 2, 2026 because emulator ports were already occupied locally; this was an environment condition, not a repo failure.
 - `backend/functions/.env` now holds a working dev sandbox config with `ENABLE_TOSS_SANDBOX=true`, a test `TOSS_SECRET_KEY`, and a public `APP_BASE_URL` that targets the `tossPaymentBridge` tunnel URL.
-- Manual buyer and seller Phase 3 smoke paths are still the remaining close gate and stay documented in `Documentation.md`.
+- Phase 3 close evidence remains documented in `Documentation.md`.
 
 ## Next Commands
 1. `cd backend/functions && npm run serve`
@@ -74,9 +82,8 @@
 4. Restart `npm run serve` once if the tunnel script updated `APP_BASE_URL` after the emulator had already started.
 5. `cd apps/mobile_flutter && flutter run --dart-define-from-file=dart_defines.json`
 6. Keep the `npm run tunnel:toss` terminal open while testing Toss sandbox checkout and return deep links.
-7. Rerun the documented buyer and seller smoke paths when a manual Phase 3 close check is needed.
-8. Flip `Plan.md` Phase 3 status to complete only after that smoke review is signed off.
-9. Start deferred payment-provider cutover only when the user explicitly activates it.
+7. Start Phase 4 work after validating the current local environment setup.
+8. Keep deferred payment-provider cutover inactive unless the user explicitly activates it.
 
 ## Update Rules
 - Keep this file short.
