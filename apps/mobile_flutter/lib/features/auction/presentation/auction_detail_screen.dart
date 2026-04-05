@@ -9,6 +9,7 @@ import '../../../core/l10n/app_localization.dart';
 import '../application/auction_detail_action_service.dart';
 import 'auction_detail_dialogs.dart';
 import 'auction_view_model.dart';
+import 'widgets/auction_detail_action_bar.dart';
 import 'widgets/auction_detail_view.dart';
 
 class AuctionDetailScreen extends ConsumerStatefulWidget {
@@ -23,7 +24,8 @@ class AuctionDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
-  bool _isSubmitting = false;
+  AuctionDetailSubmissionState _submissionState =
+      AuctionDetailSubmissionState.idle;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +36,7 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
       error: (_, __) => AuctionDetailView(
         heroTag: widget.heroTag,
         userId: userId,
-        isSubmitting: _isSubmitting,
+        submissionState: _submissionState,
         auction: null,
         hasError: true,
         bidHistory: const [],
@@ -55,7 +57,7 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
       loading: () => AuctionDetailView(
         heroTag: widget.heroTag,
         userId: userId,
-        isSubmitting: _isSubmitting,
+        submissionState: _submissionState,
         auction: null,
         hasError: false,
         bidHistory: const [],
@@ -76,7 +78,7 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
       data: (state) => AuctionDetailView(
         heroTag: widget.heroTag,
         userId: userId,
-        isSubmitting: _isSubmitting,
+        submissionState: _submissionState,
         auction: state.detail,
         hasError: false,
         bidHistory: state.bidHistory,
@@ -107,6 +109,7 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
     }
 
     await _runAuctionAction(
+      submissionState: AuctionDetailSubmissionState.bidding,
       action: () => ref
           .read(auctionDetailActionServiceProvider)
           .placeBid(auctionId: widget.auctionId, amount: amount),
@@ -124,6 +127,7 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
     }
 
     await _runAuctionAction(
+      submissionState: AuctionDetailSubmissionState.savingAutoBid,
       action: () => ref
           .read(auctionDetailActionServiceProvider)
           .setAutoBid(auctionId: widget.auctionId, maxAmount: maxAmount),
@@ -135,6 +139,7 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
     String? orderId;
 
     await _runAuctionAction(
+      submissionState: AuctionDetailSubmissionState.buyingNow,
       action: () async {
         orderId = await ref
             .read(auctionDetailActionServiceProvider)
@@ -151,11 +156,12 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
   }
 
   Future<void> _runAuctionAction({
+    required AuctionDetailSubmissionState submissionState,
     required Future<void> Function() action,
     required String successMessage,
   }) async {
     setState(() {
-      _isSubmitting = true;
+      _submissionState = submissionState;
     });
 
     try {
@@ -179,7 +185,7 @@ class _AuctionDetailScreenState extends ConsumerState<AuctionDetailScreen> {
     } finally {
       if (mounted) {
         setState(() {
-          _isSubmitting = false;
+          _submissionState = AuctionDetailSubmissionState.idle;
         });
       }
     }

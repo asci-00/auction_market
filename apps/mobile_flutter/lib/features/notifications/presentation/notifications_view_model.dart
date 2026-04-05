@@ -15,12 +15,8 @@ class NotificationsViewState {
 
   final List<NotificationItem> items;
 
-  NotificationsViewState copyWith({
-    List<NotificationItem>? items,
-  }) {
-    return NotificationsViewState(
-      items: items ?? this.items,
-    );
+  NotificationsViewState copyWith({List<NotificationItem>? items}) {
+    return NotificationsViewState(items: items ?? this.items);
   }
 }
 
@@ -40,9 +36,13 @@ class NotificationsViewModel extends _$NotificationsViewModel {
     _sub = stream.listen((items) {
       final current = state.valueOrNull ?? NotificationsViewState(items: items);
       state = AsyncData(current.copyWith(items: items));
-    });
+    }, onError: _handleStreamError);
 
     return NotificationsViewState(items: first);
+  }
+
+  void _handleStreamError(Object error, StackTrace stackTrace) {
+    state = AsyncError(error, stackTrace);
   }
 }
 

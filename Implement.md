@@ -3,7 +3,7 @@
 ## Current Task
 - Phase 3 final close review is active.
 - The implementation work is complete enough for close review, and the latest close-out slices now cover auction detail stream joining, gallery state updates, and screen-level detail composition with targeted regression coverage.
-- The only remaining Phase 3 gate is the documented manual buyer and seller smoke review before Phase 4 starts.
+- The remaining Phase 3 gate is the documented manual buyer and seller smoke review.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -31,6 +31,7 @@
 - The search route now lets users switch between large auction cards and a compact list, so discovery can adapt to browsing or scanning without changing the underlying query and filter logic.
 - The home route now fills the design-contract gap for curated category rows by deriving separate goods and precious rails from the live auctions it already reads, without adding new backend query contracts.
 - Notification inbox rows now show a destination hint derived from each deeplink, so title, body, time, and next destination are all visible before the user taps through.
+- Auction detail fast actions now expose action-specific pending copy in the sticky action bar, so bid, auto-bid, and buy-now no longer collapse into one generic disabled state while the callable is in flight.
 - Remaining sell empty-state copy no longer exposes `Firestore` in release-facing UI, so the drafts panel stays aligned with the product-copy contract.
 - Auction detail now reads the linked item document so the top of the screen can show a true image gallery plus product description and item metadata instead of a single auction snapshot image.
 - Auction detail now joins auction and item streams through a dedicated binding helper instead of `asyncExpand`, so live auction changes keep propagating after item subscription starts.
@@ -47,6 +48,10 @@
 - `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib test` required no retained source changes for the current close-review slice on April 2, 2026.
 - `cd apps/mobile_flutter && flutter analyze` passed on April 2, 2026.
 - `cd apps/mobile_flutter && flutter test` passed on April 2, 2026.
+- `cd apps/mobile_flutter && flutter gen-l10n` passed on April 3, 2026.
+- `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib/features/auction/presentation/auction_detail_screen.dart lib/features/auction/presentation/widgets/auction_detail_action_bar.dart lib/features/auction/presentation/widgets/auction_detail_view.dart test/features/auction/presentation/widgets/auction_detail_action_bar_test.dart test/features/auction/presentation/widgets/auction_detail_view_test.dart` passed on April 3, 2026.
+- `cd apps/mobile_flutter && flutter analyze` passed on April 3, 2026.
+- `cd apps/mobile_flutter && flutter test` passed on April 3, 2026.
 - `cd backend/functions && npm run seed` succeeded on April 2, 2026 against an already running local emulator suite.
 - `cd backend/functions && npm run serve` could not be restarted on April 2, 2026 because emulator ports were already occupied locally; this was an environment condition, not a repo failure.
 - Manual buyer and seller Phase 3 smoke paths are still the remaining close gate and stay documented in `Documentation.md`.

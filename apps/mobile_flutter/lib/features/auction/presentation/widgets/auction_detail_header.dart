@@ -76,80 +76,21 @@ class _AuctionDetailHeaderState extends State<AuctionDetailHeader> {
           children: [
             AspectRatio(
               aspectRatio: 4 / 5,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  PageView.builder(
-                    controller: _pageController,
-                    itemCount: images.length,
-                    onPageChanged: (index) {
-                      if (_activeIndex == index) {
-                        return;
-                      }
-                      setState(() {
-                        _activeIndex = index;
-                      });
-                    },
-                    itemBuilder: (context, index) => _DetailGalleryImage(
-                      imageUrl: images[index],
-                      heroTag: index == 0 ? widget.heroTag : null,
-                      brightness: brightness,
-                    ),
-                  ),
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          AppColors.panelOverlayFor(brightness),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(tokens.space4),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            AppStatusBadge(
-                              kind: widget.auction.hasBuyNow
-                                  ? AppStatusKind.buyNow
-                                  : AppStatusKind.live,
-                            ),
-                            const Spacer(),
-                            if (images.length > 1)
-                              _GalleryCounter(
-                                currentIndex: _activeIndex + 1,
-                                total: images.length,
-                              ),
-                          ],
-                        ),
-                        const Spacer(),
-                        Text(
-                          widget.auction.titleSnapshot.isEmpty
-                              ? context.l10n.genericUnavailable
-                              : widget.auction.titleSnapshot,
-                          style: context.textTheme.headlineMedium?.copyWith(
-                            color: AppColors.textInverse,
-                          ),
-                        ),
-                        SizedBox(height: tokens.space2),
-                        Text(
-                          '#${widget.auction.id}',
-                          style: context.textTheme.bodySmall?.copyWith(
-                            color: AppColors.textInverse.withValues(
-                              alpha: 0.76,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              child: _GalleryViewport(
+                pageController: _pageController,
+                activeIndex: _activeIndex,
+                images: images,
+                heroTag: widget.heroTag,
+                brightness: brightness,
+                auction: widget.auction,
+                onPageChanged: (index) {
+                  if (_activeIndex == index) {
+                    return;
+                  }
+                  setState(() {
+                    _activeIndex = index;
+                  });
+                },
               ),
             ),
             if (images.length > 1)
@@ -174,6 +115,129 @@ class _AuctionDetailHeaderState extends State<AuctionDetailHeader> {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _GalleryViewport extends StatelessWidget {
+  const _GalleryViewport({
+    required this.pageController,
+    required this.activeIndex,
+    required this.images,
+    required this.heroTag,
+    required this.brightness,
+    required this.auction,
+    required this.onPageChanged,
+  });
+
+  final PageController pageController;
+  final int activeIndex;
+  final List<String?> images;
+  final String? heroTag;
+  final Brightness brightness;
+  final AuctionDetailViewData auction;
+  final ValueChanged<int> onPageChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        PageView.builder(
+          controller: pageController,
+          itemCount: images.length,
+          onPageChanged: onPageChanged,
+          itemBuilder: (context, index) => _DetailGalleryImage(
+            imageUrl: images[index],
+            heroTag: index == 0 ? heroTag : null,
+            brightness: brightness,
+          ),
+        ),
+        _GalleryOverlay(
+          activeIndex: activeIndex,
+          images: images,
+          brightness: brightness,
+          auction: auction,
+        ),
+      ],
+    );
+  }
+}
+
+class _GalleryOverlay extends StatelessWidget {
+  const _GalleryOverlay({
+    required this.activeIndex,
+    required this.images,
+    required this.brightness,
+    required this.auction,
+  });
+
+  final int activeIndex;
+  final List<String?> images;
+  final Brightness brightness;
+  final AuctionDetailViewData auction;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
+    return IgnorePointer(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  AppColors.panelOverlayFor(brightness),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(tokens.space4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    AppStatusBadge(
+                      kind: auction.hasBuyNow
+                          ? AppStatusKind.buyNow
+                          : AppStatusKind.live,
+                    ),
+                    const Spacer(),
+                    if (images.length > 1)
+                      _GalleryCounter(
+                        currentIndex: activeIndex + 1,
+                        total: images.length,
+                      ),
+                  ],
+                ),
+                const Spacer(),
+                Text(
+                  auction.titleSnapshot.isEmpty
+                      ? context.l10n.genericUnavailable
+                      : auction.titleSnapshot,
+                  style: context.textTheme.headlineMedium?.copyWith(
+                    color: AppColors.textInverse,
+                  ),
+                ),
+                SizedBox(height: tokens.space2),
+                Text(
+                  '#${auction.id}',
+                  style: context.textTheme.bodySmall?.copyWith(
+                    color: AppColors.textInverse.withValues(alpha: 0.76),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

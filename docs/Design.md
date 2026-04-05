@@ -66,6 +66,7 @@
 - Pair modal loading with a readable barrier and only add blur when it improves focus and does not muddy the underlying screen.
 - Prefer shimmer or skeleton states when the final layout is already known.
 - Loading copy must stay localized and short.
+- Fast async actions must still expose an immediate visible pending state. If a full overlay is too heavy, use button-level progress, pressed-state locking, or inline status text so users can tell that the action started before completion feedback arrives.
 
 ## Component Rules
 
@@ -87,6 +88,7 @@
 - Urgent action uses coral only for destructive or expiring states.
 - Secondary action uses outline or tonal surface.
 - Do not disable the primary button silently. Show a reason when action is unavailable.
+- Do not leave high-value async actions visually idle after tap. Bid, auto-bid, buy-now, and similar transactional actions must show an in-flight state until success or failure resolves.
 
 ### Tabs And Navigation
 - Bottom navigation uses rounded indicator and heavy label contrast.

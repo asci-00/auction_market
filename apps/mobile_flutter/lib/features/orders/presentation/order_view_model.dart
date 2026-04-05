@@ -54,9 +54,13 @@ class OrdersViewModel extends _$OrdersViewModel {
     _sub = stream.listen((orders) {
       final current = state.valueOrNull ?? OrdersViewState(orders: orders);
       state = AsyncData(current.copyWith(orders: orders));
-    });
+    }, onError: _handleStreamError);
 
     return OrdersViewState(orders: first);
+  }
+
+  void _handleStreamError(Object error, StackTrace stackTrace) {
+    state = AsyncError(error, stackTrace);
   }
 }
 

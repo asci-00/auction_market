@@ -2,6 +2,7 @@ import 'package:auction_market_mobile/core/l10n/app_localization.dart';
 import 'package:auction_market_mobile/core/theme/app_theme.dart';
 import 'package:auction_market_mobile/features/auction/data/auction_bid_history_entry.dart';
 import 'package:auction_market_mobile/features/auction/data/auction_detail_view_data.dart';
+import 'package:auction_market_mobile/features/auction/presentation/widgets/auction_detail_action_bar.dart';
 import 'package:auction_market_mobile/features/auction/presentation/widgets/auction_detail_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -17,14 +18,11 @@ void main() {
           child: AuctionDetailView(
             heroTag: null,
             userId: 'buyer1',
-            isSubmitting: false,
+            submissionState: AuctionDetailSubmissionState.idle,
             auction: _sampleAuction(),
             hasError: false,
             bidHistory: const [
-              AuctionBidHistoryEntry(
-                amount: 13200,
-                createdAt: null,
-              ),
+              AuctionBidHistoryEntry(amount: 13200, createdAt: null),
             ],
             isLoading: false,
             onBrowseHome: () {},
@@ -62,7 +60,7 @@ void main() {
           child: AuctionDetailView(
             heroTag: null,
             userId: 'seller1',
-            isSubmitting: false,
+            submissionState: AuctionDetailSubmissionState.idle,
             auction: _sampleAuction(),
             hasError: false,
             bidHistory: const [],
@@ -93,7 +91,7 @@ void main() {
         child: AuctionDetailView(
           heroTag: null,
           userId: null,
-          isSubmitting: false,
+          submissionState: AuctionDetailSubmissionState.idle,
           auction: null,
           hasError: false,
           bidHistory: const [],
@@ -121,7 +119,7 @@ void main() {
         child: AuctionDetailView(
           heroTag: null,
           userId: null,
-          isSubmitting: false,
+          submissionState: AuctionDetailSubmissionState.idle,
           auction: null,
           hasError: true,
           bidHistory: const [],

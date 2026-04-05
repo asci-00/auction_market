@@ -965,6 +965,42 @@ abstract class AppLocalizations {
   /// **'Set auto-bid ceiling'**
   String get auctionDetailAutoBidAction;
 
+  /// No description provided for @auctionDetailSubmittingBidAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitting bid...'**
+  String get auctionDetailSubmittingBidAction;
+
+  /// No description provided for @auctionDetailSubmittingAutoBidAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving auto-bid...'**
+  String get auctionDetailSubmittingAutoBidAction;
+
+  /// No description provided for @auctionDetailSubmittingBuyNowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing buy now...'**
+  String get auctionDetailSubmittingBuyNowAction;
+
+  /// No description provided for @auctionDetailSubmittingBidSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitting your bid now. Other actions will reopen as soon as this step finishes.'**
+  String get auctionDetailSubmittingBidSubtitle;
+
+  /// No description provided for @auctionDetailSubmittingAutoBidSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving your auto-bid ceiling now. Other actions will reopen as soon as this step finishes.'**
+  String get auctionDetailSubmittingAutoBidSubtitle;
+
+  /// No description provided for @auctionDetailSubmittingBuyNowSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing buy now. Other actions will reopen as soon as this step finishes.'**
+  String get auctionDetailSubmittingBuyNowSubtitle;
+
   /// No description provided for @auctionDetailBidDialogTitle.
   ///
   /// In en, this message translates to:

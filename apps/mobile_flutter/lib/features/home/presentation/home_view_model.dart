@@ -11,10 +11,7 @@ part 'home_view_model.g.dart';
 
 @immutable
 class HomeViewState {
-  const HomeViewState({
-    required this.endingSoon,
-    required this.hot,
-  });
+  const HomeViewState({required this.endingSoon, required this.hot});
 
   final List<HomeAuctionSummary> endingSoon;
   final List<HomeAuctionSummary> hot;
@@ -49,24 +46,23 @@ class HomeViewModel extends _$HomeViewModel {
     });
 
     _endingSoonSub = endingSoonStream.listen((items) {
-      final current = state.valueOrNull ??
-          HomeViewState(
-            endingSoon: items,
-            hot: hot,
-          );
+      final current =
+          state.valueOrNull ?? HomeViewState(endingSoon: items, hot: hot);
       state = AsyncData(current.copyWith(endingSoon: items));
-    });
+    }, onError: _handleStreamError);
 
     _hotSub = hotStream.listen((items) {
-      final current = state.valueOrNull ??
-          HomeViewState(
-            endingSoon: endingSoon,
-            hot: items,
-          );
+      final current =
+          state.valueOrNull ??
+          HomeViewState(endingSoon: endingSoon, hot: items);
       state = AsyncData(current.copyWith(hot: items));
-    });
+    }, onError: _handleStreamError);
 
     return HomeViewState(endingSoon: endingSoon, hot: hot);
+  }
+
+  void _handleStreamError(Object error, StackTrace stackTrace) {
+    state = AsyncError(error, stackTrace);
   }
 }
 

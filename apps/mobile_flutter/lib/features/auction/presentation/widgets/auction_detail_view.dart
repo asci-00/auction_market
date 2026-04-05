@@ -23,7 +23,7 @@ class AuctionDetailView extends StatelessWidget {
     super.key,
     required this.heroTag,
     required this.userId,
-    required this.isSubmitting,
+    required this.submissionState,
     required this.auction,
     required this.hasError,
     required this.bidHistory,
@@ -39,7 +39,7 @@ class AuctionDetailView extends StatelessWidget {
 
   final String? heroTag;
   final String? userId;
-  final bool isSubmitting;
+  final AuctionDetailSubmissionState submissionState;
   final AuctionDetailViewData? auction;
   final bool hasError;
   final List<AuctionBidHistoryEntry> bidHistory;
@@ -62,12 +62,14 @@ class AuctionDetailView extends StatelessWidget {
       bottomBar: AuctionDetailActionBar(
         auction: auction,
         userId: userId,
-        isSubmitting: isSubmitting,
+        submissionState: submissionState,
         onBrowseHome: onBrowseHome,
         onRequireLogin: onRequireLogin,
         onReviewOrders: onReviewOrders,
         onOpenOrder: () => onOpenOrder(auction?.orderId),
-        onPlaceBid: auction == null ? null : () => onPlaceBid(auction!.minimumBid),
+        onPlaceBid: auction == null
+            ? null
+            : () => onPlaceBid(auction!.minimumBid),
         onSetAutoBid: auction == null
             ? null
             : () => onSetAutoBid(auction!.minimumBid),

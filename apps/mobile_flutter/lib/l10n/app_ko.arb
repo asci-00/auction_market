@@ -186,6 +186,12 @@
     }
   },
   "auctionDetailAutoBidAction": "자동입찰 상한 설정",
+  "auctionDetailSubmittingBidAction": "입찰 제출 중...",
+  "auctionDetailSubmittingAutoBidAction": "자동입찰 저장 중...",
+  "auctionDetailSubmittingBuyNowAction": "즉시 구매 처리 중...",
+  "auctionDetailSubmittingBidSubtitle": "입찰을 접수하고 있습니다. 이 단계가 끝나면 다른 액션도 다시 열립니다.",
+  "auctionDetailSubmittingAutoBidSubtitle": "자동입찰 상한을 저장하고 있습니다. 이 단계가 끝나면 다른 액션도 다시 열립니다.",
+  "auctionDetailSubmittingBuyNowSubtitle": "즉시 구매를 처리하고 있습니다. 이 단계가 끝나면 다른 액션도 다시 열립니다.",
   "auctionDetailBidDialogTitle": "입찰하기",
   "auctionDetailBidAmountLabel": "입찰 금액",
   "auctionDetailBidAmountHint": "원 단위 금액을 입력해 주세요",

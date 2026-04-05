@@ -460,6 +460,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get auctionDetailAutoBidAction => 'Set auto-bid ceiling';
 
   @override
+  String get auctionDetailSubmittingBidAction => 'Submitting bid...';
+
+  @override
+  String get auctionDetailSubmittingAutoBidAction => 'Saving auto-bid...';
+
+  @override
+  String get auctionDetailSubmittingBuyNowAction => 'Processing buy now...';
+
+  @override
+  String get auctionDetailSubmittingBidSubtitle => 'Submitting your bid now. Other actions will reopen as soon as this step finishes.';
+
+  @override
+  String get auctionDetailSubmittingAutoBidSubtitle => 'Saving your auto-bid ceiling now. Other actions will reopen as soon as this step finishes.';
+
+  @override
+  String get auctionDetailSubmittingBuyNowSubtitle => 'Processing buy now. Other actions will reopen as soon as this step finishes.';
+
+  @override
   String get auctionDetailBidDialogTitle => 'Place a bid';
 
   @override
