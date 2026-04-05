@@ -1609,6 +1609,12 @@ export const confirmOrderPayment = onCall(async (req) => {
 
 export const tossPaymentBridge = onRequest(async (req, res) => {
   try {
+    if (req.method !== 'GET') {
+      res.set('Allow', 'GET');
+      res.status(405).send('Method Not Allowed');
+      return;
+    }
+
     const runtime = getRuntimeConfig();
     const useDevCardOnlyWindow =
       runtime.appEnv === 'dev' &&

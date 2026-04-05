@@ -62,6 +62,18 @@ describe('payment engine', () => {
         ENABLE_TOSS_SANDBOX: 'true',
       } as NodeJS.ProcessEnv),
     ).toBe(false);
+    expect(
+      isDevDummyPaymentEnabled('dev', {
+        FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
+        ENABLE_TOSS_SANDBOX: ' TRUE ',
+      } as NodeJS.ProcessEnv),
+    ).toBe(false);
+    expect(
+      isDevDummyPaymentEnabled('dev', {
+        FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
+        ENABLE_TOSS_SANDBOX: 'TrUe',
+      } as NodeJS.ProcessEnv),
+    ).toBe(false);
     expect(isDevDummyPaymentEnabled('dev', {} as NodeJS.ProcessEnv)).toBe(
       false,
     );

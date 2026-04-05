@@ -16,22 +16,43 @@ class OrderPaymentLauncherService {
 
   final AppConfig _config;
 
-  Uri buildCheckoutUri(OrderPaymentSession session) {
-    final checkoutBase = session.checkoutUrl?.trim();
-    if (checkoutBase == null || checkoutBase.isEmpty) {
-      throw StateError('checkoutUrl is required to launch Toss checkout.');
+  String _requireNonEmpty({required String field, required String? value}) {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      throw StateError('$field is required to launch Toss checkout.');
     }
+    return normalized;
+  }
+
+  Uri buildCheckoutUri(OrderPaymentSession session) {
+    final checkoutBase = _requireNonEmpty(
+      field: 'checkoutUrl',
+      value: session.checkoutUrl,
+    );
+    final clientKey = _requireNonEmpty(
+      field: 'tossClientKey',
+      value: _config.tossClientKey,
+    );
+    final customerKey = _requireNonEmpty(
+      field: 'customerKey',
+      value: session.customerKey,
+    );
+    final successUrl = _requireNonEmpty(
+      field: 'successUrl',
+      value: session.successUrl,
+    );
+    final failUrl = _requireNonEmpty(field: 'failUrl', value: session.failUrl);
 
     final baseUri = Uri.parse(checkoutBase);
     final queryParameters = <String, String>{
       ...baseUri.queryParameters,
-      'clientKey': _config.tossClientKey!.trim(),
-      'customerKey': session.customerKey!.trim(),
+      'clientKey': clientKey,
+      'customerKey': customerKey,
       'orderId': session.orderId,
       'amount': session.amount.toString(),
       'orderName': session.orderName,
-      'successUrl': session.successUrl!.trim(),
-      'failUrl': session.failUrl!.trim(),
+      'successUrl': successUrl,
+      'failUrl': failUrl,
     };
 
     final customerName = session.customerName?.trim();

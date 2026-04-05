@@ -42,5 +42,87 @@ void main() {
         'successUrl=https%3A%2F%2Fapp.example.com%2Fpayments%2Fsuccess%3ForderId%3Dorder-paid',
       ),
     );
+    expect(
+      uri.toString(),
+      contains(
+        'failUrl=https%3A%2F%2Fapp.example.com%2Fpayments%2Ffail%3ForderId%3Dorder-paid',
+      ),
+    );
+  });
+
+  test('buildCheckoutUri throws when toss client key is missing', () {
+    const service = OrderPaymentLauncherService(
+      AppConfig(
+        environment: AppEnvironment.dev,
+        useFirebaseEmulators: true,
+        tossClientKey: null,
+        firebaseEmulatorHostOverride: null,
+      ),
+    );
+
+    const session = OrderPaymentSession(
+      provider: 'TOSS_PAYMENTS',
+      mode: 'TOSS',
+      orderId: 'order-paid',
+      amount: 230000,
+      orderName: 'Auction order',
+      customerKey: 'buyer_uid-1',
+      customerName: null,
+      customerEmail: null,
+      successUrl: 'https://app.example.com/payments/success?orderId=order-paid',
+      failUrl: 'https://app.example.com/payments/fail?orderId=order-paid',
+      checkoutUrl:
+          'https://bridge.example.com/payments/launch?orderId=order-paid',
+      devPaymentKey: null,
+    );
+
+    expect(
+      () => service.buildCheckoutUri(session),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.message,
+          'message',
+          contains('tossClientKey'),
+        ),
+      ),
+    );
+  });
+
+  test('buildCheckoutUri throws when fail url is missing', () {
+    const service = OrderPaymentLauncherService(
+      AppConfig(
+        environment: AppEnvironment.dev,
+        useFirebaseEmulators: true,
+        tossClientKey: 'test_ck_example',
+        firebaseEmulatorHostOverride: null,
+      ),
+    );
+
+    const session = OrderPaymentSession(
+      provider: 'TOSS_PAYMENTS',
+      mode: 'TOSS',
+      orderId: 'order-paid',
+      amount: 230000,
+      orderName: 'Auction order',
+      customerKey: 'buyer_uid-1',
+      customerName: null,
+      customerEmail: null,
+      successUrl: 'https://app.example.com/payments/success?orderId=order-paid',
+      failUrl: null,
+      checkoutUrl:
+          'https://bridge.example.com/payments/launch?orderId=order-paid',
+      devPaymentKey: null,
+    );
+
+    expect(
+      () => service.buildCheckoutUri(session),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.message,
+          'message',
+          contains('failUrl'),
+        ),
+      ),
+    );
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/app_config/app_config.dart';
 import '../../../core/firebase/firebase_bootstrap.dart';
 import '../data/order_payment_session.dart';
 
@@ -33,13 +34,16 @@ class OrderPaymentHandoffPlan {
 
 final orderPaymentHandoffServiceProvider = Provider<OrderPaymentHandoffService>(
   (ref) {
-    ref.watch(appBootstrapProvider).requireValue;
-    return const OrderPaymentHandoffService();
+    final bootstrap = ref.watch(appBootstrapProvider).requireValue;
+    // Keep this provider bound to bootstrap completion before exposing service.
+    return OrderPaymentHandoffService(bootstrap.config);
   },
 );
 
 class OrderPaymentHandoffService {
-  const OrderPaymentHandoffService();
+  const OrderPaymentHandoffService(this._config);
+
+  final AppConfig _config;
 
   OrderPaymentHandoffPlan buildPlan(OrderPaymentSession session) {
     final devPaymentKey = session.devPaymentKey?.trim();
@@ -50,7 +54,10 @@ class OrderPaymentHandoffService {
       );
     }
 
-    if (session.isRealTossReady) {
+    final tossClientKey = _config.tossClientKey?.trim();
+    if (session.isRealTossReady &&
+        tossClientKey != null &&
+        tossClientKey.isNotEmpty) {
       return OrderPaymentHandoffPlan(
         mode: OrderPaymentHandoffMode.launcherReady,
         checkoutUrl: session.checkoutUrl,

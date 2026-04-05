@@ -53,8 +53,18 @@ ssh \
   -- --output json 2>&1 | while IFS= read -r line; do
     printf '%s\n' "${line}"
 
-    if [[ "${tunnel_announced}" == false && "${line}" =~ tunneled\ with\ tls\ termination,\ (https://[a-zA-Z0-9.-]+) ]]; then
-      tunnel_origin="${BASH_REMATCH[1]}"
+    if [[ "${tunnel_announced}" == false ]]; then
+      tunnel_origin=""
+
+      if [[ "${line}" =~ \"url\"[[:space:]]*:[[:space:]]*\"(https://[^\"]+)\" ]]; then
+        tunnel_origin="${BASH_REMATCH[1]}"
+      elif [[ "${line}" =~ \"url\"[[:space:]]*:[[:space:]]*\"(https:\\/\\/[^\"]+)\" ]]; then
+        tunnel_origin="${BASH_REMATCH[1]//\\//\/}"
+      elif [[ "${line}" =~ tunneled\ with\ tls\ termination,\ (https://[a-zA-Z0-9.-]+) ]]; then
+        tunnel_origin="${BASH_REMATCH[1]}"
+      fi
+
+      if [[ -n "${tunnel_origin}" ]]; then
       bridge_url="${tunnel_origin}/${project_id}/us-central1/tossPaymentBridge"
       perl -0pi -e "s#^APP_BASE_URL=.*#APP_BASE_URL=${bridge_url}#m" "${env_file}"
 
@@ -65,5 +75,6 @@ ssh \
       echo
 
       tunnel_announced=true
+      fi
     fi
   done
