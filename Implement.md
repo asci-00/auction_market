@@ -4,7 +4,8 @@
 - Phase 3 final close review is active.
 - The current slice wires Toss sandbox handoff for dev testing without activating the deferred production cutover work.
 - Dev Toss sandbox checkout, public bridge return routing, and in-app payment confirmation were verified on the current implementation slice.
-- The remaining Phase 3 gate is the documented manual buyer and seller smoke review on a clean local run.
+- April 6, 2026 callable-level close smoke passed against the local emulator suite for buy-now order entry, payment-session preparation, seller draft publish, shipment update, and buyer receipt confirmation.
+- The remaining Phase 3 gate is now the documented interactive buyer and seller app walkthrough on a clean local run.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -59,13 +60,23 @@
 - `cd apps/mobile_flutter && flutter analyze` passed on April 3, 2026.
 - `cd apps/mobile_flutter && flutter test` passed on April 3, 2026.
 - `cd backend/functions && npm run format:check && npm run lint && npm run build && npm test` passed on April 5, 2026 after the Toss sandbox bridge changes.
+- `cd backend/functions && npm run format:check && npm run lint && npm run build && npm test` passed on April 6, 2026 during Phase 3 close review.
 - `cd apps/mobile_flutter && dart analyze <orders payment files>` passed on April 5, 2026.
 - `cd apps/mobile_flutter && flutter test test/features/orders/application/order_payment_handoff_service_test.dart test/features/orders/application/order_payment_launcher_service_test.dart test/features/orders/data/order_payment_session_test.dart test/core/routing/app_deeplink_test.dart` passed on April 5, 2026.
+- `cd apps/mobile_flutter && flutter analyze` passed on April 6, 2026 for the current close-review checkpoint.
+- `cd apps/mobile_flutter && flutter test` passed on April 6, 2026 for the current close-review checkpoint.
 - `cd backend/functions && npm run seed` succeeded on April 2, 2026 against an already running local emulator suite.
 - `cd backend/functions && npm run seed` succeeded on April 5, 2026 against the current emulator suite.
+- `./node_modules/.bin/tsx ./scripts/seed.ts` reset the running local emulator data on April 6, 2026, even though the local shell process did not terminate cleanly after writes completed.
+- A headless April 6 close-review smoke against the running emulator suite verified these callable paths on seeded buyer and seller accounts:
+  - `buyNow` created a new `AWAITING_PAYMENT` order from `auction-live-camera`.
+  - `createPaymentSession` returned a Toss bridge checkout contract for `order-awaiting`.
+  - `createOrUpdateItem` plus `createAuctionFromItem` created and published a new seller-owned live auction.
+  - `shipmentUpdate` moved `order-paid` to `SHIPPED`.
+  - `confirmReceipt` moved the same order to `CONFIRMED_RECEIPT`.
 - `cd backend/functions && npm run serve` could not be restarted on April 2, 2026 because emulator ports were already occupied locally; this was an environment condition, not a repo failure.
 - `backend/functions/.env` now holds a working dev sandbox config with `ENABLE_TOSS_SANDBOX=true`, a test `TOSS_SECRET_KEY`, and a public `APP_BASE_URL` that targets the `tossPaymentBridge` tunnel URL.
-- Manual buyer and seller Phase 3 smoke paths are still the remaining close gate and stay documented in `Documentation.md`.
+- Interactive buyer and seller Phase 3 app walkthroughs are still the remaining close gate and stay documented in `Documentation.md`.
 
 ## Next Commands
 1. `cd backend/functions && npm run serve`
