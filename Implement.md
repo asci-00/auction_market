@@ -1,11 +1,8 @@
 # Auction Market Execution Log
 
 ## Current Task
-- Phase 3 final close review is active.
-- The current slice wires Toss sandbox handoff for dev testing without activating the deferred production cutover work.
-- Dev Toss sandbox checkout, public bridge return routing, and in-app payment confirmation were verified on the current implementation slice.
-- April 6, 2026 callable-level close smoke passed against the local emulator suite for buy-now order entry, payment-session preparation, seller draft publish, shipment update, and buyer receipt confirmation.
-- The remaining Phase 3 gate is now the documented interactive buyer and seller app walkthrough on a clean local run.
+- Phase 3 is complete as of April 6, 2026.
+- The current transition task is Phase 4 readiness with the existing Toss sandbox dev flow kept stable.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -76,7 +73,7 @@
   - `confirmReceipt` moved the same order to `CONFIRMED_RECEIPT`.
 - `cd backend/functions && npm run serve` could not be restarted on April 2, 2026 because emulator ports were already occupied locally; this was an environment condition, not a repo failure.
 - `backend/functions/.env` now holds a working dev sandbox config with `ENABLE_TOSS_SANDBOX=true`, a test `TOSS_SECRET_KEY`, and a public `APP_BASE_URL` that targets the `tossPaymentBridge` tunnel URL.
-- Interactive buyer and seller Phase 3 app walkthroughs are still the remaining close gate and stay documented in `Documentation.md`.
+- Phase 3 close evidence remains documented in `Documentation.md`.
 
 ## Next Commands
 1. `cd backend/functions && npm run serve`
@@ -85,9 +82,8 @@
 4. Restart `npm run serve` once if the tunnel script updated `APP_BASE_URL` after the emulator had already started.
 5. `cd apps/mobile_flutter && flutter run --dart-define-from-file=dart_defines.json`
 6. Keep the `npm run tunnel:toss` terminal open while testing Toss sandbox checkout and return deep links.
-7. Rerun the documented buyer and seller smoke paths when a manual Phase 3 close check is needed.
-8. Flip `Plan.md` Phase 3 status to complete only after that smoke review is signed off.
-9. Start deferred payment-provider cutover only when the user explicitly activates it.
+7. Start Phase 4 work after validating the current local environment setup.
+8. Keep deferred payment-provider cutover inactive unless the user explicitly activates it.
 
 ## Update Rules
 - Keep this file short.
