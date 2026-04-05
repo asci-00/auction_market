@@ -1653,16 +1653,16 @@ export const tossPaymentBridge = onRequest(async (req, res) => {
         .set('Pragma', 'no-cache')
         .contentType('text/html; charset=utf-8')
         .send(
-        buildPaymentLaunchHtml({
-          clientKey,
-          customerKey,
-          orderId,
-          amount,
-          orderName,
-          successUrl,
-          failUrl,
-          useDevCardOnlyWindow,
-        }),
+          buildPaymentLaunchHtml({
+            clientKey,
+            customerKey,
+            orderId,
+            amount,
+            orderName,
+            successUrl,
+            failUrl,
+            useDevCardOnlyWindow,
+          }),
         );
       return;
     }
