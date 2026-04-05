@@ -33,34 +33,46 @@ if [[ -z "${adb_bin}" ]]; then
   exit 1
 fi
 
-mapfile -t connected_devices < <(
-  "${adb_bin}" devices | awk 'NR > 1 && $2 == "device" { print $1 }'
-)
+connected_devices=()
+while IFS= read -r device; do
+  if [[ -n "${device}" ]]; then
+    connected_devices+=("${device}")
+  fi
+done < <("${adb_bin}" devices | awk 'NR > 1 && $2 == "device" { print $1 }')
 
-adb_args=()
 if [[ -n "${ANDROID_SERIAL:-}" ]]; then
-  adb_args=(-s "${ANDROID_SERIAL}")
+  target_serial="${ANDROID_SERIAL}"
 elif (( ${#connected_devices[@]} > 1 )); then
   echo "Multiple Android devices detected. Set ANDROID_SERIAL to choose a target:" >&2
   printf '  %s\n' "${connected_devices[@]}" >&2
   exit 1
+elif (( ${#connected_devices[@]} == 1 )); then
+  target_serial="${connected_devices[0]}"
+else
+  target_serial=""
 fi
 
-if ! "${adb_bin}" "${adb_args[@]}" get-state >/dev/null 2>&1; then
+run_adb() {
+  if [[ -n "${target_serial}" ]]; then
+    "${adb_bin}" -s "${target_serial}" "$@"
+  else
+    "${adb_bin}" "$@"
+  fi
+}
+
+if ! run_adb get-state >/dev/null 2>&1; then
   echo "No Android device detected over adb. Connect a device and authorize USB debugging." >&2
   exit 1
 fi
 
 echo "Using adb: ${adb_bin}"
-if [[ -n "${ANDROID_SERIAL:-}" ]]; then
-  echo "Target device: ${ANDROID_SERIAL}"
-elif (( ${#connected_devices[@]} == 1 )); then
-  echo "Target device: ${connected_devices[0]}"
+if [[ -n "${target_serial}" ]]; then
+  echo "Target device: ${target_serial}"
 fi
 echo "Configuring reverse tunnels for Firebase emulators..."
 
 for port in "${ports[@]}"; do
-  "${adb_bin}" "${adb_args[@]}" reverse "tcp:${port}" "tcp:${port}"
+  run_adb reverse "tcp:${port}" "tcp:${port}"
   echo "  tcp:${port} -> tcp:${port}"
 done
 

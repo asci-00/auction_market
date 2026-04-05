@@ -2,8 +2,9 @@
 
 ## Current Task
 - Phase 3 final close review is active.
-- The implementation work is complete enough for close review, and the latest close-out slices now cover auction detail stream joining, gallery state updates, and screen-level detail composition with targeted regression coverage.
-- The remaining Phase 3 gate is the documented manual buyer and seller smoke review.
+- The current slice wires Toss sandbox handoff for dev testing without activating the deferred production cutover work.
+- Dev Toss sandbox checkout, public bridge return routing, and in-app payment confirmation were verified on the current implementation slice.
+- The remaining Phase 3 gate is the documented manual buyer and seller smoke review on a clean local run.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -16,7 +17,8 @@
 - Secrets never live in repo files. Only example files are committed.
 
 ## Open Blockers
-- Real payment-provider client key, server secret, webhook secret, and app base URL are not available in this repo yet.
+- Real payment-provider webhook secret is still not configured in this repo.
+- Dev sandbox payment still depends on a live public tunnel session for `APP_BASE_URL`, because Toss redirect URLs cannot target localhost.
 - Final real-device push delivery will require Firebase Messaging project setup and iOS APNs project setup.
 
 ## Validation Status
@@ -40,6 +42,10 @@
 - The pinned search header was revalidated after the latest query-sync fixes and now keeps raw input, clear affordance, and trimmed execution query aligned while remaining tappable below the app bar.
 - Emulator seed data now covers separate buyer and seller notification, payment, shipment, confirmed-receipt, settled, cancelled-unpaid, draft, unsold, and cancelled-listing paths without cross-linking orders to unrelated auctions.
 - Backend callables cover bootstrap, draft lifecycle, bid and auto-bid, buy now, payment-session preparation, payment confirmation, shipment update, receipt confirmation, and notification read state.
+- The backend now exposes `tossPaymentBridge` so emulator-backed `dev` can return a real Toss sandbox `checkoutUrl`, `successUrl`, and `failUrl` when `ENABLE_TOSS_SANDBOX=true`.
+- The mobile app now launches Toss checkout through the returned bridge URL, registers `app://` deep-link return handling on Android and iOS, and keeps manual payment-key recovery only as the fallback path.
+- `cd backend/functions && npm run tunnel:toss` now opens the public localhost.run bridge tunnel and rewrites `backend/functions/.env` so repeated sandbox tests do not require manual `APP_BASE_URL` edits.
+- The bridge now keeps `successUrl` and `failUrl` query-free and relies on Toss redirect parameters for `orderId`, `paymentKey`, and `amount`, avoiding duplicate query collisions on return.
 - `cd backend/functions && npm run format:check` passed on April 2, 2026.
 - `cd backend/functions && npm run lint` passed on April 2, 2026.
 - `cd backend/functions && npm run build` passed on April 2, 2026.
@@ -52,17 +58,25 @@
 - `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib/features/auction/presentation/auction_detail_screen.dart lib/features/auction/presentation/widgets/auction_detail_action_bar.dart lib/features/auction/presentation/widgets/auction_detail_view.dart test/features/auction/presentation/widgets/auction_detail_action_bar_test.dart test/features/auction/presentation/widgets/auction_detail_view_test.dart` passed on April 3, 2026.
 - `cd apps/mobile_flutter && flutter analyze` passed on April 3, 2026.
 - `cd apps/mobile_flutter && flutter test` passed on April 3, 2026.
+- `cd backend/functions && npm run format:check && npm run lint && npm run build && npm test` passed on April 5, 2026 after the Toss sandbox bridge changes.
+- `cd apps/mobile_flutter && dart analyze <orders payment files>` passed on April 5, 2026.
+- `cd apps/mobile_flutter && flutter test test/features/orders/application/order_payment_handoff_service_test.dart test/features/orders/application/order_payment_launcher_service_test.dart test/features/orders/data/order_payment_session_test.dart test/core/routing/app_deeplink_test.dart` passed on April 5, 2026.
 - `cd backend/functions && npm run seed` succeeded on April 2, 2026 against an already running local emulator suite.
+- `cd backend/functions && npm run seed` succeeded on April 5, 2026 against the current emulator suite.
 - `cd backend/functions && npm run serve` could not be restarted on April 2, 2026 because emulator ports were already occupied locally; this was an environment condition, not a repo failure.
+- `backend/functions/.env` now holds a working dev sandbox config with `ENABLE_TOSS_SANDBOX=true`, a test `TOSS_SECRET_KEY`, and a public `APP_BASE_URL` that targets the `tossPaymentBridge` tunnel URL.
 - Manual buyer and seller Phase 3 smoke paths are still the remaining close gate and stay documented in `Documentation.md`.
 
 ## Next Commands
 1. `cd backend/functions && npm run serve`
 2. `cd backend/functions && npm run seed`
-3. `cd apps/mobile_flutter && flutter run --dart-define-from-file=dart_defines.json`
-4. Rerun the documented buyer and seller smoke paths when a manual Phase 3 close check is needed.
-5. Flip `Plan.md` Phase 3 status to complete only after that smoke review is signed off.
-6. Start deferred payment-provider cutover only when the user explicitly activates it.
+3. `cd backend/functions && npm run tunnel:toss`
+4. Restart `npm run serve` once if the tunnel script updated `APP_BASE_URL` after the emulator had already started.
+5. `cd apps/mobile_flutter && flutter run --dart-define-from-file=dart_defines.json`
+6. Keep the `npm run tunnel:toss` terminal open while testing Toss sandbox checkout and return deep links.
+7. Rerun the documented buyer and seller smoke paths when a manual Phase 3 close check is needed.
+8. Flip `Plan.md` Phase 3 status to complete only after that smoke review is signed off.
+9. Start deferred payment-provider cutover only when the user explicitly activates it.
 
 ## Update Rules
 - Keep this file short.

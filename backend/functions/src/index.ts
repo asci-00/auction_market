@@ -61,10 +61,12 @@ interface PaymentSessionResponse {
   orderId: string;
   amount: number;
   orderName: string;
+  customerKey: string | null;
   customerName: string | null;
   customerEmail: string | null;
   successUrl: string | null;
   failUrl: string | null;
+  checkoutUrl: string | null;
   devPaymentKey: string | null;
 }
 
@@ -211,6 +213,10 @@ function buildDeepLink(
 
 function buildDevPaymentKey(orderId: string): string {
   return `dev_pay_${orderId}`;
+}
+
+function buildTossCustomerKey(uid: string): string {
+  return `buyer_${uid}`;
 }
 
 async function createInboxNotification(
@@ -489,6 +495,338 @@ async function confirmTossPayment(
 
 function buildOrderName(auctionId: string): string {
   return `auction-${auctionId}`;
+}
+
+function readQueryString(
+  value: unknown,
+  fieldName: string,
+  options: { allowEmpty?: boolean } = {},
+): string {
+  if (typeof value !== 'string') {
+    throw new HttpsError('invalid-argument', `${fieldName} query is required.`);
+  }
+
+  const normalized = value.trim();
+  if (!options.allowEmpty && normalized.length === 0) {
+    throw new HttpsError(
+      'invalid-argument',
+      `${fieldName} query must not be empty.`,
+    );
+  }
+
+  return normalized;
+}
+
+function readQueryAmount(value: unknown): number {
+  const amountText = readQueryString(value, 'amount');
+  const amount = Number(amountText);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new HttpsError(
+      'invalid-argument',
+      'amount query must be a positive number.',
+    );
+  }
+  return Math.round(amount);
+}
+
+function readOptionalQueryString(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function encodeJsString(value: string): string {
+  return JSON.stringify(value);
+}
+
+function buildAppReturnLink(
+  status: 'success' | 'fail',
+  params: Record<string, string | null>,
+): string {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value) {
+      query.set(key, value);
+    }
+  }
+  const queryString = query.toString();
+  return queryString.length > 0
+    ? `app://payments/${status}?${queryString}`
+    : `app://payments/${status}`;
+}
+
+function paymentBridgeHtml({
+  title,
+  description,
+  body,
+}: {
+  title: string;
+  description: string;
+  body: string;
+}): string {
+  const safeTitle = escapeHtml(title);
+  const safeDescription = escapeHtml(description);
+
+  return `<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>${safeTitle}</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f4ede3;
+        --surface: rgba(255, 248, 241, 0.92);
+        --text: #1e1b19;
+        --muted: #62584f;
+        --accent: #d86d4e;
+        --border: rgba(30, 27, 25, 0.12);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #14110f;
+          --surface: rgba(28, 24, 22, 0.92);
+          --text: #f3ede7;
+          --muted: #d4c5ba;
+          --border: rgba(255, 244, 236, 0.14);
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background:
+          radial-gradient(circle at top, rgba(216, 109, 78, 0.16), transparent 32%),
+          linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg) 84%, #000 16%));
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+      .panel {
+        width: min(100%, 460px);
+        border-radius: 28px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        backdrop-filter: blur(18px);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.16);
+        padding: 28px;
+      }
+      h1 { margin: 0 0 10px; font-size: 28px; line-height: 1.1; }
+      p { margin: 0; color: var(--muted); line-height: 1.6; }
+      .spacer { height: 20px; }
+      .button {
+        appearance: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 52px;
+        padding: 0 18px;
+        border: none;
+        border-radius: 999px;
+        background: var(--accent);
+        color: white;
+        font-size: 16px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .button.secondary {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+      .stack { display: grid; gap: 12px; }
+      .meta {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .notice {
+        margin: 0 0 16px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.78);
+        border: 1px solid var(--border);
+      }
+      .notice strong {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--text);
+        font-size: 14px;
+      }
+      .notice ul {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="panel">
+      <h1>${safeTitle}</h1>
+      <p>${safeDescription}</p>
+      <div class="spacer"></div>
+      ${body}
+    </main>
+  </body>
+</html>`;
+}
+
+function buildPaymentLaunchHtml(input: {
+  clientKey: string;
+  customerKey: string;
+  orderId: string;
+  amount: number;
+  orderName: string;
+  successUrl: string;
+  failUrl: string;
+  customerName: string | null;
+  customerEmail: string | null;
+  useDevCardOnlyWindow: boolean;
+}): string {
+  const values = {
+    clientKey: encodeJsString(input.clientKey),
+    customerKey: encodeJsString(input.customerKey),
+    orderId: encodeJsString(input.orderId),
+    amount: String(input.amount),
+    orderName: encodeJsString(input.orderName),
+    successUrl: encodeJsString(input.successUrl),
+    failUrl: encodeJsString(input.failUrl),
+    customerName:
+      input.customerName != null ? encodeJsString(input.customerName) : 'null',
+    customerEmail:
+      input.customerEmail != null
+        ? encodeJsString(input.customerEmail)
+        : 'null',
+    cardCompany:
+      input.useDevCardOnlyWindow
+        ? encodeJsString('11|21|31|33|41|51|61|71|91')
+        : 'null',
+  };
+
+  return paymentBridgeHtml({
+    title: '결제창을 준비하고 있습니다',
+    description:
+      'Toss 테스트 결제창을 여는 중입니다. 자동으로 진행되지 않으면 아래 버튼을 눌러 계속하세요.',
+    body: `${input.useDevCardOnlyWindow
+      ? `<section class="notice">
+        <strong>개발 테스트 안내</strong>
+        <ul>
+          <li>이 화면은 카드 결제 확인용으로만 사용합니다.</li>
+          <li>외부 앱이 필요한 간편결제나 앱카드는 테스트 대상이 아닙니다.</li>
+          <li>통합 결제창이 열리면 일반 카드 입력 경로로만 진행해 주세요.</li>
+        </ul>
+      </section>`
+      : ''}<div class="stack">
+        <button id="launch" class="button" type="button">Toss 결제 계속</button>
+        <button id="retry-app" class="button secondary" type="button" hidden>앱으로 돌아가기</button>
+      </div>
+      <div class="meta">테스트 결제이며 실제 청구는 발생하지 않습니다.</div>
+      <script src="https://js.tosspayments.com/v2/standard"></script>
+      <script>
+        const launchButton = document.getElementById('launch');
+        const retryAppButton = document.getElementById('retry-app');
+        const tossPayments = TossPayments(${values.clientKey});
+        const payment = tossPayments.payment({
+          customerKey: ${values.customerKey},
+        });
+        let isLaunching = false;
+
+        async function startPayment() {
+          if (isLaunching) return;
+          isLaunching = true;
+          launchButton.disabled = true;
+          launchButton.textContent = '결제창 여는 중...';
+          try {
+            await payment.requestPayment({
+              method: 'CARD',
+              amount: {
+                currency: 'KRW',
+                value: ${values.amount},
+              },
+              orderId: ${values.orderId},
+              orderName: ${values.orderName},
+              successUrl: ${values.successUrl},
+              failUrl: ${values.failUrl},
+              customerName: ${values.customerName},
+              customerEmail: ${values.customerEmail},
+              card: {
+                flowMode: 'DEFAULT',
+                cardCompany: ${values.cardCompany},
+              },
+              windowTarget: 'self',
+            });
+          } catch (error) {
+            isLaunching = false;
+            launchButton.disabled = false;
+            launchButton.textContent = 'Toss 결제 계속';
+            retryAppButton.hidden = false;
+            const message =
+              typeof error?.message === 'string' && error.message.length > 0
+                ? error.message
+                : '결제창을 열지 못했습니다. 다시 시도해 주세요.';
+            alert(message);
+          }
+        }
+
+        launchButton.addEventListener('click', startPayment);
+        window.addEventListener('load', () => {
+          setTimeout(startPayment, 80);
+        });
+        retryAppButton.addEventListener('click', () => {
+          window.location.href = 'app://orders';
+        });
+      </script>`,
+  });
+}
+
+function buildPaymentReturnHtml(input: {
+  status: 'success' | 'fail';
+  title: string;
+  description: string;
+  appReturnUrl: string;
+  buttonLabel: string;
+}): string {
+  return paymentBridgeHtml({
+    title: input.title,
+    description: input.description,
+    body: `<div class="stack">
+        <a class="button" href="${escapeHtml(input.appReturnUrl)}">${escapeHtml(input.buttonLabel)}</a>
+        <button id="retry" class="button secondary" type="button">앱이 열리지 않으면 다시 시도</button>
+      </div>
+      <script>
+        const appReturnUrl = ${encodeJsString(input.appReturnUrl)};
+        function openApp() {
+          window.location.replace(appReturnUrl);
+        }
+        document.getElementById('retry').addEventListener('click', openApp);
+        window.addEventListener('load', () => {
+          setTimeout(openApp, 60);
+        });
+      </script>`,
+  });
 }
 
 function providerListFromAuthToken(token: AnyRecord | undefined): string[] {
@@ -1157,10 +1495,12 @@ export const createPaymentSession = onCall(async (req) => {
     orderId,
     amount: order.finalPrice,
     orderName: buildOrderName(order.auctionId),
+    customerKey: buildTossCustomerKey(uid),
     customerName: optionalString(req.auth?.token?.name) ?? null,
     customerEmail: optionalString(req.auth?.token?.email) ?? null,
     successUrl: paymentSession.successUrl,
     failUrl: paymentSession.failUrl,
+    checkoutUrl: paymentSession.checkoutUrl,
     devPaymentKey: paymentSession.devPaymentKey,
   };
 
@@ -1264,6 +1604,105 @@ export const confirmOrderPayment = onCall(async (req) => {
   });
   logger.info('confirmOrderPayment', { orderId, paymentKey, uid });
   return { ok: true, orderId };
+});
+
+export const tossPaymentBridge = onRequest(async (req, res) => {
+  try {
+    const runtime = getRuntimeConfig();
+    const useDevCardOnlyWindow =
+      runtime.appEnv === 'dev' &&
+      process.env.ENABLE_TOSS_SANDBOX?.trim().toLowerCase() === 'true';
+    const path = req.path.replace(/\/+$/, '') || '/';
+
+    if (path === '/payments/launch') {
+      const clientKey = readQueryString(req.query.clientKey, 'clientKey');
+      const customerKey = readQueryString(req.query.customerKey, 'customerKey');
+      const orderId = readQueryString(req.query.orderId, 'orderId');
+      const amount = readQueryAmount(req.query.amount);
+      const orderName = readQueryString(req.query.orderName, 'orderName');
+      const successUrl = readQueryString(req.query.successUrl, 'successUrl');
+      const failUrl = readQueryString(req.query.failUrl, 'failUrl');
+      const customerName = readOptionalQueryString(req.query.customerName);
+      const customerEmail = readOptionalQueryString(req.query.customerEmail);
+
+      res.status(200).contentType('text/html; charset=utf-8').send(
+        buildPaymentLaunchHtml({
+          clientKey,
+          customerKey,
+          orderId,
+          amount,
+          orderName,
+          successUrl,
+          failUrl,
+          customerName,
+          customerEmail,
+          useDevCardOnlyWindow,
+        }),
+      );
+      return;
+    }
+
+    if (path === '/payments/success') {
+      const orderId = readQueryString(req.query.orderId, 'orderId');
+      const paymentKey = readQueryString(req.query.paymentKey, 'paymentKey');
+      const amount = readQueryString(req.query.amount, 'amount');
+      const appReturnUrl = buildAppReturnLink('success', {
+        orderId,
+        paymentKey,
+        amount,
+      });
+
+      res
+        .status(200)
+        .contentType('text/html; charset=utf-8')
+        .send(
+          buildPaymentReturnHtml({
+            status: 'success',
+            title: '결제 정보를 앱으로 보내는 중입니다',
+            description:
+              '앱으로 돌아가 결제를 최종 확인합니다. 자동으로 열리지 않으면 아래 버튼을 눌러 계속하세요.',
+            appReturnUrl,
+            buttonLabel: '앱으로 돌아가기',
+          }),
+        );
+      return;
+    }
+
+    if (path === '/payments/fail') {
+      const orderId = readOptionalQueryString(req.query.orderId);
+      const code = readOptionalQueryString(req.query.code);
+      const message = readOptionalQueryString(req.query.message);
+      const appReturnUrl = buildAppReturnLink('fail', {
+        orderId,
+        code,
+        message,
+      });
+
+      res
+        .status(200)
+        .contentType('text/html; charset=utf-8')
+        .send(
+          buildPaymentReturnHtml({
+            status: 'fail',
+            title: '결제가 완료되지 않았습니다',
+            description:
+              '앱으로 돌아가 결제 실패 상태를 확인합니다. 자동으로 열리지 않으면 아래 버튼을 눌러 계속하세요.',
+            appReturnUrl,
+            buttonLabel: '앱에서 실패 상태 보기',
+          }),
+        );
+      return;
+    }
+
+    res.status(404).send('Not Found');
+  } catch (error) {
+    logger.error('tossPaymentBridge', error);
+    const message =
+      error instanceof HttpsError
+        ? error.message
+        : 'Invalid Toss payment bridge request.';
+    res.status(400).send(message);
+  }
 });
 
 export const tossPaymentWebhook = onRequest(async (req, res) => {

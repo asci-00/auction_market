@@ -23,6 +23,7 @@ export interface PaymentSessionContract {
   mode: 'TOSS' | 'DEV_DUMMY';
   successUrl: string | null;
   failUrl: string | null;
+  checkoutUrl: string | null;
   devPaymentKey: string | null;
 }
 
@@ -30,6 +31,11 @@ export function isDevDummyPaymentEnabled(
   appEnv: 'dev' | 'staging' | 'prod',
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
+  const sandboxOverride = env.ENABLE_TOSS_SANDBOX?.trim().toLowerCase();
+  if (sandboxOverride === 'true') {
+    return false;
+  }
+
   if (appEnv !== 'dev') {
     return false;
   }
@@ -62,6 +68,7 @@ export function buildPaymentSessionContract({
       mode: 'DEV_DUMMY',
       successUrl: null,
       failUrl: null,
+      checkoutUrl: null,
       devPaymentKey: buildDevPaymentKey(orderId),
     };
   }
@@ -79,18 +86,21 @@ export function buildPaymentSessionContract({
   }
 
   const normalizedBaseUrl = normalizeAppBaseUrl(appBaseUrl);
-  const encodedOrderId = encodeURIComponent(orderId);
   const successUrl = normalizedBaseUrl
-    ? `${normalizedBaseUrl}/payments/success?orderId=${encodedOrderId}`
+    ? `${normalizedBaseUrl}/payments/success`
     : null;
   const failUrl = normalizedBaseUrl
-    ? `${normalizedBaseUrl}/payments/fail?orderId=${encodedOrderId}`
+    ? `${normalizedBaseUrl}/payments/fail`
+    : null;
+  const checkoutUrl = normalizedBaseUrl
+    ? `${normalizedBaseUrl}/payments/launch?orderId=${encodeURIComponent(orderId)}`
     : null;
 
   return {
     mode: 'TOSS',
     successUrl,
     failUrl,
+    checkoutUrl,
     devPaymentKey: null,
   };
 }

@@ -1,18 +1,10 @@
-import 'package:auction_market_mobile/core/app_config/app_config.dart';
 import 'package:auction_market_mobile/features/orders/application/order_payment_handoff_service.dart';
 import 'package:auction_market_mobile/features/orders/data/order_payment_session.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('dev dummy sessions use in-app direct confirmation', () {
-    const service = OrderPaymentHandoffService(
-      AppConfig(
-        environment: AppEnvironment.dev,
-        useFirebaseEmulators: true,
-        tossClientKey: null,
-        firebaseEmulatorHostOverride: null,
-      ),
-    );
+    const service = OrderPaymentHandoffService();
 
     const session = OrderPaymentSession(
       provider: 'TOSS_PAYMENTS',
@@ -20,10 +12,12 @@ void main() {
       orderId: 'order-paid',
       amount: 230000,
       orderName: 'Auction order',
+      customerKey: null,
       customerName: null,
       customerEmail: null,
       successUrl: null,
       failUrl: null,
+      checkoutUrl: null,
       devPaymentKey: 'dev_pay_order-paid',
     );
 
@@ -35,14 +29,7 @@ void main() {
   });
 
   test('toss-ready sessions stay distinct from manual fallback', () {
-    const service = OrderPaymentHandoffService(
-      AppConfig(
-        environment: AppEnvironment.staging,
-        useFirebaseEmulators: false,
-        tossClientKey: 'test_ck_example',
-        firebaseEmulatorHostOverride: null,
-      ),
-    );
+    const service = OrderPaymentHandoffService();
 
     const session = OrderPaymentSession(
       provider: 'TOSS_PAYMENTS',
@@ -50,10 +37,12 @@ void main() {
       orderId: 'order-paid',
       amount: 230000,
       orderName: 'Auction order',
+      customerKey: 'buyer_uid-1',
       customerName: null,
       customerEmail: null,
       successUrl: 'https://app.example.com/payments/success?orderId=order-paid',
       failUrl: 'https://app.example.com/payments/fail?orderId=order-paid',
+      checkoutUrl: 'https://app.example.com/payments/launch?orderId=order-paid',
       devPaymentKey: null,
     );
 
@@ -62,17 +51,14 @@ void main() {
     expect(plan.isLauncherReady, isTrue);
     expect(plan.requiresManualConfirmation, isTrue);
     expect(plan.usesManualFallback, isFalse);
+    expect(
+      plan.checkoutUrl,
+      'https://app.example.com/payments/launch?orderId=order-paid',
+    );
   });
 
-  test('missing toss client key falls back to manual recovery mode', () {
-    const service = OrderPaymentHandoffService(
-      AppConfig(
-        environment: AppEnvironment.dev,
-        useFirebaseEmulators: false,
-        tossClientKey: null,
-        firebaseEmulatorHostOverride: null,
-      ),
-    );
+  test('missing handoff fields still falls back to manual recovery mode', () {
+    const service = OrderPaymentHandoffService();
 
     const session = OrderPaymentSession(
       provider: 'TOSS_PAYMENTS',
@@ -80,10 +66,12 @@ void main() {
       orderId: 'order-paid',
       amount: 230000,
       orderName: 'Auction order',
+      customerKey: null,
       customerName: null,
       customerEmail: null,
       successUrl: 'https://app.example.com/payments/success?orderId=order-paid',
       failUrl: 'https://app.example.com/payments/fail?orderId=order-paid',
+      checkoutUrl: 'https://app.example.com/payments/launch?orderId=order-paid',
       devPaymentKey: null,
     );
 
@@ -93,15 +81,8 @@ void main() {
     expect(plan.isLauncherReady, isFalse);
   });
 
-  test('host override does not change dev dummy handoff selection', () {
-    const service = OrderPaymentHandoffService(
-      AppConfig(
-        environment: AppEnvironment.dev,
-        useFirebaseEmulators: true,
-        tossClientKey: null,
-        firebaseEmulatorHostOverride: '127.0.0.1',
-      ),
-    );
+  test('dev dummy handoff selection does not depend on app config', () {
+    const service = OrderPaymentHandoffService();
 
     const session = OrderPaymentSession(
       provider: 'TOSS_PAYMENTS',
@@ -109,10 +90,12 @@ void main() {
       orderId: 'order-paid',
       amount: 230000,
       orderName: 'Auction order',
+      customerKey: null,
       customerName: null,
       customerEmail: null,
       successUrl: null,
       failUrl: null,
+      checkoutUrl: null,
       devPaymentKey: 'dev_pay_order-paid',
     );
 
