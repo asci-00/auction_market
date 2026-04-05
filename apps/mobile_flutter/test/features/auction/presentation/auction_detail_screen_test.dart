@@ -35,7 +35,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(OutlinedButton).first);
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Buy now ₩18,000'));
       await tester.pump();
 
       expect(find.text('Processing buy now...'), findsOneWidget);
@@ -73,7 +73,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byType(OutlinedButton).first);
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Buy now ₩18,000'));
     await tester.pump();
     expect(find.text('Processing buy now...'), findsOneWidget);
 
@@ -140,14 +140,14 @@ class _FakeAuctionViewModel extends AuctionViewModel {
 }
 
 class _FakeAuctionDetailActionService extends AuctionDetailActionService {
-  _FakeAuctionDetailActionService({this.buyNowHandler})
+  _FakeAuctionDetailActionService({required this.buyNowHandler})
     : super(_FakeFirebaseFunctions());
 
-  final Future<String?> Function({required String auctionId})? buyNowHandler;
+  final Future<String?> Function({required String auctionId}) buyNowHandler;
 
   @override
   Future<String?> buyNow({required String auctionId}) async {
-    return buyNowHandler?.call(auctionId: auctionId);
+    return buyNowHandler(auctionId: auctionId);
   }
 }
 
