@@ -6,10 +6,12 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/extensions/build_context_x.dart';
 import '../../../../core/l10n/app_localization.dart';
 import '../../../../core/widgets/app_empty_state.dart';
+import '../../../../core/widgets/app_loading_overlay.dart';
 import '../../../../core/widgets/app_motion.dart';
 import '../../../../core/widgets/app_shimmer.dart';
 import '../../application/order_action_service.dart';
 import '../../application/order_payment_handoff_service.dart';
+import '../../application/order_payment_launcher_service.dart';
 import '../../data/order_summary.dart';
 import '../order_payment_confirm_dialog.dart';
 import '../order_payment_session_sheet.dart';
@@ -45,6 +47,7 @@ class OrderSection extends ConsumerStatefulWidget {
 
 class _OrderSectionState extends ConsumerState<OrderSection> {
   final Set<String> _submittingOrderIds = <String>{};
+  String? _blockingPaymentOrderId;
 
   @override
   Widget build(BuildContext context) {
@@ -67,46 +70,51 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
     );
     final ordersAsync = ref.watch(ordersViewModelProvider(query));
 
-    return ordersAsync.when(
-      error: (_, __) => AppEmptyState(
-        icon: Icons.error_outline_rounded,
-        title: context.l10n.genericUnavailable,
-        description: context.l10n.ordersErrorDescription,
-      ),
-      loading: () =>
-          const AppShimmerListPlaceholder(itemCount: 3, itemHeight: 172),
-      data: (state) {
-        if (state.orders.isEmpty) {
-          return AppEmptyState(
-            icon: Icons.inventory_2_outlined,
-            title: context.l10n.ordersEmptyTitle,
-            description: context.l10n.ordersEmptyDescription,
-            action: TextButton(
-              onPressed: () => context.go('/search'),
-              child: Text(context.l10n.auctionDetailBrowseAction),
-            ),
-          );
-        }
-
-        return Column(
-          children: state.orders.indexed.map((entry) {
-            final index = entry.$1;
-            final order = entry.$2;
-
-            return AppStaggeredReveal(
-              index: index,
-              child: OrderSummaryCard(
-                order: order,
-                role: widget.role,
-                isSubmitting: _submittingOrderIds.contains(order.id),
-                onPreparePayment: () => _preparePayment(order),
-                onAddShipment: () => _openShipmentDialog(order.id),
-                onConfirmReceipt: () => _confirmReceipt(order.id),
+    return AppLoadingOverlay(
+      isLoading: _blockingPaymentOrderId != null,
+      message: context.l10n.ordersPaymentLaunchingOverlay,
+      useBlur: true,
+      child: ordersAsync.when(
+        error: (_, __) => AppEmptyState(
+          icon: Icons.error_outline_rounded,
+          title: context.l10n.genericUnavailable,
+          description: context.l10n.ordersErrorDescription,
+        ),
+        loading: () =>
+            const AppShimmerListPlaceholder(itemCount: 3, itemHeight: 172),
+        data: (state) {
+          if (state.orders.isEmpty) {
+            return AppEmptyState(
+              icon: Icons.inventory_2_outlined,
+              title: context.l10n.ordersEmptyTitle,
+              description: context.l10n.ordersEmptyDescription,
+              action: TextButton(
+                onPressed: () => context.go('/search'),
+                child: Text(context.l10n.auctionDetailBrowseAction),
               ),
             );
-          }).toList(),
-        );
-      },
+          }
+
+          return Column(
+            children: state.orders.indexed.map((entry) {
+              final index = entry.$1;
+              final order = entry.$2;
+
+              return AppStaggeredReveal(
+                index: index,
+                child: OrderSummaryCard(
+                  order: order,
+                  role: widget.role,
+                  isSubmitting: _submittingOrderIds.contains(order.id),
+                  onPreparePayment: () => _preparePayment(order),
+                  onAddShipment: () => _openShipmentDialog(order.id),
+                  onConfirmReceipt: () => _confirmReceipt(order.id),
+                ),
+              );
+            }).toList(),
+          );
+        },
+      ),
     );
   }
 
@@ -151,6 +159,29 @@ class _OrderSectionState extends ConsumerState<OrderSection> {
         handoffPlan: handoffPlan,
       );
       if (!mounted || sheetResult == null) {
+        return;
+      }
+
+      if (sheetResult.launchCheckout) {
+        setState(() {
+          _blockingPaymentOrderId = order.id;
+        });
+        try {
+          await ref
+              .read(orderPaymentLauncherServiceProvider)
+              .launchCheckout(session);
+          if (mounted) {
+            context.showSnackBarMessage(
+              context.l10n.ordersPaymentLaunchStarted,
+            );
+          }
+        } finally {
+          if (mounted) {
+            setState(() {
+              _blockingPaymentOrderId = null;
+            });
+          }
+        }
         return;
       }
 

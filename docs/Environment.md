@@ -33,13 +33,17 @@
 | Name | Secret | Required In | Example Format | Owner | Load Location | Missing Value Impact |
 | --- | --- | --- | --- | --- | --- | --- |
 | `APP_ENV` | No | dev, staging, prod | `dev` | engineering | Functions runtime | Low. Affects logs and config branches. |
-| `GCLOUD_PROJECT` | No | dev, staging, prod | `auction-market-staging` | engineering | Functions runtime | High. Firebase Admin will point to the wrong project. |
-| `FIREBASE_PROJECT_ID` | No | dev, staging, prod | `auction-market-staging` | engineering | Functions runtime | High. Emulator scripts and admin setup become inconsistent. |
+| `ENABLE_TOSS_SANDBOX` | No | dev sandbox only | `true` | engineering | Functions runtime | Medium. If omitted in emulator-backed `dev`, payment falls back to `DEV_DUMMY` instead of real Toss sandbox. |
 | `TOSS_SECRET_KEY` | Yes | staging, prod | `test_sk_...` or `live_sk_...` | product ops | Functions runtime | Release blocker for payment confirm. |
 | `TOSS_WEBHOOK_SECRET` | Yes | staging, prod | `whsec_...` | product ops | Functions runtime | Release blocker for webhook verification. |
 | `TOSS_API_BASE_URL` | No | staging, prod | `https://api.tosspayments.com` | engineering | Functions runtime | Medium. Payment calls fail if wrong. |
-| `APP_BASE_URL` | No | staging, prod | `https://app.example.com` | engineering | Functions runtime | High. Payment return routing and deep-link handoff fail. |
+| `APP_BASE_URL` | No | staging, prod, dev sandbox | `https://app.example.com` or `https://<public-tunnel>/auction-893cf/us-central1/tossPaymentBridge` | engineering | Functions runtime | High. Payment return routing and deep-link handoff fail. |
 | `OPS_ALERT_EMAILS` | No | staging, prod | `ops@example.com,support@example.com` | ops | Functions runtime | Low. Alert fan-out is reduced. |
+
+- Do not put reserved Firebase runtime keys such as `GCLOUD_PROJECT` or `FIREBASE_PROJECT_ID` in `backend/functions/.env`. The Firebase CLI injects them for emulator and deploy flows.
+- The current dev Toss sandbox path uses `tossPaymentBridge` plus a public HTTPS tunnel URL in `APP_BASE_URL`. This keeps the app on emulator-backed data while allowing Toss redirect URLs to remain public and valid.
+- Use `cd backend/functions && npm run tunnel:toss` to open a localhost.run tunnel and rewrite `APP_BASE_URL` automatically. Keep that terminal open during Toss sandbox tests.
+- If `npm run serve` was already running before the tunnel URL changed, restart it once so the Functions emulator reloads the updated `APP_BASE_URL`.
 
 ## Mobile Public Build Defines
 - Path: `apps/mobile_flutter/dart_defines.json`

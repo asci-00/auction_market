@@ -88,9 +88,9 @@
   - Auction detail now runs `placeBid`, `setAutoBid`, and `buyNow` from the sticky action bar when the viewer is an eligible buyer on a live auction, and redirects completed buy-now orders into `/orders/{orderId}`.
   - Orders now routes `createPaymentSession`, `confirmOrderPayment`, `shipmentUpdate`, and `confirmReceipt` through `features/orders/application/order_action_service.dart`, and notifications call `markNotificationRead` before deep-link navigation.
   - Orders now resolves payment handoff semantics through `features/orders/application/order_payment_handoff_service.dart`, so `DEV_DUMMY`, provider-launch-ready mode, and manual payment-key fallback states stay out of the order list widget.
-  - Buyer order cards now surface `AWAITING_PAYMENT` actions, prepare the payment session in-app, and in `dev` can complete a server-driven dummy payment key path before the final real provider handoff values are available.
+  - Buyer order cards now surface `AWAITING_PAYMENT` actions, prepare the payment session in-app, and in `dev` prefer the real Toss sandbox launcher path when `ENABLE_TOSS_SANDBOX=true`.
   - Payment return handling now lives in `features/orders/presentation/order_payment_return_screen.dart`, where `/payments/success` confirms a returned payment payload and `/payments/fail` routes the buyer back to recovery actions.
-  - The order payment sheet now presents handoff state as premium recovery UI, separating `DEV_DUMMY`, prepared return-path, and manual payment-key fallback into distinct panels and next-step guidance instead of relying on one generic status paragraph.
+  - The order payment sheet now presents handoff state as premium recovery UI, separating `DEV_DUMMY`, prepared launcher state, and manual recovery fallback into distinct panels and next-step guidance instead of relying on one generic status paragraph.
   - Orders, notifications, and activity quiet states now attach only architecture-valid navigation recovery actions such as signed-in return routing or browse recovery, instead of generic retry affordances on cached Firestore read paths.
   - Sell uses `image_picker` plus Firebase Storage upload paths under `users/{uid}/items/{itemId}/gallery/*` and `users/{uid}/auth/{itemId}/*`, then persists draft data through `createOrUpdateItem` before publish.
   - Sell drafts now persist `draftAuction.startPrice`, `draftAuction.buyNowPrice`, and `draftAuction.durationDays` on `items/{itemId}`, so sellers can reload pricing intent before publishing.
@@ -118,7 +118,7 @@
 - Dynamic Firestore content may remain backend-authored text, but fallback labels, badges, and empty/error states must be localized in the app.
 
 ## Backend Implementation Notes
-- `backend/functions/src/config/runtime.ts` validates backend runtime env such as `APP_ENV`, `GCLOUD_PROJECT`, provider secrets for the active payment adapter, provider API base URL, and the presence of `APP_BASE_URL` when it is required by the active payment mode.
+- `backend/functions/src/config/runtime.ts` validates backend runtime env such as `APP_ENV`, provider secrets for the active payment adapter, provider API base URL, and the presence of `APP_BASE_URL` when it is required by the active payment mode.
 - `backend/functions/src/domain/paymentEngine.ts` owns payment confirmation idempotency helpers, provider webhook normalization, and payment state transitions.
 - `backend/functions/eslint.config.mjs` now runs ESLint for `src`, `test`, and `scripts`, while `.prettierrc.json` and package scripts provide a repeatable formatting check for TypeScript files before commit.
 - `backend/functions/src/index.ts` now exports the Phase 2 callable and scheduler surface:
@@ -144,6 +144,9 @@
 - `createPaymentSession` now returns `mode: "DEV_DUMMY"` plus a deterministic `devPaymentKey` in `dev`, so the mobile app can validate buyer payment progression without pretending to launch a production checkout.
 - The `DEV_DUMMY` payment path is emulator-only. If the backend is not running under the Firebase Emulator Suite, `createPaymentSession` falls back to the currently wired real provider mode and requires `APP_BASE_URL` for success and fail return URLs.
 - The payment domain normalizes `APP_BASE_URL` before success and fail URLs are built, so trailing slashes or stray query strings do not leak into `/payments/success` and `/payments/fail`, while `runtime.ts` remains responsible only for the base environment validation.
+- When `ENABLE_TOSS_SANDBOX=true` is present in `backend/functions/.env`, emulator-backed `dev` no longer forces `DEV_DUMMY`; it returns a real Toss sandbox session with `checkoutUrl` rooted at `tossPaymentBridge/payments/launch` plus fixed `successUrl` and `failUrl` return routes under the same bridge.
+- `tossPaymentBridge` is the current public handoff surface for mobile sandbox testing. `/payments/launch` serves the Toss JavaScript SDK launcher page, and `/payments/success` plus `/payments/fail` convert public redirects back into `app://payments/...` deep links for the mobile app.
+- In `dev` with `ENABLE_TOSS_SANDBOX=true`, `tossPaymentBridge` explicitly opens the `CARD` payment flow in the default integrated window and narrows the visible card list for smoke tests. External app-dependent wallet and app-card paths are not part of the required dev payment smoke path.
 - The active provider webhook path verifies the configured webhook secret from the payload, applies idempotent payment transitions through `payment.lastWebhookEventId`, and updates the order instead of relying on a mock payment mutation.
 - The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `buyer2`, `seller1`, `seller2`, and `ops1`.
 - The seeded auction and order scenarios now cover live bidding, awaiting payment, seller shipment required, buyer receipt confirmed, settled payout, unpaid cancellation, unsold inventory, cancelled listings, and inbox notifications for both buyer and seller paths.
@@ -165,8 +168,8 @@
   - settled payout and unpaid cancellation: `order-settled`, `order-cancelled-unpaid`
 - The mobile login screen surfaces only the buyer and seller quick-login actions in `dev` emulator mode.
 - Buyer smoke test path for auction actions: sign in as `buyer1`, open a live seeded auction, place a manual bid or save an auto-bid ceiling from the auction detail action bar, or use buy-now and verify the app routes into the created order timeline.
-- Buyer payment smoke test path: sign in as `buyer1`, open an `AWAITING_PAYMENT` order, trigger payment preparation, and use the in-app `dev` payment completion action to move the order into `PAID_ESCROW_HOLD`.
-- Buyer payment return smoke test path: while signed in as `buyer1`, open `app://payments/success?orderId=order-awaiting&paymentKey=dev_pay_order-awaiting&amount=18000` and verify the payment return screen advances that seeded `AWAITING_PAYMENT` order to `PAID_ESCROW_HOLD`, then routes back into the order timeline.
+- Buyer payment smoke test path: sign in as `buyer1`, open `order-awaiting`, trigger payment preparation, open the Toss sandbox launcher, complete the integrated card-payment test path, and verify the app returns through `/payments/success` to move the order into `PAID_ESCROW_HOLD`.
+- Buyer payment return smoke test path: while signed in as `buyer1`, open `app://payments/success?orderId=order-awaiting&paymentKey=test_key&amount=18000` only as a recovery check and verify the payment return screen attempts the same confirmation path before routing back into the order timeline.
 - Buyer payment failure return smoke test path: rerun `npm run seed` first to restore `order-awaiting` to `AWAITING_PAYMENT`, then while signed in as `buyer1`, open `app://payments/fail?orderId=order-awaiting&code=PAY_PROCESS_CANCELED&message=test` and verify the payment failure screen returns the user to payment recovery UI without changing that order from `AWAITING_PAYMENT`.
 - Seller smoke test path: sign in as `seller1`, open `order-paid`, submit carrier and tracking information, and confirm the order moves to `SHIPPED`.
 - Buyer smoke test path: sign in as `buyer1`, open the same `order-paid`, confirm receipt, and verify the order moves to `CONFIRMED_RECEIPT`.
@@ -446,8 +449,9 @@
 - `createPaymentSession`
   - Validate order ownership and status.
   - Return a payment payload with `mode`.
-  - In Firebase Emulator `dev`, return `mode: "DEV_DUMMY"` plus deterministic `devPaymentKey: "dev_pay_{orderId}"` so the mobile app can confirm the seeded flow without launching real provider checkout.
-  - Outside emulator-backed `dev`, return the currently wired real provider mode and include success and fail return URLs from `APP_BASE_URL`.
+  - In Firebase Emulator `dev`, return `mode: "DEV_DUMMY"` plus deterministic `devPaymentKey: "dev_pay_{orderId}"` only when real sandbox handoff is not enabled.
+  - When `ENABLE_TOSS_SANDBOX=true`, return the real Toss sandbox handoff payload with `checkoutUrl` plus fixed bridge `successUrl` and `failUrl` routes from `APP_BASE_URL`.
+  - Success and fail bridge routes stay query-free. Toss appends `orderId`, `paymentKey`, and `amount` on redirect.
 - `confirmOrderPayment`
   - Accept the deterministic `dev_pay_{orderId}` key only for emulator-backed `DEV_DUMMY` sessions.
   - Otherwise confirm payment against the active provider confirm endpoint.

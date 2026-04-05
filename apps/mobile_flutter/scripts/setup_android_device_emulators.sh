@@ -33,34 +33,55 @@ if [[ -z "${adb_bin}" ]]; then
   exit 1
 fi
 
-mapfile -t connected_devices < <(
-  "${adb_bin}" devices | awk 'NR > 1 && $2 == "device" { print $1 }'
-)
+connected_devices=()
+while IFS= read -r device; do
+  if [[ -n "${device}" ]]; then
+    connected_devices+=("${device}")
+  fi
+done < <("${adb_bin}" devices | awk 'NR > 1 && $2 == "device" { print $1 }')
 
-adb_args=()
 if [[ -n "${ANDROID_SERIAL:-}" ]]; then
-  adb_args=(-s "${ANDROID_SERIAL}")
+  target_serial="${ANDROID_SERIAL}"
+  if (( ${#connected_devices[@]} > 0 )); then
+    if ! printf '%s\n' "${connected_devices[@]}" | grep -Fxq -- "${target_serial}"; then
+      echo "ANDROID_SERIAL '${target_serial}' is not connected." >&2
+      echo "Connected devices:" >&2
+      printf '  %s\n' "${connected_devices[@]}" >&2
+      exit 1
+    fi
+  fi
 elif (( ${#connected_devices[@]} > 1 )); then
   echo "Multiple Android devices detected. Set ANDROID_SERIAL to choose a target:" >&2
   printf '  %s\n' "${connected_devices[@]}" >&2
   exit 1
+elif (( ${#connected_devices[@]} == 1 )); then
+  target_serial="${connected_devices[0]}"
+else
+  target_serial=""
 fi
 
-if ! "${adb_bin}" "${adb_args[@]}" get-state >/dev/null 2>&1; then
-  echo "No Android device detected over adb. Connect a device and authorize USB debugging." >&2
+run_adb() {
+  if [[ -n "${target_serial}" ]]; then
+    "${adb_bin}" -s "${target_serial}" "$@"
+  else
+    "${adb_bin}" "$@"
+  fi
+}
+
+if ! adb_state="$(run_adb get-state 2>&1)"; then
+  echo "adb get-state failed: ${adb_state}" >&2
+  echo "Connect a device and authorize USB debugging, or verify ANDROID_SERIAL." >&2
   exit 1
 fi
 
 echo "Using adb: ${adb_bin}"
-if [[ -n "${ANDROID_SERIAL:-}" ]]; then
-  echo "Target device: ${ANDROID_SERIAL}"
-elif (( ${#connected_devices[@]} == 1 )); then
-  echo "Target device: ${connected_devices[0]}"
+if [[ -n "${target_serial}" ]]; then
+  echo "Target device: ${target_serial}"
 fi
 echo "Configuring reverse tunnels for Firebase emulators..."
 
 for port in "${ports[@]}"; do
-  "${adb_bin}" "${adb_args[@]}" reverse "tcp:${port}" "tcp:${port}"
+  run_adb reverse "tcp:${port}" "tcp:${port}"
   echo "  tcp:${port} -> tcp:${port}"
 done
 

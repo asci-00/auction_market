@@ -62,23 +62,25 @@ class _AppLoadingOverlayState extends State<AppLoadingOverlay> {
     final barrierColor = resolveAppModalBarrierColor(brightness);
 
     return Stack(
-      fit: StackFit.expand,
+      fit: StackFit.loose,
       children: [
         AbsorbPointer(absorbing: widget.isLoading, child: widget.child),
-        IgnorePointer(
-          ignoring: !_isVisible,
-          child: AnimatedOpacity(
-            opacity: _isVisible ? 1 : 0,
-            duration: const Duration(milliseconds: 180),
-            curve: Curves.easeOutCubic,
-            child: DecoratedBox(
-              decoration: BoxDecoration(color: barrierColor),
-              child: widget.useBlur
-                  ? _BlurredOverlayContent(
-                      message: widget.message,
-                      tokens: tokens,
-                    )
-                  : _OverlayContent(message: widget.message, tokens: tokens),
+        Positioned.fill(
+          child: IgnorePointer(
+            ignoring: !_isVisible,
+            child: AnimatedOpacity(
+              opacity: _isVisible ? 1 : 0,
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              child: DecoratedBox(
+                decoration: BoxDecoration(color: barrierColor),
+                child: widget.useBlur
+                    ? _BlurredOverlayContent(
+                        message: widget.message,
+                        tokens: tokens,
+                      )
+                    : _OverlayContent(message: widget.message, tokens: tokens),
+              ),
             ),
           ),
         ),

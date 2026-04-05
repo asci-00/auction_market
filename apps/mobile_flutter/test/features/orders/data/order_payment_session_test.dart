@@ -9,10 +9,12 @@ void main() {
       orderId: 'order-paid',
       amount: 230000,
       orderName: 'Auction order',
+      customerKey: null,
       customerName: null,
       customerEmail: null,
       successUrl: null,
       failUrl: null,
+      checkoutUrl: null,
       devPaymentKey: 'dev_pay_order-paid',
     );
 
@@ -28,10 +30,12 @@ void main() {
       orderId: 'order-paid',
       amount: 230000,
       orderName: 'Auction order',
+      customerKey: 'buyer_uid-1',
       customerName: null,
       customerEmail: null,
       successUrl: 'https://app.example.com/payments/success?orderId=order-paid',
       failUrl: 'https://app.example.com/payments/fail?orderId=order-paid',
+      checkoutUrl: 'https://app.example.com/payments/launch?orderId=order-paid',
       devPaymentKey: null,
     );
 

@@ -14,12 +14,12 @@ class AuthActionService {
 
   final FirebaseAuth _auth;
 
-  Future<void> signInWithSeededAccount(DevQuickAccount account) {
+  Future<void> signInWithSeededAccount(DevQuickAccount account) async {
     if (kReleaseMode) {
       throw StateError('Seeded account login is disabled in release builds.');
     }
 
-    return _auth.signInWithEmailAndPassword(
+    await _signInWithEmailAndPasswordRetry(
       email: account.email,
       password: account.password,
     );
@@ -27,5 +27,31 @@ class AuthActionService {
 
   Future<void> signInWithProvider(AuthProvider provider) {
     return _auth.signInWithProvider(provider);
+  }
+
+  Future<void> _signInWithEmailAndPasswordRetry({
+    required String email,
+    required String password,
+  }) async {
+    const maxAttempts = 3;
+
+    for (var attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      try {
+        final credential = EmailAuthProvider.credential(
+          email: email,
+          password: password,
+        );
+        await _auth.signInWithCredential(credential);
+        return;
+      } on FirebaseAuthException catch (error) {
+        final isRetriable = error.code == 'network-request-failed';
+        if (!isRetriable || attempt == maxAttempts) {
+          rethrow;
+        }
+        await Future<void>.delayed(
+          Duration(milliseconds: 250 * attempt),
+        );
+      }
+    }
   }
 }

@@ -14,7 +14,8 @@
     "test": "vitest run",
     "lint": "eslint . && tsc --noEmit",
     "serve": "firebase emulators:start --only auth,functions,firestore,storage",
-    "seed": "tsx ./scripts/seed.ts"
+    "seed": "tsx ./scripts/seed.ts",
+    "tunnel:toss": "./scripts/start_toss_tunnel.sh"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0",

@@ -56,6 +56,36 @@ describe('payment engine', () => {
         FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
       } as NodeJS.ProcessEnv),
     ).toBe(true);
+    expect(
+      isDevDummyPaymentEnabled('dev', {
+        FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
+        ENABLE_TOSS_SANDBOX: 'true',
+      } as NodeJS.ProcessEnv),
+    ).toBe(false);
+    expect(
+      isDevDummyPaymentEnabled('dev', {
+        FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
+        ENABLE_TOSS_SANDBOX: ' TRUE ',
+      } as NodeJS.ProcessEnv),
+    ).toBe(false);
+    expect(
+      isDevDummyPaymentEnabled('dev', {
+        FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
+        ENABLE_TOSS_SANDBOX: 'TrUe',
+      } as NodeJS.ProcessEnv),
+    ).toBe(false);
+    expect(
+      isDevDummyPaymentEnabled('dev', {
+        FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
+        ENABLE_TOSS_SANDBOX: '',
+      } as NodeJS.ProcessEnv),
+    ).toBe(true);
+    expect(
+      isDevDummyPaymentEnabled('dev', {
+        FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
+        ENABLE_TOSS_SANDBOX: '   ',
+      } as NodeJS.ProcessEnv),
+    ).toBe(true);
     expect(isDevDummyPaymentEnabled('dev', {} as NodeJS.ProcessEnv)).toBe(
       false,
     );
@@ -89,6 +119,7 @@ describe('payment engine', () => {
       mode: 'DEV_DUMMY',
       successUrl: null,
       failUrl: null,
+      checkoutUrl: null,
       devPaymentKey: 'dev_pay_order-1',
     });
   });
@@ -106,6 +137,7 @@ describe('payment engine', () => {
       mode: 'DEV_DUMMY',
       successUrl: null,
       failUrl: null,
+      checkoutUrl: null,
       devPaymentKey: 'dev_pay_order-1',
     });
   });
@@ -121,8 +153,9 @@ describe('payment engine', () => {
 
     expect(contract).toEqual({
       mode: 'TOSS',
-      successUrl: 'https://app.example.com/payments/success?orderId=order-1',
-      failUrl: 'https://app.example.com/payments/fail?orderId=order-1',
+      successUrl: 'https://app.example.com/payments/success',
+      failUrl: 'https://app.example.com/payments/fail',
+      checkoutUrl: 'https://app.example.com/payments/launch?orderId=order-1',
       devPaymentKey: null,
     });
   });
@@ -137,14 +170,17 @@ describe('payment engine', () => {
     });
 
     expect(contract.successUrl).toBe(
-      'https://app.example.com/mobile/payments/success?orderId=order-1',
+      'https://app.example.com/mobile/payments/success',
     );
     expect(contract.failUrl).toBe(
-      'https://app.example.com/mobile/payments/fail?orderId=order-1',
+      'https://app.example.com/mobile/payments/fail',
+    );
+    expect(contract.checkoutUrl).toBe(
+      'https://app.example.com/mobile/payments/launch?orderId=order-1',
     );
   });
 
-  it('url-encodes order id when building payment return urls', () => {
+  it('url-encodes order id when building checkout launch url', () => {
     const contract = buildPaymentSessionContract({
       appEnv: 'staging',
       appBaseUrl: 'https://app.example.com',
@@ -154,10 +190,11 @@ describe('payment engine', () => {
     });
 
     expect(contract.successUrl).toBe(
-      'https://app.example.com/payments/success?orderId=order%26x%3Dy',
+      'https://app.example.com/payments/success',
     );
-    expect(contract.failUrl).toBe(
-      'https://app.example.com/payments/fail?orderId=order%26x%3Dy',
+    expect(contract.failUrl).toBe('https://app.example.com/payments/fail');
+    expect(contract.checkoutUrl).toBe(
+      'https://app.example.com/payments/launch?orderId=order%26x%3Dy',
     );
   });
 

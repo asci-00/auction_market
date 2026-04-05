@@ -13,15 +13,28 @@ import '../data/order_payment_session.dart';
 class OrderPaymentSheetResult {
   const OrderPaymentSheetResult._({
     required this.useManualEntry,
+    required this.launchCheckout,
     this.paymentKey,
-  });
+  }) : assert(
+         !(useManualEntry && launchCheckout),
+         'manual entry and checkout launch are mutually exclusive',
+       );
 
-  const OrderPaymentSheetResult.manualEntry() : this._(useManualEntry: true);
+  const OrderPaymentSheetResult.manualEntry()
+    : this._(useManualEntry: true, launchCheckout: false);
 
   const OrderPaymentSheetResult.directConfirm(String paymentKey)
-    : this._(useManualEntry: false, paymentKey: paymentKey);
+    : this._(
+        useManualEntry: false,
+        launchCheckout: false,
+        paymentKey: paymentKey,
+      );
+
+  const OrderPaymentSheetResult.launchCheckout()
+    : this._(useManualEntry: false, launchCheckout: true);
 
   final bool useManualEntry;
+  final bool launchCheckout;
   final String? paymentKey;
 }
 
@@ -104,6 +117,13 @@ Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
                     return;
                   }
 
+                  if (handoffPlan.isLauncherReady) {
+                    Navigator.of(
+                      sheetContext,
+                    ).pop(const OrderPaymentSheetResult.launchCheckout());
+                    return;
+                  }
+
                   Navigator.of(
                     sheetContext,
                   ).pop(const OrderPaymentSheetResult.manualEntry());
@@ -111,6 +131,8 @@ Future<OrderPaymentSheetResult?> showOrderPaymentSessionSheet(
                 child: Text(
                   canDirectDevConfirm
                       ? context.l10n.ordersPaymentCompleteDevAction
+                      : handoffPlan.isLauncherReady
+                      ? context.l10n.ordersPaymentLaunchAction
                       : context.l10n.ordersPaymentEnterKeyAction,
                 ),
               ),

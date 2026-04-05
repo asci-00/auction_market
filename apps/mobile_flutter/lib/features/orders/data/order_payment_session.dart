@@ -5,10 +5,12 @@ class OrderPaymentSession {
     required this.orderId,
     required this.amount,
     required this.orderName,
+    required this.customerKey,
     required this.customerName,
     required this.customerEmail,
     required this.successUrl,
     required this.failUrl,
+    required this.checkoutUrl,
     required this.devPaymentKey,
   });
 
@@ -17,10 +19,12 @@ class OrderPaymentSession {
   final String orderId;
   final int amount;
   final String orderName;
+  final String? customerKey;
   final String? customerName;
   final String? customerEmail;
   final String? successUrl;
   final String? failUrl;
+  final String? checkoutUrl;
   final String? devPaymentKey;
 
   factory OrderPaymentSession.fromCallable(Map<dynamic, dynamic> data) {
@@ -52,17 +56,21 @@ class OrderPaymentSession {
       orderId: asNullableString(data['orderId']) ?? '',
       amount: asAmount(data['amount']),
       orderName: asNullableString(data['orderName']) ?? '',
+      customerKey: asNullableString(data['customerKey']),
       customerName: asNullableString(data['customerName']),
       customerEmail: asNullableString(data['customerEmail']),
       successUrl: asNullableString(data['successUrl']),
       failUrl: asNullableString(data['failUrl']),
+      checkoutUrl: asNullableString(data['checkoutUrl']),
       devPaymentKey: asNullableString(data['devPaymentKey']),
     );
   }
 
   bool get hasCheckoutHandoff =>
+      (checkoutUrl?.trim().isNotEmpty ?? false) &&
       (successUrl?.trim().isNotEmpty ?? false) &&
-      (failUrl?.trim().isNotEmpty ?? false);
+      (failUrl?.trim().isNotEmpty ?? false) &&
+      (customerKey?.trim().isNotEmpty ?? false);
 
   bool get isDevDummyMode => mode == 'DEV_DUMMY';
 
