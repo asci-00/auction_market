@@ -693,7 +693,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String settingsThemeUpdatedToast(String theme) {
-    return '화면 모드를 $theme(으)로 변경했습니다.';
+    return '화면 모드를 $theme으로 변경했습니다.';
   }
 
   @override

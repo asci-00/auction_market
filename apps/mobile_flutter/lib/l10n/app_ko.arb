@@ -272,7 +272,7 @@
   "settingsThemeSystemTitle": "시스템",
   "settingsThemeLightTitle": "라이트",
   "settingsThemeDarkTitle": "다크",
-  "settingsThemeUpdatedToast": "화면 모드를 {theme}(으)로 변경했습니다.",
+  "settingsThemeUpdatedToast": "화면 모드를 {theme}으로 변경했습니다.",
   "@settingsThemeUpdatedToast": {
     "placeholders": {
       "theme": {

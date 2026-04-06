@@ -77,6 +77,95 @@ void main() {
     );
   });
 
+  test(
+    'provider falls back to defaults when user document has no preferences payload',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      await firestore.collection('users').doc('existing-user').set({
+        'email': 'existing-user@test.local',
+      });
+      final container = ProviderContainer(
+        overrides: [firestoreProvider.overrideWith((ref) => firestore)],
+      );
+      addTearDown(container.dispose);
+
+      final preferences = await container.read(
+        settingsPreferencesProvider('existing-user').future,
+      );
+
+      expect(preferences.pushEnabled, isTrue);
+      for (final category in SettingsNotificationCategory.values) {
+        expect(preferences.isCategoryEnabled(category), isTrue);
+      }
+    },
+  );
+
+  test(
+    'provider keeps pushEnabled and defaults missing category values',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      await firestore.collection('users').doc('partial-user').set({
+        'preferences': {'pushEnabled': false},
+      });
+      final container = ProviderContainer(
+        overrides: [firestoreProvider.overrideWith((ref) => firestore)],
+      );
+      addTearDown(container.dispose);
+
+      final preferences = await container.read(
+        settingsPreferencesProvider('partial-user').future,
+      );
+
+      expect(preferences.pushEnabled, isFalse);
+      for (final category in SettingsNotificationCategory.values) {
+        expect(preferences.isCategoryEnabled(category), isTrue);
+      }
+    },
+  );
+
+  test(
+    'provider merges partial notification categories with defaults',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      await firestore.collection('users').doc('partial-categories').set({
+        'preferences': {
+          'notificationCategories': {'orderPayment': false},
+        },
+      });
+      final container = ProviderContainer(
+        overrides: [firestoreProvider.overrideWith((ref) => firestore)],
+      );
+      addTearDown(container.dispose);
+
+      final preferences = await container.read(
+        settingsPreferencesProvider('partial-categories').future,
+      );
+
+      expect(
+        preferences.isCategoryEnabled(
+          SettingsNotificationCategory.orderPayment,
+        ),
+        isFalse,
+      );
+      expect(
+        preferences.isCategoryEnabled(
+          SettingsNotificationCategory.auctionActivity,
+        ),
+        isTrue,
+      );
+      expect(
+        preferences.isCategoryEnabled(
+          SettingsNotificationCategory.shippingAndReceipt,
+        ),
+        isTrue,
+      );
+      expect(
+        preferences.isCategoryEnabled(SettingsNotificationCategory.system),
+        isTrue,
+      );
+    },
+  );
+
   test('theme preference provider reads the locally stored theme', () async {
     SharedPreferences.setMockInitialValues({'settings.themeMode': 'DARK'});
     final sharedPreferences = await SharedPreferences.getInstance();
@@ -92,4 +181,23 @@ void main() {
       SettingsThemeModePreference.dark,
     );
   });
+
+  test(
+    'theme preference provider falls back to system on unknown value',
+    () async {
+      SharedPreferences.setMockInitialValues({'settings.themeMode': 'INVALID'});
+      final sharedPreferences = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(
+        container.read(themeModePreferenceProvider),
+        SettingsThemeModePreference.system,
+      );
+    },
+  );
 }

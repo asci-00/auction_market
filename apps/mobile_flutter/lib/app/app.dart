@@ -46,7 +46,7 @@ class AuctionMarketApp extends ConsumerWidget {
         theme: lightTheme,
         darkTheme: darkTheme,
         themeMode: themeMode.materialThemeMode,
-        locale: resolveAppLocale(_deviceLocale()),
+        locale: resolvedLocale,
         localizationsDelegates: _delegates(context),
         supportedLocales: supportedAppLocales,
         localeResolutionCallback: resolveAppLocale,
@@ -58,7 +58,7 @@ class AuctionMarketApp extends ConsumerWidget {
         theme: lightTheme,
         darkTheme: darkTheme,
         themeMode: themeMode.materialThemeMode,
-        locale: resolveAppLocale(_deviceLocale()),
+        locale: resolvedLocale,
         localizationsDelegates: _delegates(context),
         supportedLocales: supportedAppLocales,
         localeResolutionCallback: resolveAppLocale,
@@ -71,6 +71,20 @@ class AuctionMarketApp extends ConsumerWidget {
   }
 
   Locale? _deviceLocale() {
-    return WidgetsBinding.instance.platformDispatcher.locale;
+    final dispatcher = WidgetsBinding.instance.platformDispatcher;
+    for (final locale in dispatcher.locales) {
+      final supported = supportedAppLocales.any(
+        (candidate) => candidate.languageCode == locale.languageCode,
+      );
+      if (supported) {
+        return locale;
+      }
+    }
+
+    if (dispatcher.locales.isNotEmpty) {
+      return dispatcher.locales.first;
+    }
+
+    return dispatcher.locale;
   }
 }

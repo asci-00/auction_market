@@ -49,6 +49,16 @@ class SettingsNotificationSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasAllCategoryEntries = SettingsNotificationCategory.values.every(
+      (category) =>
+          categoryLabels.containsKey(category) &&
+          categoryDescriptions.containsKey(category),
+    );
+    assert(
+      hasAllCategoryEntries,
+      'categoryLabels and categoryDescriptions must cover all notification categories.',
+    );
+
     final tokens = context.tokens;
     final needsPermissionRequest =
         permissionStatus == AuthorizationStatus.notDetermined;

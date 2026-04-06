@@ -184,6 +184,8 @@
   - Buyer close check: sign in as `buyer1`, browse into a live auction, verify bid or buy-now still routes into an order timeline, then verify `order-awaiting` payment preparation and the `app://payments/success?...` recovery path still advance the order correctly.
   - Seller close check: sign in as `seller1`, save or reopen a draft, publish a live auction, then open `order-paid` and verify shipment submission still advances the order to `SHIPPED`.
   - Shared close check: reopen the same shipped order as `buyer1`, confirm receipt, and verify the order advances to `CONFIRMED_RECEIPT`.
+  - April 6, 2026 headless close-review evidence already verified the same state transitions against the running emulator suite through callable paths, including `buyNow`, `createPaymentSession`, `createOrUpdateItem`, `createAuctionFromItem`, `shipmentUpdate`, and `confirmReceipt`.
+  - Because that April 6 evidence was headless, the only remaining Phase 3 sign-off is the interactive in-app walkthrough of those buyer and seller flows on a clean seeded run.
   - Phase 3 may move to complete only after those manual smoke steps are reviewed together with the latest automated validation run.
 - These accounts are for local emulator checks only. They do not validate Google or Apple browser sign-in, provider linking, redirect handling, or staging and prod auth configuration.
 
