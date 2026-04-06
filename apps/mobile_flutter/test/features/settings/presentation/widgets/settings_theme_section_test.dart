@@ -83,4 +83,42 @@ void main() {
     expect(systemColor, AppColors.bgSurface);
     expect(darkColor, AppColors.bgSurfaceDark);
   });
+
+  testWidgets('selected tile uses accent background treatment', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: supportedAppLocales,
+        localeResolutionCallback: resolveAppLocale,
+        home: Scaffold(
+          body: SettingsThemeSection(
+            sectionTitle: 'Appearance',
+            groupValue: SettingsThemeModePreference.light,
+            systemTitle: 'System',
+            lightTitle: 'Light',
+            darkTitle: 'Dark',
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    final selectedInk = tester.widget<Ink>(
+      find
+          .descendant(
+            of: find.byKey(const ValueKey('settings-theme-light')),
+            matching: find.byType(Ink),
+          )
+          .first,
+    );
+    final selectedColor = (selectedInk.decoration as BoxDecoration).color;
+
+    expect(
+      selectedColor,
+      AppColors.accentPrimarySoftFor(Brightness.light).withValues(alpha: 0.88),
+    );
+  });
 }

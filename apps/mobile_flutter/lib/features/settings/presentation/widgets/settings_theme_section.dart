@@ -97,9 +97,17 @@ class _ThemePreviewTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final themeBrightness = context.theme.brightness;
     final borderColor = isSelected
         ? context.colorScheme.primary
         : context.colorScheme.outlineVariant.withValues(alpha: 0.72);
+    final tileBackground = isSelected
+        ? AppColors.accentPrimarySoftFor(
+            themeBrightness,
+          ).withValues(alpha: themeBrightness == Brightness.dark ? 0.52 : 0.88)
+        : AppColors.bgMutedFor(
+            themeBrightness,
+          ).withValues(alpha: themeBrightness == Brightness.dark ? 0.72 : 0.92);
     final background = previewBrightness == Brightness.dark
         ? AppColors.bgSurfaceDark
         : AppColors.bgSurface;
@@ -118,7 +126,22 @@ class _ThemePreviewTile extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final previewHeight = (constraints.maxWidth * 0.72).clamp(74.0, 98.0) + 8;
+        const topBarHeight = 8.0;
+        const heroCardHeight = 22.0;
+        const statsRowHeight = 14.0;
+        const footerBarHeight = 6.0;
+        final previewMinHeight =
+            (tokens.space2 * 2) +
+            topBarHeight +
+            heroCardHeight +
+            statsRowHeight +
+            footerBarHeight +
+            (tokens.space2 * 3) +
+            tokens.space3;
+        final previewHeight = (constraints.maxWidth * 0.72).clamp(
+          previewMinHeight,
+          104.0,
+        );
 
         return Material(
           color: Colors.transparent,
@@ -128,9 +151,7 @@ class _ThemePreviewTile extends StatelessWidget {
             onTap: onTap,
             child: Ink(
               decoration: BoxDecoration(
-                color: context.colorScheme.surfaceContainerHighest.withValues(
-                  alpha: 0.38,
-                ),
+                color: tileBackground,
                 borderRadius: BorderRadius.circular(tokens.cardRadius),
                 border: Border.all(
                   color: borderColor,
@@ -145,102 +166,81 @@ class _ThemePreviewTile extends StatelessWidget {
                   children: [
                     SizedBox(
                       height: previewHeight,
-                      child: Stack(
-                        children: [
-                          DecoratedBox(
-                            key: ValueKey(
-                              'settings-theme-preview-${mode.name}',
+                      child: DecoratedBox(
+                        key: ValueKey('settings-theme-preview-${mode.name}'),
+                        decoration: BoxDecoration(
+                          color: background,
+                          borderRadius: BorderRadius.circular(tokens.space3),
+                          border: Border.all(
+                            color: Colors.white.withValues(
+                              alpha: previewBrightness == Brightness.dark
+                                  ? 0.06
+                                  : 0.42,
                             ),
-                            decoration: BoxDecoration(
-                              color: background,
-                              borderRadius: BorderRadius.circular(
-                                tokens.space3,
-                              ),
-                              border: Border.all(
-                                color: Colors.white.withValues(
-                                  alpha: previewBrightness == Brightness.dark
-                                      ? 0.06
-                                      : 0.42,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(tokens.space2),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: topBar,
+                                  borderRadius: BorderRadius.circular(999),
                                 ),
                               ),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.all(tokens.space2),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              SizedBox(height: tokens.space2),
+                              Container(
+                                height: 22,
+                                decoration: BoxDecoration(
+                                  color: card,
+                                  borderRadius: BorderRadius.circular(
+                                    tokens.space2,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: tokens.space2),
+                              Row(
                                 children: [
-                                  Container(
-                                    height: 8,
-                                    decoration: BoxDecoration(
-                                      color: topBar,
-                                      borderRadius: BorderRadius.circular(999),
-                                    ),
-                                  ),
-                                  SizedBox(height: tokens.space2),
-                                  Container(
-                                    height: 22,
-                                    decoration: BoxDecoration(
-                                      color: card,
-                                      borderRadius: BorderRadius.circular(
-                                        tokens.space2,
+                                  Expanded(
+                                    child: Container(
+                                      height: 14,
+                                      decoration: BoxDecoration(
+                                        color: chip.withValues(alpha: 0.7),
+                                        borderRadius: BorderRadius.circular(
+                                          tokens.space2,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                  SizedBox(height: tokens.space2),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Container(
-                                          height: 14,
-                                          decoration: BoxDecoration(
-                                            color: chip.withValues(alpha: 0.7),
-                                            borderRadius: BorderRadius.circular(
-                                              tokens.space2,
-                                            ),
-                                          ),
+                                  SizedBox(width: tokens.space2),
+                                  Expanded(
+                                    child: Container(
+                                      height: 14,
+                                      decoration: BoxDecoration(
+                                        color: card,
+                                        borderRadius: BorderRadius.circular(
+                                          tokens.space2,
                                         ),
                                       ),
-                                      SizedBox(width: tokens.space2),
-                                      Expanded(
-                                        child: Container(
-                                          height: 14,
-                                          decoration: BoxDecoration(
-                                            color: card,
-                                            borderRadius: BorderRadius.circular(
-                                              tokens.space2,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const Spacer(),
-                                  Container(
-                                    height: 6,
-                                    width: 34,
-                                    decoration: BoxDecoration(
-                                      color: textColor.withValues(alpha: 0.18),
-                                      borderRadius: BorderRadius.circular(999),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
+                              const Spacer(),
+                              Container(
+                                height: 6,
+                                width: 34,
+                                decoration: BoxDecoration(
+                                  color: textColor.withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                              ),
+                            ],
                           ),
-                          Positioned(
-                            top: tokens.space2,
-                            right: tokens.space2,
-                            child: Icon(
-                              isSelected
-                                  ? Icons.radio_button_checked_rounded
-                                  : Icons.radio_button_off_rounded,
-                              size: 18,
-                              color: isSelected
-                                  ? context.colorScheme.primary
-                                  : context.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                     SizedBox(height: tokens.space2),
