@@ -85,10 +85,11 @@
   - The search route now also keeps a local presentation-only layout mode, letting users switch the same filtered result set between large cards and a compact list without changing provider contracts or query behavior.
   - My now maps the user document through `features/my/data/my_profile_summary.dart`, keeps verification label logic separate, and composes account and verification blocks from dedicated widgets.
   - Settings now lives under `features/settings/` with a dedicated data model for notification preferences, an application service for Firestore preference writes and OS permission helpers, and presentation widgets for notification controls plus app info.
-  - The first Phase 4 settings slice now exposes `/settings` from both the global app bar and the My screen, and it currently covers notification preferences, OS notification-permission state, appearance mode, language mode, app version, licenses, and debug-only environment info.
+  - The first Phase 4 settings slice now exposes `/settings` from both the global app bar and the My screen, and it currently covers notification preferences, OS notification-permission state, appearance mode, app version, licenses, and debug-only environment info.
   - Settings reads `users/{uid}.preferences` directly from Firestore and falls back to `SettingsPreferences.defaults()` when the signed-in user document exists without a populated `preferences` payload yet.
-  - `app/app.dart` now watches the signed-in user's settings stream so `preferences.themeMode` and `preferences.languageCode` apply directly to `MaterialApp`, while signed-out flows continue to follow the device locale by default.
-  - Signed-in routes no longer expose a separate global locale picker in the shared app bar; language override now lives in `/settings`, while the login screen keeps a lightweight locale menu for signed-out sessions.
+  - `app/app.dart` now watches the signed-in user's settings stream so `preferences.themeMode` applies directly to `MaterialApp`, while locale always follows the device setting through the shared locale resolver.
+  - Signed-in routes no longer expose a separate global locale picker in the shared app bar, and the login screen no longer carries a manual locale menu either; language behavior is system-driven only.
+  - Theme selection now uses a compact preview-card selector instead of long descriptive radio rows, aligning the settings surface with common mobile-app patterns.
   - Notifications now reuse the shared app deep-link normalizer instead of carrying a screen-local route parser.
   - Auction detail now runs `placeBid`, `setAutoBid`, and `buyNow` from the sticky action bar when the viewer is an eligible buyer on a live auction, and redirects completed buy-now orders into `/orders/{orderId}`.
   - Orders now routes `createPaymentSession`, `confirmOrderPayment`, `shipmentUpdate`, and `confirmReceipt` through `features/orders/application/order_action_service.dart`, and notifications call `markNotificationRead` before deep-link navigation.
@@ -118,7 +119,7 @@
 
 ## Localization Contract
 - Supported locales are `ko` and `en` only.
-- Locale resolution defaults to the device locale. When a settings override exists, it wins over the device locale and may select only `ko` or `en`; the settings model also supports a `system` sentinel that explicitly returns to device-follow mode.
+- Locale resolution defaults to the device locale, with `ko` fallback when the device locale is unsupported.
 - Static user-facing copy must come from generated localizations, not hardcoded strings in widgets.
 - Dynamic Firestore content may remain backend-authored text, but fallback labels, badges, and empty/error states must be localized in the app.
 
@@ -209,7 +210,7 @@
   - `phoneNumber: string | null`
   - `authProviders: string[]`
   - `bio: string | null`
-  - `preferences.languageCode: "system" | "ko" | "en"`
+  - `preferences.languageCode: string | null`
   - `preferences.pushEnabled: boolean`
   - `preferences.themeMode: "SYSTEM" | "LIGHT" | "DARK"`
   - `preferences.notificationCategories.auctionActivity: boolean`
@@ -246,7 +247,7 @@
 - Rules:
 - `preferences.pushEnabled` remains the master notification switch.
 - Category toggles only apply when `preferences.pushEnabled == true`.
-- The current Phase 4 settings slices read and write `preferences.pushEnabled`, `preferences.notificationCategories.*`, `preferences.themeMode`, and `preferences.languageCode`; `deviceTokens` remains reserved until the push-delivery slice is implemented.
+- The current Phase 4 settings slices read and write `preferences.pushEnabled`, `preferences.notificationCategories.*`, and `preferences.themeMode`; `preferences.languageCode` and `deviceTokens` remain reserved until product requirements call for them.
 
 ### `users/{uid}/deviceTokens/{tokenId}`
 - Purpose: signed-in device tokens for push delivery.

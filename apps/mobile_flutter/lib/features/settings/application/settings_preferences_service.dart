@@ -100,19 +100,6 @@ class SettingsPreferencesService {
         .set(themeModePayload(themeMode), SetOptions(merge: true));
   }
 
-  Future<void> setLanguagePreference({
-    required String userId,
-    required SettingsLanguagePreference languagePreference,
-  }) {
-    return _firestore
-        .collection('users')
-        .doc(userId)
-        .set(
-          languagePreferencePayload(languagePreference),
-          SetOptions(merge: true),
-        );
-  }
-
   @visibleForTesting
   static Map<String, Object?> pushEnabledPayload(bool enabled) {
     return {
@@ -140,16 +127,6 @@ class SettingsPreferencesService {
   ) {
     return {
       'preferences': {'themeMode': themeMode.firestoreValue},
-      'updatedAt': FieldValue.serverTimestamp(),
-    };
-  }
-
-  @visibleForTesting
-  static Map<String, Object?> languagePreferencePayload(
-    SettingsLanguagePreference languagePreference,
-  ) {
-    return {
-      'preferences': {'languageCode': languagePreference.firestoreValue},
       'updatedAt': FieldValue.serverTimestamp(),
     };
   }

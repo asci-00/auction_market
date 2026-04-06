@@ -16,7 +16,6 @@ void main() {
           preferences: SettingsPreferences(
             pushEnabled: false,
             themeMode: SettingsThemeModePreference.system,
-            languagePreference: SettingsLanguagePreference.system,
             categories: {
               SettingsNotificationCategory.auctionActivity: true,
               SettingsNotificationCategory.orderPayment: true,

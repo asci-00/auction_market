@@ -680,58 +680,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAppearanceTitle => 'Appearance';
 
   @override
-  String get settingsAppearanceDescription => 'Choose whether the marketplace follows the device look or keeps a fixed theme.';
+  String get settingsAppearanceDescription => 'Choose how the marketplace looks.';
 
   @override
-  String get settingsThemeSystemTitle => 'Follow device';
+  String get settingsThemeSystemTitle => 'System';
 
   @override
-  String get settingsThemeSystemDescription => 'Use the phone\'s current light or dark appearance automatically.';
+  String get settingsThemeLightTitle => 'Light';
 
   @override
-  String get settingsThemeLightTitle => 'Always light';
-
-  @override
-  String get settingsThemeLightDescription => 'Keep the marketplace in the light editorial theme.';
-
-  @override
-  String get settingsThemeDarkTitle => 'Always dark';
-
-  @override
-  String get settingsThemeDarkDescription => 'Keep the marketplace in the dark editorial theme.';
+  String get settingsThemeDarkTitle => 'Dark';
 
   @override
   String settingsThemeUpdatedToast(String theme) {
     return 'Appearance updated to $theme.';
-  }
-
-  @override
-  String get settingsLanguageTitle => 'Language';
-
-  @override
-  String get settingsLanguageDescription => 'Use the device language by default, or pin the marketplace to Korean or English.';
-
-  @override
-  String get settingsLanguageSystemTitle => 'Follow device language';
-
-  @override
-  String get settingsLanguageSystemDescription => 'Keep Korean or English in sync with the device language when supported.';
-
-  @override
-  String get settingsLanguageKoreanTitle => 'Korean';
-
-  @override
-  String get settingsLanguageKoreanDescription => 'Keep all in-app copy in Korean.';
-
-  @override
-  String get settingsLanguageEnglishTitle => 'English';
-
-  @override
-  String get settingsLanguageEnglishDescription => 'Keep all in-app copy in English.';
-
-  @override
-  String settingsLanguageUpdatedToast(String language) {
-    return 'Language updated to $language.';
   }
 
   @override

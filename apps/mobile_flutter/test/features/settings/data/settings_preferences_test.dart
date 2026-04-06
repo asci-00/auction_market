@@ -11,7 +11,6 @@ void main() {
 
     expect(preferences.pushEnabled, isTrue);
     expect(preferences.themeMode, SettingsThemeModePreference.system);
-    expect(preferences.languagePreference, SettingsLanguagePreference.system);
 
     for (final category in SettingsNotificationCategory.values) {
       expect(preferences.isCategoryEnabled(category), isTrue);
@@ -46,15 +45,6 @@ void main() {
     expect(payload['preferences'], {'themeMode': 'DARK'});
   });
 
-  test('language payload keeps language code under preferences', () {
-    final payload = SettingsPreferencesService.languagePreferencePayload(
-      SettingsLanguagePreference.english,
-    );
-
-    expect(payload['updatedAt'], isNotNull);
-    expect(payload['preferences'], {'languageCode': 'en'});
-  });
-
   test(
     'provider falls back to defaults when the user document is missing',
     () async {
@@ -70,37 +60,28 @@ void main() {
 
       expect(preferences.pushEnabled, isTrue);
       expect(preferences.themeMode, SettingsThemeModePreference.system);
-      expect(preferences.languagePreference, SettingsLanguagePreference.system);
       for (final category in SettingsNotificationCategory.values) {
         expect(preferences.isCategoryEnabled(category), isTrue);
       }
     },
   );
 
-  test(
-    'document parsing keeps supported theme and language overrides',
-    () async {
-      final firestore = FakeFirebaseFirestore();
-      await firestore.collection('users').doc('user-1').set({
-        'preferences': {
-          'themeMode': 'DARK',
-          'languageCode': 'en',
-          'notificationCategories': {'system': false},
-        },
-      });
+  test('document parsing keeps supported theme override', () async {
+    final firestore = FakeFirebaseFirestore();
+    await firestore.collection('users').doc('user-1').set({
+      'preferences': {
+        'themeMode': 'DARK',
+        'notificationCategories': {'system': false},
+      },
+    });
 
-      final snap = await firestore.collection('users').doc('user-1').get();
-      final preferences = SettingsPreferences.fromDocument(snap);
+    final snap = await firestore.collection('users').doc('user-1').get();
+    final preferences = SettingsPreferences.fromDocument(snap);
 
-      expect(preferences.themeMode, SettingsThemeModePreference.dark);
-      expect(
-        preferences.languagePreference,
-        SettingsLanguagePreference.english,
-      );
-      expect(
-        preferences.isCategoryEnabled(SettingsNotificationCategory.system),
-        isFalse,
-      );
-    },
-  );
+    expect(preferences.themeMode, SettingsThemeModePreference.dark);
+    expect(
+      preferences.isCategoryEnabled(SettingsNotificationCategory.system),
+      isFalse,
+    );
+  });
 }

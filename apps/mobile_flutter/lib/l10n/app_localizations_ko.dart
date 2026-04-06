@@ -680,58 +680,20 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsAppearanceTitle => '화면 모드';
 
   @override
-  String get settingsAppearanceDescription => '기기 테마를 따르거나, 앱 화면을 밝게 또는 어둡게 고정할 수 있습니다.';
+  String get settingsAppearanceDescription => '앱 화면 스타일을 선택합니다.';
 
   @override
-  String get settingsThemeSystemTitle => '기기 설정 따르기';
+  String get settingsThemeSystemTitle => '시스템';
 
   @override
-  String get settingsThemeSystemDescription => '휴대폰의 밝은 모드와 어두운 모드를 자동으로 따라갑니다.';
+  String get settingsThemeLightTitle => '라이트';
 
   @override
-  String get settingsThemeLightTitle => '항상 밝게';
-
-  @override
-  String get settingsThemeLightDescription => '앱을 밝은 에디토리얼 테마로 유지합니다.';
-
-  @override
-  String get settingsThemeDarkTitle => '항상 어둡게';
-
-  @override
-  String get settingsThemeDarkDescription => '앱을 어두운 에디토리얼 테마로 유지합니다.';
+  String get settingsThemeDarkTitle => '다크';
 
   @override
   String settingsThemeUpdatedToast(String theme) {
     return '화면 모드를 $theme(으)로 변경했습니다.';
-  }
-
-  @override
-  String get settingsLanguageTitle => '언어';
-
-  @override
-  String get settingsLanguageDescription => '기기 언어를 기본으로 사용하거나, 한국어 또는 영어로 고정할 수 있습니다.';
-
-  @override
-  String get settingsLanguageSystemTitle => '기기 언어 따르기';
-
-  @override
-  String get settingsLanguageSystemDescription => '지원되는 경우 기기 언어에 맞춰 한국어 또는 영어를 자동으로 사용합니다.';
-
-  @override
-  String get settingsLanguageKoreanTitle => '한국어';
-
-  @override
-  String get settingsLanguageKoreanDescription => '앱 내 문구를 모두 한국어로 표시합니다.';
-
-  @override
-  String get settingsLanguageEnglishTitle => '영어';
-
-  @override
-  String get settingsLanguageEnglishDescription => '앱 내 문구를 모두 영어로 표시합니다.';
-
-  @override
-  String settingsLanguageUpdatedToast(String language) {
-    return '언어를 $language(으)로 변경했습니다.';
   }
 
   @override

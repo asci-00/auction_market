@@ -268,33 +268,14 @@
   "settingsCategorySystem": "System notices",
   "settingsCategorySystemDescription": "Policy updates, operational notices, and service interruptions.",
   "settingsAppearanceTitle": "Appearance",
-  "settingsAppearanceDescription": "Choose whether the marketplace follows the device look or keeps a fixed theme.",
-  "settingsThemeSystemTitle": "Follow device",
-  "settingsThemeSystemDescription": "Use the phone's current light or dark appearance automatically.",
-  "settingsThemeLightTitle": "Always light",
-  "settingsThemeLightDescription": "Keep the marketplace in the light editorial theme.",
-  "settingsThemeDarkTitle": "Always dark",
-  "settingsThemeDarkDescription": "Keep the marketplace in the dark editorial theme.",
+  "settingsAppearanceDescription": "Choose how the marketplace looks.",
+  "settingsThemeSystemTitle": "System",
+  "settingsThemeLightTitle": "Light",
+  "settingsThemeDarkTitle": "Dark",
   "settingsThemeUpdatedToast": "Appearance updated to {theme}.",
   "@settingsThemeUpdatedToast": {
     "placeholders": {
       "theme": {
-        "type": "String"
-      }
-    }
-  },
-  "settingsLanguageTitle": "Language",
-  "settingsLanguageDescription": "Use the device language by default, or pin the marketplace to Korean or English.",
-  "settingsLanguageSystemTitle": "Follow device language",
-  "settingsLanguageSystemDescription": "Keep Korean or English in sync with the device language when supported.",
-  "settingsLanguageKoreanTitle": "Korean",
-  "settingsLanguageKoreanDescription": "Keep all in-app copy in Korean.",
-  "settingsLanguageEnglishTitle": "English",
-  "settingsLanguageEnglishDescription": "Keep all in-app copy in English.",
-  "settingsLanguageUpdatedToast": "Language updated to {language}.",
-  "@settingsLanguageUpdatedToast": {
-    "placeholders": {
-      "language": {
         "type": "String"
       }
     }

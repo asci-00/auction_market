@@ -1400,104 +1400,32 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAppearanceDescription.
   ///
   /// In en, this message translates to:
-  /// **'Choose whether the marketplace follows the device look or keeps a fixed theme.'**
+  /// **'Choose how the marketplace looks.'**
   String get settingsAppearanceDescription;
 
   /// No description provided for @settingsThemeSystemTitle.
   ///
   /// In en, this message translates to:
-  /// **'Follow device'**
+  /// **'System'**
   String get settingsThemeSystemTitle;
-
-  /// No description provided for @settingsThemeSystemDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Use the phone\'s current light or dark appearance automatically.'**
-  String get settingsThemeSystemDescription;
 
   /// No description provided for @settingsThemeLightTitle.
   ///
   /// In en, this message translates to:
-  /// **'Always light'**
+  /// **'Light'**
   String get settingsThemeLightTitle;
-
-  /// No description provided for @settingsThemeLightDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep the marketplace in the light editorial theme.'**
-  String get settingsThemeLightDescription;
 
   /// No description provided for @settingsThemeDarkTitle.
   ///
   /// In en, this message translates to:
-  /// **'Always dark'**
+  /// **'Dark'**
   String get settingsThemeDarkTitle;
-
-  /// No description provided for @settingsThemeDarkDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep the marketplace in the dark editorial theme.'**
-  String get settingsThemeDarkDescription;
 
   /// No description provided for @settingsThemeUpdatedToast.
   ///
   /// In en, this message translates to:
   /// **'Appearance updated to {theme}.'**
   String settingsThemeUpdatedToast(String theme);
-
-  /// No description provided for @settingsLanguageTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Language'**
-  String get settingsLanguageTitle;
-
-  /// No description provided for @settingsLanguageDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Use the device language by default, or pin the marketplace to Korean or English.'**
-  String get settingsLanguageDescription;
-
-  /// No description provided for @settingsLanguageSystemTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Follow device language'**
-  String get settingsLanguageSystemTitle;
-
-  /// No description provided for @settingsLanguageSystemDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep Korean or English in sync with the device language when supported.'**
-  String get settingsLanguageSystemDescription;
-
-  /// No description provided for @settingsLanguageKoreanTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Korean'**
-  String get settingsLanguageKoreanTitle;
-
-  /// No description provided for @settingsLanguageKoreanDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep all in-app copy in Korean.'**
-  String get settingsLanguageKoreanDescription;
-
-  /// No description provided for @settingsLanguageEnglishTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'English'**
-  String get settingsLanguageEnglishTitle;
-
-  /// No description provided for @settingsLanguageEnglishDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep all in-app copy in English.'**
-  String get settingsLanguageEnglishDescription;
-
-  /// No description provided for @settingsLanguageUpdatedToast.
-  ///
-  /// In en, this message translates to:
-  /// **'Language updated to {language}.'**
-  String settingsLanguageUpdatedToast(String language);
 
   /// No description provided for @settingsNotificationsEnabledToast.
   ///

@@ -28,7 +28,7 @@ class AuctionMarketApp extends ConsumerWidget {
         ? const SettingsPreferences.defaults()
         : (ref.watch(appSettingsPreferencesProvider).valueOrNull ??
               const SettingsPreferences.defaults());
-    final resolvedLocale = _resolveAppLocale(appSettings);
+    final resolvedLocale = resolveAppLocale(_deviceLocale());
 
     return bootstrapState.when(
       data: (_) => MaterialApp.router(
@@ -72,15 +72,6 @@ class AuctionMarketApp extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  Locale _resolveAppLocale(SettingsPreferences preferences) {
-    final override = preferences.languagePreference.localeOverride;
-    if (override != null) {
-      return override;
-    }
-
-    return resolveAppLocale(_deviceLocale());
   }
 
   Locale? _deviceLocale() {

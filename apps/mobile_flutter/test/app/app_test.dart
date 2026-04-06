@@ -20,9 +20,12 @@ void main() {
     await EasyLocalization.ensureInitialized();
   });
 
-  testWidgets('app applies theme and language overrides from settings', (
+  testWidgets('app applies theme override while locale follows the device', (
     tester,
   ) async {
+    tester.binding.platformDispatcher.localeTestValue = const Locale('en');
+    addTearDown(tester.binding.platformDispatcher.clearLocaleTestValue);
+
     final router = GoRouter(
       routes: [
         GoRoute(
@@ -57,7 +60,6 @@ void main() {
                 const SettingsPreferences(
                   pushEnabled: true,
                   themeMode: SettingsThemeModePreference.dark,
-                  languagePreference: SettingsLanguagePreference.english,
                   categories: {
                     SettingsNotificationCategory.auctionActivity: true,
                     SettingsNotificationCategory.orderPayment: true,

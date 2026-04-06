@@ -15,8 +15,8 @@ import '../../../core/widgets/app_shell_insets.dart';
 import '../application/settings_preferences_service.dart';
 import '../data/settings_preferences.dart';
 import 'widgets/settings_app_info_section.dart';
-import 'widgets/settings_choice_section.dart';
 import 'widgets/settings_notification_section.dart';
+import 'widgets/settings_theme_section.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -140,69 +140,18 @@ class SettingsScreen extends ConsumerWidget {
                     },
                   ),
                   SizedBox(height: tokens.space6),
-                  SettingsChoiceSection<SettingsThemeModePreference>(
+                  SettingsThemeSection(
                     sectionTitle: context.l10n.settingsAppearanceTitle,
-                    sectionDescription:
-                        context.l10n.settingsAppearanceDescription,
                     groupValue: preferences.themeMode,
-                    options: [
-                      SettingsChoiceOption(
-                        value: SettingsThemeModePreference.system,
-                        title: context.l10n.settingsThemeSystemTitle,
-                        description:
-                            context.l10n.settingsThemeSystemDescription,
-                      ),
-                      SettingsChoiceOption(
-                        value: SettingsThemeModePreference.light,
-                        title: context.l10n.settingsThemeLightTitle,
-                        description: context.l10n.settingsThemeLightDescription,
-                      ),
-                      SettingsChoiceOption(
-                        value: SettingsThemeModePreference.dark,
-                        title: context.l10n.settingsThemeDarkTitle,
-                        description: context.l10n.settingsThemeDarkDescription,
-                      ),
-                    ],
+                    systemTitle: context.l10n.settingsThemeSystemTitle,
+                    lightTitle: context.l10n.settingsThemeLightTitle,
+                    darkTitle: context.l10n.settingsThemeDarkTitle,
                     onChanged: (themeMode) => _handleThemeModeChanged(
                       context,
                       ref,
                       user.uid,
                       themeMode,
                     ),
-                  ),
-                  SizedBox(height: tokens.space6),
-                  SettingsChoiceSection<SettingsLanguagePreference>(
-                    sectionTitle: context.l10n.settingsLanguageTitle,
-                    sectionDescription:
-                        context.l10n.settingsLanguageDescription,
-                    groupValue: preferences.languagePreference,
-                    options: [
-                      SettingsChoiceOption(
-                        value: SettingsLanguagePreference.system,
-                        title: context.l10n.settingsLanguageSystemTitle,
-                        description:
-                            context.l10n.settingsLanguageSystemDescription,
-                      ),
-                      SettingsChoiceOption(
-                        value: SettingsLanguagePreference.korean,
-                        title: context.l10n.settingsLanguageKoreanTitle,
-                        description:
-                            context.l10n.settingsLanguageKoreanDescription,
-                      ),
-                      SettingsChoiceOption(
-                        value: SettingsLanguagePreference.english,
-                        title: context.l10n.settingsLanguageEnglishTitle,
-                        description:
-                            context.l10n.settingsLanguageEnglishDescription,
-                      ),
-                    ],
-                    onChanged: (languagePreference) =>
-                        _handleLanguagePreferenceChanged(
-                          context,
-                          ref,
-                          user.uid,
-                          languagePreference,
-                        ),
                   ),
                 ],
               );
@@ -421,35 +370,6 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _handleLanguagePreferenceChanged(
-    BuildContext context,
-    WidgetRef ref,
-    String userId,
-    SettingsLanguagePreference languagePreference,
-  ) async {
-    try {
-      await ref
-          .read(settingsPreferencesServiceProvider)
-          .setLanguagePreference(
-            userId: userId,
-            languagePreference: languagePreference,
-          );
-      if (!context.mounted) {
-        return;
-      }
-      context.showSnackBarMessage(
-        context.l10n.settingsLanguageUpdatedToast(
-          _languagePreferenceLabel(context, languagePreference),
-        ),
-      );
-    } catch (_) {
-      if (!context.mounted) {
-        return;
-      }
-      context.showErrorSnackBar(context.l10n.settingsUpdateFailed);
-    }
-  }
-
   String _themeModeLabel(
     BuildContext context,
     SettingsThemeModePreference themeMode,
@@ -459,20 +379,6 @@ class SettingsScreen extends ConsumerWidget {
         context.l10n.settingsThemeSystemTitle,
       SettingsThemeModePreference.light => context.l10n.settingsThemeLightTitle,
       SettingsThemeModePreference.dark => context.l10n.settingsThemeDarkTitle,
-    };
-  }
-
-  String _languagePreferenceLabel(
-    BuildContext context,
-    SettingsLanguagePreference languagePreference,
-  ) {
-    return switch (languagePreference) {
-      SettingsLanguagePreference.system =>
-        context.l10n.settingsLanguageSystemTitle,
-      SettingsLanguagePreference.korean =>
-        context.l10n.settingsLanguageKoreanTitle,
-      SettingsLanguagePreference.english =>
-        context.l10n.settingsLanguageEnglishTitle,
     };
   }
 }

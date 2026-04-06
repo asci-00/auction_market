@@ -2,12 +2,12 @@
 
 ## Current Task
 - Phase 4 settings and notification foundation is active.
-- The current slice applies theme and language preferences to the live app shell, on top of the dedicated settings route, Firestore-backed notification preference toggles, OS notification-permission visibility, and settings entry points from the app bar and My screen.
+- The current slice applies theme preference to the live app shell and simplifies locale behavior back to system-language-only, on top of the dedicated settings route, Firestore-backed notification preference toggles, OS notification-permission visibility, and settings entry points from the app bar and My screen.
 - Device-token lifecycle and real push delivery remain later Phase 4 slices.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
-- App UI supports Korean and English. The app defaults to the device locale, and `/settings` can now override language to Korean or English or return to device-follow mode.
+- App UI supports Korean and English. The app follows the device locale, and there is no in-app language override.
 - Payment integration stays adapter-based until the user explicitly activates the deferred cutover work in `Plan.md`.
 - Apple sign in and Google sign in are the only login providers for v1.
 - Emulator seed is the default dummy data path. Dependency-blocked integrations may use server-driven dummy responses only in `dev`.
@@ -42,8 +42,8 @@
 - Phase 4 now has its first settings foundation slice: `/settings` exists, the app bar and My screen can open it, signed-in users see notification preference toggles backed by `users/{uid}.preferences`, and signed-out users are redirected back through `/login?from=/settings`.
 - Settings now falls back to an in-app default preference model when `users/{uid}` exists without a `preferences` payload yet, so notification controls can still render before a full profile bootstrap is complete.
 - The settings screen now shows current OS notification permission state, a request-permission or open-system-settings recovery action when applicable, app version, open-source licenses, and debug-only environment info.
-- The second Phase 4 settings slice now applies `users/{uid}.preferences.themeMode` and `users/{uid}.preferences.languageCode` to `MaterialApp`, and `/settings` now exposes appearance and language sections that update those fields.
-- Signed-in routes no longer expose a separate global locale picker in the shared app bar; language override now lives in `/settings`, while the signed-out login surface keeps its lightweight locale menu.
+- The second Phase 4 settings slice now applies `users/{uid}.preferences.themeMode` to `MaterialApp`, and `/settings` now exposes a compact theme preview selector instead of a verbose radio list.
+- Signed-in routes no longer expose a global locale picker in the shared app bar, and the signed-out login surface also no longer carries a manual locale menu; the app now follows the device locale only.
 - Emulator seed data now covers separate buyer and seller notification, payment, shipment, confirmed-receipt, settled, cancelled-unpaid, draft, unsold, and cancelled-listing paths without cross-linking orders to unrelated auctions.
 - Backend callables cover bootstrap, draft lifecycle, bid and auto-bid, buy now, payment-session preparation, payment confirmation, shipment update, receipt confirmation, and notification read state.
 - The backend now exposes `tossPaymentBridge` so emulator-backed `dev` can return a real Toss sandbox `checkoutUrl`, `successUrl`, and `failUrl` when `ENABLE_TOSS_SANDBOX=true`.
@@ -68,9 +68,9 @@
 - `cd apps/mobile_flutter && flutter analyze` passed on April 6, 2026.
 - `cd apps/mobile_flutter && flutter test` passed on April 6, 2026.
 - `cd apps/mobile_flutter && flutter gen-l10n` passed on April 6, 2026 after adding settings appearance and language keys.
-- `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib/app/app.dart lib/main.dart lib/core/widgets/app_page_scaffold.dart lib/features/settings test/app/app_test.dart test/features/settings` passed on April 6, 2026.
-- `cd apps/mobile_flutter && flutter analyze` passed on April 6, 2026 after wiring settings-driven theme and locale apply.
-- `cd apps/mobile_flutter && flutter test` passed on April 6, 2026 after adding app-level theme/locale coverage and settings choice-section tests.
+- `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib/app/app.dart lib/main.dart lib/features/auth/presentation/login_screen.dart lib/core/widgets/app_page_scaffold.dart lib/features/settings test/app/app_test.dart test/features/settings` passed on April 6, 2026.
+- `cd apps/mobile_flutter && flutter analyze` passed on April 6, 2026 after wiring settings-driven theme apply and returning locale handling to device-only behavior.
+- `cd apps/mobile_flutter && flutter test` passed on April 6, 2026 after adding app-level theme apply coverage and compact theme-selector tests.
 - `cd backend/functions && npm run format:check && npm run lint && npm run build && npm test` passed on April 6, 2026 during the Phase 4 settings apply slice.
 - `cd apps/mobile_flutter && dart analyze <orders payment files>` passed on April 5, 2026.
 - `cd apps/mobile_flutter && flutter test test/features/orders/application/order_payment_handoff_service_test.dart test/features/orders/application/order_payment_launcher_service_test.dart test/features/orders/data/order_payment_session_test.dart test/core/routing/app_deeplink_test.dart` passed on April 5, 2026.
@@ -85,7 +85,7 @@
 2. `cd backend/functions && npm run seed`
 3. `cd apps/mobile_flutter && flutter run --dart-define-from-file=dart_defines.json`
 4. Sign in as `buyer1@test.local` or `seller1@test.local`
-5. Open settings from the app bar or My screen and verify notification toggles, appearance mode, language mode, permission state, version, licenses, and debug-only info
+5. Open settings from the app bar or My screen and verify notification toggles, compact appearance mode selection, permission state, version, licenses, and debug-only info
 6. Continue Phase 4 with device-token lifecycle and push delivery only after the settings apply slice is reviewed
 
 ## Update Rules
