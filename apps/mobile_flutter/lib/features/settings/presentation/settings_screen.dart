@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -254,17 +255,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     bool enabled,
   ) async {
     try {
+      _logNotificationDiagnostics(
+        'push toggle requested enabled=$enabled userId=$userId',
+      );
       await ref
           .read(settingsPreferencesServiceProvider)
           .setPushEnabled(userId: userId, enabled: enabled);
+      _logNotificationDiagnostics(
+        'push preference write succeeded enabled=$enabled userId=$userId',
+      );
       if (enabled) {
         await ref
             .read(notificationDeviceTokenServiceProvider)
             .syncUserDeviceToken(userId);
+        _logNotificationDiagnostics(
+          'device token sync requested after enabling push userId=$userId',
+        );
       } else {
         await ref
             .read(notificationDeviceTokenServiceProvider)
             .deactivateTokenForUser(userId);
+        _logNotificationDiagnostics(
+          'device token deactivation requested after disabling push userId=$userId',
+        );
       }
       ref.invalidate(notificationPermissionStatusProvider);
       if (!context.mounted) {
@@ -275,7 +288,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             ? context.l10n.settingsNotificationsEnabledToast
             : context.l10n.settingsNotificationsDisabledToast,
       );
-    } catch (_) {
+    } catch (error) {
+      _logNotificationDiagnostics(
+        'push toggle failed enabled=$enabled userId=$userId error=$error',
+      );
       if (!context.mounted) {
         return;
       }
@@ -322,18 +338,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       final status = await ref
           .read(settingsPreferencesServiceProvider)
           .requestPermission();
+      _logNotificationDiagnostics(
+        'permission request completed status=${_permissionDiagnosticsLabel(status)}',
+      );
       final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
       if (userId != null) {
         await ref
             .read(notificationDeviceTokenServiceProvider)
             .syncUserDeviceToken(userId);
+        _logNotificationDiagnostics(
+          'device token sync requested after permission prompt userId=$userId',
+        );
       }
       ref.invalidate(notificationPermissionStatusProvider);
       if (!context.mounted) {
         return;
       }
       context.showSnackBarMessage(_permissionStatusLabel(context, status));
-    } catch (_) {
+    } catch (error) {
+      _logNotificationDiagnostics('permission request failed error=$error');
       if (!context.mounted) {
         return;
       }
@@ -346,11 +369,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       final opened = await ref
           .read(settingsPreferencesServiceProvider)
           .openSystemSettings();
+      _logNotificationDiagnostics('open system settings result opened=$opened');
       final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
       if (userId != null) {
         await ref
             .read(notificationDeviceTokenServiceProvider)
             .syncUserDeviceToken(userId);
+        _logNotificationDiagnostics(
+          'device token sync requested after opening system settings userId=$userId',
+        );
       }
       ref.invalidate(notificationPermissionStatusProvider);
       if (!context.mounted) {
@@ -361,7 +388,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             ? context.l10n.settingsSystemSettingsOpened
             : context.l10n.settingsSystemSettingsUnavailable,
       );
-    } catch (_) {
+    } catch (error) {
+      _logNotificationDiagnostics('open system settings failed error=$error');
       if (!context.mounted) {
         return;
       }
@@ -411,6 +439,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       SettingsThemeModePreference.light => context.l10n.settingsThemeLightTitle,
       SettingsThemeModePreference.dark => context.l10n.settingsThemeDarkTitle,
     };
+  }
+
+  String _permissionDiagnosticsLabel(AuthorizationStatus status) {
+    return switch (status) {
+      AuthorizationStatus.authorized => 'AUTHORIZED',
+      AuthorizationStatus.denied => 'DENIED',
+      AuthorizationStatus.notDetermined => 'NOT_DETERMINED',
+      AuthorizationStatus.provisional => 'PROVISIONAL',
+    };
+  }
+
+  void _logNotificationDiagnostics(String message) {
+    if (kReleaseMode) {
+      return;
+    }
+    debugPrint('[settings-notifications] $message');
   }
 }
 

@@ -2011,6 +2011,13 @@ export const registerDeviceToken = onCall(async (req) => {
     ['AUTHORIZED', 'DENIED', 'PROVISIONAL', 'NOT_DETERMINED'] as const,
   );
   const tokenId = buildDeviceTokenId(token);
+  logger.info('registerDeviceToken', {
+    uid,
+    tokenId,
+    platform,
+    appVersion,
+    permissionStatus,
+  });
   const tokenRef = db
     .collection('users')
     .doc(uid)
@@ -2046,6 +2053,11 @@ export const deactivateDeviceToken = onCall(async (req) => {
     'permissionStatus',
     ['AUTHORIZED', 'DENIED', 'PROVISIONAL', 'NOT_DETERMINED'] as const,
   );
+  logger.info('deactivateDeviceToken', {
+    uid,
+    tokenId,
+    permissionStatus,
+  });
   const tokenRef = db
     .collection('users')
     .doc(uid)

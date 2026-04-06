@@ -3,6 +3,7 @@
 ## Current Task
 - Phase 4 settings and notification foundation is active.
 - The current slice adds callable-backed mobile device-token lifecycle on top of the dedicated settings route, local theme preference, Firestore-backed notification preference toggles, OS notification-permission visibility, and settings entry points from the app bar and My screen.
+- The same slice now adds dev-only notification diagnostics around permission status, token resolution, callable register or deactivate attempts, and settings-triggered token sync so silent no-op cases are debuggable without release-facing debug UI.
 - Real push delivery remains a later Phase 4 slice.
 
 ## Locked Decisions
