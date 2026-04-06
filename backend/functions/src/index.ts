@@ -27,6 +27,11 @@ import {
   toFailedPaymentOrder,
   withLastWebhookEventId,
 } from './domain/paymentEngine.js';
+import {
+  buildDeactivateDeviceTokenRecord,
+  buildDeviceTokenId,
+  buildRegisterDeviceTokenRecord,
+} from './domain/deviceTokenEngine.js';
 import { AuditEventRecord, Order } from './domain/models.js';
 import {
   finalizeAuction,
@@ -138,6 +143,21 @@ function ensureString(
 
 function optionalString(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+function ensureEnumString<T extends readonly string[]>(
+  value: unknown,
+  fieldName: string,
+  allowed: T,
+): T[number] {
+  const normalized = ensureString(value, fieldName);
+  if (!allowed.includes(normalized)) {
+    throw new HttpsError(
+      'invalid-argument',
+      `${fieldName} must be one of ${allowed.join(', ')}`,
+    );
+  }
+  return normalized as T[number];
 }
 
 function optionalPositiveNumber(value: unknown): number | null {
@@ -1971,6 +1991,75 @@ export const markNotificationRead = onCall(async (req) => {
   await notificationRef.update({
     isRead: true,
   });
+  return { ok: true };
+});
+
+export const registerDeviceToken = onCall(async (req) => {
+  const uid = requireAuthUid(req.auth?.uid);
+  const payload = ensureObject(req.data, 'device token payload is required');
+  const token = ensureString(payload.token, 'token');
+  const platform = ensureEnumString(payload.platform, 'platform', [
+    'ANDROID',
+    'IOS',
+  ] as const);
+  const appVersion = ensureString(payload.appVersion, 'appVersion');
+  const locale = ensureString(payload.locale, 'locale');
+  const timezone = ensureString(payload.timezone, 'timezone');
+  const permissionStatus = ensureEnumString(
+    payload.permissionStatus,
+    'permissionStatus',
+    ['AUTHORIZED', 'DENIED', 'PROVISIONAL', 'NOT_DETERMINED'] as const,
+  );
+  const tokenId = buildDeviceTokenId(token);
+  const tokenRef = db
+    .collection('users')
+    .doc(uid)
+    .collection('deviceTokens')
+    .doc(tokenId);
+  const snap = await tokenRef.get();
+
+  await tokenRef.set(
+    buildRegisterDeviceTokenRecord(
+      {
+        token,
+        platform,
+        appVersion,
+        locale,
+        timezone,
+        permissionStatus,
+      },
+      FieldValue.serverTimestamp(),
+      { includeCreatedAt: !snap.exists },
+    ),
+    { merge: true },
+  );
+
+  return { ok: true, tokenId };
+});
+
+export const deactivateDeviceToken = onCall(async (req) => {
+  const uid = requireAuthUid(req.auth?.uid);
+  const payload = ensureObject(req.data, 'device token payload is required');
+  const tokenId = ensureString(payload.tokenId, 'tokenId');
+  const permissionStatus = ensureEnumString(
+    payload.permissionStatus,
+    'permissionStatus',
+    ['AUTHORIZED', 'DENIED', 'PROVISIONAL', 'NOT_DETERMINED'] as const,
+  );
+  const tokenRef = db
+    .collection('users')
+    .doc(uid)
+    .collection('deviceTokens')
+    .doc(tokenId);
+
+  await tokenRef.set(
+    buildDeactivateDeviceTokenRecord(
+      permissionStatus,
+      FieldValue.serverTimestamp(),
+    ),
+    { merge: true },
+  );
+
   return { ok: true };
 });
 

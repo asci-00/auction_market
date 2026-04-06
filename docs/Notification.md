@@ -131,7 +131,7 @@
   - master push switch
   - category switches
   - theme mode
-  - language
+  - system-language behavior
   - open-source licenses
   - app version
   - debug-only developer settings
@@ -168,9 +168,10 @@
 ## Token Lifecycle
 - Register the device token only after sign-in and permission grant.
 - Refresh the stored token when Firebase Messaging rotates it.
-- Sign-out currently calls `auth.signOut` only; token deactivation remains follow-up work before Phase 4 notification delivery is considered complete.
+- Mark the active token record inactive before sign-out completes.
 - Keep token records scoped per signed-in user and per app installation.
 - Store token records under `users/{uid}/deviceTokens/{tokenId}` as documented in `Documentation.md`.
+- The mobile app must manage token lifecycle through backend callables instead of direct Firestore writes.
 - Token records should capture at least:
   - `token: string`
   - `platform: "ANDROID" | "IOS"`

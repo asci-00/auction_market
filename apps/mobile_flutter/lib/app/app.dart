@@ -9,6 +9,7 @@ import '../core/firebase/firebase_bootstrap.dart';
 import '../core/l10n/app_localization.dart';
 import '../core/routing/app_router.dart';
 import '../core/theme/app_theme.dart';
+import '../features/notifications/application/notification_device_token_service.dart';
 import '../features/settings/application/settings_preferences_service.dart';
 
 class AuctionMarketApp extends ConsumerWidget {
@@ -27,19 +28,22 @@ class AuctionMarketApp extends ConsumerWidget {
     final resolvedLocale = resolveAppLocale(_deviceLocale());
 
     return bootstrapState.when(
-      data: (_) => MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        builder: FToastBuilder(),
-        theme: lightTheme,
-        darkTheme: darkTheme,
-        themeMode: themeMode.materialThemeMode,
-        onGenerateTitle: (context) => context.l10n.appTitle,
-        locale: resolvedLocale,
-        localizationsDelegates: _delegates(context),
-        supportedLocales: supportedAppLocales,
-        localeResolutionCallback: resolveAppLocale,
-        routerConfig: ref.watch(goRouterProvider),
-      ),
+      data: (_) {
+        ref.watch(notificationDeviceTokenLifecycleProvider);
+        return MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          builder: FToastBuilder(),
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: themeMode.materialThemeMode,
+          onGenerateTitle: (context) => context.l10n.appTitle,
+          locale: resolvedLocale,
+          localizationsDelegates: _delegates(context),
+          supportedLocales: supportedAppLocales,
+          localeResolutionCallback: resolveAppLocale,
+          routerConfig: ref.watch(goRouterProvider),
+        );
+      },
       loading: () => MaterialApp(
         debugShowCheckedModeBanner: false,
         builder: FToastBuilder(),

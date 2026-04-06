@@ -2,8 +2,8 @@
 
 ## Current Task
 - Phase 4 settings and notification foundation is active.
-- The current slice applies theme preference to the live app shell and simplifies locale behavior back to system-language-only, on top of the dedicated settings route, Firestore-backed notification preference toggles, OS notification-permission visibility, and settings entry points from the app bar and My screen.
-- Device-token lifecycle and real push delivery remain later Phase 4 slices.
+- The current slice adds callable-backed mobile device-token lifecycle on top of the dedicated settings route, local theme preference, Firestore-backed notification preference toggles, OS notification-permission visibility, and settings entry points from the app bar and My screen.
+- Real push delivery remains a later Phase 4 slice.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -44,6 +44,7 @@
 - The settings screen now shows current OS notification permission state, a request-permission or open-system-settings recovery action when applicable, app version, open-source licenses, and debug-only environment info.
 - The second Phase 4 settings slice now applies a local `SharedPreferences` theme preference to `MaterialApp`, and `/settings` now exposes a compact theme preview selector instead of a verbose radio list.
 - Signed-in routes no longer expose a global locale picker in the shared app bar, and the signed-out login surface also no longer carries a manual locale menu; the app now follows the device locale only.
+- Mobile now calls `registerDeviceToken` after permission grant and token refresh, calls `deactivateDeviceToken` before sign-out or when push is disabled, and re-syncs permission plus token state when the app resumes.
 - Emulator seed data now covers separate buyer and seller notification, payment, shipment, confirmed-receipt, settled, cancelled-unpaid, draft, unsold, and cancelled-listing paths without cross-linking orders to unrelated auctions.
 - Backend callables cover bootstrap, draft lifecycle, bid and auto-bid, buy now, payment-session preparation, payment confirmation, shipment update, receipt confirmation, and notification read state.
 - The backend now exposes `tossPaymentBridge` so emulator-backed `dev` can return a real Toss sandbox `checkoutUrl`, `successUrl`, and `failUrl` when `ENABLE_TOSS_SANDBOX=true`.

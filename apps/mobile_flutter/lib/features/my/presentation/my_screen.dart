@@ -9,6 +9,7 @@ import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_shell_insets.dart';
 import '../../../core/widgets/app_status_badge.dart';
+import '../../notifications/application/notification_device_token_service.dart';
 import 'my_view_model.dart';
 import 'widgets/my_account_panel.dart';
 import 'widgets/my_verification_section.dart';
@@ -62,7 +63,12 @@ class MyScreen extends ConsumerWidget {
           ),
           SizedBox(height: tokens.space4),
           FilledButton(
-            onPressed: auth.signOut,
+            onPressed: () async {
+              await ref
+                  .read(notificationDeviceTokenServiceProvider)
+                  .deactivateCurrentUserTokenBeforeSignOut();
+              await auth.signOut();
+            },
             child: Text(context.l10n.mySignOut),
           ),
         ],

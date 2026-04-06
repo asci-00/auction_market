@@ -88,6 +88,7 @@
   - The first Phase 4 settings slice now exposes `/settings` from both the global app bar and the My screen, and it currently covers notification preferences, OS notification-permission state, appearance mode, app version, licenses, and debug-only environment info.
   - Settings reads `users/{uid}.preferences` directly from Firestore and falls back to `SettingsPreferences.defaults()` when the signed-in user document exists without a populated `preferences` payload yet.
   - `app/app.dart` now applies theme mode from local `SharedPreferences` state instead of the signed-in user document, while locale always follows the device setting through the shared locale resolver.
+  - Notification device-token lifecycle now lives under `features/notifications/application/notification_device_token_service.dart`, where the signed-in app session calls `registerDeviceToken` after permission grant, re-syncs on app resume and FCM token rotation, and calls `deactivateDeviceToken` before sign-out or when push is disabled.
   - Signed-in routes no longer expose a separate global locale picker in the shared app bar, and the login screen no longer carries a manual locale menu either; language behavior is system-driven only.
   - Theme selection now uses a compact preview-card selector instead of long descriptive radio rows, aligning the settings surface with common mobile-app patterns.
   - Notifications now reuse the shared app deep-link normalizer instead of carrying a screen-local route parser.
@@ -249,7 +250,7 @@
 - Rules:
 - `preferences.pushEnabled` remains the master notification switch.
 - Category toggles only apply when `preferences.pushEnabled == true`.
-- The current Phase 4 settings slices read and write `preferences.pushEnabled` and `preferences.notificationCategories.*`; `preferences.languageCode` and `deviceTokens` remain reserved until product requirements call for them.
+- The current Phase 4 settings slices read and write `preferences.pushEnabled` and `preferences.notificationCategories.*`; `preferences.languageCode` remains reserved while `deviceTokens` is now a server-managed push-delivery record.
 - Theme mode is local-only UI state stored in `SharedPreferences` under the mobile app and is not part of the Firestore user schema.
 
 ### `users/{uid}/deviceTokens/{tokenId}`
@@ -261,6 +262,16 @@
   - `timezone: string`
   - `appVersion: string`
   - `permissionStatus: "AUTHORIZED" | "DENIED" | "PROVISIONAL" | "NOT_DETERMINED"`
+  - `isActive: boolean`
+  - `lastSeenAt: Timestamp`
+  - `createdAt: Timestamp`
+  - `updatedAt: Timestamp`
+- Server-managed through the `registerDeviceToken` and `deactivateDeviceToken` callables only.
+- Current mobile behavior:
+  - call `registerDeviceToken` after sign-in when permission is `AUTHORIZED` or `PROVISIONAL`
+  - refresh locale, timezone, appVersion, and `lastSeenAt` through the same callable when FCM rotates the token
+  - call `deactivateDeviceToken` when permission is no longer granted, when push is disabled in settings, or just before sign-out
+  - keep the cached token id in local `SharedPreferences` so the next sync can deactivate or replace the same installation token deterministically
   - `isActive: boolean`
   - `lastSeenAt: Timestamp`
   - `createdAt: Timestamp`
@@ -526,6 +537,7 @@
   - `bids`
   - `autoBids`
   - `orders`
+  - `users/{uid}/deviceTokens/{tokenId}`
   - server-owned user fields
 - Add App Check in staging and prod.
 - Validate callable inputs centrally before domain logic runs.

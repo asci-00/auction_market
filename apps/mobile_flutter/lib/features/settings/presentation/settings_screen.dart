@@ -12,6 +12,7 @@ import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_shell_insets.dart';
+import '../../notifications/application/notification_device_token_service.dart';
 import '../application/settings_preferences_service.dart';
 import '../data/settings_preferences.dart';
 import 'widgets/settings_app_info_section.dart';
@@ -256,6 +257,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       await ref
           .read(settingsPreferencesServiceProvider)
           .setPushEnabled(userId: userId, enabled: enabled);
+      if (enabled) {
+        await ref
+            .read(notificationDeviceTokenServiceProvider)
+            .syncUserDeviceToken(userId);
+      } else {
+        await ref
+            .read(notificationDeviceTokenServiceProvider)
+            .deactivateTokenForUser(userId);
+      }
+      ref.invalidate(notificationPermissionStatusProvider);
       if (!context.mounted) {
         return;
       }
@@ -311,6 +322,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       final status = await ref
           .read(settingsPreferencesServiceProvider)
           .requestPermission();
+      final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
+      if (userId != null) {
+        await ref
+            .read(notificationDeviceTokenServiceProvider)
+            .syncUserDeviceToken(userId);
+      }
       ref.invalidate(notificationPermissionStatusProvider);
       if (!context.mounted) {
         return;
@@ -329,6 +346,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       final opened = await ref
           .read(settingsPreferencesServiceProvider)
           .openSystemSettings();
+      final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
+      if (userId != null) {
+        await ref
+            .read(notificationDeviceTokenServiceProvider)
+            .syncUserDeviceToken(userId);
+      }
+      ref.invalidate(notificationPermissionStatusProvider);
       if (!context.mounted) {
         return;
       }
