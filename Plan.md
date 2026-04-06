@@ -60,7 +60,7 @@ Status: complete on April 6, 2026.
 - Dark mode, shared loading overlays, keyboard-safe sheets, and overflow-prone layouts are stabilized on supported mobile form factors.
 
 ## Phase 4: Notifications, Settings, And Product Hardening
-Status: pending after Phase 3.
+Status: in progress after Phase 3.
 - Add Android and iOS push-notification support with Firebase Messaging permission handling, token registration, foreground presentation, background tap routing, and category-aware delivery rules defined in `docs/Notification.md`.
 - Explore current buyer, seller, order, shipment, and inbox flows and support only the push events documented in `docs/Notification.md`.
 - Keep inbox documents and push delivery aligned so every supported push event also creates an inbox record and deep link.
@@ -68,7 +68,7 @@ Status: pending after Phase 3.
   - global app-notification on and off
   - per-category notification on and off
   - theme mode selection
-  - language selection for supported locales
+  - system-language behavior confirmation for supported locales
   - open-source licenses
   - app version display
   - debug-only developer settings
@@ -77,7 +77,7 @@ Status: pending after Phase 3.
 
 ### Done When
 - Android and iOS push-notification behavior matches `docs/Notification.md` for supported event types, categories, deep links, and preference rules.
-- Users can manage notification, theme, and language preferences from the in-app settings surface, and can also open licenses, app-version info, and debug-only developer settings from the same settings flow.
+- Users can manage notification and theme preferences from the in-app settings surface, while language follows supported system locales; the same settings flow also exposes licenses, app-version info, and debug-only developer settings.
 - Release builds hide debug-only entry points and copy while keeping a documented developer-settings path for debug builds.
 - Production-safe logs exist for actionable client failures and notification-delivery diagnostics without leaking secrets or noisy debug output.
 - Any remaining real-device push-delivery prerequisites are recorded explicitly if project-level setup is still pending.

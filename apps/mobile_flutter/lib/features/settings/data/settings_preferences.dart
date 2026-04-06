@@ -1,4 +1,26 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+
+enum SettingsThemeModePreference {
+  system('SYSTEM', ThemeMode.system),
+  light('LIGHT', ThemeMode.light),
+  dark('DARK', ThemeMode.dark);
+
+  const SettingsThemeModePreference(
+    this.firestoreValue,
+    this.materialThemeMode,
+  );
+
+  final String firestoreValue;
+  final ThemeMode materialThemeMode;
+
+  static SettingsThemeModePreference parse(String? rawValue) {
+    return SettingsThemeModePreference.values.firstWhere(
+      (value) => value.firestoreValue == rawValue,
+      orElse: () => SettingsThemeModePreference.system,
+    );
+  }
+}
 
 enum SettingsNotificationCategory {
   auctionActivity('auctionActivity'),
@@ -14,15 +36,11 @@ enum SettingsNotificationCategory {
 class SettingsPreferences {
   const SettingsPreferences({
     required this.pushEnabled,
-    required this.themeMode,
-    required this.languageCode,
     required this.categories,
   });
 
   const SettingsPreferences.defaults()
     : pushEnabled = true,
-      themeMode = 'SYSTEM',
-      languageCode = 'ko',
       categories = const {
         SettingsNotificationCategory.auctionActivity: true,
         SettingsNotificationCategory.orderPayment: true,
@@ -31,8 +49,6 @@ class SettingsPreferences {
       };
 
   final bool pushEnabled;
-  final String themeMode;
-  final String languageCode;
   final Map<SettingsNotificationCategory, bool> categories;
 
   bool isCategoryEnabled(SettingsNotificationCategory category) {
@@ -51,8 +67,6 @@ class SettingsPreferences {
 
     return SettingsPreferences(
       pushEnabled: (preferences['pushEnabled'] as bool?) ?? true,
-      themeMode: (preferences['themeMode'] as String?) ?? 'SYSTEM',
-      languageCode: (preferences['languageCode'] as String?) ?? 'ko',
       categories: {
         for (final category in SettingsNotificationCategory.values)
           category:

@@ -4,14 +4,17 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
 import 'core/l10n/app_localization.dart';
+import 'features/settings/application/settings_preferences_service.dart';
 
 Future<void> main() async {
   await runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
     await EasyLocalization.ensureInitialized();
+    final sharedPreferences = await SharedPreferences.getInstance();
 
     FlutterError.onError = (details) {
       FlutterError.dumpErrorToConsole(details);
@@ -38,9 +41,14 @@ Future<void> main() async {
       EasyLocalization(
         supportedLocales: supportedAppLocales,
         fallbackLocale: fallbackAppLocale,
-        saveLocale: true,
+        saveLocale: false,
         path: translationAssetPath,
-        child: const ProviderScope(child: AuctionMarketApp()),
+        child: ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+          ],
+          child: const AuctionMarketApp(),
+        ),
       ),
     );
   }, _reportFatalError);

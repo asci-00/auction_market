@@ -267,6 +267,19 @@
   "settingsCategoryShippingAndReceiptDescription": "Shipment registration, delivery progress, and receipt confirmation.",
   "settingsCategorySystem": "System notices",
   "settingsCategorySystemDescription": "Policy updates, operational notices, and service interruptions.",
+  "settingsAppearanceTitle": "Appearance",
+  "settingsAppearanceDescription": "Choose how the marketplace looks.",
+  "settingsThemeSystemTitle": "System",
+  "settingsThemeLightTitle": "Light",
+  "settingsThemeDarkTitle": "Dark",
+  "settingsThemeUpdatedToast": "Appearance updated to {theme}.",
+  "@settingsThemeUpdatedToast": {
+    "placeholders": {
+      "theme": {
+        "type": "String"
+      }
+    }
+  },
   "settingsNotificationsEnabledToast": "Push notifications are now on.",
   "settingsNotificationsDisabledToast": "Push notifications are now off.",
   "settingsUpdateFailed": "We couldn't update that setting. Try again.",

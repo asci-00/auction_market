@@ -267,6 +267,19 @@
   "settingsCategoryShippingAndReceiptDescription": "배송 등록, 배송 진행, 수령 확인 단계를 알려줍니다.",
   "settingsCategorySystem": "시스템 공지",
   "settingsCategorySystemDescription": "운영 공지, 정책 변경, 서비스 상태 업데이트를 알려줍니다.",
+  "settingsAppearanceTitle": "화면 모드",
+  "settingsAppearanceDescription": "앱 화면 스타일을 선택합니다.",
+  "settingsThemeSystemTitle": "시스템",
+  "settingsThemeLightTitle": "라이트",
+  "settingsThemeDarkTitle": "다크",
+  "settingsThemeUpdatedToast": "화면 모드를 {theme}으로 변경했습니다.",
+  "@settingsThemeUpdatedToast": {
+    "placeholders": {
+      "theme": {
+        "type": "String"
+      }
+    }
+  },
   "settingsNotificationsEnabledToast": "푸시 알림을 켰습니다.",
   "settingsNotificationsDisabledToast": "푸시 알림을 껐습니다.",
   "settingsUpdateFailed": "설정을 업데이트하지 못했습니다. 다시 시도해 주세요.",

@@ -16,6 +16,7 @@ import '../application/settings_preferences_service.dart';
 import '../data/settings_preferences.dart';
 import 'widgets/settings_app_info_section.dart';
 import 'widgets/settings_notification_section.dart';
+import 'widgets/settings_theme_section.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -69,6 +70,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     }
 
     final preferencesAsync = ref.watch(settingsPreferencesProvider(user.uid));
+    final themeMode = ref.watch(themeModePreferenceProvider);
     final permissionAsync = ref.watch(notificationPermissionStatusProvider);
     final packageInfoAsync = ref.watch(appPackageInfoProvider);
     final config = ref.watch(appBootstrapProvider).valueOrNull?.config;
@@ -159,6 +161,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               title: context.l10n.settingsUnavailableTitle,
               description: context.l10n.settingsUnavailableDescription,
             ),
+          ),
+          SizedBox(height: tokens.space6),
+          SettingsThemeSection(
+            sectionTitle: context.l10n.settingsAppearanceTitle,
+            groupValue: themeMode,
+            systemTitle: context.l10n.settingsThemeSystemTitle,
+            lightTitle: context.l10n.settingsThemeLightTitle,
+            darkTitle: context.l10n.settingsThemeDarkTitle,
+            onChanged: (themeMode) =>
+                _handleThemeModeChanged(context, ref, themeMode),
           ),
           SizedBox(height: tokens.space6),
           SettingsAppInfoSection(
@@ -331,6 +343,50 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       }
       context.showErrorSnackBar(context.l10n.settingsSystemSettingsUnavailable);
     }
+  }
+
+  Future<void> _handleThemeModeChanged(
+    BuildContext context,
+    WidgetRef ref,
+    SettingsThemeModePreference themeMode,
+  ) async {
+    final previousThemeMode = ref.read(themeModePreferenceProvider);
+    try {
+      ref.read(themeModePreferenceProvider.notifier).state = themeMode;
+      await ref
+          .read(settingsPreferencesServiceProvider)
+          .setThemeMode(themeMode);
+      if (!context.mounted) {
+        return;
+      }
+      context.showSnackBarMessage(
+        context.l10n.settingsThemeUpdatedToast(
+          _themeModeLabel(context, themeMode),
+        ),
+      );
+    } catch (_) {
+      final currentThemeMode = ref.read(themeModePreferenceProvider);
+      if (currentThemeMode == themeMode) {
+        ref.read(themeModePreferenceProvider.notifier).state =
+            previousThemeMode;
+      }
+      if (!context.mounted) {
+        return;
+      }
+      context.showErrorSnackBar(context.l10n.settingsUpdateFailed);
+    }
+  }
+
+  String _themeModeLabel(
+    BuildContext context,
+    SettingsThemeModePreference themeMode,
+  ) {
+    return switch (themeMode) {
+      SettingsThemeModePreference.system =>
+        context.l10n.settingsThemeSystemTitle,
+      SettingsThemeModePreference.light => context.l10n.settingsThemeLightTitle,
+      SettingsThemeModePreference.dark => context.l10n.settingsThemeDarkTitle,
+    };
   }
 }
 

@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/app_config/app_config.dart';
 import '../../../core/firebase/firebase_bootstrap.dart';
 import '../../../core/l10n/app_localization.dart';
-import '../../../core/l10n/locale_menu_action.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../application/auth_action_service.dart';
@@ -18,11 +17,7 @@ import 'widgets/login_notes_panel.dart';
 import 'widgets/login_provider_panel.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({
-    super.key,
-    this.returnTo,
-    this.configOverride,
-  });
+  const LoginScreen({super.key, this.returnTo, this.configOverride});
 
   final String? returnTo;
   final AppConfig? configOverride;
@@ -53,11 +48,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           tokens.space7,
         ),
         children: [
-          const Align(
-            alignment: Alignment.centerRight,
-            child: AppLocaleMenuAction(),
-          ),
-          SizedBox(height: tokens.space3),
           const LoginHeader(),
           SizedBox(height: tokens.space6),
           LoginProviderPanel(
@@ -132,9 +122,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Future<void> _runAuthAction({
-    required Future<void> Function() action,
-  }) async {
+  Future<void> _runAuthAction({required Future<void> Function() action}) async {
     setState(() {
       _isSubmitting = true;
       _errorMessage = null;

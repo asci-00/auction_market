@@ -4,14 +4,17 @@ import 'package:auction_market_mobile/features/settings/data/settings_preference
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
   test('defaults enable push and all notification categories', () {
     const preferences = SettingsPreferences.defaults();
 
     expect(preferences.pushEnabled, isTrue);
-    expect(preferences.themeMode, 'SYSTEM');
-    expect(preferences.languageCode, 'ko');
 
     for (final category in SettingsNotificationCategory.values) {
       expect(preferences.isCategoryEnabled(category), isTrue);
@@ -51,13 +54,28 @@ void main() {
       );
 
       expect(preferences.pushEnabled, isTrue);
-      expect(preferences.themeMode, 'SYSTEM');
-      expect(preferences.languageCode, 'ko');
       for (final category in SettingsNotificationCategory.values) {
         expect(preferences.isCategoryEnabled(category), isTrue);
       }
     },
   );
+
+  test('document parsing keeps notification category overrides', () async {
+    final firestore = FakeFirebaseFirestore();
+    await firestore.collection('users').doc('user-1').set({
+      'preferences': {
+        'notificationCategories': {'system': false},
+      },
+    });
+
+    final snap = await firestore.collection('users').doc('user-1').get();
+    final preferences = SettingsPreferences.fromDocument(snap);
+
+    expect(
+      preferences.isCategoryEnabled(SettingsNotificationCategory.system),
+      isFalse,
+    );
+  });
 
   test(
     'provider falls back to defaults when user document has no preferences payload',
@@ -76,8 +94,6 @@ void main() {
       );
 
       expect(preferences.pushEnabled, isTrue);
-      expect(preferences.themeMode, 'SYSTEM');
-      expect(preferences.languageCode, 'ko');
       for (final category in SettingsNotificationCategory.values) {
         expect(preferences.isCategoryEnabled(category), isTrue);
       }
@@ -101,8 +117,6 @@ void main() {
       );
 
       expect(preferences.pushEnabled, isFalse);
-      expect(preferences.themeMode, 'SYSTEM');
-      expect(preferences.languageCode, 'ko');
       for (final category in SettingsNotificationCategory.values) {
         expect(preferences.isCategoryEnabled(category), isTrue);
       }
@@ -148,6 +162,41 @@ void main() {
       expect(
         preferences.isCategoryEnabled(SettingsNotificationCategory.system),
         isTrue,
+      );
+    },
+  );
+
+  test('theme preference provider reads the locally stored theme', () async {
+    SharedPreferences.setMockInitialValues({'settings.themeMode': 'DARK'});
+    final sharedPreferences = await SharedPreferences.getInstance();
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    expect(
+      container.read(themeModePreferenceProvider),
+      SettingsThemeModePreference.dark,
+    );
+  });
+
+  test(
+    'theme preference provider falls back to system on unknown value',
+    () async {
+      SharedPreferences.setMockInitialValues({'settings.themeMode': 'INVALID'});
+      final sharedPreferences = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(
+        container.read(themeModePreferenceProvider),
+        SettingsThemeModePreference.system,
       );
     },
   );

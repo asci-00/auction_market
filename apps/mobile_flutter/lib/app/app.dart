@@ -9,6 +9,7 @@ import '../core/firebase/firebase_bootstrap.dart';
 import '../core/l10n/app_localization.dart';
 import '../core/routing/app_router.dart';
 import '../core/theme/app_theme.dart';
+import '../features/settings/application/settings_preferences_service.dart';
 
 class AuctionMarketApp extends ConsumerWidget {
   const AuctionMarketApp({super.key});
@@ -22,6 +23,8 @@ class AuctionMarketApp extends ConsumerWidget {
     final lightTheme = AppTheme.light();
     final darkTheme = AppTheme.dark();
     final bootstrapState = ref.watch(appBootstrapProvider);
+    final themeMode = ref.watch(themeModePreferenceProvider);
+    final resolvedLocale = resolveAppLocale(_deviceLocale());
 
     return bootstrapState.when(
       data: (_) => MaterialApp.router(
@@ -29,11 +32,12 @@ class AuctionMarketApp extends ConsumerWidget {
         builder: FToastBuilder(),
         theme: lightTheme,
         darkTheme: darkTheme,
-        themeMode: ThemeMode.system,
+        themeMode: themeMode.materialThemeMode,
         onGenerateTitle: (context) => context.l10n.appTitle,
-        locale: context.locale,
+        locale: resolvedLocale,
         localizationsDelegates: _delegates(context),
-        supportedLocales: context.supportedLocales,
+        supportedLocales: supportedAppLocales,
+        localeResolutionCallback: resolveAppLocale,
         routerConfig: ref.watch(goRouterProvider),
       ),
       loading: () => MaterialApp(
@@ -41,10 +45,11 @@ class AuctionMarketApp extends ConsumerWidget {
         builder: FToastBuilder(),
         theme: lightTheme,
         darkTheme: darkTheme,
-        themeMode: ThemeMode.system,
-        locale: context.locale,
+        themeMode: themeMode.materialThemeMode,
+        locale: resolvedLocale,
         localizationsDelegates: _delegates(context),
-        supportedLocales: context.supportedLocales,
+        supportedLocales: supportedAppLocales,
+        localeResolutionCallback: resolveAppLocale,
         home: const AppBootstrapLoadingScreen(),
       ),
       error: (error, _) => MaterialApp(
@@ -52,15 +57,34 @@ class AuctionMarketApp extends ConsumerWidget {
         builder: FToastBuilder(),
         theme: lightTheme,
         darkTheme: darkTheme,
-        themeMode: ThemeMode.system,
-        locale: context.locale,
+        themeMode: themeMode.materialThemeMode,
+        locale: resolvedLocale,
         localizationsDelegates: _delegates(context),
-        supportedLocales: context.supportedLocales,
+        supportedLocales: supportedAppLocales,
+        localeResolutionCallback: resolveAppLocale,
         home: StartupFailureView(
           error: AppError.from(error),
           onRetry: () => ref.invalidate(appBootstrapProvider),
         ),
       ),
     );
+  }
+
+  Locale? _deviceLocale() {
+    final dispatcher = WidgetsBinding.instance.platformDispatcher;
+    for (final locale in dispatcher.locales) {
+      final supported = supportedAppLocales.any(
+        (candidate) => candidate.languageCode == locale.languageCode,
+      );
+      if (supported) {
+        return locale;
+      }
+    }
+
+    if (dispatcher.locales.isNotEmpty) {
+      return dispatcher.locales.first;
+    }
+
+    return dispatcher.locale;
   }
 }
