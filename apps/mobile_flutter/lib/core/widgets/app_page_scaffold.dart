@@ -1,7 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../l10n/app_localization.dart';
 import '../l10n/locale_menu_action.dart';
 import '../theme/app_theme.dart';
 import 'app_motion.dart';
@@ -15,6 +17,7 @@ class AppPageScaffold extends StatefulWidget {
     this.largeTitle,
     this.subtitle,
     this.actions,
+    this.showSettingsAction = true,
     this.bottomBar,
     this.extendBody = false,
     this.extendBodyBehindAppBar = true,
@@ -26,6 +29,7 @@ class AppPageScaffold extends StatefulWidget {
   final String? largeTitle;
   final String? subtitle;
   final List<Widget>? actions;
+  final bool showSettingsAction;
   final Widget? bottomBar;
   final bool extendBody;
   final bool extendBodyBehindAppBar;
@@ -61,6 +65,12 @@ class _AppPageScaffoldState extends State<AppPageScaffold> {
         resolvedBottomInset == 0 && widget.bottomBar == null;
     final appBarActions = [
       if (widget.actions case final customActions?) ...customActions,
+      if (widget.showSettingsAction)
+        IconButton(
+          tooltip: context.l10n.settingsOpenAction,
+          icon: const Icon(Icons.tune_rounded),
+          onPressed: () => context.push('/settings'),
+        ),
       const AppLocaleMenuAction(),
       SizedBox(width: tokens.space2),
     ];

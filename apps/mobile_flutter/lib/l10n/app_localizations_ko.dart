@@ -612,6 +612,161 @@ class AppLocalizationsKo extends AppLocalizations {
       '입찰, 결제, 배송 업데이트가 생기면 이곳에 차곡차곡 쌓입니다.';
 
   @override
+  String get settingsTitle => '설정';
+
+  @override
+  String get settingsSubtitle => '알림과 앱 정보를 가까운 곳에서 관리합니다.';
+
+  @override
+  String get settingsHeroEyebrow => '환경 설정';
+
+  @override
+  String get settingsHeroTitle => '정말 필요한 순간에만 알림이 도착하도록 흐름을 다듬으세요.';
+
+  @override
+  String get settingsHeroDescription =>
+      '알림 제어는 복잡한 설정 트리보다 운영 화면에 가까운 감각으로 보여야 합니다.';
+
+  @override
+  String get settingsSignedOutTitle => '로그인 후 설정을 관리할 수 있습니다';
+
+  @override
+  String get settingsSignedOutDescription =>
+      '알림 선호도와 앱 정보는 로그인 후 이 화면에서 확인할 수 있습니다.';
+
+  @override
+  String get settingsUnavailableTitle => '설정을 아직 준비하지 못했습니다';
+
+  @override
+  String get settingsUnavailableDescription =>
+      '지금은 설정을 불러오지 못했습니다. 잠시 후 다시 확인해 주세요.';
+
+  @override
+  String get settingsOpenAction => '설정 열기';
+
+  @override
+  String get settingsNotificationsMasterTitle => '푸시 알림';
+
+  @override
+  String get settingsNotificationsMasterDescription =>
+      '이 계정으로 받는 마켓 알림을 전체적으로 켜거나 끕니다.';
+
+  @override
+  String get settingsNotificationsPermissionTitle => '기기 권한';
+
+  @override
+  String get settingsNotificationsPermissionDescription =>
+      '이 휴대폰에서 알림을 받으려면 시스템 알림 권한도 허용되어 있어야 합니다.';
+
+  @override
+  String get settingsRequestPermission => '알림 권한 허용';
+
+  @override
+  String get settingsOpenSystemSettings => '시스템 설정 열기';
+
+  @override
+  String get settingsPermissionStatusAuthorized => '이 기기에서 알림이 허용되어 있습니다.';
+
+  @override
+  String get settingsPermissionStatusDenied => '시스템 설정에서 알림이 차단되어 있습니다.';
+
+  @override
+  String get settingsPermissionStatusNotDetermined => '아직 알림 권한을 요청하지 않았습니다.';
+
+  @override
+  String get settingsPermissionStatusProvisional =>
+      '제한된 방식으로만 임시 알림이 허용되어 있습니다.';
+
+  @override
+  String get settingsNotificationsCategoriesTitle => '알림 카테고리';
+
+  @override
+  String get settingsNotificationsCategoriesDescription =>
+      '다음 행동에 도움이 되는 업데이트만 남길 수 있습니다.';
+
+  @override
+  String get settingsCategoryAuctionActivity => '경매 활동';
+
+  @override
+  String get settingsCategoryAuctionActivityDescription =>
+      '입찰 경쟁, 마감 임박, 관심 경매 움직임을 알려줍니다.';
+
+  @override
+  String get settingsCategoryOrderPayment => '주문과 결제';
+
+  @override
+  String get settingsCategoryOrderPaymentDescription =>
+      '즉시 구매 완료, 결제 진행, 주문 타임라인 변화를 알려줍니다.';
+
+  @override
+  String get settingsCategoryShippingAndReceipt => '배송과 수령';
+
+  @override
+  String get settingsCategoryShippingAndReceiptDescription =>
+      '배송 등록, 배송 진행, 수령 확인 단계를 알려줍니다.';
+
+  @override
+  String get settingsCategorySystem => '시스템 공지';
+
+  @override
+  String get settingsCategorySystemDescription =>
+      '운영 공지, 정책 변경, 서비스 상태 업데이트를 알려줍니다.';
+
+  @override
+  String get settingsNotificationsEnabledToast => '푸시 알림을 켰습니다.';
+
+  @override
+  String get settingsNotificationsDisabledToast => '푸시 알림을 껐습니다.';
+
+  @override
+  String get settingsUpdateFailed => '설정을 업데이트하지 못했습니다. 다시 시도해 주세요.';
+
+  @override
+  String get settingsPermissionRequestFailed => '지금은 알림 권한을 요청하지 못했습니다.';
+
+  @override
+  String settingsCategoryEnabledToast(Object category) {
+    return '$category 알림을 켰습니다.';
+  }
+
+  @override
+  String settingsCategoryDisabledToast(Object category) {
+    return '$category 알림을 껐습니다.';
+  }
+
+  @override
+  String get settingsSystemSettingsOpened => '시스템 설정을 열었습니다.';
+
+  @override
+  String get settingsSystemSettingsUnavailable => '이 기기에서는 시스템 설정을 열지 못했습니다.';
+
+  @override
+  String get settingsAppInfoTitle => '앱 정보';
+
+  @override
+  String get settingsAppInfoDescription =>
+      '버전, 라이선스, 실행 환경 정보는 조용한 정보 섹션으로 분리합니다.';
+
+  @override
+  String get settingsVersionLabel => '버전';
+
+  @override
+  String get settingsVersionLoading => '버전 정보를 준비하고 있습니다...';
+
+  @override
+  String get settingsLicensesTitle => '오픈소스 라이선스';
+
+  @override
+  String get settingsLicensesDescription => '사용 중인 패키지의 라이선스와 고지 내용을 확인합니다.';
+
+  @override
+  String get settingsDeveloperTitle => '개발 환경 정보';
+
+  @override
+  String get settingsDeveloperDescription =>
+      '릴리스 빌드가 아닌 경우에만 로컬 실행 환경을 확인할 수 있습니다.';
+
+  @override
   String get myTitle => '마이';
 
   @override

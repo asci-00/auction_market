@@ -1214,6 +1214,282 @@ abstract class AppLocalizations {
   /// **'Bid, payment, and shipment updates will land here as soon as activity begins.'**
   String get notificationsEmptyDescription;
 
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep alerts and app information within reach.'**
+  String get settingsSubtitle;
+
+  /// No description provided for @settingsHeroEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get settingsHeroEyebrow;
+
+  /// No description provided for @settingsHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shape alerts around the moments that actually need your attention.'**
+  String get settingsHeroTitle;
+
+  /// No description provided for @settingsHeroDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification controls should feel operational, clear, and easy to revisit from anywhere in the app.'**
+  String get settingsHeroDescription;
+
+  /// No description provided for @settingsSignedOutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to manage preferences'**
+  String get settingsSignedOutTitle;
+
+  /// No description provided for @settingsSignedOutDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your notification preferences and app information become available after sign-in.'**
+  String get settingsSignedOutDescription;
+
+  /// No description provided for @settingsUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings are not ready yet'**
+  String get settingsUnavailableTitle;
+
+  /// No description provided for @settingsUnavailableDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t prepare your settings right now. Try again shortly.'**
+  String get settingsUnavailableDescription;
+
+  /// No description provided for @settingsOpenAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get settingsOpenAction;
+
+  /// No description provided for @settingsNotificationsMasterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Push notifications'**
+  String get settingsNotificationsMasterTitle;
+
+  /// No description provided for @settingsNotificationsMasterDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn marketplace push updates on or off for this account.'**
+  String get settingsNotificationsMasterDescription;
+
+  /// No description provided for @settingsNotificationsPermissionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Device permission'**
+  String get settingsNotificationsPermissionTitle;
+
+  /// No description provided for @settingsNotificationsPermissionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The device permission still needs to allow notifications before alerts can reach this phone.'**
+  String get settingsNotificationsPermissionDescription;
+
+  /// No description provided for @settingsRequestPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow notifications'**
+  String get settingsRequestPermission;
+
+  /// No description provided for @settingsOpenSystemSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open system settings'**
+  String get settingsOpenSystemSettings;
+
+  /// No description provided for @settingsPermissionStatusAuthorized.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are allowed on this device.'**
+  String get settingsPermissionStatusAuthorized;
+
+  /// No description provided for @settingsPermissionStatusDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are blocked in system settings.'**
+  String get settingsPermissionStatusDenied;
+
+  /// No description provided for @settingsPermissionStatusNotDetermined.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification permission has not been requested yet.'**
+  String get settingsPermissionStatusNotDetermined;
+
+  /// No description provided for @settingsPermissionStatusProvisional.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are temporarily allowed with limited presentation.'**
+  String get settingsPermissionStatusProvisional;
+
+  /// No description provided for @settingsNotificationsCategoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert categories'**
+  String get settingsNotificationsCategoriesTitle;
+
+  /// No description provided for @settingsNotificationsCategoriesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep only the updates that help you move to the next action.'**
+  String get settingsNotificationsCategoriesDescription;
+
+  /// No description provided for @settingsCategoryAuctionActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Auction activity'**
+  String get settingsCategoryAuctionActivity;
+
+  /// No description provided for @settingsCategoryAuctionActivityDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Bid momentum, ending-soon reminders, and watchlist movement.'**
+  String get settingsCategoryAuctionActivityDescription;
+
+  /// No description provided for @settingsCategoryOrderPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders and payment'**
+  String get settingsCategoryOrderPayment;
+
+  /// No description provided for @settingsCategoryOrderPaymentDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy now completion, payment handoff, and order timeline updates.'**
+  String get settingsCategoryOrderPaymentDescription;
+
+  /// No description provided for @settingsCategoryShippingAndReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipping and receipt'**
+  String get settingsCategoryShippingAndReceipt;
+
+  /// No description provided for @settingsCategoryShippingAndReceiptDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipment registration, delivery progress, and receipt confirmation.'**
+  String get settingsCategoryShippingAndReceiptDescription;
+
+  /// No description provided for @settingsCategorySystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System notices'**
+  String get settingsCategorySystem;
+
+  /// No description provided for @settingsCategorySystemDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Policy updates, operational notices, and service interruptions.'**
+  String get settingsCategorySystemDescription;
+
+  /// No description provided for @settingsNotificationsEnabledToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Push notifications are now on.'**
+  String get settingsNotificationsEnabledToast;
+
+  /// No description provided for @settingsNotificationsDisabledToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Push notifications are now off.'**
+  String get settingsNotificationsDisabledToast;
+
+  /// No description provided for @settingsUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t update that setting. Try again.'**
+  String get settingsUpdateFailed;
+
+  /// No description provided for @settingsPermissionRequestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t request notification permission right now.'**
+  String get settingsPermissionRequestFailed;
+
+  /// No description provided for @settingsCategoryEnabledToast.
+  ///
+  /// In en, this message translates to:
+  /// **'{category} notifications are now on.'**
+  String settingsCategoryEnabledToast(Object category);
+
+  /// No description provided for @settingsCategoryDisabledToast.
+  ///
+  /// In en, this message translates to:
+  /// **'{category} notifications are now off.'**
+  String settingsCategoryDisabledToast(Object category);
+
+  /// No description provided for @settingsSystemSettingsOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'System settings opened.'**
+  String get settingsSystemSettingsOpened;
+
+  /// No description provided for @settingsSystemSettingsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t open system settings on this device.'**
+  String get settingsSystemSettingsUnavailable;
+
+  /// No description provided for @settingsAppInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App information'**
+  String get settingsAppInfoTitle;
+
+  /// No description provided for @settingsAppInfoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Version, licenses, and environment details stay tucked into a quieter section.'**
+  String get settingsAppInfoDescription;
+
+  /// No description provided for @settingsVersionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get settingsVersionLabel;
+
+  /// No description provided for @settingsVersionLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing version information...'**
+  String get settingsVersionLoading;
+
+  /// No description provided for @settingsLicensesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-source licenses'**
+  String get settingsLicensesTitle;
+
+  /// No description provided for @settingsLicensesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Review package attributions and license notices.'**
+  String get settingsLicensesDescription;
+
+  /// No description provided for @settingsDeveloperTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer context'**
+  String get settingsDeveloperTitle;
+
+  /// No description provided for @settingsDeveloperDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown only in non-release builds to confirm local environment assumptions.'**
+  String get settingsDeveloperDescription;
+
   /// No description provided for @myTitle.
   ///
   /// In en, this message translates to:

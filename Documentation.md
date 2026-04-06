@@ -84,6 +84,9 @@
   - The search route now uses a sliver-based body with a pinned query-field header, keeping the primary search input visible while the result grid scrolls underneath.
   - The search route now also keeps a local presentation-only layout mode, letting users switch the same filtered result set between large cards and a compact list without changing provider contracts or query behavior.
   - My now maps the user document through `features/my/data/my_profile_summary.dart`, keeps verification label logic separate, and composes account and verification blocks from dedicated widgets.
+  - Settings now lives under `features/settings/` with a dedicated data model for notification preferences, an application service for Firestore preference writes and OS permission helpers, and presentation widgets for notification controls plus app info.
+  - The first Phase 4 settings slice now exposes `/settings` from both the global app bar and the My screen, and it currently covers notification preferences, OS notification-permission state, app version, licenses, and debug-only environment info.
+  - Settings reads `users/{uid}.preferences` directly from Firestore and falls back to `SettingsPreferences.defaults()` when the signed-in user document exists without a populated `preferences` payload yet.
   - Notifications now reuse the shared app deep-link normalizer instead of carrying a screen-local route parser.
   - Auction detail now runs `placeBid`, `setAutoBid`, and `buyNow` from the sticky action bar when the viewer is an eligible buyer on a live auction, and redirects completed buy-now orders into `/orders/{orderId}`.
   - Orders now routes `createPaymentSession`, `confirmOrderPayment`, `shipmentUpdate`, and `confirmReceipt` through `features/orders/application/order_action_service.dart`, and notifications call `markNotificationRead` before deep-link navigation.
@@ -186,7 +189,7 @@
 
 - Public route: `/login`.
 - Authenticated tab routes: `/home`, `/search`, `/sell`, `/activity`, `/my`.
-- Authenticated detail routes: `/auction/:id`, `/orders`, `/orders/:orderId`, `/payments/success`, `/payments/fail`, `/notifications`.
+- Authenticated detail routes: `/auction/:id`, `/orders`, `/orders/:orderId`, `/payments/success`, `/payments/fail`, `/notifications`, `/settings`.
 - The router must:
   - restore session before initial route selection.
   - redirect unauthenticated users to `/login`.
@@ -239,8 +242,9 @@
   - `penaltyStats.*`
   - `ops.*`
 - Rules:
-  - `preferences.pushEnabled` remains the master notification switch.
-  - Category toggles only apply when `preferences.pushEnabled == true`.
+- `preferences.pushEnabled` remains the master notification switch.
+- Category toggles only apply when `preferences.pushEnabled == true`.
+- The current Phase 4 settings slice reads and writes only `preferences.pushEnabled` and `preferences.notificationCategories.*`; `preferences.themeMode` and `preferences.languageCode` remain reserved schema fields until their apply flows are implemented.
 
 ### `users/{uid}/deviceTokens/{tokenId}`
 - Purpose: signed-in device tokens for push delivery.
