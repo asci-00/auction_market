@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_localization.dart';
@@ -53,6 +54,13 @@ class MyScreen extends ConsumerWidget {
             hasError: myAsync?.hasError ?? false,
           ),
           SizedBox(height: tokens.space6),
+          OutlinedButton.icon(
+            key: const ValueKey('my-settings-fallback-action'),
+            onPressed: () => context.push('/settings'),
+            icon: const Icon(Icons.tune_rounded),
+            label: Text(context.l10n.settingsOpenAction),
+          ),
+          SizedBox(height: tokens.space4),
           FilledButton(
             onPressed: auth.signOut,
             child: Text(context.l10n.mySignOut),

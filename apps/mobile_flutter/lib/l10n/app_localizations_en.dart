@@ -643,6 +643,172 @@ class AppLocalizationsEn extends AppLocalizations {
       'Bid, payment, and shipment updates will land here as soon as activity begins.';
 
   @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsSubtitle =>
+      'Keep alerts and app information within reach.';
+
+  @override
+  String get settingsHeroEyebrow => 'Preferences';
+
+  @override
+  String get settingsHeroTitle =>
+      'Shape alerts around the moments that actually need your attention.';
+
+  @override
+  String get settingsHeroDescription =>
+      'Notification controls should feel operational, clear, and easy to revisit from anywhere in the app.';
+
+  @override
+  String get settingsSignedOutTitle => 'Sign in to manage preferences';
+
+  @override
+  String get settingsSignedOutDescription =>
+      'Your notification preferences and app information become available after sign-in.';
+
+  @override
+  String get settingsUnavailableTitle => 'Settings are not ready yet';
+
+  @override
+  String get settingsUnavailableDescription =>
+      'We couldn\'t prepare your settings right now. Try again shortly.';
+
+  @override
+  String get settingsOpenAction => 'Open settings';
+
+  @override
+  String get settingsNotificationsMasterTitle => 'Push notifications';
+
+  @override
+  String get settingsNotificationsMasterDescription =>
+      'Turn marketplace push updates on or off for this account.';
+
+  @override
+  String get settingsNotificationsPermissionTitle => 'Device permission';
+
+  @override
+  String get settingsNotificationsPermissionDescription =>
+      'The device permission still needs to allow notifications before alerts can reach this phone.';
+
+  @override
+  String get settingsRequestPermission => 'Allow notifications';
+
+  @override
+  String get settingsOpenSystemSettings => 'Open system settings';
+
+  @override
+  String get settingsPermissionStatusAuthorized =>
+      'Notifications are allowed on this device.';
+
+  @override
+  String get settingsPermissionStatusDenied =>
+      'Notifications are blocked in system settings.';
+
+  @override
+  String get settingsPermissionStatusNotDetermined =>
+      'Notification permission has not been requested yet.';
+
+  @override
+  String get settingsPermissionStatusProvisional =>
+      'Notifications are temporarily allowed with limited presentation.';
+
+  @override
+  String get settingsNotificationsCategoriesTitle => 'Alert categories';
+
+  @override
+  String get settingsNotificationsCategoriesDescription =>
+      'Keep only the updates that help you move to the next action.';
+
+  @override
+  String get settingsCategoryAuctionActivity => 'Auction activity';
+
+  @override
+  String get settingsCategoryAuctionActivityDescription =>
+      'Bid momentum, ending-soon reminders, and watchlist movement.';
+
+  @override
+  String get settingsCategoryOrderPayment => 'Orders and payment';
+
+  @override
+  String get settingsCategoryOrderPaymentDescription =>
+      'Buy now completion, payment handoff, and order timeline updates.';
+
+  @override
+  String get settingsCategoryShippingAndReceipt => 'Shipping and receipt';
+
+  @override
+  String get settingsCategoryShippingAndReceiptDescription =>
+      'Shipment registration, delivery progress, and receipt confirmation.';
+
+  @override
+  String get settingsCategorySystem => 'System notices';
+
+  @override
+  String get settingsCategorySystemDescription =>
+      'Policy updates, operational notices, and service interruptions.';
+
+  @override
+  String get settingsNotificationsEnabledToast =>
+      'Push notifications are now on.';
+
+  @override
+  String get settingsNotificationsDisabledToast =>
+      'Push notifications are now off.';
+
+  @override
+  String get settingsUpdateFailed =>
+      'We couldn\'t update that setting. Try again.';
+
+  @override
+  String get settingsPermissionRequestFailed =>
+      'We couldn\'t request notification permission right now.';
+
+  @override
+  String settingsCategoryEnabledToast(Object category) {
+    return '$category notifications are now on.';
+  }
+
+  @override
+  String settingsCategoryDisabledToast(Object category) {
+    return '$category notifications are now off.';
+  }
+
+  @override
+  String get settingsSystemSettingsOpened => 'System settings opened.';
+
+  @override
+  String get settingsSystemSettingsUnavailable =>
+      'We couldn\'t open system settings on this device.';
+
+  @override
+  String get settingsAppInfoTitle => 'App information';
+
+  @override
+  String get settingsAppInfoDescription =>
+      'Version, licenses, and environment details stay tucked into a quieter section.';
+
+  @override
+  String get settingsVersionLabel => 'Version';
+
+  @override
+  String get settingsVersionLoading => 'Preparing version information...';
+
+  @override
+  String get settingsLicensesTitle => 'Open-source licenses';
+
+  @override
+  String get settingsLicensesDescription =>
+      'Review package attributions and license notices.';
+
+  @override
+  String get settingsDeveloperTitle => 'Developer context';
+
+  @override
+  String get settingsDeveloperDescription =>
+      'Shown only in non-release builds to confirm local environment assumptions.';
+
+  @override
   String get myTitle => 'My';
 
   @override

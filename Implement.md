@@ -1,8 +1,9 @@
 # Auction Market Execution Log
 
 ## Current Task
-- Phase 3 is complete as of April 6, 2026.
-- The current transition task is Phase 4 readiness with the existing Toss sandbox dev flow kept stable.
+- Phase 4 settings and notification foundation is active.
+- The current slice adds a dedicated settings route, Firestore-backed notification preference toggles, OS notification-permission visibility, and settings entry points from the app bar and My screen.
+- Theme override apply, language override apply, device-token lifecycle, and real push delivery remain later Phase 4 slices.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -38,6 +39,9 @@
 - Auction detail gallery state now clamps safely when the image list shrinks, and dedicated widget and data tests cover both the stream join behavior and the gallery index reset path.
 - Auction detail now also exposes a dedicated presentation-level scaffold widget with tests for live buyer, seller-owned, and missing-document states, so the close review covers route composition as well as lower-level stream and gallery behavior.
 - The pinned search header was revalidated after the latest query-sync fixes and now keeps raw input, clear affordance, and trimmed execution query aligned while remaining tappable below the app bar.
+- Phase 4 now has its first settings foundation slice: `/settings` exists, the app bar and My screen can open it, signed-in users see notification preference toggles backed by `users/{uid}.preferences`, and signed-out users are redirected back through `/login?from=/settings`.
+- Settings now falls back to an in-app default preference model when `users/{uid}` exists without a `preferences` payload yet, so notification controls can still render before a full profile bootstrap is complete.
+- The settings screen now shows current OS notification permission state, a request-permission or open-system-settings recovery action when applicable, app version, open-source licenses, and debug-only environment info.
 - Emulator seed data now covers separate buyer and seller notification, payment, shipment, confirmed-receipt, settled, cancelled-unpaid, draft, unsold, and cancelled-listing paths without cross-linking orders to unrelated auctions.
 - Backend callables cover bootstrap, draft lifecycle, bid and auto-bid, buy now, payment-session preparation, payment confirmation, shipment update, receipt confirmation, and notification read state.
 - The backend now exposes `tossPaymentBridge` so emulator-backed `dev` can return a real Toss sandbox `checkoutUrl`, `successUrl`, and `failUrl` when `ENABLE_TOSS_SANDBOX=true`.
@@ -57,6 +61,10 @@
 - `cd apps/mobile_flutter && flutter analyze` passed on April 3, 2026.
 - `cd apps/mobile_flutter && flutter test` passed on April 3, 2026.
 - `cd backend/functions && npm run format:check && npm run lint && npm run build && npm test` passed on April 5, 2026 after the Toss sandbox bridge changes.
+- `cd apps/mobile_flutter && flutter gen-l10n` passed on April 6, 2026 after adding the settings localization keys.
+- `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib test` passed on April 6, 2026.
+- `cd apps/mobile_flutter && flutter analyze` passed on April 6, 2026.
+- `cd apps/mobile_flutter && flutter test` passed on April 6, 2026.
 - `cd backend/functions && npm run format:check && npm run lint && npm run build && npm test` passed on April 6, 2026 during Phase 3 close review.
 - `cd apps/mobile_flutter && dart analyze <orders payment files>` passed on April 5, 2026.
 - `cd apps/mobile_flutter && flutter test test/features/orders/application/order_payment_handoff_service_test.dart test/features/orders/application/order_payment_launcher_service_test.dart test/features/orders/data/order_payment_session_test.dart test/core/routing/app_deeplink_test.dart` passed on April 5, 2026.
@@ -82,8 +90,9 @@
 4. Restart `npm run serve` once if the tunnel script updated `APP_BASE_URL` after the emulator had already started.
 5. `cd apps/mobile_flutter && flutter run --dart-define-from-file=dart_defines.json`
 6. Keep the `npm run tunnel:toss` terminal open while testing Toss sandbox checkout and return deep links.
-7. Start Phase 4 work after validating the current local environment setup.
-8. Keep deferred payment-provider cutover inactive unless the user explicitly activates it.
+7. Sign in as `buyer1@test.local` or `seller1@test.local`
+8. Open settings from the app bar or My screen and verify the notification toggles, permission state, version, licenses, and debug-only info.
+9. Continue Phase 4 with theme or language apply only after this settings foundation slice is reviewed.
 
 ## Update Rules
 - Keep this file short.

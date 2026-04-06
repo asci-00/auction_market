@@ -17,6 +17,7 @@ import '../../features/orders/presentation/order_payment_return_screen.dart';
 import '../../features/search/application/search_auction_filter.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/sell/presentation/sell_screen.dart';
+import '../../features/settings/presentation/settings_screen.dart';
 import '../firebase/firebase_providers.dart';
 import '../widgets/app_shell.dart';
 import 'app_deeplink.dart';
@@ -146,6 +147,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           state: state,
           child: const NotificationsScreen(),
         ),
+      ),
+      GoRoute(
+        path: '/settings',
+        pageBuilder: (_, state) =>
+            _buildTransitionPage(state: state, child: const SettingsScreen()),
       ),
     ],
   );
