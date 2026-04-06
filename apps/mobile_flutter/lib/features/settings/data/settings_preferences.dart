@@ -36,13 +36,11 @@ enum SettingsNotificationCategory {
 class SettingsPreferences {
   const SettingsPreferences({
     required this.pushEnabled,
-    required this.themeMode,
     required this.categories,
   });
 
   const SettingsPreferences.defaults()
     : pushEnabled = true,
-      themeMode = SettingsThemeModePreference.system,
       categories = const {
         SettingsNotificationCategory.auctionActivity: true,
         SettingsNotificationCategory.orderPayment: true,
@@ -51,7 +49,6 @@ class SettingsPreferences {
       };
 
   final bool pushEnabled;
-  final SettingsThemeModePreference themeMode;
   final Map<SettingsNotificationCategory, bool> categories;
 
   bool isCategoryEnabled(SettingsNotificationCategory category) {
@@ -70,9 +67,6 @@ class SettingsPreferences {
 
     return SettingsPreferences(
       pushEnabled: (preferences['pushEnabled'] as bool?) ?? true,
-      themeMode: SettingsThemeModePreference.parse(
-        preferences['themeMode'] as String?,
-      ),
       categories: {
         for (final category in SettingsNotificationCategory.values)
           category:

@@ -10,7 +10,6 @@ import '../core/l10n/app_localization.dart';
 import '../core/routing/app_router.dart';
 import '../core/theme/app_theme.dart';
 import '../features/settings/application/settings_preferences_service.dart';
-import '../features/settings/data/settings_preferences.dart';
 
 class AuctionMarketApp extends ConsumerWidget {
   const AuctionMarketApp({super.key});
@@ -24,10 +23,7 @@ class AuctionMarketApp extends ConsumerWidget {
     final lightTheme = AppTheme.light();
     final darkTheme = AppTheme.dark();
     final bootstrapState = ref.watch(appBootstrapProvider);
-    final appSettings = bootstrapState.asData == null
-        ? const SettingsPreferences.defaults()
-        : (ref.watch(appSettingsPreferencesProvider).valueOrNull ??
-              const SettingsPreferences.defaults());
+    final themeMode = ref.watch(themeModePreferenceProvider);
     final resolvedLocale = resolveAppLocale(_deviceLocale());
 
     return bootstrapState.when(
@@ -36,7 +32,7 @@ class AuctionMarketApp extends ConsumerWidget {
         builder: FToastBuilder(),
         theme: lightTheme,
         darkTheme: darkTheme,
-        themeMode: appSettings.themeMode.materialThemeMode,
+        themeMode: themeMode.materialThemeMode,
         onGenerateTitle: (context) => context.l10n.appTitle,
         locale: resolvedLocale,
         localizationsDelegates: _delegates(context),
@@ -49,7 +45,7 @@ class AuctionMarketApp extends ConsumerWidget {
         builder: FToastBuilder(),
         theme: lightTheme,
         darkTheme: darkTheme,
-        themeMode: ThemeMode.system,
+        themeMode: themeMode.materialThemeMode,
         locale: resolveAppLocale(_deviceLocale()),
         localizationsDelegates: _delegates(context),
         supportedLocales: supportedAppLocales,
@@ -61,7 +57,7 @@ class AuctionMarketApp extends ConsumerWidget {
         builder: FToastBuilder(),
         theme: lightTheme,
         darkTheme: darkTheme,
-        themeMode: ThemeMode.system,
+        themeMode: themeMode.materialThemeMode,
         locale: resolveAppLocale(_deviceLocale()),
         localizationsDelegates: _delegates(context),
         supportedLocales: supportedAppLocales,

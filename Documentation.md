@@ -87,7 +87,7 @@
   - Settings now lives under `features/settings/` with a dedicated data model for notification preferences, an application service for Firestore preference writes and OS permission helpers, and presentation widgets for notification controls plus app info.
   - The first Phase 4 settings slice now exposes `/settings` from both the global app bar and the My screen, and it currently covers notification preferences, OS notification-permission state, appearance mode, app version, licenses, and debug-only environment info.
   - Settings reads `users/{uid}.preferences` directly from Firestore and falls back to `SettingsPreferences.defaults()` when the signed-in user document exists without a populated `preferences` payload yet.
-  - `app/app.dart` now watches the signed-in user's settings stream so `preferences.themeMode` applies directly to `MaterialApp`, while locale always follows the device setting through the shared locale resolver.
+  - `app/app.dart` now applies theme mode from local `SharedPreferences` state instead of the signed-in user document, while locale always follows the device setting through the shared locale resolver.
   - Signed-in routes no longer expose a separate global locale picker in the shared app bar, and the login screen no longer carries a manual locale menu either; language behavior is system-driven only.
   - Theme selection now uses a compact preview-card selector instead of long descriptive radio rows, aligning the settings surface with common mobile-app patterns.
   - Notifications now reuse the shared app deep-link normalizer instead of carrying a screen-local route parser.
@@ -212,7 +212,6 @@
   - `bio: string | null`
   - `preferences.languageCode: string | null`
   - `preferences.pushEnabled: boolean`
-  - `preferences.themeMode: "SYSTEM" | "LIGHT" | "DARK"`
   - `preferences.notificationCategories.auctionActivity: boolean`
   - `preferences.notificationCategories.orderPayment: boolean`
   - `preferences.notificationCategories.shippingAndReceipt: boolean`
@@ -237,7 +236,8 @@
   - `displayName`
   - `photoUrl`
   - `bio`
-  - `preferences.*`
+  - `preferences.pushEnabled`
+  - `preferences.notificationCategories.*`
 - Server-only fields:
   - `authProviders`
   - `verification.*`
@@ -247,7 +247,8 @@
 - Rules:
 - `preferences.pushEnabled` remains the master notification switch.
 - Category toggles only apply when `preferences.pushEnabled == true`.
-- The current Phase 4 settings slices read and write `preferences.pushEnabled`, `preferences.notificationCategories.*`, and `preferences.themeMode`; `preferences.languageCode` and `deviceTokens` remain reserved until product requirements call for them.
+- The current Phase 4 settings slices read and write `preferences.pushEnabled` and `preferences.notificationCategories.*`; `preferences.languageCode` and `deviceTokens` remain reserved until product requirements call for them.
+- Theme mode is local-only UI state stored in `SharedPreferences` under the mobile app and is not part of the Firestore user schema.
 
 ### `users/{uid}/deviceTokens/{tokenId}`
 - Purpose: signed-in device tokens for push delivery.

@@ -42,7 +42,7 @@
 - Phase 4 now has its first settings foundation slice: `/settings` exists, the app bar and My screen can open it, signed-in users see notification preference toggles backed by `users/{uid}.preferences`, and signed-out users are redirected back through `/login?from=/settings`.
 - Settings now falls back to an in-app default preference model when `users/{uid}` exists without a `preferences` payload yet, so notification controls can still render before a full profile bootstrap is complete.
 - The settings screen now shows current OS notification permission state, a request-permission or open-system-settings recovery action when applicable, app version, open-source licenses, and debug-only environment info.
-- The second Phase 4 settings slice now applies `users/{uid}.preferences.themeMode` to `MaterialApp`, and `/settings` now exposes a compact theme preview selector instead of a verbose radio list.
+- The second Phase 4 settings slice now applies a local `SharedPreferences` theme preference to `MaterialApp`, and `/settings` now exposes a compact theme preview selector instead of a verbose radio list.
 - Signed-in routes no longer expose a global locale picker in the shared app bar, and the signed-out login surface also no longer carries a manual locale menu; the app now follows the device locale only.
 - Emulator seed data now covers separate buyer and seller notification, payment, shipment, confirmed-receipt, settled, cancelled-unpaid, draft, unsold, and cancelled-listing paths without cross-linking orders to unrelated auctions.
 - Backend callables cover bootstrap, draft lifecycle, bid and auto-bid, buy now, payment-session preparation, payment confirmation, shipment update, receipt confirmation, and notification read state.

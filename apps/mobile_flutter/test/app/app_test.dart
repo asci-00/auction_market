@@ -20,6 +20,10 @@ void main() {
     await EasyLocalization.ensureInitialized();
   });
 
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
   testWidgets('app applies theme override while locale follows the device', (
     tester,
   ) async {
@@ -55,11 +59,13 @@ void main() {
                 ),
               ),
             ),
+            sharedPreferencesProvider.overrideWithValue(
+              await SharedPreferences.getInstance(),
+            ),
             appSettingsPreferencesProvider.overrideWith(
               (ref) => Stream.value(
                 const SettingsPreferences(
                   pushEnabled: true,
-                  themeMode: SettingsThemeModePreference.dark,
                   categories: {
                     SettingsNotificationCategory.auctionActivity: true,
                     SettingsNotificationCategory.orderPayment: true,
@@ -68,6 +74,9 @@ void main() {
                   },
                 ),
               ),
+            ),
+            themeModePreferenceProvider.overrideWith(
+              (ref) => SettingsThemeModePreference.dark,
             ),
             goRouterProvider.overrideWith((ref) => router),
           ],
@@ -86,4 +95,65 @@ void main() {
     expect(materialApp.locale, const Locale('en'));
     expect(find.text('Back'), findsOneWidget);
   });
+
+  testWidgets(
+    'app uses local theme preference before settings stream resolves',
+    (tester) async {
+      tester.binding.platformDispatcher.localeTestValue = const Locale('ko');
+      addTearDown(tester.binding.platformDispatcher.clearLocaleTestValue);
+
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) =>
+                Text(MaterialLocalizations.of(context).backButtonTooltip),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        EasyLocalization(
+          supportedLocales: supportedAppLocales,
+          fallbackLocale: fallbackAppLocale,
+          startLocale: const Locale('ko'),
+          saveLocale: false,
+          path: translationAssetPath,
+          child: ProviderScope(
+            overrides: [
+              appBootstrapProvider.overrideWith(
+                (ref) async => const AppBootstrapState(
+                  config: AppConfig(
+                    environment: AppEnvironment.dev,
+                    useFirebaseEmulators: true,
+                    tossClientKey: null,
+                    firebaseEmulatorHostOverride: null,
+                  ),
+                ),
+              ),
+              sharedPreferencesProvider.overrideWithValue(
+                await SharedPreferences.getInstance(),
+              ),
+              themeModePreferenceProvider.overrideWith(
+                (ref) => SettingsThemeModePreference.light,
+              ),
+              appSettingsPreferencesProvider.overrideWith(
+                (ref) => const Stream.empty(),
+              ),
+              goRouterProvider.overrideWith((ref) => router),
+            ],
+            child: const AuctionMarketApp(),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final materialApp = tester.widget<MaterialApp>(
+        find.byType(MaterialApp).first,
+      );
+
+      expect(materialApp.themeMode, ThemeMode.light);
+    },
+  );
 }

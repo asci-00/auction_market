@@ -4,13 +4,17 @@ import 'package:auction_market_mobile/features/settings/data/settings_preference
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
   test('defaults enable push and all notification categories', () {
     const preferences = SettingsPreferences.defaults();
 
     expect(preferences.pushEnabled, isTrue);
-    expect(preferences.themeMode, SettingsThemeModePreference.system);
 
     for (final category in SettingsNotificationCategory.values) {
       expect(preferences.isCategoryEnabled(category), isTrue);
@@ -36,15 +40,6 @@ void main() {
     });
   });
 
-  test('theme payload keeps appearance mode under preferences', () {
-    final payload = SettingsPreferencesService.themeModePayload(
-      SettingsThemeModePreference.dark,
-    );
-
-    expect(payload['updatedAt'], isNotNull);
-    expect(payload['preferences'], {'themeMode': 'DARK'});
-  });
-
   test(
     'provider falls back to defaults when the user document is missing',
     () async {
@@ -59,18 +54,16 @@ void main() {
       );
 
       expect(preferences.pushEnabled, isTrue);
-      expect(preferences.themeMode, SettingsThemeModePreference.system);
       for (final category in SettingsNotificationCategory.values) {
         expect(preferences.isCategoryEnabled(category), isTrue);
       }
     },
   );
 
-  test('document parsing keeps supported theme override', () async {
+  test('document parsing keeps notification category overrides', () async {
     final firestore = FakeFirebaseFirestore();
     await firestore.collection('users').doc('user-1').set({
       'preferences': {
-        'themeMode': 'DARK',
         'notificationCategories': {'system': false},
       },
     });
@@ -78,10 +71,25 @@ void main() {
     final snap = await firestore.collection('users').doc('user-1').get();
     final preferences = SettingsPreferences.fromDocument(snap);
 
-    expect(preferences.themeMode, SettingsThemeModePreference.dark);
     expect(
       preferences.isCategoryEnabled(SettingsNotificationCategory.system),
       isFalse,
+    );
+  });
+
+  test('theme preference provider reads the locally stored theme', () async {
+    SharedPreferences.setMockInitialValues({'settings.themeMode': 'DARK'});
+    final sharedPreferences = await SharedPreferences.getInstance();
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    expect(
+      container.read(themeModePreferenceProvider),
+      SettingsThemeModePreference.dark,
     );
   });
 }

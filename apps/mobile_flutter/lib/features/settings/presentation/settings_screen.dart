@@ -45,6 +45,7 @@ class SettingsScreen extends ConsumerWidget {
     }
 
     final preferencesAsync = ref.watch(settingsPreferencesProvider(user.uid));
+    final themeMode = ref.watch(themeModePreferenceProvider);
     final permissionAsync = ref.watch(notificationPermissionStatusProvider);
     final packageInfoAsync = ref.watch(appPackageInfoProvider);
     final config = ref.watch(appBootstrapProvider).valueOrNull?.config;
@@ -69,91 +70,67 @@ class SettingsScreen extends ConsumerWidget {
           SizedBox(height: tokens.space6),
           preferencesAsync.when(
             data: (preferences) {
-              return Column(
-                children: [
-                  SettingsNotificationSection(
-                    preferences: preferences,
-                    permissionStatus:
-                        permissionAsync.valueOrNull ??
-                        AuthorizationStatus.notDetermined,
-                    onPushEnabledChanged: (enabled) =>
-                        _handlePushEnabledChanged(
-                          context,
-                          ref,
-                          user.uid,
-                          enabled,
-                        ),
-                    onCategoryChanged: (category, enabled) =>
-                        _handleCategoryChanged(
-                          context,
-                          ref,
-                          user.uid,
-                          category,
-                          enabled,
-                        ),
-                    onRequestPermission: () =>
-                        _handlePermissionRequest(context, ref),
-                    onOpenSystemSettings: () =>
-                        _handleOpenSystemSettings(context, ref),
-                    masterTitle: context.l10n.settingsNotificationsMasterTitle,
-                    masterDescription:
-                        context.l10n.settingsNotificationsMasterDescription,
-                    permissionTitle:
-                        context.l10n.settingsNotificationsPermissionTitle,
-                    permissionDescription:
-                        context.l10n.settingsNotificationsPermissionDescription,
-                    permissionActionLabel: _permissionActionLabel(
-                      context,
-                      permissionAsync.valueOrNull ??
-                          AuthorizationStatus.notDetermined,
-                    ),
-                    permissionStatusLabel: _permissionStatusLabel(
-                      context,
-                      permissionAsync.valueOrNull ??
-                          AuthorizationStatus.notDetermined,
-                    ),
-                    categoryTitle:
-                        context.l10n.settingsNotificationsCategoriesTitle,
-                    categoryDescription:
-                        context.l10n.settingsNotificationsCategoriesDescription,
-                    categoryLabels: {
-                      SettingsNotificationCategory.auctionActivity:
-                          context.l10n.settingsCategoryAuctionActivity,
-                      SettingsNotificationCategory.orderPayment:
-                          context.l10n.settingsCategoryOrderPayment,
-                      SettingsNotificationCategory.shippingAndReceipt:
-                          context.l10n.settingsCategoryShippingAndReceipt,
-                      SettingsNotificationCategory.system:
-                          context.l10n.settingsCategorySystem,
-                    },
-                    categoryDescriptions: {
-                      SettingsNotificationCategory.auctionActivity: context
-                          .l10n
-                          .settingsCategoryAuctionActivityDescription,
-                      SettingsNotificationCategory.orderPayment:
-                          context.l10n.settingsCategoryOrderPaymentDescription,
-                      SettingsNotificationCategory.shippingAndReceipt: context
-                          .l10n
-                          .settingsCategoryShippingAndReceiptDescription,
-                      SettingsNotificationCategory.system:
-                          context.l10n.settingsCategorySystemDescription,
-                    },
-                  ),
-                  SizedBox(height: tokens.space6),
-                  SettingsThemeSection(
-                    sectionTitle: context.l10n.settingsAppearanceTitle,
-                    groupValue: preferences.themeMode,
-                    systemTitle: context.l10n.settingsThemeSystemTitle,
-                    lightTitle: context.l10n.settingsThemeLightTitle,
-                    darkTitle: context.l10n.settingsThemeDarkTitle,
-                    onChanged: (themeMode) => _handleThemeModeChanged(
+              return SettingsNotificationSection(
+                preferences: preferences,
+                permissionStatus:
+                    permissionAsync.valueOrNull ??
+                    AuthorizationStatus.notDetermined,
+                onPushEnabledChanged: (enabled) =>
+                    _handlePushEnabledChanged(context, ref, user.uid, enabled),
+                onCategoryChanged: (category, enabled) =>
+                    _handleCategoryChanged(
                       context,
                       ref,
                       user.uid,
-                      themeMode,
+                      category,
+                      enabled,
                     ),
-                  ),
-                ],
+                onRequestPermission: () =>
+                    _handlePermissionRequest(context, ref),
+                onOpenSystemSettings: () =>
+                    _handleOpenSystemSettings(context, ref),
+                masterTitle: context.l10n.settingsNotificationsMasterTitle,
+                masterDescription:
+                    context.l10n.settingsNotificationsMasterDescription,
+                permissionTitle:
+                    context.l10n.settingsNotificationsPermissionTitle,
+                permissionDescription:
+                    context.l10n.settingsNotificationsPermissionDescription,
+                permissionActionLabel: _permissionActionLabel(
+                  context,
+                  permissionAsync.valueOrNull ??
+                      AuthorizationStatus.notDetermined,
+                ),
+                permissionStatusLabel: _permissionStatusLabel(
+                  context,
+                  permissionAsync.valueOrNull ??
+                      AuthorizationStatus.notDetermined,
+                ),
+                categoryTitle:
+                    context.l10n.settingsNotificationsCategoriesTitle,
+                categoryDescription:
+                    context.l10n.settingsNotificationsCategoriesDescription,
+                categoryLabels: {
+                  SettingsNotificationCategory.auctionActivity:
+                      context.l10n.settingsCategoryAuctionActivity,
+                  SettingsNotificationCategory.orderPayment:
+                      context.l10n.settingsCategoryOrderPayment,
+                  SettingsNotificationCategory.shippingAndReceipt:
+                      context.l10n.settingsCategoryShippingAndReceipt,
+                  SettingsNotificationCategory.system:
+                      context.l10n.settingsCategorySystem,
+                },
+                categoryDescriptions: {
+                  SettingsNotificationCategory.auctionActivity:
+                      context.l10n.settingsCategoryAuctionActivityDescription,
+                  SettingsNotificationCategory.orderPayment:
+                      context.l10n.settingsCategoryOrderPaymentDescription,
+                  SettingsNotificationCategory.shippingAndReceipt: context
+                      .l10n
+                      .settingsCategoryShippingAndReceiptDescription,
+                  SettingsNotificationCategory.system:
+                      context.l10n.settingsCategorySystemDescription,
+                },
               );
             },
             loading: () => const SizedBox.shrink(),
@@ -162,6 +139,16 @@ class SettingsScreen extends ConsumerWidget {
               title: context.l10n.settingsUnavailableTitle,
               description: context.l10n.settingsUnavailableDescription,
             ),
+          ),
+          SizedBox(height: tokens.space6),
+          SettingsThemeSection(
+            sectionTitle: context.l10n.settingsAppearanceTitle,
+            groupValue: themeMode,
+            systemTitle: context.l10n.settingsThemeSystemTitle,
+            lightTitle: context.l10n.settingsThemeLightTitle,
+            darkTitle: context.l10n.settingsThemeDarkTitle,
+            onChanged: (themeMode) =>
+                _handleThemeModeChanged(context, ref, themeMode),
           ),
           SizedBox(height: tokens.space6),
           SettingsAppInfoSection(
@@ -347,13 +334,14 @@ class SettingsScreen extends ConsumerWidget {
   Future<void> _handleThemeModeChanged(
     BuildContext context,
     WidgetRef ref,
-    String userId,
     SettingsThemeModePreference themeMode,
   ) async {
+    final previousThemeMode = ref.read(themeModePreferenceProvider);
     try {
+      ref.read(themeModePreferenceProvider.notifier).state = themeMode;
       await ref
           .read(settingsPreferencesServiceProvider)
-          .setThemeMode(userId: userId, themeMode: themeMode);
+          .setThemeMode(themeMode);
       if (!context.mounted) {
         return;
       }
@@ -363,6 +351,7 @@ class SettingsScreen extends ConsumerWidget {
         ),
       );
     } catch (_) {
+      ref.read(themeModePreferenceProvider.notifier).state = previousThemeMode;
       if (!context.mounted) {
         return;
       }

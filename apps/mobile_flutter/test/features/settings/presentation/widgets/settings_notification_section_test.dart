@@ -15,7 +15,6 @@ void main() {
         child: SettingsNotificationSection(
           preferences: SettingsPreferences(
             pushEnabled: false,
-            themeMode: SettingsThemeModePreference.system,
             categories: {
               SettingsNotificationCategory.auctionActivity: true,
               SettingsNotificationCategory.orderPayment: true,
