@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../l10n/app_localization.dart';
-import '../l10n/locale_menu_action.dart';
 import '../theme/app_theme.dart';
 import 'app_motion.dart';
 import 'app_page_insets.dart';
@@ -71,7 +70,6 @@ class _AppPageScaffoldState extends State<AppPageScaffold> {
           icon: const Icon(Icons.tune_rounded),
           onPressed: () => context.push('/settings'),
         ),
-      const AppLocaleMenuAction(),
       SizedBox(width: tokens.space2),
     ];
 

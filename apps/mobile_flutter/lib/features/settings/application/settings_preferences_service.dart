@@ -28,6 +28,26 @@ final settingsPreferencesProvider =
       });
     });
 
+final appSettingsPreferencesProvider = StreamProvider<SettingsPreferences>((
+  ref,
+) {
+  final auth = ref.watch(firebaseAuthProvider);
+  final firestore = ref.watch(firestoreProvider);
+
+  return auth.authStateChanges().asyncExpand((user) {
+    if (user == null) {
+      return Stream.value(const SettingsPreferences.defaults());
+    }
+
+    return firestore.collection('users').doc(user.uid).snapshots().map((snap) {
+      if (!snap.exists) {
+        return const SettingsPreferences.defaults();
+      }
+      return SettingsPreferences.fromDocument(snap);
+    });
+  });
+});
+
 final notificationPermissionStatusProvider =
     FutureProvider<AuthorizationStatus>((ref) async {
       final messaging = ref.watch(firebaseMessagingProvider);
@@ -70,6 +90,29 @@ class SettingsPreferencesService {
         );
   }
 
+  Future<void> setThemeMode({
+    required String userId,
+    required SettingsThemeModePreference themeMode,
+  }) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .set(themeModePayload(themeMode), SetOptions(merge: true));
+  }
+
+  Future<void> setLanguagePreference({
+    required String userId,
+    required SettingsLanguagePreference languagePreference,
+  }) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .set(
+          languagePreferencePayload(languagePreference),
+          SetOptions(merge: true),
+        );
+  }
+
   @visibleForTesting
   static Map<String, Object?> pushEnabledPayload(bool enabled) {
     return {
@@ -87,6 +130,26 @@ class SettingsPreferencesService {
       'preferences': {
         'notificationCategories': {category.firestoreKey: enabled},
       },
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+  }
+
+  @visibleForTesting
+  static Map<String, Object?> themeModePayload(
+    SettingsThemeModePreference themeMode,
+  ) {
+    return {
+      'preferences': {'themeMode': themeMode.firestoreValue},
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+  }
+
+  @visibleForTesting
+  static Map<String, Object?> languagePreferencePayload(
+    SettingsLanguagePreference languagePreference,
+  ) {
+    return {
+      'preferences': {'languageCode': languagePreference.firestoreValue},
       'updatedAt': FieldValue.serverTimestamp(),
     };
   }

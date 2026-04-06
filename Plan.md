@@ -60,7 +60,7 @@ Status: in progress, close candidate pending final smoke review.
 - Dark mode, shared loading overlays, keyboard-safe sheets, and overflow-prone layouts are stabilized on supported mobile form factors.
 
 ## Phase 4: Notifications, Settings, And Product Hardening
-Status: pending after Phase 3.
+Status: in progress after Phase 3.
 - Add Android and iOS push-notification support with Firebase Messaging permission handling, token registration, foreground presentation, background tap routing, and category-aware delivery rules defined in `docs/Notification.md`.
 - Explore current buyer, seller, order, shipment, and inbox flows and support only the push events documented in `docs/Notification.md`.
 - Keep inbox documents and push delivery aligned so every supported push event also creates an inbox record and deep link.

@@ -62,8 +62,7 @@ import 'app_localizations_ko.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('ko'),
+    Locale('ko')
   ];
 
   /// No description provided for @appTitle.
@@ -1394,6 +1391,114 @@ abstract class AppLocalizations {
   /// **'Policy updates, operational notices, and service interruptions.'**
   String get settingsCategorySystemDescription;
 
+  /// No description provided for @settingsAppearanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearanceTitle;
+
+  /// No description provided for @settingsAppearanceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose whether the marketplace follows the device look or keeps a fixed theme.'**
+  String get settingsAppearanceDescription;
+
+  /// No description provided for @settingsThemeSystemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow device'**
+  String get settingsThemeSystemTitle;
+
+  /// No description provided for @settingsThemeSystemDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the phone\'s current light or dark appearance automatically.'**
+  String get settingsThemeSystemDescription;
+
+  /// No description provided for @settingsThemeLightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Always light'**
+  String get settingsThemeLightTitle;
+
+  /// No description provided for @settingsThemeLightDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the marketplace in the light editorial theme.'**
+  String get settingsThemeLightDescription;
+
+  /// No description provided for @settingsThemeDarkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Always dark'**
+  String get settingsThemeDarkTitle;
+
+  /// No description provided for @settingsThemeDarkDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the marketplace in the dark editorial theme.'**
+  String get settingsThemeDarkDescription;
+
+  /// No description provided for @settingsThemeUpdatedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance updated to {theme}.'**
+  String settingsThemeUpdatedToast(String theme);
+
+  /// No description provided for @settingsLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguageTitle;
+
+  /// No description provided for @settingsLanguageDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the device language by default, or pin the marketplace to Korean or English.'**
+  String get settingsLanguageDescription;
+
+  /// No description provided for @settingsLanguageSystemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow device language'**
+  String get settingsLanguageSystemTitle;
+
+  /// No description provided for @settingsLanguageSystemDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep Korean or English in sync with the device language when supported.'**
+  String get settingsLanguageSystemDescription;
+
+  /// No description provided for @settingsLanguageKoreanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Korean'**
+  String get settingsLanguageKoreanTitle;
+
+  /// No description provided for @settingsLanguageKoreanDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep all in-app copy in Korean.'**
+  String get settingsLanguageKoreanDescription;
+
+  /// No description provided for @settingsLanguageEnglishTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get settingsLanguageEnglishTitle;
+
+  /// No description provided for @settingsLanguageEnglishDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep all in-app copy in English.'**
+  String get settingsLanguageEnglishDescription;
+
+  /// No description provided for @settingsLanguageUpdatedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Language updated to {language}.'**
+  String settingsLanguageUpdatedToast(String language);
+
   /// No description provided for @settingsNotificationsEnabledToast.
   ///
   /// In en, this message translates to:
@@ -2547,8 +2652,7 @@ abstract class AppLocalizations {
   String ordersShipmentSummary(Object carrierName, Object trackingNumber);
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -2557,26 +2661,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'ko'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'ko'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return AppLocalizationsEn();
-    case 'ko':
-      return AppLocalizationsKo();
+    case 'en': return AppLocalizationsEn();
+    case 'ko': return AppLocalizationsKo();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

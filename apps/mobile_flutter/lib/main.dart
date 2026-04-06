@@ -38,7 +38,7 @@ Future<void> main() async {
       EasyLocalization(
         supportedLocales: supportedAppLocales,
         fallbackLocale: fallbackAppLocale,
-        saveLocale: true,
+        saveLocale: false,
         path: translationAssetPath,
         child: const ProviderScope(child: AuctionMarketApp()),
       ),

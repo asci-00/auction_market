@@ -1,4 +1,44 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+
+enum SettingsThemeModePreference {
+  system('SYSTEM', ThemeMode.system),
+  light('LIGHT', ThemeMode.light),
+  dark('DARK', ThemeMode.dark);
+
+  const SettingsThemeModePreference(
+    this.firestoreValue,
+    this.materialThemeMode,
+  );
+
+  final String firestoreValue;
+  final ThemeMode materialThemeMode;
+
+  static SettingsThemeModePreference parse(String? rawValue) {
+    return SettingsThemeModePreference.values.firstWhere(
+      (value) => value.firestoreValue == rawValue,
+      orElse: () => SettingsThemeModePreference.system,
+    );
+  }
+}
+
+enum SettingsLanguagePreference {
+  system('system', null),
+  korean('ko', Locale('ko')),
+  english('en', Locale('en'));
+
+  const SettingsLanguagePreference(this.firestoreValue, this.localeOverride);
+
+  final String firestoreValue;
+  final Locale? localeOverride;
+
+  static SettingsLanguagePreference parse(String? rawValue) {
+    return SettingsLanguagePreference.values.firstWhere(
+      (value) => value.firestoreValue == rawValue,
+      orElse: () => SettingsLanguagePreference.system,
+    );
+  }
+}
 
 enum SettingsNotificationCategory {
   auctionActivity('auctionActivity'),
@@ -15,14 +55,14 @@ class SettingsPreferences {
   const SettingsPreferences({
     required this.pushEnabled,
     required this.themeMode,
-    required this.languageCode,
+    required this.languagePreference,
     required this.categories,
   });
 
   const SettingsPreferences.defaults()
     : pushEnabled = true,
-      themeMode = 'SYSTEM',
-      languageCode = 'ko',
+      themeMode = SettingsThemeModePreference.system,
+      languagePreference = SettingsLanguagePreference.system,
       categories = const {
         SettingsNotificationCategory.auctionActivity: true,
         SettingsNotificationCategory.orderPayment: true,
@@ -31,8 +71,8 @@ class SettingsPreferences {
       };
 
   final bool pushEnabled;
-  final String themeMode;
-  final String languageCode;
+  final SettingsThemeModePreference themeMode;
+  final SettingsLanguagePreference languagePreference;
   final Map<SettingsNotificationCategory, bool> categories;
 
   bool isCategoryEnabled(SettingsNotificationCategory category) {
@@ -51,8 +91,12 @@ class SettingsPreferences {
 
     return SettingsPreferences(
       pushEnabled: (preferences['pushEnabled'] as bool?) ?? true,
-      themeMode: (preferences['themeMode'] as String?) ?? 'SYSTEM',
-      languageCode: (preferences['languageCode'] as String?) ?? 'ko',
+      themeMode: SettingsThemeModePreference.parse(
+        preferences['themeMode'] as String?,
+      ),
+      languagePreference: SettingsLanguagePreference.parse(
+        preferences['languageCode'] as String?,
+      ),
       categories: {
         for (final category in SettingsNotificationCategory.values)
           category:
