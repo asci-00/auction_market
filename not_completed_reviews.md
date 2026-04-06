@@ -7,5 +7,6 @@
 - Why tracked here: current planning docs do not include a scheduled task for this exact test-hardening slice.
 - Follow-up change to implement:
   - Add dedicated tests for `apps/mobile_flutter/lib/features/sell/application/sell_flow_service.dart`.
-  - Cover success and failure paths for draft save/load, image upload, and callable invocation.
+  - Cover success and failure paths for `saveDraft()` and `publishAuction()` public methods.
+  - Verify image upload integration via `_uploadImages()` and callable invocation behavior inside those flows.
   - Use fake or mocked Firebase dependencies so tests run deterministically in CI.

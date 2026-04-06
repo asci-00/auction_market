@@ -83,4 +83,72 @@ void main() {
       }
     },
   );
+
+  test(
+    'provider keeps pushEnabled and defaults missing category values',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      await firestore.collection('users').doc('partial-user').set({
+        'preferences': {'pushEnabled': false},
+      });
+      final container = ProviderContainer(
+        overrides: [firestoreProvider.overrideWith((ref) => firestore)],
+      );
+      addTearDown(container.dispose);
+
+      final preferences = await container.read(
+        settingsPreferencesProvider('partial-user').future,
+      );
+
+      expect(preferences.pushEnabled, isFalse);
+      expect(preferences.themeMode, 'SYSTEM');
+      expect(preferences.languageCode, 'ko');
+      for (final category in SettingsNotificationCategory.values) {
+        expect(preferences.isCategoryEnabled(category), isTrue);
+      }
+    },
+  );
+
+  test(
+    'provider merges partial notification categories with defaults',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      await firestore.collection('users').doc('partial-categories').set({
+        'preferences': {
+          'notificationCategories': {'orderPayment': false},
+        },
+      });
+      final container = ProviderContainer(
+        overrides: [firestoreProvider.overrideWith((ref) => firestore)],
+      );
+      addTearDown(container.dispose);
+
+      final preferences = await container.read(
+        settingsPreferencesProvider('partial-categories').future,
+      );
+
+      expect(
+        preferences.isCategoryEnabled(
+          SettingsNotificationCategory.orderPayment,
+        ),
+        isFalse,
+      );
+      expect(
+        preferences.isCategoryEnabled(
+          SettingsNotificationCategory.auctionActivity,
+        ),
+        isTrue,
+      );
+      expect(
+        preferences.isCategoryEnabled(
+          SettingsNotificationCategory.shippingAndReceipt,
+        ),
+        isTrue,
+      );
+      expect(
+        preferences.isCategoryEnabled(SettingsNotificationCategory.system),
+        isTrue,
+      );
+    },
+  );
 }
