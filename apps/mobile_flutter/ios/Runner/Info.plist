@@ -60,5 +60,7 @@
 	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Select photos to attach to auction drafts and listings.</string>
+	<key>NSUserNotificationUsageDescription</key>
+	<string>Allow notifications for auction activity and order updates.</string>
 </dict>
 </plist>

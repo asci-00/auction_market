@@ -58,4 +58,29 @@ void main() {
       }
     },
   );
+
+  test(
+    'provider falls back to defaults when user document has no preferences payload',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      await firestore.collection('users').doc('existing-user').set({
+        'email': 'existing-user@test.local',
+      });
+      final container = ProviderContainer(
+        overrides: [firestoreProvider.overrideWith((ref) => firestore)],
+      );
+      addTearDown(container.dispose);
+
+      final preferences = await container.read(
+        settingsPreferencesProvider('existing-user').future,
+      );
+
+      expect(preferences.pushEnabled, isTrue);
+      expect(preferences.themeMode, 'SYSTEM');
+      expect(preferences.languageCode, 'ko');
+      for (final category in SettingsNotificationCategory.values) {
+        expect(preferences.isCategoryEnabled(category), isTrue);
+      }
+    },
+  );
 }

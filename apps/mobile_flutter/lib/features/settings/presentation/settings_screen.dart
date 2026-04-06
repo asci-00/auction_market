@@ -17,11 +17,36 @@ import '../data/settings_preferences.dart';
 import 'widgets/settings_app_info_section.dart';
 import 'widgets/settings_notification_section.dart';
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.invalidate(notificationPermissionStatusProvider);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final tokens = context.tokens;
     final auth = ref.watch(firebaseAuthProvider);
     final user = auth.currentUser;
@@ -74,19 +99,16 @@ class SettingsScreen extends ConsumerWidget {
                     permissionAsync.valueOrNull ??
                     AuthorizationStatus.notDetermined,
                 onPushEnabledChanged: (enabled) =>
-                    _handlePushEnabledChanged(context, ref, user.uid, enabled),
+                    _handlePushEnabledChanged(context, user.uid, enabled),
                 onCategoryChanged: (category, enabled) =>
                     _handleCategoryChanged(
                       context,
-                      ref,
                       user.uid,
                       category,
                       enabled,
                     ),
-                onRequestPermission: () =>
-                    _handlePermissionRequest(context, ref),
-                onOpenSystemSettings: () =>
-                    _handleOpenSystemSettings(context, ref),
+                onRequestPermission: () => _handlePermissionRequest(context),
+                onOpenSystemSettings: () => _handleOpenSystemSettings(context),
                 masterTitle: context.l10n.settingsNotificationsMasterTitle,
                 masterDescription:
                     context.l10n.settingsNotificationsMasterDescription,
@@ -131,7 +153,7 @@ class SettingsScreen extends ConsumerWidget {
                 },
               );
             },
-            loading: () => const SizedBox.shrink(),
+            loading: () => const _SettingsNotificationLoadingSection(),
             error: (_, __) => AppEmptyState(
               icon: Icons.settings_input_antenna_outlined,
               title: context.l10n.settingsUnavailableTitle,
@@ -215,7 +237,6 @@ class SettingsScreen extends ConsumerWidget {
 
   Future<void> _handlePushEnabledChanged(
     BuildContext context,
-    WidgetRef ref,
     String userId,
     bool enabled,
   ) async {
@@ -241,7 +262,6 @@ class SettingsScreen extends ConsumerWidget {
 
   Future<void> _handleCategoryChanged(
     BuildContext context,
-    WidgetRef ref,
     String userId,
     SettingsNotificationCategory category,
     bool enabled,
@@ -274,10 +294,7 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _handlePermissionRequest(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _handlePermissionRequest(BuildContext context) async {
     try {
       final status = await ref
           .read(settingsPreferencesServiceProvider)
@@ -295,10 +312,7 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _handleOpenSystemSettings(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _handleOpenSystemSettings(BuildContext context) async {
     try {
       final opened = await ref
           .read(settingsPreferencesServiceProvider)
@@ -317,5 +331,24 @@ class SettingsScreen extends ConsumerWidget {
       }
       context.showErrorSnackBar(context.l10n.settingsSystemSettingsUnavailable);
     }
+  }
+}
+
+class _SettingsNotificationLoadingSection extends StatelessWidget {
+  const _SettingsNotificationLoadingSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: context.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(tokens.cardRadius),
+      ),
+      child: const SizedBox(
+        height: 180,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+    );
   }
 }
