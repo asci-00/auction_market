@@ -28,40 +28,64 @@ final notificationDeviceTokenLifecycleProvider = Provider<void>((ref) {
   final service = ref.watch(notificationDeviceTokenServiceProvider);
   String? previousUserId = ref.watch(firebaseAuthProvider).currentUser?.uid;
 
-  Future<void> syncCurrentUser() async {
-    final currentUser = ref.read(firebaseAuthProvider).currentUser;
-    if (currentUser == null) {
-      return;
+  Future<void> runLifecycleTask(
+    Future<void> Function() operation, {
+    required String context,
+  }) async {
+    try {
+      await operation();
+    } catch (error, stackTrace) {
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace,
+          library: 'notification_device_token_service',
+          context: ErrorDescription(context),
+        ),
+      );
     }
-    await service.syncUserDeviceToken(currentUser.uid);
+  }
+
+  Future<void> syncCurrentUser() async {
+    await runLifecycleTask(() async {
+      final currentUser = ref.read(firebaseAuthProvider).currentUser;
+      if (currentUser == null) {
+        return;
+      }
+      await service.syncUserDeviceToken(currentUser.uid);
+    }, context: 'while synchronizing the current notification device token');
   }
 
   final authSubscription = ref
       .read(firebaseAuthProvider)
       .authStateChanges()
       .listen((user) async {
-        final currentUserId = user?.uid;
-        if (previousUserId != null && currentUserId != previousUserId) {
-          await service.clearCachedTokenReference();
-        }
-        previousUserId = currentUserId;
-        if (currentUserId != null) {
-          await service.syncUserDeviceToken(currentUserId);
-        }
+        await runLifecycleTask(() async {
+          final currentUserId = user?.uid;
+          if (previousUserId != null && currentUserId != previousUserId) {
+            await service.clearCachedTokenReference();
+          }
+          previousUserId = currentUserId;
+          if (currentUserId != null) {
+            await service.syncUserDeviceToken(currentUserId);
+          }
+        }, context: 'while responding to Firebase Auth session changes');
       });
 
   final tokenRefreshSubscription = ref
       .read(firebaseMessagingProvider)
       .onTokenRefresh
       .listen((token) async {
-        final currentUser = ref.read(firebaseAuthProvider).currentUser;
-        if (currentUser == null) {
-          return;
-        }
-        await service.syncUserDeviceToken(
-          currentUser.uid,
-          tokenOverride: token,
-        );
+        await runLifecycleTask(() async {
+          final currentUser = ref.read(firebaseAuthProvider).currentUser;
+          if (currentUser == null) {
+            return;
+          }
+          await service.syncUserDeviceToken(
+            currentUser.uid,
+            tokenOverride: token,
+          );
+        }, context: 'while handling Firebase Messaging token rotation');
       });
 
   final appLifecycleListener = AppLifecycleListener(

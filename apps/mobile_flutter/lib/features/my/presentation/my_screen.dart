@@ -64,10 +64,24 @@ class MyScreen extends ConsumerWidget {
           SizedBox(height: tokens.space4),
           FilledButton(
             onPressed: () async {
-              await ref
-                  .read(notificationDeviceTokenServiceProvider)
-                  .deactivateCurrentUserTokenBeforeSignOut();
-              await auth.signOut();
+              try {
+                await ref
+                    .read(notificationDeviceTokenServiceProvider)
+                    .deactivateCurrentUserTokenBeforeSignOut();
+              } catch (error, stackTrace) {
+                FlutterError.reportError(
+                  FlutterErrorDetails(
+                    exception: error,
+                    stack: stackTrace,
+                    library: 'my_screen',
+                    context: ErrorDescription(
+                      'while deactivating the current device token before sign-out',
+                    ),
+                  ),
+                );
+              } finally {
+                await auth.signOut();
+              }
             },
             child: Text(context.l10n.mySignOut),
           ),
