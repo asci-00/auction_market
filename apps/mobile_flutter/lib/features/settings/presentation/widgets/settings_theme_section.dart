@@ -28,6 +28,7 @@ class SettingsThemeSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final systemBrightness = MediaQuery.platformBrightnessOf(context);
 
     return AppPanel(
       tone: AppPanelTone.surface,
@@ -46,7 +47,7 @@ class SettingsThemeSection extends StatelessWidget {
                   mode: SettingsThemeModePreference.system,
                   title: systemTitle,
                   isSelected: groupValue == SettingsThemeModePreference.system,
-                  previewBrightness: Theme.of(context).brightness,
+                  previewBrightness: systemBrightness,
                   onTap: () => onChanged(SettingsThemeModePreference.system),
                 ),
               ),
@@ -115,133 +116,151 @@ class _ThemePreviewTile extends StatelessWidget {
         ? AppColors.textPrimaryDark
         : AppColors.textPrimary;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        key: ValueKey('settings-theme-${mode.name}'),
-        borderRadius: BorderRadius.circular(tokens.cardRadius),
-        onTap: onTap,
-        child: Ink(
-          decoration: BoxDecoration(
-            color: context.colorScheme.surfaceContainerHighest.withValues(
-              alpha: 0.38,
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final previewHeight = (constraints.maxWidth * 0.72).clamp(74.0, 98.0) + 8;
+
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            key: ValueKey('settings-theme-${mode.name}'),
             borderRadius: BorderRadius.circular(tokens.cardRadius),
-            border: Border.all(color: borderColor, width: isSelected ? 1.6 : 1),
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(tokens.space3),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                AspectRatio(
-                  aspectRatio: 0.9,
-                  child: Stack(
-                    children: [
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: background,
-                          borderRadius: BorderRadius.circular(tokens.space3),
-                          border: Border.all(
-                            color: Colors.white.withValues(
-                              alpha: previewBrightness == Brightness.dark
-                                  ? 0.06
-                                  : 0.42,
+            onTap: onTap,
+            child: Ink(
+              decoration: BoxDecoration(
+                color: context.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.38,
+                ),
+                borderRadius: BorderRadius.circular(tokens.cardRadius),
+                border: Border.all(
+                  color: borderColor,
+                  width: isSelected ? 1.6 : 1,
+                ),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(tokens.space3),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(
+                      height: previewHeight,
+                      child: Stack(
+                        children: [
+                          DecoratedBox(
+                            key: ValueKey(
+                              'settings-theme-preview-${mode.name}',
                             ),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(tokens.space2),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: topBar,
-                                  borderRadius: BorderRadius.circular(999),
+                            decoration: BoxDecoration(
+                              color: background,
+                              borderRadius: BorderRadius.circular(
+                                tokens.space3,
+                              ),
+                              border: Border.all(
+                                color: Colors.white.withValues(
+                                  alpha: previewBrightness == Brightness.dark
+                                      ? 0.06
+                                      : 0.42,
                                 ),
                               ),
-                              SizedBox(height: tokens.space2),
-                              Container(
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: card,
-                                  borderRadius: BorderRadius.circular(
-                                    tokens.space2,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: tokens.space2),
-                              Row(
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.all(tokens.space2),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: Container(
-                                      height: 18,
-                                      decoration: BoxDecoration(
-                                        color: chip.withValues(alpha: 0.7),
-                                        borderRadius: BorderRadius.circular(
-                                          tokens.space2,
-                                        ),
+                                  Container(
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: topBar,
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                  ),
+                                  SizedBox(height: tokens.space2),
+                                  Container(
+                                    height: 22,
+                                    decoration: BoxDecoration(
+                                      color: card,
+                                      borderRadius: BorderRadius.circular(
+                                        tokens.space2,
                                       ),
                                     ),
                                   ),
-                                  SizedBox(width: tokens.space2),
-                                  Expanded(
-                                    child: Container(
-                                      height: 18,
-                                      decoration: BoxDecoration(
-                                        color: card,
-                                        borderRadius: BorderRadius.circular(
-                                          tokens.space2,
+                                  SizedBox(height: tokens.space2),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Container(
+                                          height: 14,
+                                          decoration: BoxDecoration(
+                                            color: chip.withValues(alpha: 0.7),
+                                            borderRadius: BorderRadius.circular(
+                                              tokens.space2,
+                                            ),
+                                          ),
                                         ),
                                       ),
+                                      SizedBox(width: tokens.space2),
+                                      Expanded(
+                                        child: Container(
+                                          height: 14,
+                                          decoration: BoxDecoration(
+                                            color: card,
+                                            borderRadius: BorderRadius.circular(
+                                              tokens.space2,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  Container(
+                                    height: 6,
+                                    width: 34,
+                                    decoration: BoxDecoration(
+                                      color: textColor.withValues(alpha: 0.18),
+                                      borderRadius: BorderRadius.circular(999),
                                     ),
                                   ),
                                 ],
                               ),
-                              const Spacer(),
-                              Container(
-                                height: 8,
-                                width: 40,
-                                decoration: BoxDecoration(
-                                  color: textColor.withValues(alpha: 0.18),
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
+                          Positioned(
+                            top: tokens.space2,
+                            right: tokens.space2,
+                            child: Icon(
+                              isSelected
+                                  ? Icons.radio_button_checked_rounded
+                                  : Icons.radio_button_off_rounded,
+                              size: 18,
+                              color: isSelected
+                                  ? context.colorScheme.primary
+                                  : context.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ),
-                      Positioned(
-                        top: tokens.space2,
-                        right: tokens.space2,
-                        child: Icon(
-                          isSelected
-                              ? Icons.radio_button_checked_rounded
-                              : Icons.radio_button_off_rounded,
-                          size: 18,
-                          color: isSelected
-                              ? context.colorScheme.primary
-                              : context.colorScheme.onSurfaceVariant,
-                        ),
+                    ),
+                    SizedBox(height: tokens.space2),
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: context.textTheme.labelMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        height: 1.1,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: tokens.space2),
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: context.textTheme.labelLarge,
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

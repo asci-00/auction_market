@@ -37,4 +37,50 @@ void main() {
 
     expect(changedValue, SettingsThemeModePreference.dark);
   });
+
+  testWidgets('system preview follows platform brightness, not app theme', (
+    tester,
+  ) async {
+    tester.binding.platformDispatcher.platformBrightnessTestValue =
+        Brightness.light;
+    addTearDown(
+      tester.binding.platformDispatcher.clearPlatformBrightnessTestValue,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        darkTheme: AppTheme.dark(),
+        themeMode: ThemeMode.dark,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: supportedAppLocales,
+        localeResolutionCallback: resolveAppLocale,
+        home: Scaffold(
+          body: SettingsThemeSection(
+            sectionTitle: 'Appearance',
+            groupValue: SettingsThemeModePreference.dark,
+            systemTitle: 'System',
+            lightTitle: 'Light',
+            darkTitle: 'Dark',
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    final systemPreview = tester.widget<DecoratedBox>(
+      find.byKey(const ValueKey('settings-theme-preview-system')),
+    );
+    final darkPreview = tester.widget<DecoratedBox>(
+      find.byKey(const ValueKey('settings-theme-preview-dark')),
+    );
+
+    final systemColor = (systemPreview.decoration as BoxDecoration).color;
+    final darkColor = (darkPreview.decoration as BoxDecoration).color;
+
+    expect(systemColor, AppColors.bgSurface);
+    expect(darkColor, AppColors.bgSurfaceDark);
+  });
 }
