@@ -4,7 +4,7 @@
 - Commit example files only.
 - Never commit real secrets.
 - Backend secrets live in `backend/functions/.env`.
-- Mobile public values live in flavor-specific `dart_defines.<flavor>.json` files.
+- Mobile public values live in named `dart_defines.*.json` files.
 - Mobile Firebase native registration must stay local-only:
   - committed examples:
     - `apps/mobile_flutter/ios/Runner/Firebase/dev/GoogleService-Info.example.plist`
@@ -51,12 +51,15 @@
 ## Mobile Public Build Defines
 - Paths:
   - `apps/mobile_flutter/dart_defines.dev.json`
+  - `apps/mobile_flutter/dart_defines.local-emulator.json`
   - `apps/mobile_flutter/dart_defines.prod.json`
 - Example files:
   - `apps/mobile_flutter/dart_defines.dev.example.json`
+  - `apps/mobile_flutter/dart_defines.local-emulator.example.json`
   - `apps/mobile_flutter/dart_defines.prod.example.json`
 - Run commands from `apps/mobile_flutter`.
 - Load dev with `flutter run --flavor dev --dart-define-from-file=dart_defines.dev.json`
+- Load local emulator with `flutter run --flavor dev --dart-define-from-file=dart_defines.local-emulator.json`
 - Load prod with `flutter run --flavor prod --dart-define-from-file=dart_defines.prod.json`
 
 | Name | Secret | Required In | Example Format | Owner | Load Location | Missing Value Impact |
@@ -138,6 +141,21 @@
   - `APP_BACKEND_TRANSPORT=http`
   - `APP_API_BASE_URL=https://auction-market-dev-api.onrender.com`
   - `USE_FIREBASE_EMULATORS=false`
+
+## Local Emulator Quick Start
+- Local emulator define file:
+  - `apps/mobile_flutter/dart_defines.local-emulator.json`
+- Example file:
+  - `apps/mobile_flutter/dart_defines.local-emulator.example.json`
+- Current local emulator defaults:
+  - `APP_ENV=dev`
+  - `APP_BACKEND_TRANSPORT=firebase_callable`
+  - `APP_API_BASE_URL=`
+  - `USE_FIREBASE_EMULATORS=true`
+  - `FIREBASE_EMULATOR_HOST=127.0.0.1`
+- Launch path:
+  1. `cd backend/functions && npm run serve`
+  2. `cd apps/mobile_flutter && flutter run --flavor dev --dart-define-from-file=dart_defines.local-emulator.json`
 
 ## Physical-Device Emulator Notes
 

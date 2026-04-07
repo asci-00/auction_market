@@ -114,11 +114,14 @@
    - `apps/mobile_flutter/android/app/src/dev/google-services.json`
    - `apps/mobile_flutter/ios/Runner/Firebase/dev/GoogleService-Info.plist`
 3. `cd apps/mobile_flutter && flutter run --flavor dev --dart-define-from-file=dart_defines.dev.json`
-4. On Android real device, open settings and verify:
+4. For local emulator fallback, use:
+   - `cd backend/functions && npm run serve`
+   - `cd apps/mobile_flutter && flutter run --flavor dev --dart-define-from-file=dart_defines.local-emulator.json`
+5. On Android real device, open settings and verify:
    - notification permission request
    - push toggle writes
    - device token register or deactivate diagnostics
-5. Continue Phase 4 by implementing:
+6. Continue Phase 4 by implementing:
    - backend Firebase Admin Messaging dispatch
    - Android foreground/background push handling
    - iOS-compatible push handling code while APNs remains deferred debt

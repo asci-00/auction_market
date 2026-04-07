@@ -85,6 +85,21 @@ flutter run --flavor dev --dart-define-from-file=dart_defines.dev.json
   - `apps/mobile_flutter/ios/Runner/Firebase/dev/GoogleService-Info.plist`
 - `TOSS_CLIENT_KEY`는 결제 실험이 필요할 때만 `apps/mobile_flutter/dart_defines.dev.json`에 채우면 됩니다.
 
+### 4.6 로컬 Firebase Emulator 실행 경로
+```bash
+cd backend/functions
+npm run serve
+```
+
+새 터미널에서:
+```bash
+cd apps/mobile_flutter
+flutter run --flavor dev --dart-define-from-file=dart_defines.local-emulator.json
+```
+
+- `dart_defines.local-emulator.json`은 dev flavor를 유지한 채 Firebase Emulator + callable transport를 강제합니다.
+- Android 실기기는 `adb reverse` 기준으로 `FIREBASE_EMULATOR_HOST=127.0.0.1`을 사용합니다.
+
 ## 5) E2E 수동 검증 시나리오
 1. 로그인(구글/애플 버튼)
 2. Sell 플로우로 상품 등록(굿즈 인증사진 포함)

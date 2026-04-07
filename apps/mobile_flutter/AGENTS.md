@@ -90,9 +90,10 @@ Run commands from `apps/mobile_flutter`.
 - `flutter test`: run all tests
 - `flutter test test/widget_test.dart`: fast regression pass for localization and startup UI
 - `flutter run --flavor dev --dart-define-from-file=dart_defines.dev.json`: local dev app run
+- `flutter run --flavor dev --dart-define-from-file=dart_defines.local-emulator.json`: local emulator app run
 - `flutter run --flavor prod --dart-define-from-file=dart_defines.prod.json`: local prod app run
 
-Use `dart_defines.dev.example.json` and `dart_defines.prod.example.json` as the templates for the real local define files.
+Use `dart_defines.dev.example.json`, `dart_defines.local-emulator.example.json`, and `dart_defines.prod.example.json` as the templates for the real local define files.
 
 ## Quality Gate
 For any non-trivial change, aim to finish with this loop:

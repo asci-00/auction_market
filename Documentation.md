@@ -22,7 +22,7 @@
 - The app switches environment only through build-time public config for `APP_ENV`, backend transport, emulator mode, and other non-secret app settings.
 - Backend runtime switches environment only through env variables.
 - Flutter mobile boot on iOS and Android reads Firebase app registration from native platform files instead of `dart-define` values.
-- Mobile public config now comes from flavor-specific `dart_defines.dev.json` and `dart_defines.prod.json`.
+- Mobile public config now comes from flavor-specific `dart_defines.dev.json`, `dart_defines.local-emulator.json`, and `dart_defines.prod.json`.
 - Android flavors are `dev` and `prod`.
 - iOS build configurations and schemes are `Debug-dev`/`Release-dev`/`Profile-dev` and `Debug-prod`/`Release-prod`/`Profile-prod` with shared schemes `dev` and `prod`.
 - Mobile locale selection defaults to the device locale and falls back to Korean when the device language is unsupported. When a persisted in-app override is added, it may only select `ko` or `en`.

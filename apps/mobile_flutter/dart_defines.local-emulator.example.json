@@ -1,0 +1,8 @@
+{
+  "APP_ENV": "dev",
+  "APP_BACKEND_TRANSPORT": "firebase_callable",
+  "APP_API_BASE_URL": "",
+  "USE_FIREBASE_EMULATORS": "true",
+  "FIREBASE_EMULATOR_HOST": "127.0.0.1",
+  "TOSS_CLIENT_KEY": "test_ck_ORzdMaqN3wKL1PqO50Qg35AkYXQG"
+}
