@@ -142,7 +142,7 @@ The app expects native Firebase setup and environment values.
   - `ios/Runner/Firebase/prod/GoogleService-Info.plist`
 - environment parsing lives in `lib/core/app_config/app_config.dart`
 
-`dev` builds default to Firebase Emulator usage. Do not hardcode hosts or config in feature code.
+`dev` builds now default to the real Firebase dev project plus the Render HTTP backend. Use emulator mode only as an explicit local override through `USE_FIREBASE_EMULATORS=true`.
 
 ## Avoid
 - do not edit generated or build output under `build/`, `.dart_tool/`, or generated localization files

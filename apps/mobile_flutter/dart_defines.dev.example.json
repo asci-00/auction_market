@@ -1,8 +1,8 @@
 {
   "APP_ENV": "dev",
   "APP_BACKEND_TRANSPORT": "http",
-  "APP_API_BASE_URL": "https://TODO_RENDER_DEV_URL.onrender.com",
+  "APP_API_BASE_URL": "https://auction-market-dev-api.onrender.com",
   "USE_FIREBASE_EMULATORS": "false",
   "FIREBASE_EMULATOR_HOST": "",
-  "TOSS_CLIENT_KEY": "TODO_FROM_TOSS_DEV_DASHBOARD"
+  "TOSS_CLIENT_KEY": ""
 }

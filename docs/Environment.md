@@ -41,7 +41,7 @@
 | `TOSS_SECRET_KEY` | Yes | prod, dev Toss sandbox | `test_sk_...` or `live_sk_...` | product ops | Functions runtime | Release blocker for payment confirm. |
 | `TOSS_WEBHOOK_SECRET` | Yes | prod, dev Toss sandbox | `whsec_...` | product ops | Functions runtime | Release blocker for webhook verification. |
 | `TOSS_API_BASE_URL` | No | dev, prod | `https://api.tosspayments.com` | engineering | Functions runtime | Medium. Payment calls fail if wrong. |
-| `APP_BASE_URL` | No | dev, prod | `https://auction-market-dev.onrender.com` | engineering | Functions runtime | High. Payment return routing and deep-link handoff fail. |
+| `APP_BASE_URL` | No | dev, prod | `https://auction-market-dev-api.onrender.com` | engineering | Functions runtime | High. Payment return routing and deep-link handoff fail. |
 | `OPS_ALERT_EMAILS` | No | prod | `ops@example.com,support@example.com` | ops | Functions runtime | Low. Alert fan-out is reduced. |
 
 - Do not put reserved Firebase runtime keys such as `GCLOUD_PROJECT` or `FIREBASE_PROJECT_ID` in `backend/functions/.env`. The Firebase CLI injects them for emulator and deploy flows.
@@ -63,7 +63,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | `APP_ENV` | No | dev, prod | `dev` | engineering | Flutter app config | Low. Labels and config branches may be wrong. |
 | `APP_BACKEND_TRANSPORT` | No | dev, prod | `http` or `firebase_callable` | engineering | Flutter app config | High. Mobile mutation transport will be wrong. |
-| `APP_API_BASE_URL` | No | dev HTTP transport | `https://auction-market-dev.onrender.com` | engineering | Flutter app config | High. HTTP backend cannot be reached. |
+| `APP_API_BASE_URL` | No | dev HTTP transport | `https://auction-market-dev-api.onrender.com` | engineering | Flutter app config | High. HTTP backend cannot be reached. |
 | `USE_FIREBASE_EMULATORS` | No | optional local override | `false` | engineering | Flutter app config | Medium. App may hit emulator or real services unexpectedly. |
 | `FIREBASE_EMULATOR_HOST` | No | optional local override | `127.0.0.1` or a LAN IP | engineering | Flutter app config | Medium. Emulator path breaks on physical devices if wrong. |
 | `TOSS_CLIENT_KEY` | No | dev, prod | `test_ck_...` or `live_ck_...` | product ops | Flutter app config | Release blocker for real payment start. |
@@ -119,6 +119,25 @@
   - `ENABLE_TOSS_SANDBOX=false|true`
 - Render now talks to Firebase Auth and Firestore directly through Firebase Admin. It no longer requires deployed Firebase Functions just to support the dev HTTP transport.
 - Prod still defaults to Firebase callable transport. Dev continues to use the Render HTTP path.
+
+## Current Dev Quick Start
+- Public dev backend URL:
+  - `https://auction-market-dev-api.onrender.com`
+- Public health check:
+  - `https://auction-market-dev-api.onrender.com/healthz`
+- Mobile local setup:
+  1. Put the local dev Firebase files in:
+     - `apps/mobile_flutter/android/app/src/dev/google-services.json`
+     - `apps/mobile_flutter/ios/Runner/Firebase/dev/GoogleService-Info.plist`
+  2. Create `apps/mobile_flutter/dart_defines.dev.json` from the example or run:
+     - `apps/mobile_flutter/scripts/bootstrap_render_dev.sh`
+  3. Launch the app:
+     - `cd apps/mobile_flutter && flutter run --flavor dev --dart-define-from-file=dart_defines.dev.json`
+- Current default dev `dart-define` values:
+  - `APP_ENV=dev`
+  - `APP_BACKEND_TRANSPORT=http`
+  - `APP_API_BASE_URL=https://auction-market-dev-api.onrender.com`
+  - `USE_FIREBASE_EMULATORS=false`
 
 ## Physical-Device Emulator Notes
 

@@ -1160,14 +1160,17 @@ export function createApp(services) {
   app.disable('x-powered-by');
   app.use(express.json({ limit: '1mb' }));
 
-  app.get('/health', (_req, res) => {
+  const sendHealth = (_req, res) => {
     res.json({
       ok: true,
       appEnv: config.appEnv,
       appBaseUrl: config.appBaseUrl,
       firebaseProjectId: config.firebaseProjectId ?? null,
     });
-  });
+  };
+
+  app.get('/health', sendHealth);
+  app.get('/healthz', sendHealth);
 
   app.get(
     '/payments/*',
