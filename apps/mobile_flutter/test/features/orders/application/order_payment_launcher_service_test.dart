@@ -8,6 +8,8 @@ void main() {
     const service = OrderPaymentLauncherService(
       AppConfig(
         environment: AppEnvironment.dev,
+        backendTransport: AppBackendTransport.firebaseCallable,
+        apiBaseUrl: null,
         useFirebaseEmulators: true,
         tossClientKey: 'test_ck_example',
         firebaseEmulatorHostOverride: null,
@@ -55,6 +57,8 @@ void main() {
     const service = OrderPaymentLauncherService(
       AppConfig(
         environment: AppEnvironment.dev,
+        backendTransport: AppBackendTransport.firebaseCallable,
+        apiBaseUrl: null,
         useFirebaseEmulators: true,
         tossClientKey: null,
         firebaseEmulatorHostOverride: null,
@@ -93,6 +97,8 @@ void main() {
     const service = OrderPaymentLauncherService(
       AppConfig(
         environment: AppEnvironment.dev,
+        backendTransport: AppBackendTransport.firebaseCallable,
+        apiBaseUrl: null,
         useFirebaseEmulators: true,
         tossClientKey: 'test_ck_example',
         firebaseEmulatorHostOverride: null,

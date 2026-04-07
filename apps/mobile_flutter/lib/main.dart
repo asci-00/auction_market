@@ -7,7 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
+import 'core/app_config/app_config.dart';
+import 'core/firebase/firebase_bootstrap.dart';
 import 'core/l10n/app_localization.dart';
+import 'core/logging/app_logger.dart';
 import 'features/settings/application/settings_preferences_service.dart';
 
 Future<void> main() async {
@@ -15,15 +18,22 @@ Future<void> main() async {
     WidgetsFlutterBinding.ensureInitialized();
     await EasyLocalization.ensureInitialized();
     final sharedPreferences = await SharedPreferences.getInstance();
+    final config = AppConfig.fromEnvironment();
+    final logger = AppLogger.fromConfig(config);
 
     FlutterError.onError = (details) {
       FlutterError.dumpErrorToConsole(details);
       if (!kReleaseMode) {
         try {
-          _logFlutterErrorDetails(details);
+          _logFlutterErrorDetails(details, logger);
         } catch (loggingError, loggingStack) {
-          debugPrint('Failed to log FlutterErrorDetails: $loggingError');
-          debugPrint('$loggingStack');
+          logger.error(
+            'Failed to log FlutterErrorDetails: $loggingError',
+            domain: AppLogDomain.app,
+            source: 'main:flutter_error_logger',
+            error: loggingError,
+            stackTrace: loggingStack,
+          );
         }
       }
       Zone.current.handleUncaughtError(
@@ -46,6 +56,7 @@ Future<void> main() async {
         child: ProviderScope(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+            appConfigProvider.overrideWithValue(config),
           ],
           child: const AuctionMarketApp(),
         ),
@@ -65,7 +76,7 @@ void _reportFatalError(Object error, StackTrace stackTrace) {
   );
 }
 
-void _logFlutterErrorDetails(FlutterErrorDetails details) {
+void _logFlutterErrorDetails(FlutterErrorDetails details, AppLogger logger) {
   final buffer = StringBuffer()
     ..writeln('----- FlutterError details -----')
     ..writeln(details.exceptionAsString());
@@ -87,5 +98,11 @@ void _logFlutterErrorDetails(FlutterErrorDetails details) {
   }
 
   buffer.writeln('----- End FlutterError details -----');
-  debugPrint(buffer.toString());
+  logger.error(
+    buffer.toString(),
+    domain: AppLogDomain.app,
+    source: 'main:flutter_error_details',
+    error: details.exception,
+    stackTrace: details.stack,
+  );
 }

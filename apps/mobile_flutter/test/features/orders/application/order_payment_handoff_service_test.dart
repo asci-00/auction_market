@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   const withClientKeyConfig = AppConfig(
     environment: AppEnvironment.dev,
+    backendTransport: AppBackendTransport.firebaseCallable,
+    apiBaseUrl: null,
     useFirebaseEmulators: true,
     tossClientKey: 'test_ck_example',
     firebaseEmulatorHostOverride: null,
@@ -13,6 +15,8 @@ void main() {
 
   const withoutClientKeyConfig = AppConfig(
     environment: AppEnvironment.dev,
+    backendTransport: AppBackendTransport.firebaseCallable,
+    apiBaseUrl: null,
     useFirebaseEmulators: true,
     tossClientKey: null,
     firebaseEmulatorHostOverride: null,

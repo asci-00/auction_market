@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/backend/backend_gateway.dart';
 import '../../../core/firebase/firebase_providers.dart';
+import '../../../core/logging/app_logger.dart';
 import '../../settings/application/settings_preferences_service.dart';
 
 const _deviceTokenIdCacheKey = 'notifications.deviceTokenId';
@@ -17,10 +18,11 @@ const _deviceTokenIdCacheKey = 'notifications.deviceTokenId';
 final notificationDeviceTokenServiceProvider =
     Provider<NotificationDeviceTokenService>((ref) {
       return NotificationDeviceTokenService(
-        functions: ref.watch(functionsProvider),
+        gateway: ref.watch(backendGatewayProvider),
         auth: ref.watch(firebaseAuthProvider),
         messaging: ref.watch(firebaseMessagingProvider),
         sharedPreferences: ref.watch(sharedPreferencesProvider),
+        logger: ref.watch(appLoggerProvider),
       );
     });
 
@@ -35,8 +37,11 @@ final notificationDeviceTokenLifecycleProvider = Provider<void>((ref) {
     try {
       await operation();
     } catch (error, stackTrace) {
-      NotificationDeviceTokenService.logDiagnostic(
+      service.logDiagnostic(
         'lifecycle task failed: $context -> $error',
+        level: AppLogLevel.error,
+        error: error,
+        stackTrace: stackTrace,
       );
       FlutterError.reportError(
         FlutterErrorDetails(
@@ -109,19 +114,22 @@ final notificationDeviceTokenLifecycleProvider = Provider<void>((ref) {
 
 class NotificationDeviceTokenService {
   const NotificationDeviceTokenService({
-    required FirebaseFunctions functions,
+    required BackendGateway gateway,
     required FirebaseAuth auth,
     required FirebaseMessaging messaging,
     required SharedPreferences sharedPreferences,
-  }) : _functions = functions,
+    required AppLogger logger,
+  }) : _gateway = gateway,
        _auth = auth,
        _messaging = messaging,
-       _sharedPreferences = sharedPreferences;
+       _sharedPreferences = sharedPreferences,
+       _logger = logger;
 
-  final FirebaseFunctions _functions;
+  final BackendGateway _gateway;
   final FirebaseAuth _auth;
   final FirebaseMessaging _messaging;
   final SharedPreferences _sharedPreferences;
+  final AppLogger _logger;
 
   Future<void> syncUserDeviceToken(
     String userId, {
@@ -183,10 +191,9 @@ class NotificationDeviceTokenService {
     }
 
     final appVersion = (await PackageInfo.fromPlatform()).version;
-    final result = await _functions
-        .httpsCallable('registerDeviceToken')
-        .call<dynamic>(
-          buildRegisterPayload(
+    final result = await _gateway
+        .registerDeviceToken(
+          payload: buildRegisterPayload(
             token: token,
             appVersion: appVersion,
             locale: WidgetsBinding.instance.platformDispatcher.locale
@@ -196,10 +203,7 @@ class NotificationDeviceTokenService {
             permissionStatus: permissionStatusLabel(permissionStatus),
           ),
         );
-    final data = result.data;
-    if (data is! Map<dynamic, dynamic>) {
-      throw StateError('registerDeviceToken returned invalid payload: $data');
-    }
+    final data = result;
     final returnedTokenId = data['tokenId'];
     if (returnedTokenId is! String || returnedTokenId.isEmpty) {
       throw StateError(
@@ -262,10 +266,9 @@ class NotificationDeviceTokenService {
     required String tokenId,
     required AuthorizationStatus permissionStatus,
   }) async {
-    await _functions
-        .httpsCallable('deactivateDeviceToken')
-        .call<void>(
-          buildDeactivatePayload(
+    await _gateway
+        .deactivateDeviceToken(
+          payload: buildDeactivatePayload(
             tokenId: tokenId,
             permissionStatus: permissionStatusLabel(permissionStatus),
           ),
@@ -297,7 +300,7 @@ class NotificationDeviceTokenService {
         );
         rethrow;
       }
-      logDiagnostic('APNS token not ready yet; entering retry window');
+      logDiagnostic('APNS token not ready yet; entering retry window $error');
     }
 
     for (var attempt = 0; attempt < 5; attempt++) {
@@ -366,13 +369,52 @@ class NotificationDeviceTokenService {
     return {'tokenId': tokenId, 'permissionStatus': permissionStatus};
   }
 
-  @visibleForTesting
-  static void logDiagnostic(String message) {
-    if (kReleaseMode) {
+  void logDiagnostic(
+    String message, {
+    AppLogLevel level = AppLogLevel.debug,
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
+    if (kReleaseMode && level == AppLogLevel.debug) {
       return;
     }
-    debugPrint('[notification-device-token] $message');
+
+    switch (level) {
+      case AppLogLevel.debug:
+        _logger.debug(
+          message,
+          domain: AppLogDomain.notifications,
+          source: 'notification_device_token_service',
+          error: error,
+          stackTrace: stackTrace,
+        );
+        return;
+      case AppLogLevel.info:
+        _logger.info(
+          message,
+          domain: AppLogDomain.notifications,
+          source: 'notification_device_token_service',
+          error: error,
+          stackTrace: stackTrace,
+        );
+        return;
+      case AppLogLevel.error:
+        _logger.error(
+          message,
+          domain: AppLogDomain.notifications,
+          source: 'notification_device_token_service',
+          error: error,
+          stackTrace: stackTrace,
+        );
+        return;
+    }
   }
+}
+
+enum AppLogLevel {
+  debug,
+  info,
+  error,
 }
 
 class _ResolvedMessagingToken {

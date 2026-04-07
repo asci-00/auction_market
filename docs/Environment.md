@@ -4,14 +4,18 @@
 - Commit example files only.
 - Never commit real secrets.
 - Backend secrets live in `backend/functions/.env`.
-- Mobile public values live in `apps/mobile_flutter/dart_defines.json`.
+- Mobile public values live in flavor-specific `dart_defines.<flavor>.json` files.
 - Mobile Firebase native registration must stay local-only:
   - committed examples:
-    - `apps/mobile_flutter/ios/Runner/GoogleService-Info.example.plist`
-    - `apps/mobile_flutter/android/app/google-services.example.json`
+    - `apps/mobile_flutter/ios/Runner/Firebase/dev/GoogleService-Info.example.plist`
+    - `apps/mobile_flutter/ios/Runner/Firebase/prod/GoogleService-Info.example.plist`
+    - `apps/mobile_flutter/android/app/src/dev/google-services.example.json`
+    - `apps/mobile_flutter/android/app/src/prod/google-services.example.json`
   - ignored real files:
-    - `apps/mobile_flutter/ios/Runner/GoogleService-Info.plist`
-    - `apps/mobile_flutter/android/app/google-services.json`
+    - `apps/mobile_flutter/ios/Runner/Firebase/dev/GoogleService-Info.plist`
+    - `apps/mobile_flutter/ios/Runner/Firebase/prod/GoogleService-Info.plist`
+    - `apps/mobile_flutter/android/app/src/dev/google-services.json`
+    - `apps/mobile_flutter/android/app/src/prod/google-services.json`
 - Root `.env.example` is only a summary for local tooling and onboarding.
 
 ## Note
@@ -32,40 +36,52 @@
 
 | Name | Secret | Required In | Example Format | Owner | Load Location | Missing Value Impact |
 | --- | --- | --- | --- | --- | --- | --- |
-| `APP_ENV` | No | dev, staging, prod | `dev` | engineering | Functions runtime | Low. Affects logs and config branches. |
-| `ENABLE_TOSS_SANDBOX` | No | dev sandbox only | `true` | engineering | Functions runtime | Medium. If omitted in emulator-backed `dev`, payment falls back to `DEV_DUMMY` instead of real Toss sandbox. |
-| `TOSS_SECRET_KEY` | Yes | staging, prod | `test_sk_...` or `live_sk_...` | product ops | Functions runtime | Release blocker for payment confirm. |
-| `TOSS_WEBHOOK_SECRET` | Yes | staging, prod | `whsec_...` | product ops | Functions runtime | Release blocker for webhook verification. |
-| `TOSS_API_BASE_URL` | No | staging, prod | `https://api.tosspayments.com` | engineering | Functions runtime | Medium. Payment calls fail if wrong. |
-| `APP_BASE_URL` | No | staging, prod, dev sandbox | `https://app.example.com` or `https://<public-tunnel>/auction-893cf/us-central1/tossPaymentBridge` | engineering | Functions runtime | High. Payment return routing and deep-link handoff fail. |
-| `OPS_ALERT_EMAILS` | No | staging, prod | `ops@example.com,support@example.com` | ops | Functions runtime | Low. Alert fan-out is reduced. |
+| `APP_ENV` | No | dev, prod | `dev` | engineering | Functions runtime | Low. Affects logs and config branches. |
+| `ENABLE_TOSS_SANDBOX` | No | dev sandbox only | `true` | engineering | Functions runtime | Medium. If omitted in `dev`, payment may stay on `DEV_DUMMY` instead of Toss sandbox. |
+| `TOSS_SECRET_KEY` | Yes | prod, dev Toss sandbox | `test_sk_...` or `live_sk_...` | product ops | Functions runtime | Release blocker for payment confirm. |
+| `TOSS_WEBHOOK_SECRET` | Yes | prod, dev Toss sandbox | `whsec_...` | product ops | Functions runtime | Release blocker for webhook verification. |
+| `TOSS_API_BASE_URL` | No | dev, prod | `https://api.tosspayments.com` | engineering | Functions runtime | Medium. Payment calls fail if wrong. |
+| `APP_BASE_URL` | No | dev, prod | `https://auction-market-dev.onrender.com` | engineering | Functions runtime | High. Payment return routing and deep-link handoff fail. |
+| `OPS_ALERT_EMAILS` | No | prod | `ops@example.com,support@example.com` | ops | Functions runtime | Low. Alert fan-out is reduced. |
 
 - Do not put reserved Firebase runtime keys such as `GCLOUD_PROJECT` or `FIREBASE_PROJECT_ID` in `backend/functions/.env`. The Firebase CLI injects them for emulator and deploy flows.
-- The current dev Toss sandbox path uses `tossPaymentBridge` plus a public HTTPS tunnel URL in `APP_BASE_URL`. This keeps the app on emulator-backed data while allowing Toss redirect URLs to remain public and valid.
-- Use `cd backend/functions && npm run tunnel:toss` to open a localhost.run tunnel and rewrite `APP_BASE_URL` automatically. Keep that terminal open during Toss sandbox tests.
-- If `npm run serve` was already running before the tunnel URL changed, restart it once so the Functions emulator reloads the updated `APP_BASE_URL`.
+- The preferred dev path now uses a real Firebase dev project plus a public Render URL in `APP_BASE_URL`.
+- The older emulator + public tunnel path remains optional for local-only debugging, but it is no longer the primary mobile physical-device contract.
 
 ## Mobile Public Build Defines
-- Path: `apps/mobile_flutter/dart_defines.json`
-- Example file: `apps/mobile_flutter/dart_defines.example.json`
+- Paths:
+  - `apps/mobile_flutter/dart_defines.dev.json`
+  - `apps/mobile_flutter/dart_defines.prod.json`
+- Example files:
+  - `apps/mobile_flutter/dart_defines.dev.example.json`
+  - `apps/mobile_flutter/dart_defines.prod.example.json`
 - Run commands from `apps/mobile_flutter`.
-- Load with `flutter run --dart-define-from-file=dart_defines.json`
-- Android physical-device default: keep `FIREBASE_EMULATOR_HOST=127.0.0.1` and use `./scripts/setup_android_device_emulators.sh`.
-- iOS physical-device example: `dart_defines.ios_device.example.json`
+- Load dev with `flutter run --flavor dev --dart-define-from-file=dart_defines.dev.json`
+- Load prod with `flutter run --flavor prod --dart-define-from-file=dart_defines.prod.json`
 
 | Name | Secret | Required In | Example Format | Owner | Load Location | Missing Value Impact |
 | --- | --- | --- | --- | --- | --- | --- |
-| `APP_ENV` | No | dev, staging, prod | `dev` | engineering | Flutter app config | Low. Labels and config branches may be wrong. |
-| `USE_FIREBASE_EMULATORS` | No | dev | `true` | engineering | Flutter app config | Medium. App may hit real services by mistake. |
-| `FIREBASE_EMULATOR_HOST` | No | dev physical-device testing | `127.0.0.1` on Android with `adb reverse`, Mac LAN IP on iOS | engineering | Flutter app config | Medium. Physical devices cannot reach Mac localhost without either `adb reverse` or a LAN-reachable host. |
-| `TOSS_CLIENT_KEY` | No | staging, prod | `test_ck_...` or `live_ck_...` | product ops | Flutter app config | Release blocker for payment start. |
+| `APP_ENV` | No | dev, prod | `dev` | engineering | Flutter app config | Low. Labels and config branches may be wrong. |
+| `APP_BACKEND_TRANSPORT` | No | dev, prod | `http` or `firebase_callable` | engineering | Flutter app config | High. Mobile mutation transport will be wrong. |
+| `APP_API_BASE_URL` | No | dev HTTP transport | `https://auction-market-dev.onrender.com` | engineering | Flutter app config | High. HTTP backend cannot be reached. |
+| `USE_FIREBASE_EMULATORS` | No | optional local override | `false` | engineering | Flutter app config | Medium. App may hit emulator or real services unexpectedly. |
+| `FIREBASE_EMULATOR_HOST` | No | optional local override | `127.0.0.1` or a LAN IP | engineering | Flutter app config | Medium. Emulator path breaks on physical devices if wrong. |
+| `TOSS_CLIENT_KEY` | No | dev, prod | `test_ck_...` or `live_ck_...` | product ops | Flutter app config | Release blocker for real payment start. |
 
 ## Mobile Firebase Native Config
-- Committed iOS example: `apps/mobile_flutter/ios/Runner/GoogleService-Info.example.plist`
-- Committed Android example: `apps/mobile_flutter/android/app/google-services.example.json`
-- Local real iOS file: `apps/mobile_flutter/ios/Runner/GoogleService-Info.plist`
-- Local real Android file: `apps/mobile_flutter/android/app/google-services.json`
-- Provision the real files by downloading them from Firebase Console for the target app IDs.
+- Committed iOS examples:
+  - `apps/mobile_flutter/ios/Runner/Firebase/dev/GoogleService-Info.example.plist`
+  - `apps/mobile_flutter/ios/Runner/Firebase/prod/GoogleService-Info.example.plist`
+- Committed Android examples:
+  - `apps/mobile_flutter/android/app/src/dev/google-services.example.json`
+  - `apps/mobile_flutter/android/app/src/prod/google-services.example.json`
+- Local real iOS files:
+  - `apps/mobile_flutter/ios/Runner/Firebase/dev/GoogleService-Info.plist`
+  - `apps/mobile_flutter/ios/Runner/Firebase/prod/GoogleService-Info.plist`
+- Local real Android files:
+  - `apps/mobile_flutter/android/app/src/dev/google-services.json`
+  - `apps/mobile_flutter/android/app/src/prod/google-services.json`
+- Provision the real files by downloading them from Firebase Console for the matching dev/prod Firebase projects.
 
 | Value | Source Key | Where It Comes From | Current Local Value |
 | --- | --- | --- | --- |
@@ -83,9 +99,26 @@
 - The app must reject placeholder `TODO_...` public values for fields it still reads from `dart-define`.
 - On iOS and Android, Firebase app registration is loaded from local native config files rather than `dart-define` values.
 - The real native Firebase config files must remain gitignored; commit only the example files.
-- Functions must fail fast during startup when a required secret is missing in `staging` or `prod`.
+- Functions must fail fast during startup when a required secret is missing in `prod` or in a `dev` Toss sandbox path that needs it.
+- iOS chooses the correct Firebase plist from `Runner/Firebase/<flavor>/GoogleService-Info.plist` at build time through Xcode build configuration.
+- Android chooses the correct `google-services.json` from `android/app/src/<flavor>/`.
 - For Android physical-device Firebase Emulator runs, prefer `adb reverse` and keep `FIREBASE_EMULATOR_HOST=127.0.0.1`.
 - For iOS physical-device Firebase Emulator runs, set `FIREBASE_EMULATOR_HOST` to the Mac's current LAN IP and keep emulator ports reachable only on the local network.
+
+## Render Dev Server Runtime
+- Path: `backend/render-dev-server`
+- Primary purpose: expose a stable public dev URL for physical-device testing and payment redirect pages.
+- Required env:
+  - `APP_ENV=dev`
+  - `APP_BASE_URL=https://<render-service>.onrender.com`
+  - `FIREBASE_PROJECT_ID=<firebase-dev-project-id>`
+  - `FIREBASE_SERVICE_ACCOUNT_JSON=<single-line service account json>`
+  - `TOSS_SECRET_KEY=<optional for Toss sandbox confirm>`
+  - `TOSS_WEBHOOK_SECRET=<optional for Toss webhook verify>`
+  - `TOSS_API_BASE_URL=https://api.tosspayments.com`
+  - `ENABLE_TOSS_SANDBOX=false|true`
+- Render now talks to Firebase Auth and Firestore directly through Firebase Admin. It no longer requires deployed Firebase Functions just to support the dev HTTP transport.
+- Prod still defaults to Firebase callable transport. Dev continues to use the Render HTTP path.
 
 ## Physical-Device Emulator Notes
 

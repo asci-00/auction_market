@@ -1,0 +1,4 @@
+#include "Release.xcconfig"
+
+FLAVOR=prod
+FIREBASE_PLIST_PATH=$(PROJECT_DIR)/Runner/Firebase/prod/GoogleService-Info.plist

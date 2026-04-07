@@ -8,6 +8,7 @@ import '../../../core/extensions/build_context_x.dart';
 import '../../../core/firebase/firebase_bootstrap.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_localization.dart';
+import '../../../core/logging/app_logger.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_empty_state.dart';
@@ -257,12 +258,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     try {
       _logNotificationDiagnostics(
         'push toggle requested enabled=$enabled userId=$userId',
+        ref,
       );
       await ref
           .read(settingsPreferencesServiceProvider)
           .setPushEnabled(userId: userId, enabled: enabled);
       _logNotificationDiagnostics(
         'push preference write succeeded enabled=$enabled userId=$userId',
+        ref,
       );
       if (enabled) {
         await ref
@@ -270,6 +273,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             .syncUserDeviceToken(userId);
         _logNotificationDiagnostics(
           'device token sync requested after enabling push userId=$userId',
+          ref,
         );
       } else {
         await ref
@@ -277,6 +281,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             .deactivateTokenForUser(userId);
         _logNotificationDiagnostics(
           'device token deactivation requested after disabling push userId=$userId',
+          ref,
         );
       }
       ref.invalidate(notificationPermissionStatusProvider);
@@ -291,6 +296,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     } catch (error) {
       _logNotificationDiagnostics(
         'push toggle failed enabled=$enabled userId=$userId error=$error',
+        ref,
       );
       if (!context.mounted) {
         return;
@@ -340,6 +346,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           .requestPermission();
       _logNotificationDiagnostics(
         'permission request completed status=${_permissionDiagnosticsLabel(status)}',
+        ref,
       );
       final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
       if (userId != null) {
@@ -348,6 +355,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             .syncUserDeviceToken(userId);
         _logNotificationDiagnostics(
           'device token sync requested after permission prompt userId=$userId',
+          ref,
         );
       }
       ref.invalidate(notificationPermissionStatusProvider);
@@ -356,7 +364,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       }
       context.showSnackBarMessage(_permissionStatusLabel(context, status));
     } catch (error) {
-      _logNotificationDiagnostics('permission request failed error=$error');
+      _logNotificationDiagnostics('permission request failed error=$error', ref);
       if (!context.mounted) {
         return;
       }
@@ -369,7 +377,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       final opened = await ref
           .read(settingsPreferencesServiceProvider)
           .openSystemSettings();
-      _logNotificationDiagnostics('open system settings result opened=$opened');
+      _logNotificationDiagnostics(
+        'open system settings result opened=$opened',
+        ref,
+      );
       final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
       if (userId != null) {
         await ref
@@ -377,6 +388,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             .syncUserDeviceToken(userId);
         _logNotificationDiagnostics(
           'device token sync requested after opening system settings userId=$userId',
+          ref,
         );
       }
       ref.invalidate(notificationPermissionStatusProvider);
@@ -389,7 +401,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             : context.l10n.settingsSystemSettingsUnavailable,
       );
     } catch (error) {
-      _logNotificationDiagnostics('open system settings failed error=$error');
+      _logNotificationDiagnostics(
+        'open system settings failed error=$error',
+        ref,
+      );
       if (!context.mounted) {
         return;
       }
@@ -450,11 +465,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     };
   }
 
-  void _logNotificationDiagnostics(String message) {
+  void _logNotificationDiagnostics(String message, WidgetRef ref) {
     if (kReleaseMode) {
       return;
     }
-    debugPrint('[settings-notifications] $message');
+    ref.read(appLoggerProvider).debug(
+      message,
+      domain: AppLogDomain.settings,
+      source: 'settings_screen:notifications',
+    );
   }
 }
 

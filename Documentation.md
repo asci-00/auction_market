@@ -15,14 +15,16 @@
 - `backend/firestore.indexes.json`: Firestore query indexes.
 
 ## Environment Model
-- `dev`: local emulator for Auth, Functions, Firestore, and Storage. Uses seeded data only.
-- `staging`: real Firebase project plus the selected payment-provider test credentials after cutover is explicitly activated.
-- `prod`: real Firebase project plus the selected payment-provider production credentials after cutover is explicitly activated.
+- `dev`: real Firebase development project plus the Render dev server for public mobile HTTP entrypoints and payment redirect pages.
+- `prod`: real Firebase production project with Firebase callable remaining the default mutation transport.
 - When a third-party dependency is not ready yet, `dev` may expose server-driven dummy integration payloads so the mobile app can validate the surrounding product flow before the final real handoff is wired.
 - External PG cutover planning is tracked only in `Plan.md` under `Phase Undecided`.
-- The app switches environment only through build-time public config for `APP_ENV`, emulator mode, and other non-secret app settings.
+- The app switches environment only through build-time public config for `APP_ENV`, backend transport, emulator mode, and other non-secret app settings.
 - Backend runtime switches environment only through env variables.
 - Flutter mobile boot on iOS and Android reads Firebase app registration from native platform files instead of `dart-define` values.
+- Mobile public config now comes from flavor-specific `dart_defines.dev.json` and `dart_defines.prod.json`.
+- Android flavors are `dev` and `prod`.
+- iOS build configurations and schemes are `Debug-dev`/`Release-dev`/`Profile-dev` and `Debug-prod`/`Release-prod`/`Profile-prod` with shared schemes `dev` and `prod`.
 - Mobile locale selection defaults to the device locale and falls back to Korean when the device language is unsupported. When a persisted in-app override is added, it may only select `ko` or `en`.
 
 ## Mobile App Architecture
@@ -38,8 +40,10 @@
   - `widgets`: reusable layout and interaction components.
 - Current Phase 1 implementation details:
   - `lib/main.dart` installs zoned startup error capture for Flutter framework and platform errors.
-  - `lib/core/app_config/app_config.dart` validates only non-secret app defines such as `APP_ENV`, emulator mode, and the currently wired payment launch key when the active adapter needs one.
+  - `lib/core/app_config/app_config.dart` validates non-secret app defines such as `APP_ENV`, `APP_BACKEND_TRANSPORT`, `APP_API_BASE_URL`, emulator mode, and the currently wired payment launch key when the active adapter needs one.
+  - `lib/core/backend/backend_gateway.dart` selects `FirebaseCallableBackendGateway` for prod and `HttpBackendGateway` for dev HTTP transport, so existing services keep the same high-level mutation contract while transport changes underneath.
   - `lib/core/firebase/firebase_bootstrap.dart` initializes Firebase from native iOS and Android config files, then attaches Auth, Firestore, Functions, and Storage emulators when enabled.
+  - `lib/core/logging/app_logger.dart` is the single structured mobile logger entrypoint and emits `timestamp | level | domain | source | message`.
   - `lib/core/l10n/app_localization.dart` resolves device locale to `ko` or `en` and exposes generated localization accessors.
   - `lib/core/extensions/build_context_x.dart` centralizes repeated `BuildContext` lookups like `Theme.of`, `ScaffoldMessenger.of`, `MediaQuery.of`, `Navigator.of`, and `GoRouter.of`.
   - `lib/core/routing/app_router.dart` owns guarded routing, deep-link normalization, payment return routes, and shared fade-plus-rise transitions for modal detail routes.
@@ -114,10 +118,14 @@
   - Shared blocking loading states must use `apps/mobile_flutter/assets/lotties/loading.lottie`, with shimmer preferred over modal loading when the destination layout is already known.
 - Home, search, auction detail, orders, notifications, and my pages render from live Firestore read paths and fall back to localized empty or unavailable states when documents are missing.
 - Read data directly from Firestore and Storage-backed URLs.
-- Send mutations through Firebase Functions only.
+- Send mutations through the backend gateway only:
+  - prod default: Firebase callable
+  - dev default: Render HTTP
 - Native Firebase config files live at:
-  - `apps/mobile_flutter/ios/Runner/GoogleService-Info.plist`
-  - `apps/mobile_flutter/android/app/google-services.json`
+  - `apps/mobile_flutter/ios/Runner/Firebase/dev/GoogleService-Info.plist`
+  - `apps/mobile_flutter/ios/Runner/Firebase/prod/GoogleService-Info.plist`
+  - `apps/mobile_flutter/android/app/src/dev/google-services.json`
+  - `apps/mobile_flutter/android/app/src/prod/google-services.json`
 
 ## Localization Contract
 - Supported locales are `ko` and `en` only.
@@ -127,6 +135,7 @@
 
 ## Backend Implementation Notes
 - `backend/functions/src/config/runtime.ts` validates backend runtime env such as `APP_ENV`, provider secrets for the active payment adapter, provider API base URL, and the presence of `APP_BASE_URL` when it is required by the active payment mode.
+- `backend/render-dev-server` exposes `/health`, `/payments/*`, and `/api/*` on a stable public dev URL. It now verifies Firebase ID tokens with Firebase Admin and writes directly to the dev project's Firestore collections, so dev HTTP transport no longer depends on deployed Firebase Functions.
 - `backend/functions/src/domain/paymentEngine.ts` owns payment confirmation idempotency helpers, provider webhook normalization, and payment state transitions.
 - `backend/functions/eslint.config.mjs` now runs ESLint for `src`, `test`, and `scripts`, while `.prettierrc.json` and package scripts provide a repeatable formatting check for TypeScript files before commit.
 - `backend/functions/src/index.ts` now exports the Phase 2 callable and scheduler surface:
@@ -152,9 +161,9 @@
 - `createPaymentSession` now returns `mode: "DEV_DUMMY"` plus a deterministic `devPaymentKey` in `dev`, so the mobile app can validate buyer payment progression without pretending to launch a production checkout.
 - The `DEV_DUMMY` payment path is emulator-only. If the backend is not running under the Firebase Emulator Suite, `createPaymentSession` falls back to the currently wired real provider mode and requires `APP_BASE_URL` for success and fail return URLs.
 - The payment domain normalizes `APP_BASE_URL` before success and fail URLs are built, so trailing slashes or stray query strings do not leak into `/payments/success` and `/payments/fail`, while `runtime.ts` remains responsible only for the base environment validation.
-- When `ENABLE_TOSS_SANDBOX=true` is present in `backend/functions/.env`, emulator-backed `dev` no longer forces `DEV_DUMMY`; it returns a real Toss sandbox session with `checkoutUrl` rooted at `tossPaymentBridge/payments/launch` plus fixed `successUrl` and `failUrl` return routes under the same bridge.
-- `tossPaymentBridge` is the current public handoff surface for mobile sandbox testing. `/payments/launch` serves the Toss JavaScript SDK launcher page, and `/payments/success` plus `/payments/fail` convert public redirects back into `app://payments/...` deep links for the mobile app.
-- In `dev` with `ENABLE_TOSS_SANDBOX=true`, `tossPaymentBridge` explicitly opens the `CARD` payment flow in the default integrated window and narrows the visible card list for smoke tests. External app-dependent wallet and app-card paths are not part of the required dev payment smoke path.
+- When `ENABLE_TOSS_SANDBOX=true` is present in the active backend runtime env, emulator-backed `dev` no longer forces `DEV_DUMMY`; it returns a real Toss sandbox session with `checkoutUrl` rooted at `/payments/launch` plus fixed `successUrl` and `failUrl` return routes under the same public Render surface.
+- `/payments/launch` is the current public handoff surface for mobile sandbox testing. `/payments/success` plus `/payments/fail` convert public redirects back into `app://payments/...` deep links for the mobile app.
+- In `dev` with `ENABLE_TOSS_SANDBOX=true`, the Render payment bridge explicitly opens the `CARD` payment flow in the default integrated window and narrows the visible card list for smoke tests. External app-dependent wallet and app-card paths are not part of the required dev payment smoke path.
 - The active provider webhook path verifies the configured webhook secret from the payload, applies idempotent payment transitions through `payment.lastWebhookEventId`, and updates the order instead of relying on a mock payment mutation.
 - The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `buyer2`, `seller1`, `seller2`, and `ops1`.
 - The seeded auction and order scenarios now cover live bidding, awaiting payment, seller shipment required, buyer receipt confirmed, settled payout, unpaid cancellation, unsold inventory, cancelled listings, and inbox notifications for both buyer and seller paths.

@@ -1,34 +1,22 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/firebase/firebase_providers.dart';
+import '../../../core/backend/backend_gateway.dart';
 import '../data/order_payment_session.dart';
 
 final orderActionServiceProvider = Provider<OrderActionService>((ref) {
-  return OrderActionService(ref.watch(functionsProvider));
+  return OrderActionService(ref.watch(backendGatewayProvider));
 });
 
 class OrderActionService {
-  const OrderActionService(this._functions);
+  const OrderActionService(this._gateway);
 
-  final FirebaseFunctions _functions;
+  final BackendGateway _gateway;
 
   Future<OrderPaymentSession> createPaymentSession({
     required String orderId,
   }) async {
-    final result =
-        await _functions.httpsCallable('createPaymentSession').call<dynamic>({
-      'orderId': orderId,
-    });
-
-    final data = result.data;
-    if (data is! Map<dynamic, dynamic>) {
-      throw StateError(
-        'createPaymentSession returned invalid payload: ${result.data}',
-      );
-    }
-
-    return OrderPaymentSession.fromCallable(data);
+    final data = await _gateway.createPaymentSession(orderId: orderId);
+    return OrderPaymentSession.fromMap(data);
   }
 
   Future<void> confirmPayment({
@@ -36,11 +24,11 @@ class OrderActionService {
     required String paymentKey,
     required int amount,
   }) async {
-    await _functions.httpsCallable('confirmOrderPayment').call<void>({
-      'orderId': orderId,
-      'paymentKey': paymentKey,
-      'amount': amount,
-    });
+    await _gateway.confirmOrderPayment(
+      orderId: orderId,
+      paymentKey: paymentKey,
+      amount: amount,
+    );
   }
 
   Future<void> submitShipment({
@@ -48,18 +36,16 @@ class OrderActionService {
     required String carrierName,
     required String trackingNumber,
   }) async {
-    await _functions.httpsCallable('shipmentUpdate').call<void>({
-      'orderId': orderId,
-      'carrierName': carrierName,
-      'trackingNumber': trackingNumber,
-    });
+    await _gateway.shipmentUpdate(
+      orderId: orderId,
+      carrierName: carrierName,
+      trackingNumber: trackingNumber,
+    );
   }
 
   Future<void> confirmReceipt({
     required String orderId,
   }) async {
-    await _functions.httpsCallable('confirmReceipt').call<void>({
-      'orderId': orderId,
-    });
+    await _gateway.confirmReceipt(orderId: orderId);
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,8 +19,12 @@ class AppBootstrapState {
   final AppConfig config;
 }
 
+final appConfigProvider = Provider<AppConfig>((ref) {
+  return AppConfig.fromEnvironment();
+});
+
 final appBootstrapProvider = FutureProvider<AppBootstrapState>((ref) async {
-  final config = AppConfig.fromEnvironment();
+  final config = ref.watch(appConfigProvider);
   await FirebaseBootstrap.initialize(config);
   return AppBootstrapState(config: config);
 });
@@ -36,6 +42,7 @@ class FirebaseBootstrap {
 
       if (Firebase.apps.isEmpty) {
         await Firebase.initializeApp();
+        log('QQQ::: fire base initialized');
       }
 
       if (config.useFirebaseEmulators && !_emulatorsConfigured) {

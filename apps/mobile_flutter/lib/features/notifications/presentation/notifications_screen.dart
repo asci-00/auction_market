@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/backend/backend_gateway.dart';
 import '../../../core/extensions/build_context_x.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_formatters.dart';
@@ -191,9 +192,8 @@ class _NotificationCard extends ConsumerWidget {
                 if (!isRead) {
                   try {
                     await ref
-                        .read(functionsProvider)
-                        .httpsCallable('markNotificationRead')
-                        .call<void>({'notificationId': item.id});
+                        .read(backendGatewayProvider)
+                        .markNotificationRead(notificationId: item.id);
                   } catch (_) {
                     // Keep navigation responsive even if the read marker fails.
                   }

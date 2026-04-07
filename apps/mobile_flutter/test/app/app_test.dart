@@ -54,6 +54,8 @@ void main() {
               (ref) async => const AppBootstrapState(
                 config: AppConfig(
                   environment: AppEnvironment.dev,
+                  backendTransport: AppBackendTransport.firebaseCallable,
+                  apiBaseUrl: null,
                   useFirebaseEmulators: true,
                   tossClientKey: null,
                   firebaseEmulatorHostOverride: null,
@@ -127,6 +129,8 @@ void main() {
                 (ref) async => const AppBootstrapState(
                   config: AppConfig(
                     environment: AppEnvironment.dev,
+                    backendTransport: AppBackendTransport.firebaseCallable,
+                    apiBaseUrl: null,
                     useFirebaseEmulators: true,
                     tossClientKey: null,
                     firebaseEmulatorHostOverride: null,

@@ -89,9 +89,10 @@ Run commands from `apps/mobile_flutter`.
 - `flutter analyze`: static analysis
 - `flutter test`: run all tests
 - `flutter test test/widget_test.dart`: fast regression pass for localization and startup UI
-- `flutter run --dart-define-from-file=dart_defines.json`: local app run
+- `flutter run --flavor dev --dart-define-from-file=dart_defines.dev.json`: local dev app run
+- `flutter run --flavor prod --dart-define-from-file=dart_defines.prod.json`: local prod app run
 
-Use `dart_defines.example.json` as the template for `dart_defines.json`.
+Use `dart_defines.dev.example.json` and `dart_defines.prod.example.json` as the templates for the real local define files.
 
 ## Quality Gate
 For any non-trivial change, aim to finish with this loop:
@@ -133,8 +134,12 @@ Follow the existing visual system instead of introducing ad hoc styles.
 ## Firebase and Environment Notes
 The app expects native Firebase setup and environment values.
 
-- Android config: `android/app/google-services.json`
-- iOS config: `ios/Runner/GoogleService-Info.plist`
+- Android config:
+  - `android/app/src/dev/google-services.json`
+  - `android/app/src/prod/google-services.json`
+- iOS config:
+  - `ios/Runner/Firebase/dev/GoogleService-Info.plist`
+  - `ios/Runner/Firebase/prod/GoogleService-Info.plist`
 - environment parsing lives in `lib/core/app_config/app_config.dart`
 
 `dev` builds default to Firebase Emulator usage. Do not hardcode hosts or config in feature code.
