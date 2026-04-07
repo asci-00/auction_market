@@ -75,6 +75,19 @@ Status: in progress after Phase 3.
 - Improve production-app quality with a user-copy pass, release-only hiding of debug text or UI, production-safe error logging, and final UI or UX polish for empty, loading, retry, and failure states.
 - Do not start final real-device push-delivery verification until the Firebase Messaging project setup and iOS APNs project setup are available.
 
+### Current Phase 4 State
+- Complete:
+  - in-app settings route, theme preference, notification preference toggles, OS permission visibility, and token lifecycle
+  - dev/prod mobile flavors plus dev Firebase project split
+  - Render dev server for physical-device testing and payment redirect pages
+  - Android real-device dev path through real Firebase + Render
+- In progress:
+  - real FCM push dispatch from backend events
+  - Android foreground/background push handling and notification-channel setup
+- Deferred debt:
+  - iOS APNs key upload and Firebase APNs project wiring
+  - final iOS real-device push verification after APNs setup
+
 ### Done When
 - Android and iOS push-notification behavior matches `docs/Notification.md` for supported event types, categories, deep links, and preference rules.
 - Users can manage notification and theme preferences from the in-app settings surface, while language follows supported system locales; the same settings flow also exposes licenses, app-version info, and debug-only developer settings.

@@ -136,6 +136,7 @@
 ## Backend Implementation Notes
 - `backend/functions/src/config/runtime.ts` validates backend runtime env such as `APP_ENV`, provider secrets for the active payment adapter, provider API base URL, and the presence of `APP_BASE_URL` when it is required by the active payment mode.
 - `backend/render-dev-server` exposes `/health`, `/payments/*`, and `/api/*` on a stable public dev URL. It now verifies Firebase ID tokens with Firebase Admin and writes directly to the dev project's Firestore collections, so dev HTTP transport no longer depends on deployed Firebase Functions.
+- The stable public dev health endpoint is `/healthz` under `https://auction-market-dev-api.onrender.com/healthz`. `/health` may be intercepted by the hosting edge and must not be treated as the canonical external health probe.
 - `backend/functions/src/domain/paymentEngine.ts` owns payment confirmation idempotency helpers, provider webhook normalization, and payment state transitions.
 - `backend/functions/eslint.config.mjs` now runs ESLint for `src`, `test`, and `scripts`, while `.prettierrc.json` and package scripts provide a repeatable formatting check for TypeScript files before commit.
 - `backend/functions/src/index.ts` now exports the Phase 2 callable and scheduler surface:
@@ -165,6 +166,9 @@
 - `/payments/launch` is the current public handoff surface for mobile sandbox testing. `/payments/success` plus `/payments/fail` convert public redirects back into `app://payments/...` deep links for the mobile app.
 - In `dev` with `ENABLE_TOSS_SANDBOX=true`, the Render payment bridge explicitly opens the `CARD` payment flow in the default integrated window and narrows the visible card list for smoke tests. External app-dependent wallet and app-card paths are not part of the required dev payment smoke path.
 - The active provider webhook path verifies the configured webhook secret from the payload, applies idempotent payment transitions through `payment.lastWebhookEventId`, and updates the order instead of relying on a mock payment mutation.
+- Current notification delivery status is intentionally split:
+  - implemented: inbox document writes plus device-token lifecycle
+  - pending: backend Firebase Admin Messaging send path plus mobile foreground/background notification handling
 - The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `buyer2`, `seller1`, `seller2`, and `ops1`.
 - The seeded auction and order scenarios now cover live bidding, awaiting payment, seller shipment required, buyer receipt confirmed, settled payout, unpaid cancellation, unsold inventory, cancelled listings, and inbox notifications for both buyer and seller paths.
 - The default seeded orders now include both `seller1` and `seller2` shipment-required scenarios, plus separate ended-auction records for awaiting-payment, confirmed-receipt, and unpaid-cancelled flows so emulator smoke tests stay internally consistent.

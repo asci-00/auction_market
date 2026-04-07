@@ -16,12 +16,36 @@
 - Activity summary cards and inbox deep links.
 - My and settings surfaces that will own notification preferences in Phase 4.
 
+## Current Implementation Status
+- Implemented now:
+  - in-app notification preferences
+  - OS permission visibility and permission request flow
+  - device-token register, refresh, and deactivate lifecycle
+  - backend persistence of active device tokens
+  - Firestore inbox creation for supported product events
+- Implemented for Android real-device dev testing:
+  - real Firebase dev project connection
+  - FCM registration-token retrieval and backend registration
+  - Render dev backend path for token registration without emulator networking
+- Not implemented yet:
+  - backend Firebase Admin Messaging dispatch for product events
+  - Android foreground notification presentation
+  - Android background tap handling from live FCM payloads
+  - client routing from `getInitialMessage` or `onMessageOpenedApp`
+- Deferred debt:
+  - iOS APNs auth setup in Firebase
+  - final iOS real-device push verification after APNs setup
+
 ## Delivery Preconditions
 - Firebase Cloud Messaging is enabled for the active Firebase project.
 - Android notification channels, default small icon, and app-level permission behavior are configured for the final package.
 - iOS push capability, remote-notification capability, and APNs auth setup are configured for the final bundle.
 - These project-level steps do not block planning, settings UI, token registration, backend event generation, or local foreground handling.
 - Final real-device delivery verification is blocked until the project-level setup above is available.
+- Current repo status:
+  - Android permission request and token registration are wired.
+  - iOS client-side token lifecycle code is wired, but real delivery remains blocked by APNs project setup.
+  - Backend FCM fan-out is not wired yet, so no platform can receive final product pushes today.
 
 ## Supported Categories
 - `auctionActivity`
@@ -164,6 +188,8 @@
   - Mark the related inbox item as read only after the user opens or explicitly consumes the message.
 - Failure handling
   - If a push payload is missing a valid deep link, route to `/notifications` instead of failing.
+- Current implementation note:
+  - These foreground, background, and tap-routing behaviors are still pending. The current app implements token lifecycle and settings only.
 
 ## Token Lifecycle
 - Register the device token only after sign-in and permission grant.
@@ -200,6 +226,11 @@
 - Category-specific off.
 - Duplicate event protection between push delivery and inbox rendering.
 - Missing or stale deep-link fallback to `/notifications`.
+
+## Next Slice
+- Implement backend Firebase Admin Messaging send paths for the supported event matrix in this document.
+- Add Android notification channel setup and live payload handling through `onMessage`, `getInitialMessage`, and `onMessageOpenedApp`.
+- Keep the client handling iOS-compatible so APNs setup later only unlocks delivery instead of requiring another app-architecture change.
 
 ## Implementation Notes For Agents
 - Use this file together with `Plan.md`, `Documentation.md`, and `docs/Environment.md`.
