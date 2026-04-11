@@ -23,15 +23,16 @@
   - device-token register, refresh, and deactivate lifecycle
   - backend persistence of active device tokens
   - Firestore inbox creation for supported product events
+  - backend Firebase Admin Messaging dispatch for the product events that already create inbox entries
 - Implemented for Android real-device dev testing:
   - real Firebase dev project connection
   - FCM registration-token retrieval and backend registration
   - Render dev backend path for token registration without emulator networking
 - Not implemented yet:
-  - backend Firebase Admin Messaging dispatch for product events
   - Android foreground notification presentation
   - Android background tap handling from live FCM payloads
   - client routing from `getInitialMessage` or `onMessageOpenedApp`
+  - the remaining supported event-matrix gaps that do not emit inbox entries yet
 - Deferred debt:
   - iOS APNs auth setup in Firebase
   - final iOS real-device push verification after APNs setup
@@ -45,7 +46,7 @@
 - Current repo status:
   - Android permission request and token registration are wired.
   - iOS client-side token lifecycle code is wired, but real delivery remains blocked by APNs project setup.
-  - Backend FCM fan-out is not wired yet, so no platform can receive final product pushes today.
+  - Backend FCM fan-out is wired for inbox-backed product events, but final product-push behavior still depends on real device-token availability plus client presentation and tap-routing work.
 
 ## Supported Categories
 - `auctionActivity`
@@ -163,20 +164,22 @@
 ## Payload Contract
 - Current inbox documents written by backend Functions include:
   - `type`
+  - `category`
   - `title`
   - `body`
   - `deeplink`
+  - `entityType`
+  - `entityId`
   - `isRead`
   - `createdAt`
-- Planned Phase 4 push payloads should include:
+- Current Phase 4 push payloads include:
   - `notificationId`
+  - `type`
   - `category`
   - `deeplink`
-  - `title`
-  - `body`
   - `timestamp`
-  - one related entity id such as `auctionId` or `orderId`
-- Until the push payload contract is implemented, inbox documents keep event identity through `type`, `deeplink`, and `createdAt`.
+  - `entityType`
+  - `entityId`
 - Client routing must use the existing deep-link resolver and must not add a separate push-only routing format.
 
 ## Client Behavior
@@ -228,9 +231,9 @@
 - Missing or stale deep-link fallback to `/notifications`.
 
 ## Next Slice
-- Implement backend Firebase Admin Messaging send paths for the supported event matrix in this document.
 - Add Android notification channel setup and live payload handling through `onMessage`, `getInitialMessage`, and `onMessageOpenedApp`.
 - Keep the client handling iOS-compatible so APNs setup later only unlocks delivery instead of requiring another app-architecture change.
+- Fill the remaining supported event-matrix gaps that still do not emit inbox records or push events today.
 
 ## Implementation Notes For Agents
 - Use this file together with `Plan.md`, `Documentation.md`, and `docs/Environment.md`.

@@ -5,6 +5,7 @@ import {
   Transaction,
   getFirestore,
 } from 'firebase-admin/firestore';
+import { getMessaging } from 'firebase-admin/messaging';
 import { logger } from 'firebase-functions';
 import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
@@ -32,6 +33,14 @@ import {
   buildDeviceTokenId,
   buildRegisterDeviceTokenRecord,
 } from './domain/deviceTokenEngine.js';
+import {
+  buildPushDataPayload,
+  getDeliverableTokens,
+  getNotificationCategoryForType,
+  InboxNotificationType,
+  normalizeNotificationPreferences,
+  shouldDispatchPush,
+} from './domain/notificationDispatchEngine.js';
 import { AuditEventRecord, Order } from './domain/models.js';
 import {
   finalizeAuction,
@@ -241,19 +250,132 @@ function buildTossCustomerKey(uid: string): string {
 
 async function createInboxNotification(
   uid: string,
-  type: string,
+  type: InboxNotificationType,
   title: string,
   body: string,
   deeplink: string,
+  entityType: 'AUCTION' | 'ORDER',
+  entityId: string,
 ): Promise<void> {
   const ref = db.collection('notifications').doc(uid).collection('inbox').doc();
+  const category = getNotificationCategoryForType(type);
+  const timestamp = new Date().toISOString();
   await ref.set({
     type,
+    category,
     title,
     body,
     deeplink,
+    entityType,
+    entityId,
     isRead: false,
     createdAt: FieldValue.serverTimestamp(),
+  });
+
+  try {
+    await dispatchPushForInboxNotification({
+      uid,
+      notificationId: ref.id,
+      type,
+      category,
+      title,
+      body,
+      deeplink,
+      entityType,
+      entityId,
+      timestamp,
+    });
+  } catch (error) {
+    logger.error('dispatchPushForInboxNotification failed', {
+      uid,
+      notificationId: ref.id,
+      type,
+      category,
+      entityType,
+      entityId,
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+async function dispatchPushForInboxNotification(input: {
+  uid: string;
+  notificationId: string;
+  type: InboxNotificationType;
+  category: ReturnType<typeof getNotificationCategoryForType>;
+  title: string;
+  body: string;
+  deeplink: string;
+  entityType: 'AUCTION' | 'ORDER';
+  entityId: string;
+  timestamp: string;
+}): Promise<void> {
+  const userRef = db.collection('users').doc(input.uid);
+  const tokenCollectionRef = userRef.collection('deviceTokens');
+  const [userSnap, tokenSnap] = await Promise.all([
+    userRef.get(),
+    tokenCollectionRef.get(),
+  ]);
+
+  const preferences = normalizeNotificationPreferences(userSnap.data());
+  const tokens = getDeliverableTokens(
+    tokenSnap.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        token: typeof data.token === 'string' ? data.token : null,
+        isActive: data.isActive === true,
+        permissionStatus:
+          typeof data.permissionStatus === 'string'
+            ? data.permissionStatus
+            : null,
+      };
+    }),
+  );
+
+  if (!shouldDispatchPush(preferences, input.category, tokens.length)) {
+    logger.info('dispatchPushForInboxNotification skipped', {
+      uid: input.uid,
+      notificationId: input.notificationId,
+      type: input.type,
+      category: input.category,
+      pushEnabled: preferences.pushEnabled,
+      categoryEnabled: preferences.notificationCategories[input.category],
+      tokenCount: tokens.length,
+    });
+    return;
+  }
+
+  const response = await getMessaging().sendEachForMulticast({
+    tokens,
+    notification: {
+      title: input.title,
+      body: input.body,
+    },
+    data: buildPushDataPayload({
+      notificationId: input.notificationId,
+      type: input.type,
+      category: input.category,
+      deeplink: input.deeplink,
+      entityType: input.entityType,
+      entityId: input.entityId,
+      timestamp: input.timestamp,
+    }),
+  });
+
+  const failedCodes = response.responses
+    .filter((entry) => !entry.success)
+    .map((entry) => entry.error?.code)
+    .filter((code): code is string => typeof code === 'string');
+
+  logger.info('dispatchPushForInboxNotification sent', {
+    uid: input.uid,
+    notificationId: input.notificationId,
+    type: input.type,
+    category: input.category,
+    tokenCount: tokens.length,
+    successCount: response.successCount,
+    failureCount: response.failureCount,
+    failedCodes,
   });
 }
 
@@ -1372,6 +1494,8 @@ export const placeBid = onCall(async (req) => {
       '입찰가가 갱신되었습니다',
       `현재 최고가 ${finalPrice}원`,
       buildDeepLink('auction', auctionId),
+      'AUCTION',
+      auctionId,
     );
   }
 
@@ -1430,7 +1554,7 @@ export const buyNow = onCall(async (req) => {
   const auctionId = ensureString(payload.auctionId, 'auctionId');
   const auctionRef = db.collection('auctions').doc(auctionId);
 
-  return db.runTransaction(async (tx) => {
+  const result = await db.runTransaction(async (tx) => {
     const snap = await tx.get(auctionRef);
     if (!snap.exists) {
       throw new HttpsError('not-found', 'Auction not found');
@@ -1494,8 +1618,23 @@ export const buyNow = onCall(async (req) => {
       payload: { auctionId, finalPrice: auction.buyNowPrice },
     });
 
-    return { orderId: orderRef.id };
+    return {
+      orderId: orderRef.id,
+      sellerId: ensureString(auction.sellerId, 'sellerId'),
+    };
   });
+
+  await createInboxNotification(
+    result.sellerId,
+    'ORDER_AWAITING_PAYMENT',
+    '새 주문이 결제 대기 중입니다',
+    '구매자 결제 완료 후 배송 정보를 등록해주세요.',
+    buildDeepLink('orders', result.orderId),
+    'ORDER',
+    result.orderId,
+  );
+
+  return { orderId: result.orderId };
 });
 
 export const createPaymentSession = onCall(async (req) => {
@@ -1632,6 +1771,8 @@ export const confirmOrderPayment = onCall(async (req) => {
     '결제 완료',
     '구매자 결제가 완료되었습니다.',
     buildDeepLink('orders', orderId),
+    'ORDER',
+    orderId,
   );
   await writeAuditEvent({
     entityType: 'PAYMENT',
@@ -1837,6 +1978,8 @@ export const tossPaymentWebhook = onRequest(async (req, res) => {
         '결제 완료',
         '구매자 결제가 완료되었습니다.',
         buildDeepLink('orders', order.id),
+        'ORDER',
+        order.id,
       );
       await writeAuditEvent({
         entityType: 'PAYMENT',
@@ -1920,6 +2063,8 @@ export const shipmentUpdate = onCall(async (req) => {
     '배송이 시작되었습니다',
     `${carrierName} ${trackingNumber}`,
     buildDeepLink('orders', orderId),
+    'ORDER',
+    orderId,
   );
   await writeAuditEvent({
     entityType: 'ORDER',
@@ -1971,6 +2116,15 @@ export const confirmReceipt = onCall(async (req) => {
     actorId: uid,
     payload: { expectedAt: expectedAt.toISOString() },
   });
+  await createInboxNotification(
+    order.sellerId,
+    'RECEIPT_CONFIRMED',
+    '구매자가 수령을 확인했습니다',
+    '정산 예정 일정을 확인해주세요.',
+    buildDeepLink('orders', orderId),
+    'ORDER',
+    orderId,
+  );
 
   return { ok: true };
 });
@@ -2179,7 +2333,11 @@ export const finalizeAuctionsScheduler = onSchedule(
             payload: { auctionId: freshAuctionSnap.id },
           });
 
-          return { buyerId: order.buyerId, orderId: orderRef.id };
+          return {
+            buyerId: order.buyerId,
+            sellerId: order.sellerId,
+            orderId: orderRef.id,
+          };
         }
 
         tx.update(doc.ref, {
@@ -2206,6 +2364,17 @@ export const finalizeAuctionsScheduler = onSchedule(
           '낙찰되었습니다',
           '결제 기한 내 결제를 진행해주세요.',
           buildDeepLink('orders', notification.orderId),
+          'ORDER',
+          notification.orderId,
+        );
+        await createInboxNotification(
+          notification.sellerId,
+          'ORDER_AWAITING_PAYMENT',
+          '새 주문이 결제 대기 중입니다',
+          '구매자 결제 완료 후 배송 정보를 등록해주세요.',
+          buildDeepLink('orders', notification.orderId),
+          'ORDER',
+          notification.orderId,
         );
       }
     }
@@ -2295,6 +2464,8 @@ export const expireUnpaidOrdersScheduler = onSchedule(
           '결제 기한이 만료되었습니다',
           '미결제로 주문이 취소되었고 패널티가 반영되었습니다.',
           buildDeepLink('orders', doc.id),
+          'ORDER',
+          doc.id,
         );
       }
     }
@@ -2330,6 +2501,8 @@ export const settleScheduler = onSchedule('every 60 minutes', async () => {
       '정산 완료',
       `주문 ${doc.id} 정산이 완료되었습니다.`,
       buildDeepLink('orders', doc.id),
+      'ORDER',
+      doc.id,
     );
     await writeAuditEvent({
       entityType: 'ORDER',

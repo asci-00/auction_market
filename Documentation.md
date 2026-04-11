@@ -167,8 +167,8 @@
 - In `dev` with `ENABLE_TOSS_SANDBOX=true`, the Render payment bridge explicitly opens the `CARD` payment flow in the default integrated window and narrows the visible card list for smoke tests. External app-dependent wallet and app-card paths are not part of the required dev payment smoke path.
 - The active provider webhook path verifies the configured webhook secret from the payload, applies idempotent payment transitions through `payment.lastWebhookEventId`, and updates the order instead of relying on a mock payment mutation.
 - Current notification delivery status is intentionally split:
-  - implemented: inbox document writes plus device-token lifecycle
-  - pending: backend Firebase Admin Messaging send path plus mobile foreground/background notification handling
+  - implemented: inbox document writes with notification metadata, device-token lifecycle, and backend Firebase Admin Messaging dispatch for inbox-backed product events
+  - pending: mobile foreground/background notification handling plus the remaining supported-event gaps that do not emit inbox entries yet
 - The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `buyer2`, `seller1`, `seller2`, and `ops1`.
 - The seeded auction and order scenarios now cover live bidding, awaiting payment, seller shipment required, buyer receipt confirmed, settled payout, unpaid cancellation, unsold inventory, cancelled listings, and inbox notifications for both buyer and seller paths.
 - The default seeded orders now include both `seller1` and `seller2` shipment-required scenarios, plus separate ended-auction records for awaiting-payment, confirmed-receipt, and unpaid-cancelled flows so emulator smoke tests stay internally consistent.
@@ -420,6 +420,32 @@
 - Rules:
   - User can read and mark their own notifications as read.
   - Server creates notification documents.
+  - Phase 4 backend dispatch now uses the same inbox write as the source of truth for push fan-out, so inbox creation must succeed even when push delivery fails.
+
+### Push Delivery
+- Backend now evaluates push delivery from the same event that writes `notifications/{uid}/inbox/{notificationId}`.
+- Delivery gate:
+  - `preferences.pushEnabled == true`
+  - the mapped notification category is enabled under `preferences.notificationCategories.*`
+  - at least one `users/{uid}/deviceTokens/{tokenId}` record is active and has `permissionStatus` of `AUTHORIZED` or `PROVISIONAL`
+- The current backend fan-out covers the inbox-backed event types that already exist:
+  - `OUTBID`
+  - `WON`
+  - `ORDER_AWAITING_PAYMENT`
+  - `PAYMENT_COMPLETED`
+  - `PAYMENT_DUE`
+  - `SHIPPED`
+  - `RECEIPT_CONFIRMED`
+  - `SETTLED`
+- Current push payload data fields:
+  - `notificationId`
+  - `type`
+  - `category`
+  - `deeplink`
+  - `entityType`
+  - `entityId`
+  - `timestamp`
+- Backend push dispatch is best-effort only. Business mutations and inbox writes must not fail when Firebase Admin Messaging send attempts fail.
   - Every supported push event must have a matching inbox document with the same logical event identity.
 
 ### `auditEvents/{eventId}`

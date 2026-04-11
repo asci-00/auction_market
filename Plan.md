@@ -81,9 +81,10 @@ Status: in progress after Phase 3.
   - dev/prod mobile flavors plus dev Firebase project split
   - Render dev server for physical-device testing and payment redirect pages
   - Android real-device dev path through real Firebase + Render
+  - backend Firebase Admin Messaging dispatch for currently emitted inbox-backed product events
 - In progress:
-  - real FCM push dispatch from backend events
   - Android foreground/background push handling and notification-channel setup
+  - remaining push event-matrix gaps that do not yet emit inbox or push events
 - Deferred debt:
   - iOS APNs key upload and Firebase APNs project wiring
   - final iOS real-device push verification after APNs setup
