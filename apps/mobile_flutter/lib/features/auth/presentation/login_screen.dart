@@ -53,10 +53,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           LoginProviderPanel(
             isSubmitting: _isSubmitting,
             useFirebaseEmulators: useFirebaseEmulators,
-            onGooglePressed: () => _signIn(
-              provider: _buildGoogleProvider(),
-              useFirebaseEmulators: useFirebaseEmulators,
-            ),
+            onGooglePressed: () =>
+                _signInWithGoogle(useFirebaseEmulators: useFirebaseEmulators),
             onApplePressed: () => _signIn(
               provider: _buildAppleProvider(),
               useFirebaseEmulators: useFirebaseEmulators,
@@ -83,18 +81,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  GoogleAuthProvider _buildGoogleProvider() {
-    final provider = GoogleAuthProvider();
-    provider.addScope('email');
-    provider.setCustomParameters(const {'prompt': 'select_account'});
-    return provider;
-  }
-
   AppleAuthProvider _buildAppleProvider() {
     final provider = AppleAuthProvider();
     provider.addScope('email');
     provider.addScope('name');
     return provider;
+  }
+
+  Future<void> _signInWithGoogle({required bool useFirebaseEmulators}) async {
+    if (useFirebaseEmulators) {
+      setState(() {
+        _errorMessage = context.l10n.loginEmulatorUnsupportedProvider;
+      });
+      return;
+    }
+
+    await _runAuthAction(
+      action: () => ref.read(authActionServiceProvider).signInWithGoogle(),
+    );
   }
 
   Future<void> _signInWithSeededAccount(DevQuickAccount account) async {
