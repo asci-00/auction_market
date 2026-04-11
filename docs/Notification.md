@@ -24,15 +24,16 @@
   - backend persistence of active device tokens
   - Firestore inbox creation for supported product events
   - backend Firebase Admin Messaging dispatch for the product events that already create inbox entries
+  - Android default notification-channel declaration and channel creation
+  - foreground surfaced push handling through `onMessage`
+  - push tap routing through `getInitialMessage` and `onMessageOpenedApp`
 - Implemented for Android real-device dev testing:
   - real Firebase dev project connection
   - FCM registration-token retrieval and backend registration
   - Render dev backend path for token registration without emulator networking
 - Not implemented yet:
-  - Android foreground notification presentation
-  - Android background tap handling from live FCM payloads
-  - client routing from `getInitialMessage` or `onMessageOpenedApp`
   - the remaining supported event-matrix gaps that do not emit inbox entries yet
+  - final real-device verification of Android foreground, background, and terminated delivery behavior
 - Deferred debt:
   - iOS APNs auth setup in Firebase
   - final iOS real-device push verification after APNs setup
@@ -192,7 +193,9 @@
 - Failure handling
   - If a push payload is missing a valid deep link, route to `/notifications` instead of failing.
 - Current implementation note:
-  - These foreground, background, and tap-routing behaviors are still pending. The current app implements token lifecycle and settings only.
+  - The current app now implements foreground surfaced messages plus open routing through `getInitialMessage` and `onMessageOpenedApp`.
+  - Missing or unsupported push deeplinks fall back to `/notifications`.
+  - Real-device verification is still required before treating this as final delivery behavior.
 
 ## Token Lifecycle
 - Register the device token only after sign-in and permission grant.
@@ -231,9 +234,9 @@
 - Missing or stale deep-link fallback to `/notifications`.
 
 ## Next Slice
-- Add Android notification channel setup and live payload handling through `onMessage`, `getInitialMessage`, and `onMessageOpenedApp`.
-- Keep the client handling iOS-compatible so APNs setup later only unlocks delivery instead of requiring another app-architecture change.
 - Fill the remaining supported event-matrix gaps that still do not emit inbox records or push events today.
+- Run Android real-device verification for foreground, background, and terminated notification behavior using the current client routing and channel setup.
+- Keep the client handling iOS-compatible so APNs setup later only unlocks delivery instead of requiring another app-architecture change.
 
 ## Implementation Notes For Agents
 - Use this file together with `Plan.md`, `Documentation.md`, and `docs/Environment.md`.

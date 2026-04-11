@@ -237,6 +237,8 @@
   "notificationsDestinationUnknown": "Opens the next relevant screen",
   "notificationsEmptyTitle": "Your inbox is quiet",
   "notificationsEmptyDescription": "Bid, payment, and shipment updates will land here as soon as activity begins.",
+  "notificationsOpenAction": "Open",
+  "notificationsForegroundFallbackTitle": "New notification",
   "settingsTitle": "Settings",
   "settingsSubtitle": "Keep alerts and app information within reach.",
   "settingsHeroEyebrow": "Preferences",

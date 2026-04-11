@@ -2,9 +2,9 @@
 
 ## Current Task
 - Phase 4 settings and notification foundation is active.
-- The current slice now includes the real Firebase dev project split, Render dev server deployment, dev/prod mobile flavor separation, structured mobile logging, backend gateway split, device-token lifecycle, and backend Firebase Admin Messaging fan-out for the inbox-backed product events that already exist.
+- The current slice now includes the real Firebase dev project split, Render dev server deployment, dev/prod mobile flavor separation, structured mobile logging, backend gateway split, device-token lifecycle, backend Firebase Admin Messaging fan-out for the inbox-backed product events that already exist, and mobile push presentation plus tap-routing foundation.
 - Android physical-device dev builds now default to real Firebase dev + Render HTTP instead of local emulator networking.
-- Real push delivery is still incomplete: token registration plus backend dispatch work, but client foreground or background notification handling and the remaining unsupported push-event gaps are still open.
+- Real push delivery is still incomplete: token registration, backend dispatch, Android channel wiring, foreground surfaced messages, and push tap routing now exist, but the remaining unsupported push-event gaps and final real-device verification are still open.
 
 ## Locked Decisions
 - All developer-facing docs use plain English.
@@ -18,7 +18,7 @@
 
 ## Open Blockers
 - Real payment-provider webhook secret is still not configured in this repo.
-- Final real-device push delivery still needs client foreground or background notification handling plus real-device token availability on the target runtime.
+- Final real-device push delivery still needs real-device token availability on the target runtime plus end-to-end verification of foreground, background, and terminated notification paths.
 - iOS real-device push remains blocked on Apple APNs auth setup in the Firebase dev project.
 - Android can already use the real Firebase dev project and the public Render dev backend, but final product push verification still depends on a runtime that can return a real FCM token.
 
@@ -57,7 +57,8 @@
 - Mobile now calls `registerDeviceToken` after permission grant and token refresh, calls `deactivateDeviceToken` before sign-out or when push is disabled, and re-syncs permission plus token state when the app resumes.
 - Android notification permission declaration is present, and the app can request permission plus register or deactivate FCM tokens against the dev backend.
 - Backend now writes inbox documents with `category`, `entityType`, and `entityId`, then best-effort fans out Firebase Admin Messaging payloads for `OUTBID`, `WON`, `ORDER_AWAITING_PAYMENT`, `PAYMENT_COMPLETED`, `PAYMENT_DUE`, `SHIPPED`, `RECEIPT_CONFIRMED`, and `SETTLED` when user preferences and active device tokens allow delivery.
-- No mobile code currently handles `onMessage`, `getInitialMessage`, or `onMessageOpenedApp`, so platform delivery can occur before in-app presentation and tap-routing are complete.
+- Mobile now handles push payloads through `onMessage`, `getInitialMessage`, and `onMessageOpenedApp`, surfaces foreground messages with a `SnackBar`, routes opened notifications through the existing deep-link resolver, and falls back to `/notifications` when a push deeplink is missing or unsupported.
+- Android now declares a default Firebase Messaging channel id in the manifest and creates the matching notification channel from `MainActivity` on Android O and above.
 - Emulator seed data now covers separate buyer and seller notification, payment, shipment, confirmed-receipt, settled, cancelled-unpaid, draft, unsold, and cancelled-listing paths without cross-linking orders to unrelated auctions.
 - Backend callables cover bootstrap, draft lifecycle, bid and auto-bid, buy now, payment-session preparation, payment confirmation, shipment update, receipt confirmation, and notification read state.
 - The backend now exposes `tossPaymentBridge` so emulator-backed `dev` can return a real Toss sandbox `checkoutUrl`, `successUrl`, and `failUrl` when `ENABLE_TOSS_SANDBOX=true`.
@@ -92,6 +93,9 @@
 - `cd backend/functions && npm run format:check && npm run lint && npm run build && npm test` passed on April 6, 2026 during the Phase 4 settings apply slice.
 - `cd apps/mobile_flutter && flutter analyze` passed on April 8, 2026 after the dev/prod flavor, gateway, and logging changes.
 - `cd apps/mobile_flutter && flutter test` passed on April 8, 2026 after the dev/prod flavor, gateway, and logging changes.
+- `cd apps/mobile_flutter && flutter analyze` passed on April 11, 2026 after adding mobile push presentation and tap-routing foundation.
+- `cd apps/mobile_flutter && flutter test test/features/notifications/application/notification_push_service_test.dart test/features/notifications/application/notification_device_token_service_test.dart test/app/app_test.dart` passed on April 11, 2026 after adding mobile push presentation and tap-routing foundation.
+- `cd apps/mobile_flutter/android && ./gradlew app:compileDevDebugKotlin` reached the Android build graph on April 11, 2026 but stopped at `:app:copyFlutterAssetsDevDebug` because the local workspace could not apply file mode `644` to `kernel_blob.bin`; Kotlin and manifest wiring were not the failing layer.
 - `cd backend/render-dev-server && npm test` passed on April 8, 2026 after the Firebase Admin refactor and `/healthz` route addition.
 - `cd apps/mobile_flutter && xcodebuild -list -project ios/Runner.xcodeproj` confirmed `dev` and `prod` schemes plus flavor-specific build configurations on April 8, 2026.
 - `cd apps/mobile_flutter/android && ./gradlew app:tasks --all | rg "assemble(Dev|Prod)"` confirmed Android dev/prod variants on April 8, 2026.
@@ -127,9 +131,9 @@
    - push toggle writes
    - device token register or deactivate diagnostics
 6. Continue Phase 4 by implementing:
-   - Android foreground/background push handling
-   - notification channel setup plus payload routing through `onMessage`, `getInitialMessage`, and `onMessageOpenedApp`
    - remaining supported-event gaps such as reminder-style notifications once their trigger timing is fixed
+   - Android and iOS real-device verification for foreground, background, and terminated notification paths
+   - iOS APNs project setup and final iOS delivery signoff
 
 ## Update Rules
 - Keep this file short.

@@ -167,8 +167,8 @@
 - In `dev` with `ENABLE_TOSS_SANDBOX=true`, the Render payment bridge explicitly opens the `CARD` payment flow in the default integrated window and narrows the visible card list for smoke tests. External app-dependent wallet and app-card paths are not part of the required dev payment smoke path.
 - The active provider webhook path verifies the configured webhook secret from the payload, applies idempotent payment transitions through `payment.lastWebhookEventId`, and updates the order instead of relying on a mock payment mutation.
 - Current notification delivery status is intentionally split:
-  - implemented: inbox document writes with notification metadata, device-token lifecycle, and backend Firebase Admin Messaging dispatch for inbox-backed product events
-  - pending: mobile foreground/background notification handling plus the remaining supported-event gaps that do not emit inbox entries yet
+  - implemented: inbox document writes with notification metadata, device-token lifecycle, backend Firebase Admin Messaging dispatch for inbox-backed product events, Android channel setup, foreground surfaced messages, and tap routing through `getInitialMessage` plus `onMessageOpenedApp`
+  - pending: the remaining supported-event gaps that do not emit inbox entries yet, plus final real-device verification of Android and iOS push behavior
 - The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `buyer2`, `seller1`, `seller2`, and `ops1`.
 - The seeded auction and order scenarios now cover live bidding, awaiting payment, seller shipment required, buyer receipt confirmed, settled payout, unpaid cancellation, unsold inventory, cancelled listings, and inbox notifications for both buyer and seller paths.
 - The default seeded orders now include both `seller1` and `seller2` shipment-required scenarios, plus separate ended-auction records for awaiting-payment, confirmed-receipt, and unpaid-cancelled flows so emulator smoke tests stay internally consistent.
@@ -447,6 +447,11 @@
   - `timestamp`
 - Backend push dispatch is best-effort only. Business mutations and inbox writes must not fail when Firebase Admin Messaging send attempts fail.
   - Every supported push event must have a matching inbox document with the same logical event identity.
+- Current mobile handling for those payloads is:
+  - `onMessage`: show a surfaced in-app `SnackBar` with an open action
+  - `onMessageOpenedApp` and `getInitialMessage`: best-effort mark the linked inbox item as read, then route through the existing app deep-link resolver
+  - malformed, missing, or unsupported push deeplinks: fall back to `/notifications` instead of failing navigation
+  - Android: use the manifest-declared default Firebase Messaging channel id and create the matching notification channel from `MainActivity` on Android O and above
 
 ### `auditEvents/{eventId}`
 - Purpose: server-only event trace for payment, auction, order, and scheduler transitions.

@@ -1211,6 +1211,18 @@ abstract class AppLocalizations {
   /// **'Bid, payment, and shipment updates will land here as soon as activity begins.'**
   String get notificationsEmptyDescription;
 
+  /// No description provided for @notificationsOpenAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get notificationsOpenAction;
+
+  /// No description provided for @notificationsForegroundFallbackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New notification'**
+  String get notificationsForegroundFallbackTitle;
+
   /// No description provided for @settingsTitle.
   ///
   /// In en, this message translates to:

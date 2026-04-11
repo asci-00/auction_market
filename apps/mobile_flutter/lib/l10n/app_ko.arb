@@ -237,6 +237,8 @@
   "notificationsDestinationUnknown": "다음 관련 화면으로 이동",
   "notificationsEmptyTitle": "알림함이 조용합니다",
   "notificationsEmptyDescription": "입찰, 결제, 배송 업데이트가 생기면 이곳에 차곡차곡 쌓입니다.",
+  "notificationsOpenAction": "열기",
+  "notificationsForegroundFallbackTitle": "새 알림",
   "settingsTitle": "설정",
   "settingsSubtitle": "알림과 앱 정보를 가까운 곳에서 관리합니다.",
   "settingsHeroEyebrow": "환경 설정",

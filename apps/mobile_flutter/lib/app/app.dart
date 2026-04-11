@@ -10,7 +10,9 @@ import '../core/l10n/app_localization.dart';
 import '../core/routing/app_router.dart';
 import '../core/theme/app_theme.dart';
 import '../features/notifications/application/notification_device_token_service.dart';
+import '../features/notifications/application/notification_push_service.dart';
 import '../features/settings/application/settings_preferences_service.dart';
+import '../core/widgets/app_global_keys.dart';
 
 class AuctionMarketApp extends ConsumerWidget {
   const AuctionMarketApp({super.key});
@@ -26,13 +28,16 @@ class AuctionMarketApp extends ConsumerWidget {
     final bootstrapState = ref.watch(appBootstrapProvider);
     final themeMode = ref.watch(themeModePreferenceProvider);
     final resolvedLocale = resolveAppLocale(_deviceLocale());
+    final scaffoldMessengerKey = ref.watch(rootScaffoldMessengerKeyProvider);
 
     return bootstrapState.when(
       data: (_) {
         ref.watch(notificationDeviceTokenLifecycleProvider);
+        ref.watch(notificationPushLifecycleProvider);
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
           builder: FToastBuilder(),
+          scaffoldMessengerKey: scaffoldMessengerKey,
           theme: lightTheme,
           darkTheme: darkTheme,
           themeMode: themeMode.materialThemeMode,
@@ -47,6 +52,7 @@ class AuctionMarketApp extends ConsumerWidget {
       loading: () => MaterialApp(
         debugShowCheckedModeBanner: false,
         builder: FToastBuilder(),
+        scaffoldMessengerKey: scaffoldMessengerKey,
         theme: lightTheme,
         darkTheme: darkTheme,
         themeMode: themeMode.materialThemeMode,
@@ -59,6 +65,7 @@ class AuctionMarketApp extends ConsumerWidget {
       error: (error, _) => MaterialApp(
         debugShowCheckedModeBanner: false,
         builder: FToastBuilder(),
+        scaffoldMessengerKey: scaffoldMessengerKey,
         theme: lightTheme,
         darkTheme: darkTheme,
         themeMode: themeMode.materialThemeMode,
