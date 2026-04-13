@@ -431,12 +431,14 @@
 - The current backend fan-out covers the inbox-backed event types that already exist:
   - `OUTBID`
   - `WON`
+  - `BUY_NOW_COMPLETED`
   - `ORDER_AWAITING_PAYMENT`
   - `PAYMENT_COMPLETED`
-  - `PAYMENT_DUE`
+  - `PAYMENT_FAILED`
   - `SHIPPED`
   - `RECEIPT_CONFIRMED`
   - `SETTLED`
+- `PAYMENT_DUE` is currently reserved for the upcoming payment reminder slice and is not emitted yet.
 - Current push payload data fields:
   - `notificationId`
   - `type`

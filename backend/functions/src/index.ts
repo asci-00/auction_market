@@ -23,6 +23,7 @@ import {
   isDevDummyPaymentEnabled,
   isDuplicatePaymentConfirmation,
   normalizeWebhookPayment,
+  shouldApplyWebhookCancellation,
   toCancelledPaymentOrder,
   toConfirmedPaymentOrder,
   toFailedPaymentOrder,
@@ -1620,10 +1621,20 @@ export const buyNow = onCall(async (req) => {
 
     return {
       orderId: orderRef.id,
+      buyerId: uid,
       sellerId: ensureString(auction.sellerId, 'sellerId'),
     };
   });
 
+  await createInboxNotification(
+    result.buyerId,
+    'BUY_NOW_COMPLETED',
+    '즉시 구매가 완료되었습니다',
+    '결제 기한 내 결제를 진행해주세요.',
+    buildDeepLink('orders', result.orderId),
+    'ORDER',
+    result.orderId,
+  );
   await createInboxNotification(
     result.sellerId,
     'ORDER_AWAITING_PAYMENT',
@@ -1749,6 +1760,15 @@ export const confirmOrderPayment = onCall(async (req) => {
       paymentStatus: failedOrder.paymentStatus,
       updatedAt: FieldValue.serverTimestamp(),
     });
+    await createInboxNotification(
+      order.buyerId,
+      'PAYMENT_FAILED',
+      '결제가 완료되지 않았습니다',
+      '결제 정보를 확인한 뒤 다시 시도해주세요.',
+      buildDeepLink('orders', orderId),
+      'ORDER',
+      orderId,
+    );
     await writeAuditEvent({
       entityType: 'PAYMENT',
       entityId: paymentKey,
@@ -1993,18 +2013,56 @@ export const tossPaymentWebhook = onRequest(async (req, res) => {
     payment.status &&
     ['CANCELED', 'ABORTED', 'EXPIRED'].includes(payment.status)
   ) {
-    const cancelledOrder = toCancelledPaymentOrder(order, eventMarker);
-    await orderRef.update({
-      ...serializeOrder(cancelledOrder),
-      updatedAt: FieldValue.serverTimestamp(),
-    });
-    await writeAuditEvent({
-      entityType: 'PAYMENT',
-      entityId: payment.paymentKey ?? order.id,
-      eventType: 'PAYMENT_WEBHOOK_CANCELLED',
-      actorId: null,
-      payload: { orderId: order.id, status: payment.status, eventMarker },
-    });
+    if (shouldApplyWebhookCancellation(order)) {
+      const cancelledOrder = toCancelledPaymentOrder(order, eventMarker);
+      await orderRef.update({
+        ...serializeOrder(cancelledOrder),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      await writeAuditEvent({
+        entityType: 'PAYMENT',
+        entityId: payment.paymentKey ?? order.id,
+        eventType: 'PAYMENT_WEBHOOK_CANCELLED',
+        actorId: null,
+        payload: {
+          orderId: order.id,
+          status: payment.status,
+          eventMarker,
+          applied: true,
+        },
+      });
+      await createInboxNotification(
+        order.buyerId,
+        'PAYMENT_FAILED',
+        payment.status === 'EXPIRED'
+          ? '결제 기한이 만료되었습니다'
+          : '결제가 취소되었습니다',
+        payment.status === 'EXPIRED'
+          ? '미결제로 주문이 취소되었습니다.'
+          : '결제가 완료되지 않아 주문이 취소되었습니다.',
+        buildDeepLink('orders', order.id),
+        'ORDER',
+        order.id,
+      );
+    } else {
+      const markedOrder = withLastWebhookEventId(order, eventMarker);
+      await orderRef.update({
+        ...serializeOrder(markedOrder),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      await writeAuditEvent({
+        entityType: 'PAYMENT',
+        entityId: payment.paymentKey ?? order.id,
+        eventType: 'PAYMENT_WEBHOOK_CANCELLED',
+        actorId: null,
+        payload: {
+          orderId: order.id,
+          status: payment.status,
+          eventMarker,
+          applied: false,
+        },
+      });
+    }
   }
 
   logger.info('tossPaymentWebhook', {
@@ -2460,7 +2518,7 @@ export const expireUnpaidOrdersScheduler = onSchedule(
       if (shouldNotify) {
         await createInboxNotification(
           doc.data().buyerId,
-          'PAYMENT_DUE',
+          'PAYMENT_FAILED',
           '결제 기한이 만료되었습니다',
           '미결제로 주문이 취소되었고 패널티가 반영되었습니다.',
           buildDeepLink('orders', doc.id),

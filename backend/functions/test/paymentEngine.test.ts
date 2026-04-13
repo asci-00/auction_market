@@ -6,6 +6,7 @@ import {
   isDevDummyPaymentEnabled,
   isDuplicatePaymentConfirmation,
   normalizeWebhookPayment,
+  shouldApplyWebhookCancellation,
   toCancelledPaymentOrder,
   toConfirmedPaymentOrder,
   withLastWebhookEventId,
@@ -322,6 +323,34 @@ describe('payment engine', () => {
     expect(cancelled.paymentStatus).toBe('CANCELLED');
     expect(cancelled.orderStatus).toBe('CANCELLED');
     expect(cancelled.payment.lastWebhookEventId).toBe('event-cancelled');
+  });
+
+  it('applies webhook cancellation only while awaiting payment', () => {
+    expect(shouldApplyWebhookCancellation(baseOrder)).toBe(true);
+    expect(
+      shouldApplyWebhookCancellation({
+        ...baseOrder,
+        orderStatus: 'CANCELLED_UNPAID',
+      }),
+    ).toBe(false);
+    expect(
+      shouldApplyWebhookCancellation({
+        ...baseOrder,
+        orderStatus: 'CANCELLED',
+      }),
+    ).toBe(false);
+    expect(
+      shouldApplyWebhookCancellation({
+        ...baseOrder,
+        orderStatus: 'PAID_ESCROW_HOLD',
+      }),
+    ).toBe(false);
+    expect(
+      shouldApplyWebhookCancellation({
+        ...baseOrder,
+        orderStatus: 'SHIPPED',
+      }),
+    ).toBe(false);
   });
 
   it('updates webhook marker without replaying payment state transitions', () => {

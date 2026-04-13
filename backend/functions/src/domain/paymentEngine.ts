@@ -171,6 +171,10 @@ export function toCancelledPaymentOrder(
   };
 }
 
+export function shouldApplyWebhookCancellation(order: Order): boolean {
+  return order.orderStatus === 'AWAITING_PAYMENT';
+}
+
 export function buildWebhookEventMarker(
   eventType: string,
   createdAt: string | null | undefined,

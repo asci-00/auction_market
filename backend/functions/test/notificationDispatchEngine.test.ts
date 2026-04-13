@@ -11,6 +11,9 @@ describe('notification dispatch engine', () => {
   it('maps supported inbox types to notification categories', () => {
     expect(getNotificationCategoryForType('OUTBID')).toBe('auctionActivity');
     expect(getNotificationCategoryForType('WON')).toBe('orderPayment');
+    expect(getNotificationCategoryForType('BUY_NOW_COMPLETED')).toBe(
+      'orderPayment',
+    );
     expect(getNotificationCategoryForType('ORDER_AWAITING_PAYMENT')).toBe(
       'orderPayment',
     );
@@ -18,6 +21,9 @@ describe('notification dispatch engine', () => {
       'orderPayment',
     );
     expect(getNotificationCategoryForType('PAYMENT_DUE')).toBe('orderPayment');
+    expect(getNotificationCategoryForType('PAYMENT_FAILED')).toBe(
+      'orderPayment',
+    );
     expect(getNotificationCategoryForType('SHIPPED')).toBe(
       'shippingAndReceipt',
     );

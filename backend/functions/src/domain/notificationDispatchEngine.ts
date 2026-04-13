@@ -7,9 +7,11 @@ export type NotificationCategory =
 export type InboxNotificationType =
   | 'OUTBID'
   | 'WON'
+  | 'BUY_NOW_COMPLETED'
   | 'ORDER_AWAITING_PAYMENT'
   | 'PAYMENT_COMPLETED'
   | 'PAYMENT_DUE'
+  | 'PAYMENT_FAILED'
   | 'SHIPPED'
   | 'RECEIPT_CONFIRMED'
   | 'SETTLED';
@@ -38,9 +40,11 @@ const CATEGORY_BY_NOTIFICATION_TYPE: Record<
 > = {
   OUTBID: 'auctionActivity',
   WON: 'orderPayment',
+  BUY_NOW_COMPLETED: 'orderPayment',
   ORDER_AWAITING_PAYMENT: 'orderPayment',
   PAYMENT_COMPLETED: 'orderPayment',
   PAYMENT_DUE: 'orderPayment',
+  PAYMENT_FAILED: 'orderPayment',
   SHIPPED: 'shippingAndReceipt',
   RECEIPT_CONFIRMED: 'shippingAndReceipt',
   SETTLED: 'shippingAndReceipt',
