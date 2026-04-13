@@ -157,6 +157,7 @@
   - `activateDraftAuctionsScheduler`
   - `finalizeAuctionsScheduler`
   - `expireUnpaidOrdersScheduler`
+  - `orderReminderNotificationsScheduler`
   - `settleScheduler`
 - Critical transitions now write `auditEvents` records for user bootstrap, item and auction lifecycle, bids, payment confirmation and failure, shipment, receipt confirmation, unpaid expiry, and settlement.
 - `createPaymentSession` now returns `mode: "DEV_DUMMY"` plus a deterministic `devPaymentKey` in `dev`, so the mobile app can validate buyer payment progression without pretending to launch a production checkout.
@@ -167,8 +168,8 @@
 - In `dev` with `ENABLE_TOSS_SANDBOX=true`, the Render payment bridge explicitly opens the `CARD` payment flow in the default integrated window and narrows the visible card list for smoke tests. External app-dependent wallet and app-card paths are not part of the required dev payment smoke path.
 - The active provider webhook path verifies the configured webhook secret from the payload, applies idempotent payment transitions through `payment.lastWebhookEventId`, and updates the order instead of relying on a mock payment mutation.
 - Current notification delivery status is intentionally split:
-  - implemented: inbox document writes with notification metadata, device-token lifecycle, backend Firebase Admin Messaging dispatch for inbox-backed product events, Android channel setup, foreground surfaced messages, and tap routing through `getInitialMessage` plus `onMessageOpenedApp`
-  - pending: the remaining supported-event gaps that do not emit inbox entries yet, plus final real-device verification of Android and iOS push behavior
+  - implemented: inbox document writes with notification metadata, device-token lifecycle, backend Firebase Admin Messaging dispatch for inbox-backed product events, reminder-event scheduler coverage with deterministic inbox ids, Android channel setup, foreground surfaced messages, and tap routing through `getInitialMessage` plus `onMessageOpenedApp`
+  - pending: final real-device verification of Android and iOS push behavior
 - The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `buyer2`, `seller1`, `seller2`, and `ops1`.
 - The seeded auction and order scenarios now cover live bidding, awaiting payment, seller shipment required, buyer receipt confirmed, settled payout, unpaid cancellation, unsold inventory, cancelled listings, and inbox notifications for both buyer and seller paths.
 - The default seeded orders now include both `seller1` and `seller2` shipment-required scenarios, plus separate ended-auction records for awaiting-payment, confirmed-receipt, and unpaid-cancelled flows so emulator smoke tests stay internally consistent.
@@ -435,11 +436,14 @@
   - `BUY_NOW_COMPLETED`
   - `ORDER_AWAITING_PAYMENT`
   - `PAYMENT_COMPLETED`
+  - `PAYMENT_DUE`
   - `PAYMENT_FAILED`
+  - `SHIPMENT_REMINDER`
   - `SHIPPED`
+  - `RECEIPT_REMINDER`
   - `RECEIPT_CONFIRMED`
   - `SETTLED`
-- `PAYMENT_DUE` is currently reserved for the upcoming payment reminder slice and is not emitted yet.
+- Reminder events (`PAYMENT_DUE`, `SHIPMENT_REMINDER`, `RECEIPT_REMINDER`) now use deterministic inbox ids per order so scheduler retries do not duplicate inbox rows or push sends.
 - Current push payload data fields:
   - `notificationId`
   - `type`
@@ -489,7 +493,7 @@
 
 ## Current Phase 2 Implementation Details
 - `backend/functions/src/index.ts` now exports the documented callable write surface for profile bootstrap, item save, auction publish/cancel/relist, bidding, buy-now, payment session creation, payment confirmation, shipment, receipt confirmation, and inbox read state.
-- `backend/functions/src/index.ts` also exports the current provider-specific webhook endpoint and the four scheduler handlers with full order-schema writes.
+- `backend/functions/src/index.ts` also exports the current provider-specific webhook endpoint and scheduler handlers for auction activation, auction finalization, unpaid expiry, reminder notification emission, and settlement.
 - `backend/functions/src/domain/paymentEngine.ts` owns webhook normalization, idempotency detection, and order-state mapping for confirmed and cancelled payment events.
 - `backend/functions/src/domain/orderEngine.ts` now owns fee calculation in addition to unpaid-order expiry and penalty calculation.
 - `backend/emulator-seed/seed.ts` now matches the documented schema for users, items, auctions, bids, orders, and notifications.
@@ -553,6 +557,10 @@
 - `expireUnpaidOrdersScheduler`
   - Move overdue unpaid orders to `CANCELLED_UNPAID`.
   - Apply buyer penalty and write audit event.
+- `orderReminderNotificationsScheduler`
+  - Emit `PAYMENT_DUE`, `SHIPMENT_REMINDER`, and `RECEIPT_REMINDER` once per order reminder type.
+  - Use deterministic inbox ids and transaction preconditions so stale scheduler snapshots do not create or dispatch reminders after status transitions.
+  - Query reminders with a bounded lookback window to prevent unbounded re-scan of long-resolved historical orders.
 - `settleScheduler`
   - Move `CONFIRMED_RECEIPT` orders to `SETTLED` when settlement window passes.
 

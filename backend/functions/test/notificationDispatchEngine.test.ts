@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildReminderInboxNotificationId,
   buildPushDataPayload,
   getDeliverableTokens,
   getNotificationCategoryForType,
@@ -27,7 +28,13 @@ describe('notification dispatch engine', () => {
     expect(getNotificationCategoryForType('PAYMENT_FAILED')).toBe(
       'orderPayment',
     );
+    expect(getNotificationCategoryForType('SHIPMENT_REMINDER')).toBe(
+      'shippingAndReceipt',
+    );
     expect(getNotificationCategoryForType('SHIPPED')).toBe(
+      'shippingAndReceipt',
+    );
+    expect(getNotificationCategoryForType('RECEIPT_REMINDER')).toBe(
       'shippingAndReceipt',
     );
     expect(getNotificationCategoryForType('RECEIPT_CONFIRMED')).toBe(
@@ -154,5 +161,26 @@ describe('notification dispatch engine', () => {
       entityId: 'order-1',
       timestamp: '2026-04-11T00:00:00.000Z',
     });
+  });
+
+  it('builds deterministic reminder notification ids', () => {
+    expect(
+      buildReminderInboxNotificationId({
+        type: 'PAYMENT_DUE',
+        orderId: 'order-1',
+      }),
+    ).toBe('reminder_PAYMENT_DUE_order-1');
+    expect(
+      buildReminderInboxNotificationId({
+        type: 'SHIPMENT_REMINDER',
+        orderId: 'order-1',
+      }),
+    ).toBe('reminder_SHIPMENT_REMINDER_order-1');
+    expect(
+      buildReminderInboxNotificationId({
+        type: 'RECEIPT_REMINDER',
+        orderId: 'order-1',
+      }),
+    ).toBe('reminder_RECEIPT_REMINDER_order-1');
   });
 });

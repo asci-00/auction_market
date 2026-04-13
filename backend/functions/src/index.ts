@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase-admin/app';
 import {
   FieldValue,
+  type DocumentReference,
   Timestamp,
   Transaction,
   getFirestore,
@@ -30,15 +31,26 @@ import {
   withLastWebhookEventId,
 } from './domain/paymentEngine.js';
 import {
+  PAYMENT_DUE_REMINDER_LEAD_TIME_MS,
+  RECEIPT_REMINDER_DELAY_MS,
+  REMINDER_QUERY_LOOKBACK_MS,
+  SHIPMENT_REMINDER_DELAY_MS,
+  isPaymentDueReminderCandidate,
+  isReceiptReminderCandidate,
+  isShipmentReminderCandidate,
+} from './domain/orderReminderEngine.js';
+import {
   buildDeactivateDeviceTokenRecord,
   buildDeviceTokenId,
   buildRegisterDeviceTokenRecord,
 } from './domain/deviceTokenEngine.js';
 import {
+  buildReminderInboxNotificationId,
   buildPushDataPayload,
   getDeliverableTokens,
   getNotificationCategoryForType,
   InboxNotificationType,
+  ReminderNotificationType,
   normalizeNotificationPreferences,
   shouldDispatchPush,
 } from './domain/notificationDispatchEngine.js';
@@ -257,11 +269,25 @@ async function createInboxNotification(
   deeplink: string,
   entityType: 'AUCTION' | 'ORDER',
   entityId: string,
+  options?: {
+    deterministicNotificationId?: string;
+    precondition?: {
+      ref: DocumentReference;
+      isSatisfied: (docId: string, data: AnyRecord) => boolean;
+    };
+  },
 ): Promise<void> {
-  const ref = db.collection('notifications').doc(uid).collection('inbox').doc();
+  const inboxCollectionRef = db
+    .collection('notifications')
+    .doc(uid)
+    .collection('inbox');
+  const ref = options?.deterministicNotificationId
+    ? inboxCollectionRef.doc(options.deterministicNotificationId)
+    : inboxCollectionRef.doc();
   const category = getNotificationCategoryForType(type);
   const timestamp = new Date().toISOString();
-  await ref.set({
+
+  const payload = {
     type,
     category,
     title,
@@ -271,7 +297,48 @@ async function createInboxNotification(
     entityId,
     isRead: false,
     createdAt: FieldValue.serverTimestamp(),
-  });
+  };
+
+  const created = options?.deterministicNotificationId
+    ? await db.runTransaction(async (tx) => {
+        if (options.precondition) {
+          const conditionSnap = await tx.get(options.precondition.ref);
+          if (!conditionSnap.exists) {
+            return false;
+          }
+          const conditionData = conditionSnap.data();
+          if (
+            !conditionData ||
+            !options.precondition.isSatisfied(
+              conditionSnap.id,
+              conditionData as AnyRecord,
+            )
+          ) {
+            return false;
+          }
+        }
+        const existing = await tx.get(ref);
+        if (existing.exists) {
+          return false;
+        }
+        tx.set(ref, payload);
+        return true;
+      })
+    : true;
+  if (!options?.deterministicNotificationId) {
+    await ref.set(payload);
+  }
+  if (!created) {
+    logger.info('createInboxNotification deduplicated', {
+      uid,
+      type,
+      category,
+      entityType,
+      entityId,
+      notificationId: ref.id,
+    });
+    return;
+  }
 
   try {
     await dispatchPushForInboxNotification({
@@ -578,6 +645,32 @@ function deserializeOrder(id: string, data: AnyRecord): Order {
         typeof fees.sellerReceivable === 'number' ? fees.sellerReceivable : 0,
     },
   };
+}
+
+function isReminderCandidateFromDocument(
+  type: ReminderNotificationType,
+  orderId: string,
+  data: AnyRecord,
+  now: Date,
+): boolean {
+  try {
+    const order = deserializeOrder(orderId, data);
+    switch (type) {
+      case 'PAYMENT_DUE':
+        return isPaymentDueReminderCandidate(order, now);
+      case 'SHIPMENT_REMINDER':
+        return isShipmentReminderCandidate(order, now);
+      case 'RECEIPT_REMINDER':
+        return isReceiptReminderCandidate(order, now);
+    }
+  } catch (error) {
+    logger.warn('order reminder precondition parse failed', {
+      orderId,
+      type,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return false;
+  }
 }
 
 async function confirmTossPayment(
@@ -2545,6 +2638,148 @@ export const expireUnpaidOrdersScheduler = onSchedule(
         );
       }
     }
+  },
+);
+
+export const orderReminderNotificationsScheduler = onSchedule(
+  'every 30 minutes',
+  async () => {
+    const now = new Date();
+    const nowTimestamp = Timestamp.fromDate(now);
+    const paymentDueReminderCutoff = Timestamp.fromDate(
+      new Date(now.getTime() + PAYMENT_DUE_REMINDER_LEAD_TIME_MS),
+    );
+    const shipmentReminderCutoff = Timestamp.fromDate(
+      new Date(now.getTime() - SHIPMENT_REMINDER_DELAY_MS),
+    );
+    const receiptReminderCutoff = Timestamp.fromDate(
+      new Date(now.getTime() - RECEIPT_REMINDER_DELAY_MS),
+    );
+    const shipmentReminderLookbackStart = Timestamp.fromDate(
+      new Date(
+        now.getTime() - SHIPMENT_REMINDER_DELAY_MS - REMINDER_QUERY_LOOKBACK_MS,
+      ),
+    );
+    const receiptReminderLookbackStart = Timestamp.fromDate(
+      new Date(
+        now.getTime() - RECEIPT_REMINDER_DELAY_MS - REMINDER_QUERY_LOOKBACK_MS,
+      ),
+    );
+
+    const [paymentDueSnap, shipmentReminderSnap, receiptReminderSnap] =
+      await Promise.all([
+        db
+          .collection('orders')
+          .where('orderStatus', '==', 'AWAITING_PAYMENT')
+          .where('paymentDueAt', '>', nowTimestamp)
+          .where('paymentDueAt', '<=', paymentDueReminderCutoff)
+          .get(),
+        db
+          .collection('orders')
+          .where('orderStatus', '==', 'PAID_ESCROW_HOLD')
+          .where('payment.approvedAt', '>', shipmentReminderLookbackStart)
+          .where('payment.approvedAt', '<=', shipmentReminderCutoff)
+          .get(),
+        db
+          .collection('orders')
+          .where('orderStatus', '==', 'SHIPPED')
+          .where('shipping.shippedAt', '>', receiptReminderLookbackStart)
+          .where('shipping.shippedAt', '<=', receiptReminderCutoff)
+          .get(),
+      ]);
+
+    for (const doc of paymentDueSnap.docs) {
+      const order = deserializeOrder(doc.id, doc.data() as AnyRecord);
+      await createInboxNotification(
+        order.buyerId,
+        'PAYMENT_DUE',
+        '결제 기한이 곧 만료됩니다',
+        '결제 기한 전에 결제를 완료해주세요.',
+        buildDeepLink('orders', order.id),
+        'ORDER',
+        order.id,
+        {
+          deterministicNotificationId: buildReminderInboxNotificationId({
+            type: 'PAYMENT_DUE',
+            orderId: order.id,
+          }),
+          precondition: {
+            ref: doc.ref,
+            isSatisfied: (freshOrderId, freshData) =>
+              isReminderCandidateFromDocument(
+                'PAYMENT_DUE',
+                freshOrderId,
+                freshData,
+                now,
+              ),
+          },
+        },
+      );
+    }
+
+    for (const doc of shipmentReminderSnap.docs) {
+      const order = deserializeOrder(doc.id, doc.data() as AnyRecord);
+      await createInboxNotification(
+        order.sellerId,
+        'SHIPMENT_REMINDER',
+        '배송 등록이 필요합니다',
+        '결제 완료 주문의 배송 정보를 등록해주세요.',
+        buildDeepLink('orders', order.id),
+        'ORDER',
+        order.id,
+        {
+          deterministicNotificationId: buildReminderInboxNotificationId({
+            type: 'SHIPMENT_REMINDER',
+            orderId: order.id,
+          }),
+          precondition: {
+            ref: doc.ref,
+            isSatisfied: (freshOrderId, freshData) =>
+              isReminderCandidateFromDocument(
+                'SHIPMENT_REMINDER',
+                freshOrderId,
+                freshData,
+                now,
+              ),
+          },
+        },
+      );
+    }
+
+    for (const doc of receiptReminderSnap.docs) {
+      const order = deserializeOrder(doc.id, doc.data() as AnyRecord);
+      await createInboxNotification(
+        order.buyerId,
+        'RECEIPT_REMINDER',
+        '수령 확인이 필요합니다',
+        '배송 완료 주문의 수령 확인을 진행해주세요.',
+        buildDeepLink('orders', order.id),
+        'ORDER',
+        order.id,
+        {
+          deterministicNotificationId: buildReminderInboxNotificationId({
+            type: 'RECEIPT_REMINDER',
+            orderId: order.id,
+          }),
+          precondition: {
+            ref: doc.ref,
+            isSatisfied: (freshOrderId, freshData) =>
+              isReminderCandidateFromDocument(
+                'RECEIPT_REMINDER',
+                freshOrderId,
+                freshData,
+                now,
+              ),
+          },
+        },
+      );
+    }
+
+    logger.info('orderReminderNotificationsScheduler', {
+      paymentDueCandidateCount: paymentDueSnap.size,
+      shipmentReminderCandidateCount: shipmentReminderSnap.size,
+      receiptReminderCandidateCount: receiptReminderSnap.size,
+    });
   },
 );
 

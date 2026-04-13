@@ -13,9 +13,16 @@ export type InboxNotificationType =
   | 'PAYMENT_COMPLETED'
   | 'PAYMENT_DUE'
   | 'PAYMENT_FAILED'
+  | 'SHIPMENT_REMINDER'
   | 'SHIPPED'
+  | 'RECEIPT_REMINDER'
   | 'RECEIPT_CONFIRMED'
   | 'SETTLED';
+
+export type ReminderNotificationType =
+  | 'PAYMENT_DUE'
+  | 'SHIPMENT_REMINDER'
+  | 'RECEIPT_REMINDER';
 
 export interface NotificationPreferences {
   pushEnabled: boolean;
@@ -47,7 +54,9 @@ const CATEGORY_BY_NOTIFICATION_TYPE: Record<
   PAYMENT_COMPLETED: 'orderPayment',
   PAYMENT_DUE: 'orderPayment',
   PAYMENT_FAILED: 'orderPayment',
+  SHIPMENT_REMINDER: 'shippingAndReceipt',
   SHIPPED: 'shippingAndReceipt',
+  RECEIPT_REMINDER: 'shippingAndReceipt',
   RECEIPT_CONFIRMED: 'shippingAndReceipt',
   SETTLED: 'shippingAndReceipt',
 };
@@ -157,4 +166,11 @@ export function buildPushDataPayload(input: {
     entityId: input.entityId,
     timestamp: input.timestamp,
   };
+}
+
+export function buildReminderInboxNotificationId(input: {
+  type: ReminderNotificationType;
+  orderId: string;
+}): string {
+  return `reminder_${input.type}_${input.orderId}`;
 }

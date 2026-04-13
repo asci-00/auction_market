@@ -82,9 +82,9 @@ Status: in progress after Phase 3.
   - Render dev server for physical-device testing and payment redirect pages
   - Android real-device dev path through real Firebase + Render
   - backend Firebase Admin Messaging dispatch for currently emitted inbox-backed product events
+  - supported push event-matrix backend coverage, including payment-due, shipment-reminder, and receipt-reminder scheduler emission with idempotent reminder inbox ids
   - Android foreground push presentation, background or terminated tap routing, and default notification-channel setup
 - In progress:
-  - remaining push event-matrix gaps that do not yet emit inbox or push events
   - final Android and iOS real-device verification for supported push behavior
 - Deferred debt:
   - iOS APNs key upload and Firebase APNs project wiring

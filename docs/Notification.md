@@ -26,6 +26,8 @@
   - backend Firebase Admin Messaging dispatch for the product events that already create inbox entries
   - auto-bid ceiling reached inbox plus push event
   - buy-now completion and payment-failed-or-expired inbox plus push events
+  - payment-due, shipment-reminder, and receipt-reminder inbox plus push events with deterministic reminder inbox ids
+  - reminder candidate windows: payment due within 1 hour, shipment pending for 24 hours, and receipt pending for 24 hours, with bounded lookback reads
   - Android default notification-channel declaration and channel creation
   - foreground surfaced push handling through `onMessage`
   - push tap routing through `getInitialMessage` and `onMessageOpenedApp`
@@ -34,9 +36,6 @@
   - FCM registration-token retrieval and backend registration
   - Render dev backend path for token registration without emulator networking
 - Not implemented yet:
-  - payment reminder-before-expiry notifications
-  - shipment reminder notifications
-  - receipt reminder notifications
   - final real-device verification of Android foreground, background, and terminated delivery behavior
 - Deferred debt:
   - iOS APNs auth setup in Firebase
@@ -238,7 +237,6 @@
 - Missing or stale deep-link fallback to `/notifications`.
 
 ## Next Slice
-- Fill the remaining supported event-matrix gaps that still do not emit inbox records or push events today.
 - Run Android real-device verification for foreground, background, and terminated notification behavior using the current client routing and channel setup.
 - Keep the client handling iOS-compatible so APNs setup later only unlocks delivery instead of requiring another app-architecture change.
 
