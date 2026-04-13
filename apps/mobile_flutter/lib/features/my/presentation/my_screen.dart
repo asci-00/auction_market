@@ -67,7 +67,8 @@ class MyScreen extends ConsumerWidget {
               try {
                 await ref
                     .read(notificationDeviceTokenServiceProvider)
-                    .deactivateCurrentUserTokenBeforeSignOut();
+                    .deactivateCurrentUserTokenBeforeSignOut()
+                    .timeout(const Duration(seconds: 3));
               } catch (error, stackTrace) {
                 FlutterError.reportError(
                   FlutterErrorDetails(

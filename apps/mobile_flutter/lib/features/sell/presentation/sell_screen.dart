@@ -357,15 +357,15 @@ class _SellScreenState extends ConsumerState<SellScreen> {
       if (!mounted) {
         return;
       }
-      if (kDebugMode) {
-        ref.read(appLoggerProvider).error(
-          'Draft save failed: $error',
-          domain: AppLogDomain.sell,
-          source: 'sell_screen:save_draft',
-          error: error,
-          stackTrace: stackTrace,
-        );
-      }
+      ref
+          .read(appLoggerProvider)
+          .error(
+            'Draft save failed: $error',
+            domain: AppLogDomain.sell,
+            source: 'sell_screen:save_draft',
+            error: error,
+            stackTrace: stackTrace,
+          );
       context.showErrorSnackBar(context.l10n.sellActionFailed);
     } finally {
       if (mounted) {
@@ -413,15 +413,15 @@ class _SellScreenState extends ConsumerState<SellScreen> {
       if (!mounted) {
         return;
       }
-      if (kDebugMode) {
-        ref.read(appLoggerProvider).error(
-          'Publish failed: $error',
-          domain: AppLogDomain.sell,
-          source: 'sell_screen:publish',
-          error: error,
-          stackTrace: stackTrace,
-        );
-      }
+      ref
+          .read(appLoggerProvider)
+          .error(
+            'Publish failed: $error',
+            domain: AppLogDomain.sell,
+            source: 'sell_screen:publish',
+            error: error,
+            stackTrace: stackTrace,
+          );
       context.showErrorSnackBar(context.l10n.sellActionFailed);
     } finally {
       if (mounted) {

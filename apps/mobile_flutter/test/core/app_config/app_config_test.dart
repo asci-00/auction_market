@@ -13,6 +13,23 @@ void main() {
     expect(config.useFirebaseEmulators, isFalse);
   });
 
+  test('http transport rejects malformed api base url', () {
+    expect(
+      () => AppConfig.fromValues(
+        environment: AppEnvironment.dev,
+        backendTransportRawValue: 'http',
+        apiBaseUrl: 'not-a-url',
+      ),
+      throwsA(
+        isA<AppConfigurationException>().having(
+          (error) => error.message,
+          'message',
+          contains('must be a valid http or https URL'),
+        ),
+      ),
+    );
+  });
+
   test('http transport requires an api base url', () {
     expect(
       () => AppConfig.fromValues(
@@ -55,4 +72,19 @@ void main() {
     expect(config.usesHttpBackend, isFalse);
     expect(config.apiBaseUrl, isNull);
   });
+
+  test(
+    'local emulator contract keeps callable transport with emulators on',
+    () {
+      final config = AppConfig.fromValues(
+        environment: AppEnvironment.dev,
+        backendTransportRawValue: 'firebase_callable',
+        useFirebaseEmulatorsRawValue: 'true',
+      );
+
+      expect(config.backendTransport, AppBackendTransport.firebaseCallable);
+      expect(config.usesHttpBackend, isFalse);
+      expect(config.useFirebaseEmulators, isTrue);
+    },
+  );
 }

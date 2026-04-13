@@ -70,6 +70,27 @@ void main() {
         );
       },
     );
+
+    test(
+      'throws invalid-credential when Google sign-in returns an empty id token',
+      () async {
+        final service = AuthActionService(
+          MockFirebaseAuth(),
+          const FakeGoogleSignInClient(idToken: ''),
+        );
+
+        await expectLater(
+          service.signInWithGoogle(),
+          throwsA(
+            isA<FirebaseAuthException>().having(
+              (error) => error.code,
+              'code',
+              'invalid-credential',
+            ),
+          ),
+        );
+      },
+    );
   });
 }
 

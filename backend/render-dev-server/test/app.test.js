@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { once } from 'node:events';
 import test from 'node:test';
 
 import { createApp } from '../src/app.js';
@@ -17,6 +18,7 @@ test('healthz returns runtime metadata', async () => {
   });
 
   const server = app.listen(0);
+  await once(server, 'listening');
 
   try {
     const address = server.address();

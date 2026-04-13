@@ -18,6 +18,7 @@ void main() {
     );
 
     expect(lines.single, contains('INFO'));
+    expect(lines.single, matches(RegExp(r'\d{4}-\d{2}-\d{2}')));
     expect(lines.single, contains('payment'));
     expect(lines.single, contains('orders/payment_service.dart:41'));
     expect(lines.single, contains('payment started'));

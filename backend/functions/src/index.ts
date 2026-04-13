@@ -2336,7 +2336,6 @@ export const registerDeviceToken = onCall(async (req) => {
   const tokenId = buildDeviceTokenId(token);
   logger.info('registerDeviceToken', {
     uid,
-    tokenId,
     platform,
     appVersion,
     permissionStatus,
@@ -2378,7 +2377,6 @@ export const deactivateDeviceToken = onCall(async (req) => {
   );
   logger.info('deactivateDeviceToken', {
     uid,
-    tokenId,
     permissionStatus,
   });
   const tokenRef = db

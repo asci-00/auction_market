@@ -28,8 +28,16 @@ interface DeviceTokenRecord {
   createdAt?: unknown;
 }
 
+function normalizeToken(token: string): string {
+  const normalized = token.trim();
+  if (!normalized) {
+    throw new Error('device token must be non-empty');
+  }
+  return normalized;
+}
+
 export function buildDeviceTokenId(token: string): string {
-  return encodeURIComponent(token);
+  return encodeURIComponent(normalizeToken(token));
 }
 
 export function buildRegisterDeviceTokenRecord(
@@ -37,8 +45,9 @@ export function buildRegisterDeviceTokenRecord(
   serverTimestamp: unknown,
   options: { includeCreatedAt: boolean },
 ): DeviceTokenRecord {
+  const normalizedToken = normalizeToken(input.token);
   return {
-    token: input.token,
+    token: normalizedToken,
     platform: input.platform,
     appVersion: input.appVersion,
     locale: input.locale,

@@ -11,6 +11,11 @@ export function initializeFirebase(config) {
     if (config.firebaseProjectId) {
       options.projectId = config.firebaseProjectId;
     }
+    if (!options.credential && !options.projectId) {
+      console.warn(
+        'Firebase initialized without explicit credentials; relying on ADC.',
+      );
+    }
     initializeApp(options);
   }
 

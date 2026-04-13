@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -21,9 +22,7 @@ final backendGatewayProvider = Provider<BackendGateway>((ref) {
 });
 
 abstract class BackendGateway {
-  Future<Map<String, dynamic>> createPaymentSession({
-    required String orderId,
-  });
+  Future<Map<String, dynamic>> createPaymentSession({required String orderId});
 
   Future<void> confirmOrderPayment({
     required String orderId,
@@ -37,41 +36,25 @@ abstract class BackendGateway {
     required String trackingNumber,
   });
 
-  Future<void> confirmReceipt({
-    required String orderId,
-  });
+  Future<void> confirmReceipt({required String orderId});
 
-  Future<void> placeBid({
-    required String auctionId,
-    required int amount,
-  });
+  Future<void> placeBid({required String auctionId, required int amount});
 
-  Future<void> setAutoBid({
-    required String auctionId,
-    required int maxAmount,
-  });
+  Future<void> setAutoBid({required String auctionId, required int maxAmount});
 
   Future<String?> buyNow({required String auctionId});
 
-  Future<void> createOrUpdateItem({
-    required Map<String, Object?> payload,
-  });
+  Future<void> createOrUpdateItem({required Map<String, Object?> payload});
 
-  Future<String> createAuctionFromItem({
-    required Map<String, Object?> payload,
-  });
+  Future<String> createAuctionFromItem({required Map<String, Object?> payload});
 
-  Future<void> markNotificationRead({
-    required String notificationId,
-  });
+  Future<void> markNotificationRead({required String notificationId});
 
   Future<Map<String, dynamic>> registerDeviceToken({
     required Map<String, Object?> payload,
   });
 
-  Future<void> deactivateDeviceToken({
-    required Map<String, Object?> payload,
-  });
+  Future<void> deactivateDeviceToken({required Map<String, Object?> payload});
 }
 
 class FirebaseCallableBackendGateway implements BackendGateway {
@@ -83,10 +66,9 @@ class FirebaseCallableBackendGateway implements BackendGateway {
   Future<Map<String, dynamic>> createPaymentSession({
     required String orderId,
   }) async {
-    final result =
-        await _functions.httpsCallable('createPaymentSession').call<dynamic>({
-      'orderId': orderId,
-    });
+    final result = await _functions
+        .httpsCallable('createPaymentSession')
+        .call<dynamic>({'orderId': orderId});
     return _asMap(result.data, 'createPaymentSession');
   }
 
@@ -117,19 +99,14 @@ class FirebaseCallableBackendGateway implements BackendGateway {
   }
 
   @override
-  Future<void> confirmReceipt({
-    required String orderId,
-  }) {
+  Future<void> confirmReceipt({required String orderId}) {
     return _functions.httpsCallable('confirmReceipt').call<void>({
       'orderId': orderId,
     });
   }
 
   @override
-  Future<void> placeBid({
-    required String auctionId,
-    required int amount,
-  }) {
+  Future<void> placeBid({required String auctionId, required int amount}) {
     return _functions.httpsCallable('placeBid').call<void>({
       'auctionId': auctionId,
       'amount': amount,
@@ -137,10 +114,7 @@ class FirebaseCallableBackendGateway implements BackendGateway {
   }
 
   @override
-  Future<void> setAutoBid({
-    required String auctionId,
-    required int maxAmount,
-  }) {
+  Future<void> setAutoBid({required String auctionId, required int maxAmount}) {
     return _functions.httpsCallable('setAutoBid').call<void>({
       'auctionId': auctionId,
       'maxAmount': maxAmount,
@@ -152,17 +126,11 @@ class FirebaseCallableBackendGateway implements BackendGateway {
     final result = await _functions.httpsCallable('buyNow').call<dynamic>({
       'auctionId': auctionId,
     });
-    return _readStringField(
-      _asMap(result.data, 'buyNow'),
-      'orderId',
-      'buyNow',
-    );
+    return _readStringField(_asMap(result.data, 'buyNow'), 'orderId', 'buyNow');
   }
 
   @override
-  Future<void> createOrUpdateItem({
-    required Map<String, Object?> payload,
-  }) {
+  Future<void> createOrUpdateItem({required Map<String, Object?> payload}) {
     return _functions.httpsCallable('createOrUpdateItem').call<void>(payload);
   }
 
@@ -170,10 +138,9 @@ class FirebaseCallableBackendGateway implements BackendGateway {
   Future<String> createAuctionFromItem({
     required Map<String, Object?> payload,
   }) async {
-    final result =
-        await _functions.httpsCallable('createAuctionFromItem').call<dynamic>(
-          payload,
-        );
+    final result = await _functions
+        .httpsCallable('createAuctionFromItem')
+        .call<dynamic>(payload);
     final auctionId = _readStringField(
       _asMap(result.data, 'createAuctionFromItem'),
       'auctionId',
@@ -189,9 +156,7 @@ class FirebaseCallableBackendGateway implements BackendGateway {
   }
 
   @override
-  Future<void> markNotificationRead({
-    required String notificationId,
-  }) {
+  Future<void> markNotificationRead({required String notificationId}) {
     return _functions.httpsCallable('markNotificationRead').call<void>({
       'notificationId': notificationId,
     });
@@ -208,10 +173,10 @@ class FirebaseCallableBackendGateway implements BackendGateway {
   }
 
   @override
-  Future<void> deactivateDeviceToken({
-    required Map<String, Object?> payload,
-  }) {
-    return _functions.httpsCallable('deactivateDeviceToken').call<void>(payload);
+  Future<void> deactivateDeviceToken({required Map<String, Object?> payload}) {
+    return _functions
+        .httpsCallable('deactivateDeviceToken')
+        .call<void>(payload);
   }
 }
 
@@ -220,22 +185,18 @@ class HttpBackendGateway implements BackendGateway {
     required FirebaseAuth auth,
     required Uri baseUri,
     HttpClient? client,
-  })  : _auth = auth,
-        _baseUri = baseUri,
-        _client = client ?? HttpClient();
+  }) : _auth = auth,
+       _baseUri = baseUri,
+       _client = client ?? HttpClient();
 
   final FirebaseAuth _auth;
   final Uri _baseUri;
   final HttpClient _client;
+  static const _requestTimeout = Duration(seconds: 20);
 
   @override
-  Future<Map<String, dynamic>> createPaymentSession({
-    required String orderId,
-  }) {
-    return _post(
-      '/api/orders/$orderId/payment-session',
-      payload: const {},
-    );
+  Future<Map<String, dynamic>> createPaymentSession({required String orderId}) {
+    return _post('/api/orders/$orderId/payment-session', payload: const {});
   }
 
   @override
@@ -246,10 +207,7 @@ class HttpBackendGateway implements BackendGateway {
   }) async {
     await _post(
       '/api/orders/$orderId/confirm-payment',
-      payload: {
-        'paymentKey': paymentKey,
-        'amount': amount,
-      },
+      payload: {'paymentKey': paymentKey, 'amount': amount},
     );
   }
 
@@ -261,17 +219,12 @@ class HttpBackendGateway implements BackendGateway {
   }) async {
     await _post(
       '/api/orders/$orderId/shipment',
-      payload: {
-        'carrierName': carrierName,
-        'trackingNumber': trackingNumber,
-      },
+      payload: {'carrierName': carrierName, 'trackingNumber': trackingNumber},
     );
   }
 
   @override
-  Future<void> confirmReceipt({
-    required String orderId,
-  }) async {
+  Future<void> confirmReceipt({required String orderId}) async {
     await _post('/api/orders/$orderId/confirm-receipt', payload: const {});
   }
 
@@ -333,9 +286,7 @@ class HttpBackendGateway implements BackendGateway {
   }
 
   @override
-  Future<void> markNotificationRead({
-    required String notificationId,
-  }) async {
+  Future<void> markNotificationRead({required String notificationId}) async {
     await _post('/api/notifications/$notificationId/read', payload: const {});
   }
 
@@ -365,14 +316,33 @@ class HttpBackendGateway implements BackendGateway {
       );
     }
 
-    final request = await _client.postUrl(_baseUri.resolve(path));
+    final request = await _client
+        .postUrl(_baseUri.resolve(path))
+        .timeout(_requestTimeout);
     request.headers.set(HttpHeaders.contentTypeHeader, 'application/json');
     request.headers.set(HttpHeaders.acceptHeader, 'application/json');
     request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $idToken');
     request.write(jsonEncode(payload));
 
-    final response = await request.close();
-    final rawBody = await response.transform(utf8.decoder).join();
+    HttpClientResponse response;
+    String rawBody;
+    try {
+      response = await request.close().timeout(_requestTimeout);
+      rawBody = await response
+          .transform(utf8.decoder)
+          .join()
+          .timeout(_requestTimeout);
+    } on TimeoutException {
+      throw FirebaseFunctionsException(
+        code: 'deadline-exceeded',
+        message: 'Development backend request timed out.',
+      );
+    } on SocketException catch (error) {
+      throw FirebaseFunctionsException(
+        code: 'unavailable',
+        message: 'Development backend is unreachable: ${error.message}',
+      );
+    }
     final jsonBody = rawBody.trim().isEmpty
         ? const <String, dynamic>{}
         : jsonDecode(rawBody) as Map<String, dynamic>;
@@ -390,9 +360,7 @@ class HttpBackendGateway implements BackendGateway {
 
 Map<String, dynamic> _asMap(dynamic data, String functionName) {
   if (data is Map<dynamic, dynamic>) {
-    return data.map(
-      (key, value) => MapEntry(key.toString(), value),
-    );
+    return data.map((key, value) => MapEntry(key.toString(), value));
   }
 
   throw StateError('$functionName returned invalid payload: $data');

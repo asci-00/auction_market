@@ -97,6 +97,12 @@ class AppConfig {
         'APP_API_BASE_URL is required when APP_BACKEND_TRANSPORT=http.',
       );
     }
+    if (config.backendTransport == AppBackendTransport.http &&
+        !_isValidHttpBaseUrl(config.apiBaseUrl!)) {
+      throw const AppConfigurationException(
+        'APP_API_BASE_URL must be a valid http or https URL.',
+      );
+    }
 
     if (config.isProd && !config.hasMeaningfulTossClientKey) {
       throw const AppConfigurationException(
@@ -210,4 +216,15 @@ bool _isMeaningful(String? value) {
   return normalized.isNotEmpty &&
       !normalized.startsWith('TODO_') &&
       !normalized.startsWith('TODO_FROM_');
+}
+
+bool _isValidHttpBaseUrl(String value) {
+  final uri = Uri.tryParse(value);
+  if (uri == null) {
+    return false;
+  }
+  if (!uri.isAbsolute || uri.host.isEmpty) {
+    return false;
+  }
+  return uri.scheme == 'http' || uri.scheme == 'https';
 }

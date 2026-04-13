@@ -4,6 +4,9 @@ import {
   isPaymentDueReminderCandidate,
   isReceiptReminderCandidate,
   isShipmentReminderCandidate,
+  RECEIPT_REMINDER_DELAY_MS,
+  REMINDER_QUERY_LOOKBACK_MS,
+  SHIPMENT_REMINDER_DELAY_MS,
 } from '../src/domain/orderReminderEngine.js';
 
 function createOrder(overrides: Partial<Order>): Order {
@@ -94,6 +97,35 @@ describe('orderReminderEngine', () => {
       },
     });
     expect(isShipmentReminderCandidate(shippedOrder, now)).toBe(false);
+
+    const noApprovedAt = createOrder({
+      orderStatus: 'PAID_ESCROW_HOLD',
+      paymentStatus: 'PAID',
+      payment: {
+        provider: 'TOSS_PAYMENTS',
+        paymentKey: 'pay-key',
+        method: 'CARD',
+        approvedAt: null,
+        lastWebhookEventId: null,
+      },
+    });
+    expect(isShipmentReminderCandidate(noApprovedAt, now)).toBe(false);
+
+    const boundaryApprovedAt = new Date(
+      now.getTime() - SHIPMENT_REMINDER_DELAY_MS - REMINDER_QUERY_LOOKBACK_MS,
+    );
+    const boundaryOrder = createOrder({
+      orderStatus: 'PAID_ESCROW_HOLD',
+      paymentStatus: 'PAID',
+      payment: {
+        provider: 'TOSS_PAYMENTS',
+        paymentKey: 'pay-key',
+        method: 'CARD',
+        approvedAt: boundaryApprovedAt,
+        lastWebhookEventId: null,
+      },
+    });
+    expect(isShipmentReminderCandidate(boundaryOrder, now)).toBe(true);
   });
 
   it('detects receipt reminders only for shipped orders in lookback', () => {
@@ -123,5 +155,34 @@ describe('orderReminderEngine', () => {
       },
     });
     expect(isReceiptReminderCandidate(confirmedOrder, now)).toBe(false);
+
+    const noShippedAt = createOrder({
+      orderStatus: 'SHIPPED',
+      paymentStatus: 'PAID',
+      shipping: {
+        carrierCode: 'CJ',
+        carrierName: 'CJ',
+        trackingNumber: '123',
+        trackingUrl: null,
+        shippedAt: null,
+      },
+    });
+    expect(isReceiptReminderCandidate(noShippedAt, now)).toBe(false);
+
+    const boundaryShippedAt = new Date(
+      now.getTime() - RECEIPT_REMINDER_DELAY_MS - REMINDER_QUERY_LOOKBACK_MS,
+    );
+    const boundaryOrder = createOrder({
+      orderStatus: 'SHIPPED',
+      paymentStatus: 'PAID',
+      shipping: {
+        carrierCode: 'CJ',
+        carrierName: 'CJ',
+        trackingNumber: '123',
+        trackingUrl: null,
+        shippedAt: boundaryShippedAt,
+      },
+    });
+    expect(isReceiptReminderCandidate(boundaryOrder, now)).toBe(true);
   });
 });

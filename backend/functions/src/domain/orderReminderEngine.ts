@@ -31,7 +31,7 @@ export function isShipmentReminderCandidate(order: Order, now: Date): boolean {
   const reminderEligibleAt = nowMs - SHIPMENT_REMINDER_DELAY_MS;
   const lookbackStartAt = reminderEligibleAt - REMINDER_QUERY_LOOKBACK_MS;
 
-  return approvedAtMs <= reminderEligibleAt && approvedAtMs > lookbackStartAt;
+  return approvedAtMs <= reminderEligibleAt && approvedAtMs >= lookbackStartAt;
 }
 
 export function isReceiptReminderCandidate(order: Order, now: Date): boolean {
@@ -48,5 +48,5 @@ export function isReceiptReminderCandidate(order: Order, now: Date): boolean {
   const reminderEligibleAt = nowMs - RECEIPT_REMINDER_DELAY_MS;
   const lookbackStartAt = reminderEligibleAt - REMINDER_QUERY_LOOKBACK_MS;
 
-  return shippedAtMs <= reminderEligibleAt && shippedAtMs > lookbackStartAt;
+  return shippedAtMs <= reminderEligibleAt && shippedAtMs >= lookbackStartAt;
 }

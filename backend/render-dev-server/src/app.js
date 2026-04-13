@@ -643,6 +643,10 @@ function toCancelledPaymentOrder(order, webhookEventId) {
   };
 }
 
+function shouldApplyWebhookCancellation(order) {
+  return order.orderStatus === 'AWAITING_PAYMENT';
+}
+
 function buildWebhookEventMarker(eventType, createdAt, paymentKey, status) {
   return [eventType, createdAt ?? 'unknown', paymentKey ?? 'no-key', status ?? 'unknown']
     .join(':')
@@ -1361,9 +1365,11 @@ export function createApp(services) {
         payment.status &&
         ['CANCELED', 'ABORTED', 'EXPIRED'].includes(payment.status)
       ) {
-        const cancelledOrder = toCancelledPaymentOrder(order, eventMarker);
+        const nextOrder = shouldApplyWebhookCancellation(order)
+          ? toCancelledPaymentOrder(order, eventMarker)
+          : withLastWebhookEventId(order, eventMarker);
         await orderRef.update({
-          ...serializeOrder(cancelledOrder),
+          ...serializeOrder(nextOrder),
           updatedAt: FieldValue.serverTimestamp(),
         });
         await writeAuditEvent(db, {

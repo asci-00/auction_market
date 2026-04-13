@@ -427,7 +427,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           context,
           showResultToast: false,
         );
-        return permissionStatus;
+        ref.invalidate(notificationPermissionStatusProvider);
+        return ref.read(notificationPermissionStatusProvider.future);
     }
   }
 

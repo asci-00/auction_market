@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,18 +23,16 @@ Future<void> main() async {
 
     FlutterError.onError = (details) {
       FlutterError.dumpErrorToConsole(details);
-      if (!kReleaseMode) {
-        try {
-          _logFlutterErrorDetails(details, logger);
-        } catch (loggingError, loggingStack) {
-          logger.error(
-            'Failed to log FlutterErrorDetails: $loggingError',
-            domain: AppLogDomain.app,
-            source: 'main:flutter_error_logger',
-            error: loggingError,
-            stackTrace: loggingStack,
-          );
-        }
+      try {
+        _logFlutterErrorDetails(details, logger);
+      } catch (loggingError, loggingStack) {
+        logger.error(
+          'Failed to log FlutterErrorDetails: $loggingError',
+          domain: AppLogDomain.app,
+          source: 'main:flutter_error_logger',
+          error: loggingError,
+          stackTrace: loggingStack,
+        );
       }
       Zone.current.handleUncaughtError(
         details.exception,
@@ -42,7 +40,7 @@ Future<void> main() async {
       );
     };
 
-    PlatformDispatcher.instance.onError = (error, stack) {
+    PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
       Zone.current.handleUncaughtError(error, stack);
       return true;
     };

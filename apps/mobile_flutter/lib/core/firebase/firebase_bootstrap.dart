@@ -10,8 +10,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../app_config/app_config.dart';
 import '../error/app_error.dart';
 
-const _defaultAppCheckDebugToken = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
-
 class AppBootstrapState {
   const AppBootstrapState({required this.config});
 
@@ -92,8 +90,8 @@ class FirebaseBootstrap {
   }
 }
 
-String _appCheckDebugToken() {
+String? _appCheckDebugToken() {
   const override = String.fromEnvironment('APP_CHECK_DEBUG_TOKEN');
   final value = override.trim();
-  return value.isEmpty ? _defaultAppCheckDebugToken : value;
+  return value.isEmpty ? null : value;
 }

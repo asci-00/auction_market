@@ -1,8 +1,18 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { placeBid } from '../src/domain/auctionEngine.js';
 import { featureFlags } from '../src/config/policy.js';
 
 describe('auction engine', () => {
+  let originalAutoBidFlag: boolean;
+
+  beforeEach(() => {
+    originalAutoBidFlag = featureFlags.autoBid;
+  });
+
+  afterEach(() => {
+    featureFlags.autoBid = originalAutoBidFlag;
+  });
+
   it('extends auction by 5 minutes near end, max 3', () => {
     const baseEnd = new Date(Date.now() + 4 * 60 * 1000);
     let auction: any = {

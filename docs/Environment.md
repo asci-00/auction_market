@@ -3,7 +3,9 @@
 ## Principles
 - Commit example files only.
 - Never commit real secrets.
-- Backend secrets live in `backend/functions/.env`.
+- Backend runtime secrets are scoped by runtime:
+  - Firebase Functions: `backend/functions/.env`
+  - Render dev server: `backend/render-dev-server` runtime environment variables
 - Mobile public values live in named `dart_defines.*.json` files.
 - Mobile Firebase native registration must stay local-only:
   - committed examples:

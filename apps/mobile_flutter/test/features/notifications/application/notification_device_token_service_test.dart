@@ -63,8 +63,7 @@ void main() {
         permissionStatus: 'DENIED',
       );
 
-      expect(payload['tokenId'], 'abc%2Fdef');
-      expect(payload['permissionStatus'], 'DENIED');
+      expect(payload, {'tokenId': 'abc%2Fdef', 'permissionStatus': 'DENIED'});
     },
   );
 }

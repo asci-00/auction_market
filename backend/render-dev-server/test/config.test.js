@@ -53,3 +53,15 @@ test('readConfig rejects invalid app env', () => {
     /APP_ENV must be dev or prod/,
   );
 });
+
+test('readConfig rejects malformed service account json', () => {
+  assert.throws(
+    () =>
+      readConfig({
+        APP_ENV: 'dev',
+        TOSS_API_BASE_URL: 'https://api.tosspayments.com',
+        FIREBASE_SERVICE_ACCOUNT_JSON: '{"project_id":"auction-market-dev"',
+      }),
+    /FIREBASE_SERVICE_ACCOUNT_JSON must be valid JSON/,
+  );
+});
