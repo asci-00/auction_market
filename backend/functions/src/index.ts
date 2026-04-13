@@ -1394,6 +1394,7 @@ export const placeBid = onCall(async (req) => {
 
   const auctionRef = db.collection('auctions').doc(auctionId);
   let outbidUserId: string | undefined;
+  let autoBidCeilingReachedUserId: string | undefined;
   let finalPrice = amount;
 
   await db.runTransaction(async (tx) => {
@@ -1455,6 +1456,7 @@ export const placeBid = onCall(async (req) => {
     });
 
     outbidUserId = result.outbidUserId;
+    autoBidCeilingReachedUserId = result.autoBidCeilingReachedUserId;
     finalPrice = result.auction.currentPrice;
 
     tx.update(auctionRef, {
@@ -1488,7 +1490,23 @@ export const placeBid = onCall(async (req) => {
     });
   });
 
-  if (outbidUserId && outbidUserId !== bidderId) {
+  if (autoBidCeilingReachedUserId && autoBidCeilingReachedUserId !== bidderId) {
+    await createInboxNotification(
+      autoBidCeilingReachedUserId,
+      'AUTO_BID_CEILING_REACHED',
+      '자동입찰 한도에 도달했습니다',
+      `현재 최고가 ${finalPrice}원으로 자동입찰 상한을 넘었습니다.`,
+      buildDeepLink('auction', auctionId),
+      'AUCTION',
+      auctionId,
+    );
+  }
+
+  if (
+    outbidUserId &&
+    outbidUserId !== bidderId &&
+    outbidUserId !== autoBidCeilingReachedUserId
+  ) {
     await createInboxNotification(
       outbidUserId,
       'OUTBID',

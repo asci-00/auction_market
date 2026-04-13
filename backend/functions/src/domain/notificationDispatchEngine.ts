@@ -6,6 +6,7 @@ export type NotificationCategory =
 
 export type InboxNotificationType =
   | 'OUTBID'
+  | 'AUTO_BID_CEILING_REACHED'
   | 'WON'
   | 'BUY_NOW_COMPLETED'
   | 'ORDER_AWAITING_PAYMENT'
@@ -39,6 +40,7 @@ const CATEGORY_BY_NOTIFICATION_TYPE: Record<
   NotificationCategory
 > = {
   OUTBID: 'auctionActivity',
+  AUTO_BID_CEILING_REACHED: 'auctionActivity',
   WON: 'orderPayment',
   BUY_NOW_COMPLETED: 'orderPayment',
   ORDER_AWAITING_PAYMENT: 'orderPayment',

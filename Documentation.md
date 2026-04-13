@@ -430,6 +430,7 @@
   - at least one `users/{uid}/deviceTokens/{tokenId}` record is active and has `permissionStatus` of `AUTHORIZED` or `PROVISIONAL`
 - The current backend fan-out covers the inbox-backed event types that already exist:
   - `OUTBID`
+  - `AUTO_BID_CEILING_REACHED`
   - `WON`
   - `BUY_NOW_COMPLETED`
   - `ORDER_AWAITING_PAYMENT`

@@ -24,6 +24,7 @@
   - backend persistence of active device tokens
   - Firestore inbox creation for supported product events
   - backend Firebase Admin Messaging dispatch for the product events that already create inbox entries
+  - auto-bid ceiling reached inbox plus push event
   - buy-now completion and payment-failed-or-expired inbox plus push events
   - Android default notification-channel declaration and channel creation
   - foreground surfaced push handling through `onMessage`
@@ -33,7 +34,6 @@
   - FCM registration-token retrieval and backend registration
   - Render dev backend path for token registration without emulator networking
 - Not implemented yet:
-  - auto-bid ceiling reached notifications
   - payment reminder-before-expiry notifications
   - shipment reminder notifications
   - receipt reminder notifications

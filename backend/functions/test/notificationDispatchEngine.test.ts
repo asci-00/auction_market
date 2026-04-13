@@ -10,6 +10,9 @@ import {
 describe('notification dispatch engine', () => {
   it('maps supported inbox types to notification categories', () => {
     expect(getNotificationCategoryForType('OUTBID')).toBe('auctionActivity');
+    expect(getNotificationCategoryForType('AUTO_BID_CEILING_REACHED')).toBe(
+      'auctionActivity',
+    );
     expect(getNotificationCategoryForType('WON')).toBe('orderPayment');
     expect(getNotificationCategoryForType('BUY_NOW_COMPLETED')).toBe(
       'orderPayment',

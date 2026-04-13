@@ -56,7 +56,7 @@
 - Signed-in routes no longer expose a global locale picker in the shared app bar, and the signed-out login surface also no longer carries a manual locale menu; the app now follows the device locale only.
 - Mobile now calls `registerDeviceToken` after permission grant and token refresh, calls `deactivateDeviceToken` before sign-out or when push is disabled, and re-syncs permission plus token state when the app resumes.
 - Android notification permission declaration is present, and the app can request permission plus register or deactivate FCM tokens against the dev backend.
-- Backend now writes inbox documents with `category`, `entityType`, and `entityId`, then best-effort fans out Firebase Admin Messaging payloads for `OUTBID`, `WON`, `BUY_NOW_COMPLETED`, `ORDER_AWAITING_PAYMENT`, `PAYMENT_COMPLETED`, `PAYMENT_FAILED`, `SHIPPED`, `RECEIPT_CONFIRMED`, and `SETTLED` when user preferences and active device tokens allow delivery.
+- Backend now writes inbox documents with `category`, `entityType`, and `entityId`, then best-effort fans out Firebase Admin Messaging payloads for `OUTBID`, `AUTO_BID_CEILING_REACHED`, `WON`, `BUY_NOW_COMPLETED`, `ORDER_AWAITING_PAYMENT`, `PAYMENT_COMPLETED`, `PAYMENT_FAILED`, `SHIPPED`, `RECEIPT_CONFIRMED`, and `SETTLED` when user preferences and active device tokens allow delivery.
 - Mobile now handles push payloads through `onMessage`, `getInitialMessage`, and `onMessageOpenedApp`, surfaces foreground messages with a `SnackBar`, routes opened notifications through the existing deep-link resolver, and falls back to `/notifications` when a push deeplink is missing or unsupported.
 - Android now declares a default Firebase Messaging channel id in the manifest and creates the matching notification channel from `MainActivity` on Android O and above.
 - Emulator seed data now covers separate buyer and seller notification, payment, shipment, confirmed-receipt, settled, cancelled-unpaid, draft, unsold, and cancelled-listing paths without cross-linking orders to unrelated auctions.
@@ -82,6 +82,10 @@
 - `cd backend/functions && npx eslint src/index.ts src/domain/notificationDispatchEngine.ts test/notificationDispatchEngine.test.ts && npx tsc --noEmit` passed on April 11, 2026 after adding notification dispatch foundation.
 - `cd backend/functions && npm run build` passed on April 11, 2026 after adding notification dispatch foundation.
 - `cd backend/functions && npm test` passed on April 11, 2026 after adding notification dispatch foundation.
+- `cd backend/functions && npm run format:check` passed on April 13, 2026 after adding `AUTO_BID_CEILING_REACHED` plus payment-failure event-gap updates.
+- `cd backend/functions && npx eslint src/index.ts src/domain/auctionEngine.ts src/domain/notificationDispatchEngine.ts src/domain/paymentEngine.ts test/auctionEngine.test.ts test/notificationDispatchEngine.test.ts test/paymentEngine.test.ts && npx tsc --noEmit` passed on April 13, 2026 after adding `AUTO_BID_CEILING_REACHED` plus payment-failure event-gap updates.
+- `cd backend/functions && npm run build` passed on April 13, 2026 after adding `AUTO_BID_CEILING_REACHED` plus payment-failure event-gap updates.
+- `cd backend/functions && npm test` passed on April 13, 2026 after adding `AUTO_BID_CEILING_REACHED` plus payment-failure event-gap updates.
 - `cd apps/mobile_flutter && flutter gen-l10n` passed on April 6, 2026 after adding the settings localization keys.
 - `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib test` passed on April 6, 2026.
 - `cd apps/mobile_flutter && flutter analyze` passed on April 6, 2026.
