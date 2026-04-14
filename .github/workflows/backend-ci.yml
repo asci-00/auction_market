@@ -5,12 +5,14 @@ on:
   pull_request:
     paths:
       - "backend/**"
+      - "firebase.json"
       - ".github/workflows/backend-ci.yml"
   push:
     branches:
       - main
     paths:
       - "backend/**"
+      - "firebase.json"
       - ".github/workflows/backend-ci.yml"
 
 permissions:
