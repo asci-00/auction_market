@@ -308,14 +308,62 @@ class HttpBackendGateway implements BackendGateway {
     String path, {
     required Map<String, Object?> payload,
   }) async {
-    final idToken = await _auth.currentUser?.getIdToken(true);
-    if (idToken == null || idToken.isEmpty) {
-      throw FirebaseFunctionsException(
-        code: 'unauthenticated',
-        message: 'Sign-in is required to call the development backend.',
+    final initialToken = await _resolveIdToken(forceRefresh: false);
+    final initialResult = await _sendPost(path, payload: payload, idToken: initialToken);
+    if (initialResult.response.statusCode == HttpStatus.unauthorized) {
+      final refreshedToken = await _resolveIdToken(forceRefresh: true);
+      final retryResult = await _sendPost(
+        path,
+        payload: payload,
+        idToken: refreshedToken,
+      );
+      return _decodeResponseBody(
+        statusCode: retryResult.response.statusCode,
+        rawBody: retryResult.rawBody,
       );
     }
+    return _decodeResponseBody(
+      statusCode: initialResult.response.statusCode,
+      rawBody: initialResult.rawBody,
+    );
+  }
 
+  Future<String> _resolveIdToken({required bool forceRefresh}) async {
+    try {
+      final idToken = await _auth.currentUser?.getIdToken(forceRefresh);
+      if (idToken == null || idToken.isEmpty) {
+        throw FirebaseFunctionsException(
+          code: 'unauthenticated',
+          message: 'Sign-in is required to call the development backend.',
+        );
+      }
+      return idToken;
+    } on FirebaseFunctionsException {
+      rethrow;
+    } on FirebaseAuthException catch (error) {
+      throw FirebaseFunctionsException(
+        code: error.code,
+        message:
+            error.message ?? 'Authentication is required to call the backend.',
+      );
+    } on TimeoutException {
+      throw FirebaseFunctionsException(
+        code: 'deadline-exceeded',
+        message: 'Authentication token request timed out.',
+      );
+    } on SocketException catch (error) {
+      throw FirebaseFunctionsException(
+        code: 'unavailable',
+        message: 'Authentication service is unreachable: ${error.message}',
+      );
+    }
+  }
+
+  Future<_HttpPostResult> _sendPost(
+    String path, {
+    required Map<String, Object?> payload,
+    required String idToken,
+  }) async {
     final request = await _client
         .postUrl(_baseUri.resolve(path))
         .timeout(_requestTimeout);
@@ -324,14 +372,13 @@ class HttpBackendGateway implements BackendGateway {
     request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $idToken');
     request.write(jsonEncode(payload));
 
-    HttpClientResponse response;
-    String rawBody;
     try {
-      response = await request.close().timeout(_requestTimeout);
-      rawBody = await response
+      final response = await request.close().timeout(_requestTimeout);
+      final rawBody = await response
           .transform(utf8.decoder)
           .join()
           .timeout(_requestTimeout);
+      return _HttpPostResult(response: response, rawBody: rawBody);
     } on TimeoutException {
       throw FirebaseFunctionsException(
         code: 'deadline-exceeded',
@@ -343,11 +390,17 @@ class HttpBackendGateway implements BackendGateway {
         message: 'Development backend is unreachable: ${error.message}',
       );
     }
+  }
+
+  Map<String, dynamic> _decodeResponseBody({
+    required int statusCode,
+    required String rawBody,
+  }) {
     final jsonBody = rawBody.trim().isEmpty
         ? const <String, dynamic>{}
         : jsonDecode(rawBody) as Map<String, dynamic>;
 
-    if (response.statusCode >= 400) {
+    if (statusCode >= 400) {
       throw FirebaseFunctionsException(
         code: jsonBody['code']?.toString() ?? 'unknown',
         message: jsonBody['message']?.toString() ?? 'Development backend error',
@@ -356,6 +409,13 @@ class HttpBackendGateway implements BackendGateway {
 
     return jsonBody;
   }
+}
+
+class _HttpPostResult {
+  const _HttpPostResult({required this.response, required this.rawBody});
+
+  final HttpClientResponse response;
+  final String rawBody;
 }
 
 Map<String, dynamic> _asMap(dynamic data, String functionName) {

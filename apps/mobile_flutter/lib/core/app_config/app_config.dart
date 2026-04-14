@@ -104,6 +104,12 @@ class AppConfig {
       );
     }
 
+    if (config.usesHttpBackend && !config.hasMeaningfulTossClientKey) {
+      throw const AppConfigurationException(
+        'TOSS_CLIENT_KEY is required when APP_BACKEND_TRANSPORT=http.',
+      );
+    }
+
     if (config.isProd && !config.hasMeaningfulTossClientKey) {
       throw const AppConfigurationException(
         'TOSS_CLIENT_KEY is required in prod builds.',

@@ -69,6 +69,23 @@ async function upsertAuthUser(account: EmulatorAuthAccount): Promise<void> {
 async function run(): Promise<void> {
   if (skipAuthUsers) {
     console.warn('Skipping Auth user upserts (--skip-auth-users).');
+    for (const account of emulatorAuthAccounts) {
+      try {
+        await auth.getUser(account.uid);
+      } catch (error) {
+        if (
+          typeof error === 'object' &&
+          error !== null &&
+          'code' in error &&
+          error.code === 'auth/user-not-found'
+        ) {
+          throw new Error(
+            `Cannot use --skip-auth-users: missing Auth user "${account.uid}". Seed auth users first.`,
+          );
+        }
+        throw error;
+      }
+    }
   } else {
     for (const account of emulatorAuthAccounts) {
       await upsertAuthUser(account);
@@ -117,11 +134,13 @@ function parseEnvFile(content: string): EnvMap {
     }
     const key = trimmed.slice(0, separatorIndex).trim();
     let value = trimmed.slice(separatorIndex + 1);
-    if (
+    const isQuoted =
       (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
+      (value.startsWith("'") && value.endsWith("'"));
+    if (isQuoted) {
       value = value.slice(1, -1);
+    } else {
+      value = value.trim();
     }
     result[key] = value;
   }

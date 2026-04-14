@@ -2687,90 +2687,111 @@ export const orderReminderNotificationsScheduler = onSchedule(
       ]);
 
     for (const doc of paymentDueSnap.docs) {
-      const order = deserializeOrder(doc.id, doc.data() as AnyRecord);
-      await createInboxNotification(
-        order.buyerId,
-        'PAYMENT_DUE',
-        '결제 기한이 곧 만료됩니다',
-        '결제 기한 전에 결제를 완료해주세요.',
-        buildDeepLink('orders', order.id),
-        'ORDER',
-        order.id,
-        {
-          deterministicNotificationId: buildReminderInboxNotificationId({
-            type: 'PAYMENT_DUE',
-            orderId: order.id,
-          }),
-          precondition: {
-            ref: doc.ref,
-            isSatisfied: (freshOrderId, freshData) =>
-              isReminderCandidateFromDocument(
-                'PAYMENT_DUE',
-                freshOrderId,
-                freshData,
-                now,
-              ),
+      try {
+        const order = deserializeOrder(doc.id, doc.data() as AnyRecord);
+        await createInboxNotification(
+          order.buyerId,
+          'PAYMENT_DUE',
+          '결제 기한이 곧 만료됩니다',
+          '결제 기한 전에 결제를 완료해주세요.',
+          buildDeepLink('orders', order.id),
+          'ORDER',
+          order.id,
+          {
+            deterministicNotificationId: buildReminderInboxNotificationId({
+              type: 'PAYMENT_DUE',
+              orderId: order.id,
+            }),
+            precondition: {
+              ref: doc.ref,
+              isSatisfied: (freshOrderId, freshData) =>
+                isReminderCandidateFromDocument(
+                  'PAYMENT_DUE',
+                  freshOrderId,
+                  freshData,
+                  now,
+                ),
+            },
           },
-        },
-      );
+        );
+      } catch (error) {
+        logger.error('Skipping malformed PAYMENT_DUE reminder candidate', {
+          orderId: doc.id,
+          error,
+        });
+      }
     }
 
     for (const doc of shipmentReminderSnap.docs) {
-      const order = deserializeOrder(doc.id, doc.data() as AnyRecord);
-      await createInboxNotification(
-        order.sellerId,
-        'SHIPMENT_REMINDER',
-        '배송 등록이 필요합니다',
-        '결제 완료 주문의 배송 정보를 등록해주세요.',
-        buildDeepLink('orders', order.id),
-        'ORDER',
-        order.id,
-        {
-          deterministicNotificationId: buildReminderInboxNotificationId({
-            type: 'SHIPMENT_REMINDER',
-            orderId: order.id,
-          }),
-          precondition: {
-            ref: doc.ref,
-            isSatisfied: (freshOrderId, freshData) =>
-              isReminderCandidateFromDocument(
-                'SHIPMENT_REMINDER',
-                freshOrderId,
-                freshData,
-                now,
-              ),
+      try {
+        const order = deserializeOrder(doc.id, doc.data() as AnyRecord);
+        await createInboxNotification(
+          order.sellerId,
+          'SHIPMENT_REMINDER',
+          '배송 등록이 필요합니다',
+          '결제 완료 주문의 배송 정보를 등록해주세요.',
+          buildDeepLink('orders', order.id),
+          'ORDER',
+          order.id,
+          {
+            deterministicNotificationId: buildReminderInboxNotificationId({
+              type: 'SHIPMENT_REMINDER',
+              orderId: order.id,
+            }),
+            precondition: {
+              ref: doc.ref,
+              isSatisfied: (freshOrderId, freshData) =>
+                isReminderCandidateFromDocument(
+                  'SHIPMENT_REMINDER',
+                  freshOrderId,
+                  freshData,
+                  now,
+                ),
+            },
           },
-        },
-      );
+        );
+      } catch (error) {
+        logger.error('Skipping malformed SHIPMENT_REMINDER candidate', {
+          orderId: doc.id,
+          error,
+        });
+      }
     }
 
     for (const doc of receiptReminderSnap.docs) {
-      const order = deserializeOrder(doc.id, doc.data() as AnyRecord);
-      await createInboxNotification(
-        order.buyerId,
-        'RECEIPT_REMINDER',
-        '수령 확인이 필요합니다',
-        '배송 완료 주문의 수령 확인을 진행해주세요.',
-        buildDeepLink('orders', order.id),
-        'ORDER',
-        order.id,
-        {
-          deterministicNotificationId: buildReminderInboxNotificationId({
-            type: 'RECEIPT_REMINDER',
-            orderId: order.id,
-          }),
-          precondition: {
-            ref: doc.ref,
-            isSatisfied: (freshOrderId, freshData) =>
-              isReminderCandidateFromDocument(
-                'RECEIPT_REMINDER',
-                freshOrderId,
-                freshData,
-                now,
-              ),
+      try {
+        const order = deserializeOrder(doc.id, doc.data() as AnyRecord);
+        await createInboxNotification(
+          order.buyerId,
+          'RECEIPT_REMINDER',
+          '수령 확인이 필요합니다',
+          '배송 완료 주문의 수령 확인을 진행해주세요.',
+          buildDeepLink('orders', order.id),
+          'ORDER',
+          order.id,
+          {
+            deterministicNotificationId: buildReminderInboxNotificationId({
+              type: 'RECEIPT_REMINDER',
+              orderId: order.id,
+            }),
+            precondition: {
+              ref: doc.ref,
+              isSatisfied: (freshOrderId, freshData) =>
+                isReminderCandidateFromDocument(
+                  'RECEIPT_REMINDER',
+                  freshOrderId,
+                  freshData,
+                  now,
+                ),
+            },
           },
-        },
-      );
+        );
+      } catch (error) {
+        logger.error('Skipping malformed RECEIPT_REMINDER candidate', {
+          orderId: doc.id,
+          error,
+        });
+      }
     }
 
     logger.info('orderReminderNotificationsScheduler', {

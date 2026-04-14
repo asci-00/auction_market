@@ -14,12 +14,14 @@ import 'core/logging/app_logger.dart';
 import 'features/settings/application/settings_preferences_service.dart';
 
 Future<void> main() async {
+  AppLogger? bootstrapLogger;
   await runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
     await EasyLocalization.ensureInitialized();
     final sharedPreferences = await SharedPreferences.getInstance();
     final config = AppConfig.fromEnvironment();
     final logger = AppLogger.fromConfig(config);
+    bootstrapLogger = logger;
 
     FlutterError.onError = (details) {
       FlutterError.dumpErrorToConsole(details);
@@ -60,10 +62,21 @@ Future<void> main() async {
         ),
       ),
     );
-  }, _reportFatalError);
+  }, (error, stackTrace) => _reportFatalError(error, stackTrace, bootstrapLogger));
 }
 
-void _reportFatalError(Object error, StackTrace stackTrace) {
+void _reportFatalError(
+  Object error,
+  StackTrace stackTrace,
+  AppLogger? logger,
+) {
+  logger?.fatal(
+    'Unhandled zone fatal error: $error',
+    domain: AppLogDomain.app,
+    source: 'main:zone_guard',
+    error: error,
+    stackTrace: stackTrace,
+  );
   FlutterError.dumpErrorToConsole(
     FlutterErrorDetails(
       exception: error,

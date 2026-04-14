@@ -7,6 +7,7 @@ void main() {
     final config = AppConfig.fromValues(
       environment: AppEnvironment.dev,
       apiBaseUrl: 'https://dev.example.com',
+      tossClientKey: 'test_ck_example',
     );
 
     expect(config.backendTransport, AppBackendTransport.http);
@@ -51,6 +52,23 @@ void main() {
       () => AppConfig.fromValues(
         environment: AppEnvironment.prod,
         backendTransportRawValue: 'firebase_callable',
+      ),
+      throwsA(
+        isA<AppConfigurationException>().having(
+          (error) => error.message,
+          'message',
+          contains('TOSS_CLIENT_KEY'),
+        ),
+      ),
+    );
+  });
+
+  test('http transport requires toss client key', () {
+    expect(
+      () => AppConfig.fromValues(
+        environment: AppEnvironment.dev,
+        backendTransportRawValue: 'http',
+        apiBaseUrl: 'https://dev.example.com',
       ),
       throwsA(
         isA<AppConfigurationException>().having(

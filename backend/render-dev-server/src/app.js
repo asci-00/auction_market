@@ -465,6 +465,7 @@ function placeBidEngine(input) {
   validateBid(input.auction, input.amount, input.now);
 
   const outbidUserId = input.auction.highestBidderId ?? undefined;
+  let autoBidCeilingReachedUserId;
   let auction = {
     ...input.auction,
     currentPrice: input.amount,
@@ -496,9 +497,40 @@ function placeBidEngine(input) {
     );
     auction = auto.auction;
     bids.push(...auto.bids);
+    autoBidCeilingReachedUserId = resolveAutoBidCeilingReachedUserId({
+      finalAuction: auction,
+      outbidUserId,
+      autoBids: input.autoBids,
+    });
   }
 
-  return { auction, bids, outbidUserId };
+  return { auction, bids, outbidUserId, autoBidCeilingReachedUserId };
+}
+
+function resolveAutoBidCeilingReachedUserId(input) {
+  const outbidUserId = input.outbidUserId;
+  if (!outbidUserId) {
+    return undefined;
+  }
+  if (input.finalAuction.highestBidderId === outbidUserId) {
+    return undefined;
+  }
+
+  const autoBid = input.autoBids.find(
+    (entry) => entry.uid === outbidUserId && entry.isEnabled,
+  );
+  if (!autoBid) {
+    return undefined;
+  }
+
+  const minimumNextBid =
+    input.finalAuction.currentPrice +
+    minIncrementFor(input.finalAuction.currentPrice);
+  if (autoBid.maxAmount >= minimumNextBid) {
+    return undefined;
+  }
+
+  return outbidUserId;
 }
 
 function normalizeAppBaseUrl(appBaseUrl) {
@@ -1542,6 +1574,7 @@ export function createApp(services) {
 
       const auctionRef = db.collection('auctions').doc(auctionId);
       let outbidUserId;
+      let autoBidCeilingReachedUserId;
       let finalPrice = amount;
 
       await db.runTransaction(async (tx) => {
@@ -1601,6 +1634,7 @@ export function createApp(services) {
         });
 
         outbidUserId = result.outbidUserId;
+        autoBidCeilingReachedUserId = result.autoBidCeilingReachedUserId;
         finalPrice = result.auction.currentPrice;
 
         tx.update(auctionRef, {
@@ -1634,7 +1668,25 @@ export function createApp(services) {
         });
       });
 
-      if (outbidUserId && outbidUserId !== authContext.uid) {
+      if (
+        autoBidCeilingReachedUserId &&
+        autoBidCeilingReachedUserId !== authContext.uid
+      ) {
+        await createInboxNotification(
+          db,
+          autoBidCeilingReachedUserId,
+          'AUTO_BID_CEILING_REACHED',
+          '자동입찰 한도에 도달했습니다',
+          `현재 최고가 ${finalPrice}원으로 자동입찰 상한을 넘었습니다.`,
+          buildDeepLink('auction', auctionId),
+        );
+      }
+
+      if (
+        outbidUserId &&
+        outbidUserId !== authContext.uid &&
+        outbidUserId !== autoBidCeilingReachedUserId
+      ) {
         await createInboxNotification(
           db,
           outbidUserId,
@@ -1891,11 +1943,33 @@ export function createApp(services) {
           });
         }
       } catch (error) {
-        const failedOrder = toFailedPaymentOrder(order);
-        await orderRef.update({
-          paymentStatus: failedOrder.paymentStatus,
-          updatedAt: FieldValue.serverTimestamp(),
+        let markedFailed = false;
+        await db.runTransaction(async (tx) => {
+          const latestSnap = await tx.get(orderRef);
+          if (!latestSnap.exists) {
+            return;
+          }
+          const latestOrder = deserializeOrder(latestSnap.id, latestSnap.data());
+          if (latestOrder.orderStatus !== 'AWAITING_PAYMENT') {
+            return;
+          }
+          const failedOrder = toFailedPaymentOrder(latestOrder);
+          tx.update(orderRef, {
+            paymentStatus: failedOrder.paymentStatus,
+            updatedAt: FieldValue.serverTimestamp(),
+          });
+          markedFailed = true;
         });
+        if (markedFailed) {
+          await createInboxNotification(
+            db,
+            order.buyerId,
+            'PAYMENT_FAILED',
+            '결제가 완료되지 않았습니다',
+            '결제 정보를 확인한 뒤 다시 시도해주세요.',
+            buildDeepLink('orders', orderId),
+          );
+        }
         await writeAuditEvent(db, {
           entityType: 'PAYMENT',
           entityId: paymentKey,

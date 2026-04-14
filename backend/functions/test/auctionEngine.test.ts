@@ -72,6 +72,37 @@ describe('auction engine', () => {
     expect(result.auction.highestBidderId).toBe('auto2');
   });
 
+  it('ignores auto-bid configs when auto-bid feature flag is disabled', () => {
+    featureFlags.autoBid = false;
+    const auction: any = {
+      id: 'a1',
+      itemId: 'i1',
+      sellerId: 's1',
+      startPrice: 10000,
+      currentPrice: 10000,
+      status: 'LIVE',
+      endAt: new Date(Date.now() + 60 * 60 * 1000),
+      extendedCount: 0,
+      bidCount: 0,
+      bidderCount: 0,
+    };
+
+    const result = placeBid({
+      auction,
+      bidderId: 'manualUser',
+      amount: 11000,
+      now: new Date(),
+      autoBids: [
+        { uid: 'auto1', maxAmount: 14000, isEnabled: true },
+        { uid: 'auto2', maxAmount: 16000, isEnabled: true },
+      ],
+    });
+
+    expect(result.bids).toHaveLength(1);
+    expect(result.auction.currentPrice).toBe(11000);
+    expect(result.auction.highestBidderId).toBe('manualUser');
+  });
+
   it('signals auto-bid ceiling reached when prior leader loses due to cap', () => {
     featureFlags.autoBid = true;
     const auction: any = {

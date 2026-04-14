@@ -4,6 +4,7 @@ import {
   isPaymentDueReminderCandidate,
   isReceiptReminderCandidate,
   isShipmentReminderCandidate,
+  PAYMENT_DUE_REMINDER_LEAD_TIME_MS,
   RECEIPT_REMINDER_DELAY_MS,
   REMINDER_QUERY_LOOKBACK_MS,
   SHIPMENT_REMINDER_DELAY_MS,
@@ -68,6 +69,20 @@ describe('orderReminderEngine', () => {
       paymentDueAt: new Date('2026-04-13T03:00:00.000Z'),
     });
     expect(isPaymentDueReminderCandidate(outOfWindow, now)).toBe(false);
+
+    const dueNowBoundary = createOrder({
+      orderStatus: 'AWAITING_PAYMENT',
+      paymentDueAt: new Date(now.getTime()),
+    });
+    expect(isPaymentDueReminderCandidate(dueNowBoundary, now)).toBe(false);
+
+    const dueAtLeadTimeBoundary = createOrder({
+      orderStatus: 'AWAITING_PAYMENT',
+      paymentDueAt: new Date(now.getTime() + PAYMENT_DUE_REMINDER_LEAD_TIME_MS),
+    });
+    expect(isPaymentDueReminderCandidate(dueAtLeadTimeBoundary, now)).toBe(
+      true,
+    );
   });
 
   it('detects shipment reminders only for pending shipment orders in lookback', () => {

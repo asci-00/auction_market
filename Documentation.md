@@ -135,7 +135,7 @@
 
 ## Backend Implementation Notes
 - `backend/functions/src/config/runtime.ts` validates backend runtime env such as `APP_ENV`, provider secrets for the active payment adapter, provider API base URL, and the presence of `APP_BASE_URL` when it is required by the active payment mode.
-- `backend/render-dev-server` exposes `/health`, `/payments/*`, and `/api/*` on a stable public dev URL. It now verifies Firebase ID tokens with Firebase Admin and writes directly to the dev project's Firestore collections, so dev HTTP transport no longer depends on deployed Firebase Functions.
+- `backend/render-dev-server` exposes `/healthz`, `/payments/*`, and `/api/*` on a stable public dev URL. It now verifies Firebase ID tokens with Firebase Admin and writes directly to the dev project's Firestore collections, so dev HTTP transport no longer depends on deployed Firebase Functions.
 - The stable public dev health endpoint is `/healthz` under `https://auction-market-dev-api.onrender.com/healthz`. `/health` may be intercepted by the hosting edge and must not be treated as the canonical external health probe.
 - `backend/functions/src/domain/paymentEngine.ts` owns payment confirmation idempotency helpers, provider webhook normalization, and payment state transitions.
 - `backend/functions/eslint.config.mjs` now runs ESLint for `src`, `test`, and `scripts`, while `.prettierrc.json` and package scripts provide a repeatable formatting check for TypeScript files before commit.
