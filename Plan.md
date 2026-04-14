@@ -83,6 +83,7 @@ Status: in progress after Phase 3.
   - Android real-device dev path through real Firebase + Render
   - backend Firebase Admin Messaging dispatch for currently emitted inbox-backed product events
   - supported push event-matrix backend coverage, including payment-due, shipment-reminder, and receipt-reminder scheduler emission with idempotent reminder inbox ids
+  - debug-only push probe triggers for real-device verification (`sendDebugPushProbe` callable and Render `POST /api/notifications/debug/push-probe`)
   - Android foreground push presentation, background or terminated tap routing, and default notification-channel setup
 - In progress:
   - final Android and iOS real-device verification for supported push behavior

@@ -55,6 +55,8 @@ abstract class BackendGateway {
   });
 
   Future<void> deactivateDeviceToken({required Map<String, Object?> payload});
+
+  Future<Map<String, dynamic>> sendDebugPushProbe();
 }
 
 class FirebaseCallableBackendGateway implements BackendGateway {
@@ -177,6 +179,14 @@ class FirebaseCallableBackendGateway implements BackendGateway {
     return _functions
         .httpsCallable('deactivateDeviceToken')
         .call<void>(payload);
+  }
+
+  @override
+  Future<Map<String, dynamic>> sendDebugPushProbe() async {
+    final result = await _functions
+        .httpsCallable('sendDebugPushProbe')
+        .call<dynamic>(const <String, Object?>{});
+    return _asMap(result.data, 'sendDebugPushProbe');
   }
 }
 
@@ -302,6 +312,11 @@ class HttpBackendGateway implements BackendGateway {
     required Map<String, Object?> payload,
   }) async {
     await _post('/api/device-tokens/deactivate', payload: payload);
+  }
+
+  @override
+  Future<Map<String, dynamic>> sendDebugPushProbe() {
+    return _post('/api/notifications/debug/push-probe', payload: const {});
   }
 
   Future<Map<String, dynamic>> _post(

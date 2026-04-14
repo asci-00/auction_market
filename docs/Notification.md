@@ -27,6 +27,7 @@
   - auto-bid ceiling reached inbox plus push event
   - buy-now completion and payment-failed-or-expired inbox plus push events
   - payment-due, shipment-reminder, and receipt-reminder inbox plus push events with deterministic reminder inbox ids
+  - debug-only push probe trigger in both Firebase callable and Render dev HTTP
   - reminder candidate windows: payment due within 1 hour, shipment pending for 24 hours, and receipt pending for 24 hours, with bounded lookback reads
   - Android default notification-channel declaration and channel creation
   - foreground surfaced push handling through `onMessage`
@@ -69,6 +70,7 @@
   - Settlement completed for seller.
 - `system`
   - Account, policy, release-critical, or support notices that are not marketing.
+  - Debug push probe for real-device delivery verification in `dev` only.
 
 ## Events To Support
 
@@ -127,6 +129,14 @@
   - Trigger: order moves to `SETTLED`.
   - Category: `shippingAndReceipt`
   - Deep link: `app://orders/{orderId}`
+
+### Debug Verification Event
+- Debug push probe (dev only)
+  - Trigger: authenticated caller invokes `sendDebugPushProbe` callable or `POST /api/notifications/debug/push-probe`.
+  - Guard: only allowed when backend runtime `APP_ENV=dev`.
+  - Category: `system`
+  - Type: `SYSTEM_TEST`
+  - Deep link: `app://notifications`
 
 ## Events Not In Scope For v1
 - Marketing or promotion pushes.

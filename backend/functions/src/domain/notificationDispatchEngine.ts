@@ -17,7 +17,8 @@ export type InboxNotificationType =
   | 'SHIPPED'
   | 'RECEIPT_REMINDER'
   | 'RECEIPT_CONFIRMED'
-  | 'SETTLED';
+  | 'SETTLED'
+  | 'SYSTEM_TEST';
 
 export type ReminderNotificationType =
   | 'PAYMENT_DUE'
@@ -59,6 +60,7 @@ const CATEGORY_BY_NOTIFICATION_TYPE: Record<
   RECEIPT_REMINDER: 'shippingAndReceipt',
   RECEIPT_CONFIRMED: 'shippingAndReceipt',
   SETTLED: 'shippingAndReceipt',
+  SYSTEM_TEST: 'system',
 };
 
 function isObject(value: unknown): value is Record<string, unknown> {

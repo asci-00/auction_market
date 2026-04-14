@@ -755,6 +755,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsDeveloperDescription => 'Shown only in non-release builds to confirm local environment assumptions.';
 
   @override
+  String get settingsDebugPushProbeTitle => 'Push probe';
+
+  @override
+  String get settingsDebugPushProbeDescription => 'Trigger a server push probe for the signed-in account.';
+
+  @override
+  String get settingsDebugPushProbeAction => 'Send';
+
+  @override
+  String get settingsDebugPushProbeSending => 'Sending...';
+
+  @override
+  String get settingsDebugPushProbeSuccess => 'Push probe requested. Check your notifications in a few seconds.';
+
+  @override
+  String settingsDebugPushProbeSkipped(int tokenCount) {
+    return 'Push probe was created but push dispatch was skipped (eligible tokens: $tokenCount). Check notification preference and token status.';
+  }
+
+  @override
+  String get settingsDebugPushProbeFailure => 'Push probe failed. Verify token registration and backend availability.';
+
+  @override
+  String settingsDebugPushProbeFailureWithReason(String reason) {
+    return 'Push probe failed: $reason';
+  }
+
+  @override
   String get myTitle => 'My';
 
   @override

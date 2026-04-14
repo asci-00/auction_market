@@ -1535,6 +1535,54 @@ abstract class AppLocalizations {
   /// **'Shown only in non-release builds to confirm local environment assumptions.'**
   String get settingsDeveloperDescription;
 
+  /// No description provided for @settingsDebugPushProbeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Push probe'**
+  String get settingsDebugPushProbeTitle;
+
+  /// No description provided for @settingsDebugPushProbeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Trigger a server push probe for the signed-in account.'**
+  String get settingsDebugPushProbeDescription;
+
+  /// No description provided for @settingsDebugPushProbeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get settingsDebugPushProbeAction;
+
+  /// No description provided for @settingsDebugPushProbeSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending...'**
+  String get settingsDebugPushProbeSending;
+
+  /// No description provided for @settingsDebugPushProbeSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Push probe requested. Check your notifications in a few seconds.'**
+  String get settingsDebugPushProbeSuccess;
+
+  /// No description provided for @settingsDebugPushProbeSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Push probe was created but push dispatch was skipped (eligible tokens: {tokenCount}). Check notification preference and token status.'**
+  String settingsDebugPushProbeSkipped(int tokenCount);
+
+  /// No description provided for @settingsDebugPushProbeFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Push probe failed. Verify token registration and backend availability.'**
+  String get settingsDebugPushProbeFailure;
+
+  /// No description provided for @settingsDebugPushProbeFailureWithReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Push probe failed: {reason}'**
+  String settingsDebugPushProbeFailureWithReason(String reason);
+
   /// No description provided for @myTitle.
   ///
   /// In en, this message translates to:

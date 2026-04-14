@@ -261,6 +261,24 @@ function buildTossCustomerKey(uid: string): string {
   return `buyer_${uid}`;
 }
 
+const DEBUG_PUSH_PROBE = {
+  type: 'SYSTEM_TEST' as const,
+  title: '개발용 푸시 점검',
+  body: '실기기 푸시 수신 경로 점검용 테스트 알림입니다.',
+  deeplink: 'app://notifications',
+  entityType: 'ORDER' as const,
+  entityId: 'debug-push-probe',
+};
+
+function requireDevAppEnv(appEnv: RuntimeConfig['appEnv'], feature: string) {
+  if (appEnv !== 'dev') {
+    throw new HttpsError(
+      'failed-precondition',
+      `${feature} is available only when APP_ENV=dev.`,
+    );
+  }
+}
+
 async function createInboxNotification(
   uid: string,
   type: InboxNotificationType,
@@ -276,7 +294,11 @@ async function createInboxNotification(
       isSatisfied: (docId: string, data: AnyRecord) => boolean;
     };
   },
-): Promise<void> {
+): Promise<{
+  notificationId: string;
+  pushAttempted: boolean;
+  tokenCount: number;
+}> {
   const inboxCollectionRef = db
     .collection('notifications')
     .doc(uid)
@@ -337,11 +359,15 @@ async function createInboxNotification(
       entityId,
       notificationId: ref.id,
     });
-    return;
+    return {
+      notificationId: ref.id,
+      pushAttempted: false,
+      tokenCount: 0,
+    };
   }
 
   try {
-    await dispatchPushForInboxNotification({
+    const dispatchResult = await dispatchPushForInboxNotification({
       uid,
       notificationId: ref.id,
       type,
@@ -353,6 +379,11 @@ async function createInboxNotification(
       entityId,
       timestamp,
     });
+    return {
+      notificationId: ref.id,
+      pushAttempted: dispatchResult.attempted,
+      tokenCount: dispatchResult.tokenCount,
+    };
   } catch (error) {
     logger.error('dispatchPushForInboxNotification failed', {
       uid,
@@ -363,6 +394,11 @@ async function createInboxNotification(
       entityId,
       message: error instanceof Error ? error.message : String(error),
     });
+    return {
+      notificationId: ref.id,
+      pushAttempted: false,
+      tokenCount: 0,
+    };
   }
 }
 
@@ -377,7 +413,7 @@ async function dispatchPushForInboxNotification(input: {
   entityType: 'AUCTION' | 'ORDER';
   entityId: string;
   timestamp: string;
-}): Promise<void> {
+}): Promise<{ attempted: boolean; tokenCount: number }> {
   const userRef = db.collection('users').doc(input.uid);
   const tokenCollectionRef = userRef.collection('deviceTokens');
   const [userSnap, tokenSnap] = await Promise.all([
@@ -410,7 +446,10 @@ async function dispatchPushForInboxNotification(input: {
       categoryEnabled: preferences.notificationCategories[input.category],
       tokenCount: tokens.length,
     });
-    return;
+    return {
+      attempted: false,
+      tokenCount: tokens.length,
+    };
   }
 
   const response = await getMessaging().sendEachForMulticast({
@@ -445,6 +484,10 @@ async function dispatchPushForInboxNotification(input: {
     failureCount: response.failureCount,
     failedCodes,
   });
+  return {
+    attempted: true,
+    tokenCount: tokens.length,
+  };
 }
 
 async function writeAuditEvent(event: AuditEventRecord): Promise<void> {
@@ -2315,6 +2358,47 @@ export const markNotificationRead = onCall(async (req) => {
     isRead: true,
   });
   return { ok: true };
+});
+
+export const sendDebugPushProbe = onCall(async (req) => {
+  const uid = requireAuthUid(req.auth?.uid);
+  const runtime = getRuntimeConfig();
+  requireDevAppEnv(runtime.appEnv, 'sendDebugPushProbe');
+
+  const debugProbeResult = await createInboxNotification(
+    uid,
+    DEBUG_PUSH_PROBE.type,
+    DEBUG_PUSH_PROBE.title,
+    DEBUG_PUSH_PROBE.body,
+    DEBUG_PUSH_PROBE.deeplink,
+    DEBUG_PUSH_PROBE.entityType,
+    DEBUG_PUSH_PROBE.entityId,
+  );
+  await writeAuditEvent({
+    entityType: 'USER',
+    entityId: uid,
+    eventType: 'NOTIFICATION_DEBUG_PUSH_PROBE',
+    actorId: uid,
+    payload: {
+      type: DEBUG_PUSH_PROBE.type,
+      category: getNotificationCategoryForType(DEBUG_PUSH_PROBE.type),
+      entityType: DEBUG_PUSH_PROBE.entityType,
+      entityId: DEBUG_PUSH_PROBE.entityId,
+      deeplink: DEBUG_PUSH_PROBE.deeplink,
+    },
+  });
+
+  return {
+    ok: true,
+    notificationId: debugProbeResult.notificationId,
+    type: DEBUG_PUSH_PROBE.type,
+    category: getNotificationCategoryForType(DEBUG_PUSH_PROBE.type),
+    entityType: DEBUG_PUSH_PROBE.entityType,
+    entityId: DEBUG_PUSH_PROBE.entityId,
+    deeplink: DEBUG_PUSH_PROBE.deeplink,
+    pushAttempted: debugProbeResult.pushAttempted,
+    tokenCount: debugProbeResult.tokenCount,
+  };
 });
 
 export const registerDeviceToken = onCall(async (req) => {

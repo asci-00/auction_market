@@ -4,6 +4,7 @@
 - Phase 4 settings and notification foundation is active.
 - The current slice now includes the real Firebase dev project split, Render dev server deployment, dev/prod mobile flavor separation, structured mobile logging, backend gateway split, device-token lifecycle, backend Firebase Admin Messaging fan-out for the inbox-backed product events that already exist, and mobile push presentation plus tap-routing foundation.
 - Android physical-device dev builds now default to real Firebase dev + Render HTTP instead of local emulator networking.
+- A debug-only push probe trigger now exists in both backend transports: callable `sendDebugPushProbe` and Render `POST /api/notifications/debug/push-probe`, both guarded by `APP_ENV=dev` and aligned to current push eligibility rules.
 - Real push delivery is still incomplete: token registration, backend dispatch, Android channel wiring, foreground surfaced messages, and push tap routing now exist, but the remaining unsupported push-event gaps and final real-device verification are still open.
 
 ## Locked Decisions
@@ -52,6 +53,7 @@
 - Phase 4 now has its first settings foundation slice: `/settings` exists, the app bar and My screen can open it, signed-in users see notification preference toggles backed by `users/{uid}.preferences`, and signed-out users are redirected back through `/login?from=/settings`.
 - Settings now falls back to an in-app default preference model when `users/{uid}` exists without a `preferences` payload yet, so notification controls can still render before a full profile bootstrap is complete.
 - The settings screen now shows current OS notification permission state, a request-permission or open-system-settings recovery action when applicable, app version, open-source licenses, and debug-only environment info.
+- The debug-only developer settings area now includes a compact push-probe action that calls `sendDebugPushProbe` through the backend gateway abstraction, so dev HTTP and callable modes keep one feature-level trigger path for signed-in tester diagnostics.
 - The second Phase 4 settings slice now applies a local `SharedPreferences` theme preference to `MaterialApp`, and `/settings` now exposes a compact theme preview selector instead of a verbose radio list.
 - Signed-in routes no longer expose a global locale picker in the shared app bar, and the signed-out login surface also no longer carries a manual locale menu; the app now follows the device locale only.
 - Mobile now calls `registerDeviceToken` after permission grant and token refresh, calls `deactivateDeviceToken` before sign-out or when push is disabled, and re-syncs permission plus token state when the app resumes.
@@ -94,6 +96,10 @@
 - `cd backend/functions && npx eslint src/index.ts src/domain/notificationDispatchEngine.ts src/domain/orderReminderEngine.ts test/notificationDispatchEngine.test.ts test/orderReminderEngine.test.ts && npx tsc --noEmit` passed on April 13, 2026 after adding reminder precondition revalidation and lookback-bounded candidate checks.
 - `cd backend/functions && npm run build` passed on April 13, 2026 after adding reminder precondition revalidation and lookback-bounded candidate checks.
 - `cd backend/functions && npm test` passed on April 13, 2026 after adding reminder precondition revalidation and lookback-bounded candidate checks.
+- `cd backend/functions && npm run format:check` passed on April 14, 2026 after adding the `sendDebugPushProbe` callable and `SYSTEM_TEST` notification mapping.
+- `cd backend/functions && npx eslint src/index.ts src/domain/notificationDispatchEngine.ts test/notificationDispatchEngine.test.ts && npx tsc --noEmit` passed on April 14, 2026 after adding the debug push probe callable path.
+- `cd backend/functions && npm run build` passed on April 14, 2026 after adding the debug push probe callable path.
+- `cd backend/functions && npm test` passed on April 14, 2026 after adding the debug push probe callable path.
 - `cd apps/mobile_flutter && flutter gen-l10n` passed on April 6, 2026 after adding the settings localization keys.
 - `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib test` passed on April 6, 2026.
 - `cd apps/mobile_flutter && flutter analyze` passed on April 6, 2026.
@@ -109,6 +115,11 @@
 - `cd apps/mobile_flutter && flutter test test/features/notifications/application/notification_push_service_test.dart test/features/notifications/application/notification_device_token_service_test.dart test/app/app_test.dart` passed on April 11, 2026 after adding mobile push presentation and tap-routing foundation.
 - `cd apps/mobile_flutter/android && ./gradlew app:compileDevDebugKotlin` reached the Android build graph on April 11, 2026 but stopped at `:app:copyFlutterAssetsDevDebug` because the local workspace could not apply file mode `644` to `kernel_blob.bin`; Kotlin and manifest wiring were not the failing layer.
 - `cd backend/render-dev-server && npm test` passed on April 8, 2026 after the Firebase Admin refactor and `/healthz` route addition.
+- `cd backend/render-dev-server && npm test` passed on April 14, 2026 after adding `POST /api/notifications/debug/push-probe` and push-dispatch contract tests.
+- `cd apps/mobile_flutter && flutter gen-l10n` passed on April 14, 2026 after adding debug push-probe copy and skipped-dispatch messaging.
+- `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib/core/backend/backend_gateway.dart lib/features/settings/presentation/settings_screen.dart lib/features/settings/presentation/widgets/settings_app_info_section.dart test/features/settings/presentation/widgets/settings_app_info_section_test.dart` passed on April 14, 2026 after adding the settings debug push-probe action.
+- `cd apps/mobile_flutter && flutter analyze` passed on April 14, 2026 after adding the settings debug push-probe action and transport guard handling.
+- `cd apps/mobile_flutter && flutter test test/features/settings/presentation/settings_screen_test.dart test/features/settings/presentation/widgets/settings_app_info_section_test.dart test/features/settings/presentation/widgets/settings_notification_section_test.dart test/features/settings/presentation/widgets/settings_theme_section_test.dart` passed on April 14, 2026 after adding the debug push-probe UI flow.
 - `cd apps/mobile_flutter && xcodebuild -list -project ios/Runner.xcodeproj` confirmed `dev` and `prod` schemes plus flavor-specific build configurations on April 8, 2026.
 - `cd apps/mobile_flutter/android && ./gradlew app:tasks --all | rg "assemble(Dev|Prod)"` confirmed Android dev/prod variants on April 8, 2026.
 - `curl https://auction-market-dev-api.onrender.com/healthz` returned `200` on April 8, 2026.

@@ -43,6 +43,7 @@ describe('notification dispatch engine', () => {
     expect(getNotificationCategoryForType('SETTLED')).toBe(
       'shippingAndReceipt',
     );
+    expect(getNotificationCategoryForType('SYSTEM_TEST')).toBe('system');
   });
 
   it('defaults missing preferences to enabled state', () => {
