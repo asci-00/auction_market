@@ -309,7 +309,11 @@ class HttpBackendGateway implements BackendGateway {
     required Map<String, Object?> payload,
   }) async {
     final initialToken = await _resolveIdToken(forceRefresh: false);
-    final initialResult = await _sendPost(path, payload: payload, idToken: initialToken);
+    final initialResult = await _sendPost(
+      path,
+      payload: payload,
+      idToken: initialToken,
+    );
     if (initialResult.response.statusCode == HttpStatus.unauthorized) {
       final refreshedToken = await _resolveIdToken(forceRefresh: true);
       final retryResult = await _sendPost(
@@ -364,15 +368,15 @@ class HttpBackendGateway implements BackendGateway {
     required Map<String, Object?> payload,
     required String idToken,
   }) async {
-    final request = await _client
-        .postUrl(_baseUri.resolve(path))
-        .timeout(_requestTimeout);
-    request.headers.set(HttpHeaders.contentTypeHeader, 'application/json');
-    request.headers.set(HttpHeaders.acceptHeader, 'application/json');
-    request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $idToken');
-    request.write(jsonEncode(payload));
-
     try {
+      final request = await _client
+          .postUrl(_baseUri.resolve(path))
+          .timeout(_requestTimeout);
+      request.headers.set(HttpHeaders.contentTypeHeader, 'application/json');
+      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $idToken');
+      request.write(jsonEncode(payload));
+
       final response = await request.close().timeout(_requestTimeout);
       final rawBody = await response
           .transform(utf8.decoder)
@@ -396,9 +400,20 @@ class HttpBackendGateway implements BackendGateway {
     required int statusCode,
     required String rawBody,
   }) {
-    final jsonBody = rawBody.trim().isEmpty
-        ? const <String, dynamic>{}
-        : jsonDecode(rawBody) as Map<String, dynamic>;
+    final trimmedBody = rawBody.trim();
+    Map<String, dynamic> jsonBody;
+    if (trimmedBody.isEmpty) {
+      jsonBody = const <String, dynamic>{};
+    } else {
+      try {
+        jsonBody = jsonDecode(trimmedBody) as Map<String, dynamic>;
+      } on FormatException {
+        jsonBody = <String, dynamic>{
+          'code': 'unknown',
+          'message': 'HTTP $statusCode: $trimmedBody',
+        };
+      }
+    }
 
     if (statusCode >= 400) {
       throw FirebaseFunctionsException(

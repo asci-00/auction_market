@@ -31,3 +31,11 @@
 - Follow-up change to implement:
   - Align render-dev `createInboxNotification` payload fields (`category`, `entityType`, `entityId`) with Functions contract.
   - Add a shared or equivalent best-effort push dispatch path for render-dev HTTP mutations.
+
+### Review `#3079214821` (notification docs strict constant-level sync)
+- Reason deferred: valid documentation-hardening direction, but this PR is scoped to runtime reliability and CI stabilization, not broad spec rewrites across multiple docs.
+- Why tracked here: current planning docs do not schedule a dedicated pass for strict constant-level synchronization between `Documentation.md` and `docs/Notification.md`.
+- Follow-up change to implement:
+  - Add an explicit event-constant table to `docs/Notification.md` with backend event identifiers.
+  - Align preference gate wording to explicit runtime fields (`preferences.pushEnabled`, `preferences.notificationCategories.*`, permission status values).
+  - Document deterministic reminder inbox-id behavior in the delivery preconditions section using the same terminology as runtime docs.

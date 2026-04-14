@@ -2675,13 +2675,13 @@ export const orderReminderNotificationsScheduler = onSchedule(
         db
           .collection('orders')
           .where('orderStatus', '==', 'PAID_ESCROW_HOLD')
-          .where('payment.approvedAt', '>', shipmentReminderLookbackStart)
+          .where('payment.approvedAt', '>=', shipmentReminderLookbackStart)
           .where('payment.approvedAt', '<=', shipmentReminderCutoff)
           .get(),
         db
           .collection('orders')
           .where('orderStatus', '==', 'SHIPPED')
-          .where('shipping.shippedAt', '>', receiptReminderLookbackStart)
+          .where('shipping.shippedAt', '>=', receiptReminderLookbackStart)
           .where('shipping.shippedAt', '<=', receiptReminderCutoff)
           .get(),
       ]);
