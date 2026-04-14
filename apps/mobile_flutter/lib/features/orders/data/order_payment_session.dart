@@ -28,6 +28,12 @@ class OrderPaymentSession {
   final String? devPaymentKey;
 
   factory OrderPaymentSession.fromCallable(Map<dynamic, dynamic> data) {
+    return OrderPaymentSession.fromMap(
+      data.map((key, value) => MapEntry(key.toString(), value)),
+    );
+  }
+
+  factory OrderPaymentSession.fromMap(Map<String, dynamic> data) {
     String? asNullableString(dynamic value) {
       if (value == null) {
         return null;

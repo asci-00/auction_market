@@ -1,0 +1,4 @@
+#include "Debug.xcconfig"
+
+FLAVOR=dev
+FIREBASE_PLIST_PATH=$(PROJECT_DIR)/Runner/Firebase/dev/GoogleService-Info.plist

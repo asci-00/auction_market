@@ -4,7 +4,6 @@ import 'package:auction_market_mobile/features/settings/data/settings_preference
 import 'package:auction_market_mobile/features/settings/presentation/widgets/settings_notification_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 
 void main() {
   testWidgets('disables category toggles when push notifications are off', (
@@ -22,17 +21,10 @@ void main() {
               SettingsNotificationCategory.system: true,
             },
           ),
-          permissionStatus: AuthorizationStatus.authorized,
           onPushEnabledChanged: _noopBool,
           onCategoryChanged: _noopCategory,
-          onRequestPermission: _noop,
-          onOpenSystemSettings: _noop,
           masterTitle: 'Push notifications',
           masterDescription: 'Turn updates on or off.',
-          permissionTitle: 'Device permission',
-          permissionDescription: 'Permission copy',
-          permissionActionLabel: 'Open system settings',
-          permissionStatusLabel: 'Allowed',
           categoryTitle: 'Alert categories',
           categoryDescription: 'Category help text',
           categoryLabels: {
@@ -65,24 +57,15 @@ void main() {
     }
   });
 
-  testWidgets('shows permission recovery action when permission is denied', (
-    tester,
-  ) async {
+  testWidgets('does not show device permission panel', (tester) async {
     await tester.pumpWidget(
       const _TestApp(
         child: SettingsNotificationSection(
           preferences: SettingsPreferences.defaults(),
-          permissionStatus: AuthorizationStatus.denied,
           onPushEnabledChanged: _noopBool,
           onCategoryChanged: _noopCategory,
-          onRequestPermission: _noop,
-          onOpenSystemSettings: _noop,
           masterTitle: 'Push notifications',
           masterDescription: 'Turn updates on or off.',
-          permissionTitle: 'Device permission',
-          permissionDescription: 'Permission copy',
-          permissionActionLabel: 'Open system settings',
-          permissionStatusLabel: 'Blocked in settings',
           categoryTitle: 'Alert categories',
           categoryDescription: 'Category help text',
           categoryLabels: {
@@ -105,12 +88,10 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Open system settings'), findsOneWidget);
-    expect(find.text('Blocked in settings'), findsOneWidget);
+    expect(find.text('Device permission'), findsNothing);
+    expect(find.text('Open system settings'), findsNothing);
   });
 }
-
-void _noop() {}
 
 void _noopBool(bool _) {}
 

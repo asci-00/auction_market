@@ -15,6 +15,7 @@
     "lint": "eslint . && tsc --noEmit",
     "serve": "firebase emulators:start --only auth,functions,firestore,storage",
     "seed": "tsx ./scripts/seed.ts",
+    "seed:dev": "tsx ./scripts/seed_dev.ts",
     "tunnel:toss": "./scripts/start_toss_tunnel.sh"
   },
   "dependencies": {

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -10,21 +11,24 @@ import '../app_config/app_config.dart';
 import '../error/app_error.dart';
 
 class AppBootstrapState {
-  const AppBootstrapState({
-    required this.config,
-  });
+  const AppBootstrapState({required this.config});
 
   final AppConfig config;
 }
 
+final appConfigProvider = Provider<AppConfig>((ref) {
+  return AppConfig.fromEnvironment();
+});
+
 final appBootstrapProvider = FutureProvider<AppBootstrapState>((ref) async {
-  final config = AppConfig.fromEnvironment();
+  final config = ref.watch(appConfigProvider);
   await FirebaseBootstrap.initialize(config);
   return AppBootstrapState(config: config);
 });
 
 class FirebaseBootstrap {
   static bool _emulatorsConfigured = false;
+  static bool _appCheckConfigured = false;
 
   static Future<void> initialize(AppConfig config) async {
     try {
@@ -36,6 +40,19 @@ class FirebaseBootstrap {
 
       if (Firebase.apps.isEmpty) {
         await Firebase.initializeApp();
+      }
+
+      if (!_appCheckConfigured) {
+        final debugToken = _appCheckDebugToken();
+        await FirebaseAppCheck.instance.activate(
+          providerAndroid: kReleaseMode
+              ? const AndroidPlayIntegrityProvider()
+              : AndroidDebugProvider(debugToken: debugToken),
+          providerApple: kReleaseMode
+              ? const AppleDeviceCheckProvider()
+              : AppleDebugProvider(debugToken: debugToken),
+        );
+        _appCheckConfigured = true;
       }
 
       if (config.useFirebaseEmulators && !_emulatorsConfigured) {
@@ -71,4 +88,10 @@ class FirebaseBootstrap {
       );
     }
   }
+}
+
+String? _appCheckDebugToken() {
+  const override = String.fromEnvironment('APP_CHECK_DEBUG_TOKEN');
+  final value = override.trim();
+  return value.isEmpty ? null : value;
 }

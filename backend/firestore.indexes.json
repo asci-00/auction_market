@@ -46,6 +46,30 @@
       "collectionGroup": "orders",
       "queryScope": "COLLECTION",
       "fields": [
+        {"fieldPath": "orderStatus", "order": "ASCENDING"},
+        {"fieldPath": "paymentDueAt", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "orderStatus", "order": "ASCENDING"},
+        {"fieldPath": "payment.approvedAt", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "orderStatus", "order": "ASCENDING"},
+        {"fieldPath": "shipping.shippedAt", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
         {"fieldPath": "buyerId", "order": "ASCENDING"},
         {"fieldPath": "createdAt", "order": "DESCENDING"}
       ]

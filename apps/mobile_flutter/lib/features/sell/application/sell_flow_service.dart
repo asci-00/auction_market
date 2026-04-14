@@ -5,32 +5,33 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/backend/backend_gateway.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../data/sell_draft_form_data.dart';
 
 final sellFlowServiceProvider = Provider<SellFlowService>((ref) {
-  return SellFlowService(
-    auth: ref.watch(firebaseAuthProvider),
-    firestore: ref.watch(firestoreProvider),
-    functions: ref.watch(functionsProvider),
-    storage: ref.watch(firebaseStorageProvider),
-  );
+    return SellFlowService(
+      auth: ref.watch(firebaseAuthProvider),
+      firestore: ref.watch(firestoreProvider),
+      gateway: ref.watch(backendGatewayProvider),
+      storage: ref.watch(firebaseStorageProvider),
+    );
 });
 
 class SellFlowService {
   const SellFlowService({
     required FirebaseAuth auth,
     required FirebaseFirestore firestore,
-    required FirebaseFunctions functions,
+    required BackendGateway gateway,
     required FirebaseStorage storage,
   })  : _auth = auth,
         _firestore = firestore,
-        _functions = functions,
+        _gateway = gateway,
         _storage = storage;
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
-  final FirebaseFunctions _functions;
+  final BackendGateway _gateway;
   final FirebaseStorage _storage;
 
   Future<SellDraftSaveResult> saveDraft(
@@ -66,26 +67,28 @@ class SellFlowService {
       ...uploadedAuthImageUrls,
     ];
 
-    await _functions.httpsCallable('createOrUpdateItem').call<void>({
-      'id': itemId,
-      'status': 'DRAFT',
-      'categoryMain': form.categoryMain,
-      'categorySub': form.categorySub,
-      'title': form.title,
-      'description': form.description,
-      'condition': form.condition,
-      'tags': form.tags,
-      'imageUrls': imageUrls,
-      'authImageUrls': authImageUrls,
-      'draftAuction': {
-        'startPrice': form.startPrice,
-        'buyNowPrice': form.buyNowPrice,
-        'durationDays': form.durationDays,
+    await _gateway.createOrUpdateItem(
+      payload: {
+        'id': itemId,
+        'status': 'DRAFT',
+        'categoryMain': form.categoryMain,
+        'categorySub': form.categorySub,
+        'title': form.title,
+        'description': form.description,
+        'condition': form.condition,
+        'tags': form.tags,
+        'imageUrls': imageUrls,
+        'authImageUrls': authImageUrls,
+        'draftAuction': {
+          'startPrice': form.startPrice,
+          'buyNowPrice': form.buyNowPrice,
+          'durationDays': form.durationDays,
+        },
+        'appraisal': {
+          'status': form.appraisalRequested ? 'REQUESTED' : 'NONE',
+        },
       },
-      'appraisal': {
-        'status': form.appraisalRequested ? 'REQUESTED' : 'NONE',
-      },
-    });
+    );
 
     return SellDraftSaveResult(
       itemId: itemId,
@@ -107,25 +110,14 @@ class SellFlowService {
 
     final now = DateTime.now();
     final endAt = now.add(Duration(days: form.durationDays));
-    final result =
-        await _functions.httpsCallable('createAuctionFromItem').call<dynamic>({
-      'itemId': savedDraft.itemId,
-      'startAt': now.toIso8601String(),
-      'endAt': endAt.toIso8601String(),
-      'startPrice': form.startPrice,
-      'buyNowPrice': form.buyNowPrice,
-    });
-
-    if (result.data case final Map<dynamic, dynamic> data) {
-      final auctionId = data['auctionId'];
-      if (auctionId is String && auctionId.isNotEmpty) {
-        return auctionId;
-      }
-    }
-
-    throw FirebaseFunctionsException(
-      code: 'unknown',
-      message: 'Auction publish did not return an auction id.',
+    return _gateway.createAuctionFromItem(
+      payload: {
+        'itemId': savedDraft.itemId,
+        'startAt': now.toIso8601String(),
+        'endAt': endAt.toIso8601String(),
+        'startPrice': form.startPrice,
+        'buyNowPrice': form.buyNowPrice,
+      },
     );
   }
 

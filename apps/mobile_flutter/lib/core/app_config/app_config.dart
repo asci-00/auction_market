@@ -6,20 +6,35 @@ import '../error/app_error.dart';
 
 enum AppEnvironment {
   dev,
-  staging,
   prod;
 
   static AppEnvironment parse(String rawValue) {
     switch (rawValue) {
       case 'dev':
         return AppEnvironment.dev;
-      case 'staging':
-        return AppEnvironment.staging;
       case 'prod':
         return AppEnvironment.prod;
       default:
         throw const AppConfigurationException(
-          'APP_ENV must be one of dev, staging, or prod.',
+          'APP_ENV must be one of dev or prod.',
+        );
+    }
+  }
+}
+
+enum AppBackendTransport {
+  firebaseCallable,
+  http;
+
+  static AppBackendTransport parse(String rawValue) {
+    switch (rawValue) {
+      case 'firebase_callable':
+        return AppBackendTransport.firebaseCallable;
+      case 'http':
+        return AppBackendTransport.http;
+      default:
+        throw const AppConfigurationException(
+          'APP_BACKEND_TRANSPORT must be one of firebase_callable or http.',
         );
     }
   }
@@ -28,6 +43,8 @@ enum AppEnvironment {
 class AppConfig {
   const AppConfig({
     required this.environment,
+    required this.backendTransport,
+    required this.apiBaseUrl,
     required this.useFirebaseEmulators,
     required this.tossClientKey,
     required this.firebaseEmulatorHostOverride,
@@ -35,22 +52,67 @@ class AppConfig {
 
   factory AppConfig.fromEnvironment() {
     final environment = AppEnvironment.parse(_readRequired('APP_ENV'));
-    final useFirebaseEmulators = _readBool(
+    return AppConfig.fromValues(
+      environment: environment,
+      backendTransportRawValue: _readOptional('APP_BACKEND_TRANSPORT'),
+      apiBaseUrl: _readOptional('APP_API_BASE_URL'),
+      useFirebaseEmulatorsRawValue: _readOptional('USE_FIREBASE_EMULATORS'),
+      tossClientKey: _readOptional('TOSS_CLIENT_KEY'),
+      firebaseEmulatorHostOverride: _readOptional('FIREBASE_EMULATOR_HOST'),
+    );
+  }
+
+  factory AppConfig.fromValues({
+    required AppEnvironment environment,
+    String? backendTransportRawValue,
+    String? apiBaseUrl,
+    String? useFirebaseEmulatorsRawValue,
+    String? tossClientKey,
+    String? firebaseEmulatorHostOverride,
+  }) {
+    final backendTransport = AppBackendTransport.parse(
+      backendTransportRawValue ??
+          (environment == AppEnvironment.dev ? 'http' : 'firebase_callable'),
+    );
+    final useFirebaseEmulators = _readBoolValue(
+      useFirebaseEmulatorsRawValue,
       'USE_FIREBASE_EMULATORS',
-      defaultValue: environment == AppEnvironment.dev,
+      defaultValue: false,
     );
 
     final config = AppConfig(
       environment: environment,
+      backendTransport: backendTransport,
+      apiBaseUrl: _meaningfulOrNull(apiBaseUrl),
       useFirebaseEmulators: useFirebaseEmulators,
-      tossClientKey: _readOptional('TOSS_CLIENT_KEY'),
-      firebaseEmulatorHostOverride: _readOptional('FIREBASE_EMULATOR_HOST'),
+      tossClientKey: _meaningfulOrNull(tossClientKey),
+      firebaseEmulatorHostOverride: _meaningfulOrNull(
+        firebaseEmulatorHostOverride,
+      ),
     );
 
-    if (environment != AppEnvironment.dev &&
-        !config.hasMeaningfulTossClientKey) {
+    if (config.backendTransport == AppBackendTransport.http &&
+        !config.hasApiBaseUrl) {
       throw const AppConfigurationException(
-        'TOSS_CLIENT_KEY is required outside dev builds.',
+        'APP_API_BASE_URL is required when APP_BACKEND_TRANSPORT=http.',
+      );
+    }
+    if (config.backendTransport == AppBackendTransport.http &&
+        !_isValidHttpBaseUrl(config.apiBaseUrl!)) {
+      throw const AppConfigurationException(
+        'APP_API_BASE_URL must be a valid http or https URL.',
+      );
+    }
+
+    if (config.usesHttpBackend && !config.hasMeaningfulTossClientKey) {
+      throw const AppConfigurationException(
+        'TOSS_CLIENT_KEY is required when APP_BACKEND_TRANSPORT=http.',
+      );
+    }
+
+    if (config.isProd && !config.hasMeaningfulTossClientKey) {
+      throw const AppConfigurationException(
+        'TOSS_CLIENT_KEY is required in prod builds.',
       );
     }
 
@@ -58,9 +120,19 @@ class AppConfig {
   }
 
   final AppEnvironment environment;
+  final AppBackendTransport backendTransport;
+  final String? apiBaseUrl;
   final bool useFirebaseEmulators;
   final String? tossClientKey;
   final String? firebaseEmulatorHostOverride;
+
+  bool get isDev => environment == AppEnvironment.dev;
+
+  bool get isProd => environment == AppEnvironment.prod;
+
+  bool get usesHttpBackend => backendTransport == AppBackendTransport.http;
+
+  bool get hasApiBaseUrl => _isMeaningful(apiBaseUrl);
 
   bool get hasMeaningfulTossClientKey => _isMeaningful(tossClientKey);
 
@@ -95,7 +167,7 @@ class AppConfig {
     final value = _readOptional(key);
     if (!_isMeaningful(value)) {
       throw AppConfigurationException(
-        '$key is missing. Provide it in dart_defines.json before launching the app.',
+        '$key is missing. Provide it in the active dart_defines.<flavor>.json before launching the app.',
       );
     }
     return value!.trim();
@@ -104,6 +176,8 @@ class AppConfig {
   static String? _readOptional(String key) {
     const values = <String, String>{
       'APP_ENV': String.fromEnvironment('APP_ENV'),
+      'APP_BACKEND_TRANSPORT': String.fromEnvironment('APP_BACKEND_TRANSPORT'),
+      'APP_API_BASE_URL': String.fromEnvironment('APP_API_BASE_URL'),
       'USE_FIREBASE_EMULATORS': String.fromEnvironment(
         'USE_FIREBASE_EMULATORS',
       ),
@@ -116,8 +190,11 @@ class AppConfig {
     return value == null || value.trim().isEmpty ? null : value.trim();
   }
 
-  static bool _readBool(String key, {required bool defaultValue}) {
-    final value = _readOptional(key);
+  static bool _readBoolValue(
+    String? value,
+    String key, {
+    required bool defaultValue,
+  }) {
     if (value == null) {
       return defaultValue;
     }
@@ -132,6 +209,10 @@ class AppConfig {
   }
 }
 
+String? _meaningfulOrNull(String? value) {
+  return _isMeaningful(value) ? value!.trim() : null;
+}
+
 bool _isMeaningful(String? value) {
   if (value == null) {
     return false;
@@ -141,4 +222,15 @@ bool _isMeaningful(String? value) {
   return normalized.isNotEmpty &&
       !normalized.startsWith('TODO_') &&
       !normalized.startsWith('TODO_FROM_');
+}
+
+bool _isValidHttpBaseUrl(String value) {
+  final uri = Uri.tryParse(value);
+  if (uri == null) {
+    return false;
+  }
+  if (!uri.isAbsolute || uri.host.isEmpty) {
+    return false;
+  }
+  return uri.scheme == 'http' || uri.scheme == 'https';
 }

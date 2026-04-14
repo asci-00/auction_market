@@ -587,6 +587,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notificationsEmptyDescription => '입찰, 결제, 배송 업데이트가 생기면 이곳에 차곡차곡 쌓입니다.';
 
   @override
+  String get notificationsOpenAction => '열기';
+
+  @override
+  String get notificationsForegroundFallbackTitle => '새 알림';
+
+  @override
   String get settingsTitle => '설정';
 
   @override

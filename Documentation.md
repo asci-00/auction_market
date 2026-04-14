@@ -15,14 +15,16 @@
 - `backend/firestore.indexes.json`: Firestore query indexes.
 
 ## Environment Model
-- `dev`: local emulator for Auth, Functions, Firestore, and Storage. Uses seeded data only.
-- `staging`: real Firebase project plus the selected payment-provider test credentials after cutover is explicitly activated.
-- `prod`: real Firebase project plus the selected payment-provider production credentials after cutover is explicitly activated.
+- `dev`: real Firebase development project plus the Render dev server for public mobile HTTP entrypoints and payment redirect pages.
+- `prod`: real Firebase production project with Firebase callable remaining the default mutation transport.
 - When a third-party dependency is not ready yet, `dev` may expose server-driven dummy integration payloads so the mobile app can validate the surrounding product flow before the final real handoff is wired.
 - External PG cutover planning is tracked only in `Plan.md` under `Phase Undecided`.
-- The app switches environment only through build-time public config for `APP_ENV`, emulator mode, and other non-secret app settings.
+- The app switches environment only through build-time public config for `APP_ENV`, backend transport, emulator mode, and other non-secret app settings.
 - Backend runtime switches environment only through env variables.
 - Flutter mobile boot on iOS and Android reads Firebase app registration from native platform files instead of `dart-define` values.
+- Mobile public config now comes from flavor-specific `dart_defines.dev.json`, `dart_defines.local-emulator.json`, and `dart_defines.prod.json`.
+- Android flavors are `dev` and `prod`.
+- iOS build configurations and schemes are `Debug-dev`/`Release-dev`/`Profile-dev` and `Debug-prod`/`Release-prod`/`Profile-prod` with shared schemes `dev` and `prod`.
 - Mobile locale selection defaults to the device locale and falls back to Korean when the device language is unsupported. When a persisted in-app override is added, it may only select `ko` or `en`.
 
 ## Mobile App Architecture
@@ -38,8 +40,10 @@
   - `widgets`: reusable layout and interaction components.
 - Current Phase 1 implementation details:
   - `lib/main.dart` installs zoned startup error capture for Flutter framework and platform errors.
-  - `lib/core/app_config/app_config.dart` validates only non-secret app defines such as `APP_ENV`, emulator mode, and the currently wired payment launch key when the active adapter needs one.
+  - `lib/core/app_config/app_config.dart` validates non-secret app defines such as `APP_ENV`, `APP_BACKEND_TRANSPORT`, `APP_API_BASE_URL`, emulator mode, and the currently wired payment launch key when the active adapter needs one.
+  - `lib/core/backend/backend_gateway.dart` selects `FirebaseCallableBackendGateway` for prod and `HttpBackendGateway` for dev HTTP transport, so existing services keep the same high-level mutation contract while transport changes underneath.
   - `lib/core/firebase/firebase_bootstrap.dart` initializes Firebase from native iOS and Android config files, then attaches Auth, Firestore, Functions, and Storage emulators when enabled.
+  - `lib/core/logging/app_logger.dart` is the single structured mobile logger entrypoint and emits `timestamp | level | domain | source | message`.
   - `lib/core/l10n/app_localization.dart` resolves device locale to `ko` or `en` and exposes generated localization accessors.
   - `lib/core/extensions/build_context_x.dart` centralizes repeated `BuildContext` lookups like `Theme.of`, `ScaffoldMessenger.of`, `MediaQuery.of`, `Navigator.of`, and `GoRouter.of`.
   - `lib/core/routing/app_router.dart` owns guarded routing, deep-link normalization, payment return routes, and shared fade-plus-rise transitions for modal detail routes.
@@ -88,6 +92,8 @@
   - The first Phase 4 settings slice now exposes `/settings` from both the global app bar and the My screen, and it currently covers notification preferences, OS notification-permission state, appearance mode, app version, licenses, and debug-only environment info.
   - Settings reads `users/{uid}.preferences` directly from Firestore and falls back to `SettingsPreferences.defaults()` when the signed-in user document exists without a populated `preferences` payload yet.
   - `app/app.dart` now applies theme mode from local `SharedPreferences` state instead of the signed-in user document, while locale always follows the device setting through the shared locale resolver.
+  - Notification device-token lifecycle now lives under `features/notifications/application/notification_device_token_service.dart`, where the signed-in app session calls `registerDeviceToken` after permission grant, re-syncs on app resume and FCM token rotation, and calls `deactivateDeviceToken` before sign-out or when push is disabled.
+  - In `dev`, that same service now emits console diagnostics for permission state, token resolution, callable register or deactivate attempts, and skip reasons so silent push-token no-op paths can be traced without exposing raw token values in release UI.
   - Signed-in routes no longer expose a separate global locale picker in the shared app bar, and the login screen no longer carries a manual locale menu either; language behavior is system-driven only.
   - Theme selection now uses a compact preview-card selector instead of long descriptive radio rows, aligning the settings surface with common mobile-app patterns.
   - Notifications now reuse the shared app deep-link normalizer instead of carrying a screen-local route parser.
@@ -112,10 +118,14 @@
   - Shared blocking loading states must use `apps/mobile_flutter/assets/lotties/loading.lottie`, with shimmer preferred over modal loading when the destination layout is already known.
 - Home, search, auction detail, orders, notifications, and my pages render from live Firestore read paths and fall back to localized empty or unavailable states when documents are missing.
 - Read data directly from Firestore and Storage-backed URLs.
-- Send mutations through Firebase Functions only.
+- Send mutations through the backend gateway only:
+  - prod default: Firebase callable
+  - dev default: Render HTTP
 - Native Firebase config files live at:
-  - `apps/mobile_flutter/ios/Runner/GoogleService-Info.plist`
-  - `apps/mobile_flutter/android/app/google-services.json`
+  - `apps/mobile_flutter/ios/Runner/Firebase/dev/GoogleService-Info.plist`
+  - `apps/mobile_flutter/ios/Runner/Firebase/prod/GoogleService-Info.plist`
+  - `apps/mobile_flutter/android/app/src/dev/google-services.json`
+  - `apps/mobile_flutter/android/app/src/prod/google-services.json`
 
 ## Localization Contract
 - Supported locales are `ko` and `en` only.
@@ -125,6 +135,8 @@
 
 ## Backend Implementation Notes
 - `backend/functions/src/config/runtime.ts` validates backend runtime env such as `APP_ENV`, provider secrets for the active payment adapter, provider API base URL, and the presence of `APP_BASE_URL` when it is required by the active payment mode.
+- `backend/render-dev-server` exposes `/healthz`, `/payments/*`, and `/api/*` on a stable public dev URL. It now verifies Firebase ID tokens with Firebase Admin and writes directly to the dev project's Firestore collections, so dev HTTP transport no longer depends on deployed Firebase Functions.
+- The stable public dev health endpoint is `/healthz` under `https://auction-market-dev-api.onrender.com/healthz`. `/health` may be intercepted by the hosting edge and must not be treated as the canonical external health probe.
 - `backend/functions/src/domain/paymentEngine.ts` owns payment confirmation idempotency helpers, provider webhook normalization, and payment state transitions.
 - `backend/functions/eslint.config.mjs` now runs ESLint for `src`, `test`, and `scripts`, while `.prettierrc.json` and package scripts provide a repeatable formatting check for TypeScript files before commit.
 - `backend/functions/src/index.ts` now exports the Phase 2 callable and scheduler surface:
@@ -145,15 +157,19 @@
   - `activateDraftAuctionsScheduler`
   - `finalizeAuctionsScheduler`
   - `expireUnpaidOrdersScheduler`
+  - `orderReminderNotificationsScheduler`
   - `settleScheduler`
 - Critical transitions now write `auditEvents` records for user bootstrap, item and auction lifecycle, bids, payment confirmation and failure, shipment, receipt confirmation, unpaid expiry, and settlement.
 - `createPaymentSession` now returns `mode: "DEV_DUMMY"` plus a deterministic `devPaymentKey` in `dev`, so the mobile app can validate buyer payment progression without pretending to launch a production checkout.
 - The `DEV_DUMMY` payment path is emulator-only. If the backend is not running under the Firebase Emulator Suite, `createPaymentSession` falls back to the currently wired real provider mode and requires `APP_BASE_URL` for success and fail return URLs.
 - The payment domain normalizes `APP_BASE_URL` before success and fail URLs are built, so trailing slashes or stray query strings do not leak into `/payments/success` and `/payments/fail`, while `runtime.ts` remains responsible only for the base environment validation.
-- When `ENABLE_TOSS_SANDBOX=true` is present in `backend/functions/.env`, emulator-backed `dev` no longer forces `DEV_DUMMY`; it returns a real Toss sandbox session with `checkoutUrl` rooted at `tossPaymentBridge/payments/launch` plus fixed `successUrl` and `failUrl` return routes under the same bridge.
-- `tossPaymentBridge` is the current public handoff surface for mobile sandbox testing. `/payments/launch` serves the Toss JavaScript SDK launcher page, and `/payments/success` plus `/payments/fail` convert public redirects back into `app://payments/...` deep links for the mobile app.
-- In `dev` with `ENABLE_TOSS_SANDBOX=true`, `tossPaymentBridge` explicitly opens the `CARD` payment flow in the default integrated window and narrows the visible card list for smoke tests. External app-dependent wallet and app-card paths are not part of the required dev payment smoke path.
+- When `ENABLE_TOSS_SANDBOX=true` is present in the active backend runtime env, emulator-backed `dev` no longer forces `DEV_DUMMY`; it returns a real Toss sandbox session with `checkoutUrl` rooted at `/payments/launch` plus fixed `successUrl` and `failUrl` return routes under the same public Render surface.
+- `/payments/launch` is the current public handoff surface for mobile sandbox testing. `/payments/success` plus `/payments/fail` convert public redirects back into `app://payments/...` deep links for the mobile app.
+- In `dev` with `ENABLE_TOSS_SANDBOX=true`, the Render payment bridge explicitly opens the `CARD` payment flow in the default integrated window and narrows the visible card list for smoke tests. External app-dependent wallet and app-card paths are not part of the required dev payment smoke path.
 - The active provider webhook path verifies the configured webhook secret from the payload, applies idempotent payment transitions through `payment.lastWebhookEventId`, and updates the order instead of relying on a mock payment mutation.
+- Current notification delivery status is intentionally split:
+  - implemented: inbox document writes with notification metadata, device-token lifecycle, backend Firebase Admin Messaging dispatch for inbox-backed product events, reminder-event scheduler coverage with deterministic inbox ids, Android channel setup, foreground surfaced messages, and tap routing through `getInitialMessage` plus `onMessageOpenedApp`
+  - pending: final real-device verification of Android and iOS push behavior
 - The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `buyer2`, `seller1`, `seller2`, and `ops1`.
 - The seeded auction and order scenarios now cover live bidding, awaiting payment, seller shipment required, buyer receipt confirmed, settled payout, unpaid cancellation, unsold inventory, cancelled listings, and inbox notifications for both buyer and seller paths.
 - The default seeded orders now include both `seller1` and `seller2` shipment-required scenarios, plus separate ended-auction records for awaiting-payment, confirmed-receipt, and unpaid-cancelled flows so emulator smoke tests stay internally consistent.
@@ -249,7 +265,7 @@
 - Rules:
 - `preferences.pushEnabled` remains the master notification switch.
 - Category toggles only apply when `preferences.pushEnabled == true`.
-- The current Phase 4 settings slices read and write `preferences.pushEnabled` and `preferences.notificationCategories.*`; `preferences.languageCode` and `deviceTokens` remain reserved until product requirements call for them.
+- The current Phase 4 settings slices read and write `preferences.pushEnabled` and `preferences.notificationCategories.*`; `preferences.languageCode` remains reserved while `deviceTokens` is now a server-managed push-delivery record.
 - Theme mode is local-only UI state stored in `SharedPreferences` under the mobile app and is not part of the Firestore user schema.
 
 ### `users/{uid}/deviceTokens/{tokenId}`
@@ -265,6 +281,12 @@
   - `lastSeenAt: Timestamp`
   - `createdAt: Timestamp`
   - `updatedAt: Timestamp`
+- Server-managed through the `registerDeviceToken` and `deactivateDeviceToken` callables only.
+- Current mobile behavior:
+  - call `registerDeviceToken` after sign-in when permission is `AUTHORIZED` or `PROVISIONAL`
+  - refresh locale, timezone, appVersion, and `lastSeenAt` through the same callable when FCM rotates the token
+  - call `deactivateDeviceToken` when permission is no longer granted, when push is disabled in settings, or just before sign-out
+  - keep the cached token id in local `SharedPreferences` so the next sync can deactivate or replace the same installation token deterministically
 - Rules:
   - User can read only their own device tokens.
   - Client must not write tokens directly.
@@ -395,7 +417,44 @@
 - Rules:
   - User can read and mark their own notifications as read.
   - Server creates notification documents.
+  - Phase 4 backend dispatch now uses the same inbox write as the source of truth for push fan-out, so inbox creation must succeed even when push delivery fails.
+
+### Push Delivery
+- Backend now evaluates push delivery from the same event that writes `notifications/{uid}/inbox/{notificationId}`.
+- Delivery gate:
+  - `preferences.pushEnabled == true`
+  - the mapped notification category is enabled under `preferences.notificationCategories.*`
+  - at least one `users/{uid}/deviceTokens/{tokenId}` record is active and has `permissionStatus` of `AUTHORIZED` or `PROVISIONAL`
+- The current backend fan-out covers the inbox-backed event types that already exist:
+  - `OUTBID`
+  - `AUTO_BID_CEILING_REACHED`
+  - `WON`
+  - `BUY_NOW_COMPLETED`
+  - `ORDER_AWAITING_PAYMENT`
+  - `PAYMENT_COMPLETED`
+  - `PAYMENT_DUE`
+  - `PAYMENT_FAILED`
+  - `SHIPMENT_REMINDER`
+  - `SHIPPED`
+  - `RECEIPT_REMINDER`
+  - `RECEIPT_CONFIRMED`
+  - `SETTLED`
+- Reminder events (`PAYMENT_DUE`, `SHIPMENT_REMINDER`, `RECEIPT_REMINDER`) now use deterministic inbox ids per order so scheduler retries do not duplicate inbox rows or push sends.
+- Current push payload data fields:
+  - `notificationId`
+  - `type`
+  - `category`
+  - `deeplink`
+  - `entityType`
+  - `entityId`
+  - `timestamp`
+- Backend push dispatch is best-effort only. Business mutations and inbox writes must not fail when Firebase Admin Messaging send attempts fail.
   - Every supported push event must have a matching inbox document with the same logical event identity.
+- Current mobile handling for those payloads is:
+  - `onMessage`: show a surfaced in-app `SnackBar` with an open action
+  - `onMessageOpenedApp` and `getInitialMessage`: best-effort mark the linked inbox item as read, then route through the existing app deep-link resolver
+  - malformed, missing, or unsupported push deeplinks: fall back to `/notifications` instead of failing navigation
+  - Android: use the manifest-declared default Firebase Messaging channel id and create the matching notification channel from `MainActivity` on Android O and above
 
 ### `auditEvents/{eventId}`
 - Purpose: server-only event trace for payment, auction, order, and scheduler transitions.
@@ -430,7 +489,7 @@
 
 ## Current Phase 2 Implementation Details
 - `backend/functions/src/index.ts` now exports the documented callable write surface for profile bootstrap, item save, auction publish/cancel/relist, bidding, buy-now, payment session creation, payment confirmation, shipment, receipt confirmation, and inbox read state.
-- `backend/functions/src/index.ts` also exports the current provider-specific webhook endpoint and the four scheduler handlers with full order-schema writes.
+- `backend/functions/src/index.ts` also exports the current provider-specific webhook endpoint and scheduler handlers for auction activation, auction finalization, unpaid expiry, reminder notification emission, and settlement.
 - `backend/functions/src/domain/paymentEngine.ts` owns webhook normalization, idempotency detection, and order-state mapping for confirmed and cancelled payment events.
 - `backend/functions/src/domain/orderEngine.ts` now owns fee calculation in addition to unpaid-order expiry and penalty calculation.
 - `backend/emulator-seed/seed.ts` now matches the documented schema for users, items, auctions, bids, orders, and notifications.
@@ -494,6 +553,10 @@
 - `expireUnpaidOrdersScheduler`
   - Move overdue unpaid orders to `CANCELLED_UNPAID`.
   - Apply buyer penalty and write audit event.
+- `orderReminderNotificationsScheduler`
+  - Emit `PAYMENT_DUE`, `SHIPMENT_REMINDER`, and `RECEIPT_REMINDER` once per order reminder type.
+  - Use deterministic inbox ids and transaction preconditions so stale scheduler snapshots do not create or dispatch reminders after status transitions.
+  - Query reminders with a bounded lookback window to prevent unbounded re-scan of long-resolved historical orders.
 - `settleScheduler`
   - Move `CONFIRMED_RECEIPT` orders to `SETTLED` when settlement window passes.
 
@@ -526,6 +589,7 @@
   - `bids`
   - `autoBids`
   - `orders`
+  - `users/{uid}/deviceTokens/{tokenId}`
   - server-owned user fields
 - Add App Check in staging and prod.
 - Validate callable inputs centrally before domain logic runs.

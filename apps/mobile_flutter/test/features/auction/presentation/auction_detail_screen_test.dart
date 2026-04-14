@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:auction_market_mobile/core/backend/backend_gateway.dart';
 import 'package:auction_market_mobile/core/firebase/firebase_providers.dart';
 import 'package:auction_market_mobile/core/l10n/app_localization.dart';
 import 'package:auction_market_mobile/core/theme/app_theme.dart';
@@ -141,7 +142,7 @@ class _FakeAuctionViewModel extends AuctionViewModel {
 
 class _FakeAuctionDetailActionService extends AuctionDetailActionService {
   _FakeAuctionDetailActionService({required this.buyNowHandler})
-    : super(_FakeFirebaseFunctions());
+    : super(_FakeBackendGateway());
 
   final Future<String?> Function({required String auctionId}) buyNowHandler;
 
@@ -151,7 +152,7 @@ class _FakeAuctionDetailActionService extends AuctionDetailActionService {
   }
 }
 
-class _FakeFirebaseFunctions extends Fake implements FirebaseFunctions {}
+class _FakeBackendGateway extends Fake implements BackendGateway {}
 
 class _FakeFirebaseAuth extends Fake implements FirebaseAuth {
   _FakeFirebaseAuth(this._user);

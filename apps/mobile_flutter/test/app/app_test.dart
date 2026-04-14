@@ -3,6 +3,7 @@ import 'package:auction_market_mobile/core/app_config/app_config.dart';
 import 'package:auction_market_mobile/core/firebase/firebase_bootstrap.dart';
 import 'package:auction_market_mobile/core/l10n/app_localization.dart';
 import 'package:auction_market_mobile/core/routing/app_router.dart';
+import 'package:auction_market_mobile/features/notifications/application/notification_device_token_service.dart';
 import 'package:auction_market_mobile/features/settings/application/settings_preferences_service.dart';
 import 'package:auction_market_mobile/features/settings/data/settings_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -53,6 +54,8 @@ void main() {
               (ref) async => const AppBootstrapState(
                 config: AppConfig(
                   environment: AppEnvironment.dev,
+                  backendTransport: AppBackendTransport.firebaseCallable,
+                  apiBaseUrl: null,
                   useFirebaseEmulators: true,
                   tossClientKey: null,
                   firebaseEmulatorHostOverride: null,
@@ -78,6 +81,7 @@ void main() {
             themeModePreferenceProvider.overrideWith(
               (ref) => SettingsThemeModePreference.dark,
             ),
+            notificationDeviceTokenLifecycleProvider.overrideWith((ref) {}),
             goRouterProvider.overrideWith((ref) => router),
           ],
           child: const AuctionMarketApp(),
@@ -125,6 +129,8 @@ void main() {
                 (ref) async => const AppBootstrapState(
                   config: AppConfig(
                     environment: AppEnvironment.dev,
+                    backendTransport: AppBackendTransport.firebaseCallable,
+                    apiBaseUrl: null,
                     useFirebaseEmulators: true,
                     tossClientKey: null,
                     firebaseEmulatorHostOverride: null,
@@ -137,6 +143,7 @@ void main() {
               themeModePreferenceProvider.overrideWith(
                 (ref) => SettingsThemeModePreference.light,
               ),
+              notificationDeviceTokenLifecycleProvider.overrideWith((ref) {}),
               appSettingsPreferencesProvider.overrideWith(
                 (ref) => const Stream.empty(),
               ),

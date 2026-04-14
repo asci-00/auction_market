@@ -587,6 +587,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsEmptyDescription => 'Bid, payment, and shipment updates will land here as soon as activity begins.';
 
   @override
+  String get notificationsOpenAction => 'Open';
+
+  @override
+  String get notificationsForegroundFallbackTitle => 'New notification';
+
+  @override
   String get settingsTitle => 'Settings';
 
   @override

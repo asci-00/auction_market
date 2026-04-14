@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/extensions/build_context_x.dart';
 import '../../../core/l10n/app_localization.dart';
+import '../../../core/logging/app_logger.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_panel.dart';
@@ -167,7 +168,11 @@ class _OrderPaymentReturnScreenState
     if (normalized == null || normalized.isEmpty) {
       return;
     }
-    debugPrint('[$context] $normalized');
+    ref.read(appLoggerProvider).warning(
+      normalized,
+      domain: AppLogDomain.payment,
+      source: 'order_payment_return_screen:$context',
+    );
   }
 }
 

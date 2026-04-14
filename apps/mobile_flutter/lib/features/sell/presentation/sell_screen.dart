@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/extensions/build_context_x.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_localization.dart';
+import '../../../core/logging/app_logger.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_loading_overlay.dart';
@@ -356,9 +357,15 @@ class _SellScreenState extends ConsumerState<SellScreen> {
       if (!mounted) {
         return;
       }
-      if (kDebugMode) {
-        debugPrint('Draft save failed: $error\n$stackTrace');
-      }
+      ref
+          .read(appLoggerProvider)
+          .error(
+            'Draft save failed: $error',
+            domain: AppLogDomain.sell,
+            source: 'sell_screen:save_draft',
+            error: error,
+            stackTrace: stackTrace,
+          );
       context.showErrorSnackBar(context.l10n.sellActionFailed);
     } finally {
       if (mounted) {
@@ -406,9 +413,15 @@ class _SellScreenState extends ConsumerState<SellScreen> {
       if (!mounted) {
         return;
       }
-      if (kDebugMode) {
-        debugPrint('Publish failed: $error\n$stackTrace');
-      }
+      ref
+          .read(appLoggerProvider)
+          .error(
+            'Publish failed: $error',
+            domain: AppLogDomain.sell,
+            source: 'sell_screen:publish',
+            error: error,
+            stackTrace: stackTrace,
+          );
       context.showErrorSnackBar(context.l10n.sellActionFailed);
     } finally {
       if (mounted) {

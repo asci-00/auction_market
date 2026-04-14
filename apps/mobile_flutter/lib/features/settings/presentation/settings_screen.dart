@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,11 +8,13 @@ import '../../../core/extensions/build_context_x.dart';
 import '../../../core/firebase/firebase_bootstrap.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_localization.dart';
+import '../../../core/logging/app_logger.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_shell_insets.dart';
+import '../../notifications/application/notification_device_token_service.dart';
 import '../application/settings_preferences_service.dart';
 import '../data/settings_preferences.dart';
 import 'widgets/settings_app_info_section.dart';
@@ -72,6 +75,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     final preferencesAsync = ref.watch(settingsPreferencesProvider(user.uid));
     final themeMode = ref.watch(themeModePreferenceProvider);
     final permissionAsync = ref.watch(notificationPermissionStatusProvider);
+    final permissionStatus =
+        permissionAsync.valueOrNull ?? AuthorizationStatus.notDetermined;
     final packageInfoAsync = ref.watch(appPackageInfoProvider);
     final config = ref.watch(appBootstrapProvider).valueOrNull?.config;
 
@@ -95,13 +100,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           SizedBox(height: tokens.space6),
           preferencesAsync.when(
             data: (preferences) {
+              final effectivePreferences = SettingsPreferences(
+                pushEnabled: _isPushEnabledForUi(
+                  preferences: preferences,
+                  permissionStatus: permissionStatus,
+                ),
+                categories: preferences.categories,
+              );
               return SettingsNotificationSection(
-                preferences: preferences,
-                permissionStatus:
-                    permissionAsync.valueOrNull ??
-                    AuthorizationStatus.notDetermined,
-                onPushEnabledChanged: (enabled) =>
-                    _handlePushEnabledChanged(context, user.uid, enabled),
+                preferences: effectivePreferences,
+                onPushEnabledChanged: (enabled) => _handlePushEnabledChanged(
+                  context,
+                  user.uid,
+                  enabled,
+                  permissionStatus: permissionStatus,
+                ),
                 onCategoryChanged: (category, enabled) =>
                     _handleCategoryChanged(
                       context,
@@ -109,25 +122,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                       category,
                       enabled,
                     ),
-                onRequestPermission: () => _handlePermissionRequest(context),
-                onOpenSystemSettings: () => _handleOpenSystemSettings(context),
                 masterTitle: context.l10n.settingsNotificationsMasterTitle,
                 masterDescription:
                     context.l10n.settingsNotificationsMasterDescription,
-                permissionTitle:
-                    context.l10n.settingsNotificationsPermissionTitle,
-                permissionDescription:
-                    context.l10n.settingsNotificationsPermissionDescription,
-                permissionActionLabel: _permissionActionLabel(
-                  context,
-                  permissionAsync.valueOrNull ??
-                      AuthorizationStatus.notDetermined,
-                ),
-                permissionStatusLabel: _permissionStatusLabel(
-                  context,
-                  permissionAsync.valueOrNull ??
-                      AuthorizationStatus.notDetermined,
-                ),
                 categoryTitle:
                     context.l10n.settingsNotificationsCategoriesTitle,
                 categoryDescription:
@@ -218,53 +215,75 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     };
   }
 
-  String _permissionActionLabel(
-    BuildContext context,
-    AuthorizationStatus status,
-  ) {
-    return switch (status) {
-      AuthorizationStatus.denied => context.l10n.settingsOpenSystemSettings,
-      AuthorizationStatus.notDetermined =>
-        context.l10n.settingsRequestPermission,
-      AuthorizationStatus.authorized => context.l10n.settingsOpenSystemSettings,
-      AuthorizationStatus.provisional =>
-        context.l10n.settingsOpenSystemSettings,
-    };
-  }
-
-  String _permissionStatusLabel(
-    BuildContext context,
-    AuthorizationStatus status,
-  ) {
-    return switch (status) {
-      AuthorizationStatus.authorized =>
-        context.l10n.settingsPermissionStatusAuthorized,
-      AuthorizationStatus.denied => context.l10n.settingsPermissionStatusDenied,
-      AuthorizationStatus.notDetermined =>
-        context.l10n.settingsPermissionStatusNotDetermined,
-      AuthorizationStatus.provisional =>
-        context.l10n.settingsPermissionStatusProvisional,
-    };
-  }
-
   Future<void> _handlePushEnabledChanged(
     BuildContext context,
     String userId,
-    bool enabled,
-  ) async {
+    bool enabled, {
+    required AuthorizationStatus permissionStatus,
+  }) async {
     try {
+      _logNotificationDiagnostics(
+        'push toggle requested enabled=$enabled userId=$userId',
+        ref,
+      );
+      if (!enabled) {
+        await ref
+            .read(settingsPreferencesServiceProvider)
+            .setPushEnabled(userId: userId, enabled: false);
+        await ref
+            .read(notificationDeviceTokenServiceProvider)
+            .deactivateTokenForUser(userId);
+        _logNotificationDiagnostics(
+          'push disabled and token deactivated userId=$userId',
+          ref,
+        );
+        ref.invalidate(notificationPermissionStatusProvider);
+        if (!context.mounted) {
+          return;
+        }
+        context.showSnackBarMessage(
+          context.l10n.settingsNotificationsDisabledToast,
+        );
+        return;
+      }
+
+      final activationStatus = await _resolvePermissionForToggleActivation(
+        context: context,
+        permissionStatus: permissionStatus,
+      );
+      final isPermissionActive = _isDevicePermissionActive(activationStatus);
+      if (!isPermissionActive) {
+        _logNotificationDiagnostics(
+          'push enable skipped due to inactive permission status=${_permissionDiagnosticsLabel(activationStatus)}',
+          ref,
+        );
+        ref.invalidate(notificationPermissionStatusProvider);
+        return;
+      }
+
       await ref
           .read(settingsPreferencesServiceProvider)
-          .setPushEnabled(userId: userId, enabled: enabled);
+          .setPushEnabled(userId: userId, enabled: true);
+      await ref
+          .read(notificationDeviceTokenServiceProvider)
+          .syncUserDeviceToken(userId);
+      _logNotificationDiagnostics(
+        'push enabled and token sync requested userId=$userId',
+        ref,
+      );
+
+      ref.invalidate(notificationPermissionStatusProvider);
       if (!context.mounted) {
         return;
       }
       context.showSnackBarMessage(
-        enabled
-            ? context.l10n.settingsNotificationsEnabledToast
-            : context.l10n.settingsNotificationsDisabledToast,
+        context.l10n.settingsNotificationsEnabledToast,
       );
-    } catch (_) {
+    } catch (error) {
+      _logNotificationDiagnostics(
+        'push toggle failed enabled=$enabled userId=$userId error=$error',
+        ref,
+      );
       if (!context.mounted) {
         return;
       }
@@ -306,30 +325,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     }
   }
 
-  Future<void> _handlePermissionRequest(BuildContext context) async {
-    try {
-      final status = await ref
-          .read(settingsPreferencesServiceProvider)
-          .requestPermission();
-      ref.invalidate(notificationPermissionStatusProvider);
-      if (!context.mounted) {
-        return;
-      }
-      context.showSnackBarMessage(_permissionStatusLabel(context, status));
-    } catch (_) {
-      if (!context.mounted) {
-        return;
-      }
-      context.showErrorSnackBar(context.l10n.settingsPermissionRequestFailed);
-    }
-  }
-
-  Future<void> _handleOpenSystemSettings(BuildContext context) async {
+  Future<void> _handleOpenSystemSettingsInternal(
+    BuildContext context, {
+    required bool showResultToast,
+  }) async {
     try {
       final opened = await ref
           .read(settingsPreferencesServiceProvider)
           .openSystemSettings();
-      if (!context.mounted) {
+      _logNotificationDiagnostics(
+        'open system settings result opened=$opened',
+        ref,
+      );
+      final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
+      if (userId != null) {
+        await ref
+            .read(notificationDeviceTokenServiceProvider)
+            .syncUserDeviceToken(userId);
+        _logNotificationDiagnostics(
+          'device token sync requested after opening system settings userId=$userId',
+          ref,
+        );
+      }
+      ref.invalidate(notificationPermissionStatusProvider);
+      if (!context.mounted || !showResultToast) {
         return;
       }
       context.showSnackBarMessage(
@@ -337,12 +356,101 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             ? context.l10n.settingsSystemSettingsOpened
             : context.l10n.settingsSystemSettingsUnavailable,
       );
-    } catch (_) {
+    } catch (error) {
+      _logNotificationDiagnostics(
+        'open system settings failed error=$error',
+        ref,
+      );
       if (!context.mounted) {
         return;
       }
       context.showErrorSnackBar(context.l10n.settingsSystemSettingsUnavailable);
     }
+  }
+
+  bool _isDevicePermissionActive(AuthorizationStatus status) {
+    return switch (status) {
+      AuthorizationStatus.authorized => true,
+      AuthorizationStatus.provisional => true,
+      AuthorizationStatus.denied => false,
+      AuthorizationStatus.notDetermined => false,
+    };
+  }
+
+  bool _isPushEnabledForUi({
+    required SettingsPreferences preferences,
+    required AuthorizationStatus permissionStatus,
+  }) {
+    return preferences.pushEnabled &&
+        _isDevicePermissionActive(permissionStatus);
+  }
+
+  Future<AuthorizationStatus> _resolvePermissionForToggleActivation({
+    required BuildContext context,
+    required AuthorizationStatus permissionStatus,
+  }) async {
+    switch (permissionStatus) {
+      case AuthorizationStatus.authorized:
+      case AuthorizationStatus.provisional:
+        return permissionStatus;
+      case AuthorizationStatus.notDetermined:
+        try {
+          final status = await ref
+              .read(settingsPreferencesServiceProvider)
+              .requestPermission();
+          _logNotificationDiagnostics(
+            'permission request completed status=${_permissionDiagnosticsLabel(status)}',
+            ref,
+          );
+          return status;
+        } catch (error) {
+          _logNotificationDiagnostics(
+            'permission request failed error=$error',
+            ref,
+          );
+          if (context.mounted) {
+            context.showErrorSnackBar(
+              context.l10n.settingsPermissionRequestFailed,
+            );
+          }
+          return permissionStatus;
+        }
+      case AuthorizationStatus.denied:
+        final shouldOpen = await _confirmSystemSettingsNavigation(context);
+        if (!shouldOpen) {
+          return permissionStatus;
+        }
+        if (!context.mounted) {
+          return permissionStatus;
+        }
+        await _handleOpenSystemSettingsInternal(
+          context,
+          showResultToast: false,
+        );
+        ref.invalidate(notificationPermissionStatusProvider);
+        return ref.read(notificationPermissionStatusProvider.future);
+    }
+  }
+
+  Future<bool> _confirmSystemSettingsNavigation(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(context.l10n.settingsNotificationsPermissionTitle),
+          content: Text(
+            context.l10n.settingsNotificationsPermissionDescription,
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(context.l10n.settingsOpenSystemSettings),
+            ),
+          ],
+        );
+      },
+    );
+    return result == true;
   }
 
   Future<void> _handleThemeModeChanged(
@@ -387,6 +495,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       SettingsThemeModePreference.light => context.l10n.settingsThemeLightTitle,
       SettingsThemeModePreference.dark => context.l10n.settingsThemeDarkTitle,
     };
+  }
+
+  String _permissionDiagnosticsLabel(AuthorizationStatus status) {
+    return switch (status) {
+      AuthorizationStatus.authorized => 'AUTHORIZED',
+      AuthorizationStatus.denied => 'DENIED',
+      AuthorizationStatus.notDetermined => 'NOT_DETERMINED',
+      AuthorizationStatus.provisional => 'PROVISIONAL',
+    };
+  }
+
+  void _logNotificationDiagnostics(String message, WidgetRef ref) {
+    if (kReleaseMode) {
+      return;
+    }
+    ref
+        .read(appLoggerProvider)
+        .debug(
+          message,
+          domain: AppLogDomain.settings,
+          source: 'settings_screen:notifications',
+        );
   }
 }
 

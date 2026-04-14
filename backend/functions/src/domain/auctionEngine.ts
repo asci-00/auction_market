@@ -17,6 +17,7 @@ export interface PlaceBidResult {
   auction: Auction;
   bids: Bid[];
   outbidUserId?: string;
+  autoBidCeilingReachedUserId?: string;
 }
 
 function validateBid(auction: Auction, amount: number, now: Date): void {
@@ -129,5 +130,41 @@ export function placeBid(input: PlaceBidInput): PlaceBidResult {
     bids.push(...auto.bids);
   }
 
-  return { auction, bids, outbidUserId };
+  const autoBidCeilingReachedUserId = resolveAutoBidCeilingReachedUserId({
+    finalAuction: auction,
+    outbidUserId,
+    autoBids: input.autoBids ?? [],
+  });
+
+  return { auction, bids, outbidUserId, autoBidCeilingReachedUserId };
+}
+
+function resolveAutoBidCeilingReachedUserId(input: {
+  finalAuction: Auction;
+  outbidUserId: string | undefined;
+  autoBids: AutoBidConfig[];
+}): string | undefined {
+  const outbidUserId = input.outbidUserId;
+  if (!outbidUserId) {
+    return undefined;
+  }
+  if (input.finalAuction.highestBidderId === outbidUserId) {
+    return undefined;
+  }
+
+  const autoBid = input.autoBids.find(
+    (entry) => entry.uid === outbidUserId && entry.isEnabled,
+  );
+  if (!autoBid) {
+    return undefined;
+  }
+
+  const minimumNextBid =
+    input.finalAuction.currentPrice +
+    minIncrementFor(input.finalAuction.currentPrice);
+  if (autoBid.maxAmount >= minimumNextBid) {
+    return undefined;
+  }
+
+  return outbidUserId;
 }

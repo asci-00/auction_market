@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_notification_channel_id">auction_market_updates</string>
+    <string name="default_notification_channel_name">Auction updates</string>
+    <string name="default_notification_channel_description">Auction, order, and shipment activity updates.</string>
+</resources>

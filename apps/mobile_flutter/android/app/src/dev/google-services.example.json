@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "YOUR_DEV_FIREBASE_PROJECT_NUMBER",
+    "project_id": "YOUR_DEV_FIREBASE_PROJECT_ID",
+    "storage_bucket": "YOUR_DEV_FIREBASE_STORAGE_BUCKET"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "YOUR_DEV_ANDROID_APP_ID",
+        "android_client_info": {
+          "package_name": "com.auction.market"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "YOUR_DEV_ANDROID_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "YOUR_DEV_ANDROID_FIREBASE_API_KEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "YOUR_DEV_ANDROID_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "YOUR_DEV_IOS_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.auction.market"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

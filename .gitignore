@@ -14,9 +14,15 @@ apps/mobile_flutter/.dart_tool/
 apps/mobile_flutter/.metadata
 apps/mobile_flutter/.vscode/
 apps/mobile_flutter/build/
-apps/mobile_flutter/dart_defines.json
+apps/mobile_flutter/dart_defines.dev.json
+apps/mobile_flutter/dart_defines.local-emulator.json
+apps/mobile_flutter/dart_defines.prod.json
 apps/mobile_flutter/android/app/google-services.json
+apps/mobile_flutter/android/app/src/dev/google-services.json
+apps/mobile_flutter/android/app/src/prod/google-services.json
 apps/mobile_flutter/ios/Runner/GoogleService-Info.plist
+apps/mobile_flutter/ios/Runner/Firebase/dev/GoogleService-Info.plist
+apps/mobile_flutter/ios/Runner/Firebase/prod/GoogleService-Info.plist
 
 # codex
 .codex

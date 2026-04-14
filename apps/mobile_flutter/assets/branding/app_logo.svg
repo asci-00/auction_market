@@ -1,31 +1,46 @@
-<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="0.08" y1="0.08" x2="0.92" y2="0.92">
-      <stop offset="0%" stop-color="#0B1324"/>
-      <stop offset="100%" stop-color="#1F2A44"/>
+    <linearGradient id="bg" x1="96" y1="68" x2="906" y2="958" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#102A43"/>
+      <stop offset="0.52" stop-color="#0D6E6E"/>
+      <stop offset="1" stop-color="#0A4B78"/>
     </linearGradient>
-    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#FCD34D"/>
-      <stop offset="100%" stop-color="#F59E0B"/>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(286 206) rotate(43.8) scale(594 589)">
+      <stop stop-color="#42E5D4" stop-opacity="0.58"/>
+      <stop offset="1" stop-color="#42E5D4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="coin" x1="288" y1="286" x2="751" y2="756" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE39A"/>
+      <stop offset="0.48" stop-color="#F3B54F"/>
+      <stop offset="1" stop-color="#BE7C17"/>
     </linearGradient>
-    <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#22D3EE"/>
-      <stop offset="100%" stop-color="#06B6D4"/>
+    <linearGradient id="accent" x1="713" y1="675" x2="828" y2="804" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF8D9"/>
+      <stop offset="1" stop-color="#F6C15C"/>
     </linearGradient>
   </defs>
 
-  <rect x="64" y="64" width="896" height="896" rx="220" fill="url(#bg)"/>
+  <rect width="1024" height="1024" rx="220" fill="url(#bg)"/>
+  <rect width="1024" height="1024" rx="220" fill="url(#glow)"/>
 
-  <circle cx="512" cy="512" r="314" fill="none" stroke="#E2E8F0" stroke-opacity="0.9" stroke-width="44"/>
+  <path d="M210 705C282 662 347 635 430 621C507 609 575 611 645 626" stroke="#7CF2E6" stroke-opacity="0.35" stroke-width="24" stroke-linecap="round"/>
+  <path d="M240 779C309 739 371 715 450 700C520 686 582 687 646 700" stroke="#7CF2E6" stroke-opacity="0.22" stroke-width="18" stroke-linecap="round"/>
 
-  <!-- horse-inspired mark -->
-  <path d="M364 640L436 580H522C578 580 622 536 622 486C622 452 602 422 570 406L604 336L682 372L704 332L610 286C590 276 564 282 552 302L508 372H448L392 312L334 356L388 418C344 444 314 488 314 538C314 588 334 620 364 640Z"
-        fill="url(#gold)"/>
+  <circle cx="512" cy="516" r="288" fill="#082E46" fill-opacity="0.58"/>
+  <circle cx="512" cy="512" r="246" fill="url(#coin)"/>
 
-  <!-- auction hammer -->
-  <rect x="624" y="602" width="190" height="48" rx="18" transform="rotate(-24 624 602)" fill="url(#teal)"/>
-  <rect x="684" y="544" width="112" height="52" rx="16" transform="rotate(-24 684 544)" fill="#E0F2FE"/>
+  <path d="M384 677C389 635 402 587 418 551C429 526 436 507 436 486C436 452 455 431 487 416L549 388L594 355C613 341 636 336 656 345L684 358C693 363 696 374 692 383L670 421L666 487L689 521C695 531 693 545 685 554L650 590C639 601 632 615 630 630L625 677H384Z" fill="#0A4765"/>
 
-  <!-- dynamic motion accent -->
-  <path d="M274 698C350 760 468 790 586 766" fill="none" stroke="#38BDF8" stroke-width="30" stroke-linecap="round"/>
+  <path d="M428 675C433 640 442 602 456 568C468 537 476 513 476 487C476 468 488 454 507 444L565 417L603 389C621 375 643 372 661 381L657 398L625 424L611 468L579 505L540 512L518 547L535 576L500 611L489 675H428Z" fill="#F6FFFE"/>
+
+  <path d="M564 434L620 409L603 449L581 474L552 481L564 434Z" fill="#0A4765"/>
+  <path d="M596 531C613 531 626 517 626 500C626 483 613 469 596 469C579 469 566 483 566 500C566 517 579 531 596 531Z" fill="#0A4765"/>
+  <path d="M655 462L693 476L676 503L646 493L655 462Z" fill="#0A4765"/>
+
+  <path d="M707 640L752 595C761 586 775 584 786 590L839 620C853 628 855 647 844 657L799 702C790 711 776 713 765 707L712 677C698 669 696 650 707 640Z" fill="#093B59"/>
+  <rect x="684" y="690" width="173" height="50" rx="25" transform="rotate(-44 684 690)" fill="url(#accent)"/>
+  <rect x="744" y="748" width="98" height="30" rx="15" transform="rotate(-44 744 748)" fill="#093B59"/>
+
+  <path d="M257 552L318 490L349 520L291 580L367 656L329 694L257 623C237 603 237 571 257 552Z" fill="#7CF2E6" fill-opacity="0.88"/>
+  <path d="M291 581L391 581" stroke="#D9FFFA" stroke-width="26" stroke-linecap="round"/>
 </svg>

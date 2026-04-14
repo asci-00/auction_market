@@ -1,18 +1,17 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/firebase/firebase_providers.dart';
+import '../../../core/backend/backend_gateway.dart';
 
 final auctionDetailActionServiceProvider = Provider<AuctionDetailActionService>(
   (ref) {
-    return AuctionDetailActionService(ref.watch(functionsProvider));
+    return AuctionDetailActionService(ref.watch(backendGatewayProvider));
   },
 );
 
 class AuctionDetailActionService {
-  const AuctionDetailActionService(this._functions);
+  const AuctionDetailActionService(this._gateway);
 
-  final FirebaseFunctions _functions;
+  final BackendGateway _gateway;
 
   Future<void> placeBid({
     required String auctionId,
@@ -22,10 +21,7 @@ class AuctionDetailActionService {
       throw ArgumentError.value(amount, 'amount', 'must be greater than 0');
     }
 
-    await _functions.httpsCallable('placeBid').call<void>({
-      'auctionId': auctionId,
-      'amount': amount,
-    });
+    await _gateway.placeBid(auctionId: auctionId, amount: amount);
   }
 
   Future<void> setAutoBid({
@@ -40,26 +36,10 @@ class AuctionDetailActionService {
       );
     }
 
-    await _functions.httpsCallable('setAutoBid').call<void>({
-      'auctionId': auctionId,
-      'maxAmount': maxAmount,
-    });
+    await _gateway.setAutoBid(auctionId: auctionId, maxAmount: maxAmount);
   }
 
   Future<String?> buyNow({required String auctionId}) async {
-    final result = await _functions.httpsCallable('buyNow').call<dynamic>({
-      'auctionId': auctionId,
-    });
-
-    if (result.data case final Map<dynamic, dynamic> data) {
-      final orderId = data['orderId'];
-      if (orderId is String && orderId.isNotEmpty) {
-        return orderId;
-      }
-    }
-
-    throw StateError(
-      'buyNow callable response missing non-empty orderId: ${result.data}',
-    );
+    return _gateway.buyNow(auctionId: auctionId);
   }
 }

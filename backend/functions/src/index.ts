@@ -1,10 +1,12 @@
 import { initializeApp } from 'firebase-admin/app';
 import {
   FieldValue,
+  type DocumentReference,
   Timestamp,
   Transaction,
   getFirestore,
 } from 'firebase-admin/firestore';
+import { getMessaging } from 'firebase-admin/messaging';
 import { logger } from 'firebase-functions';
 import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
@@ -22,11 +24,36 @@ import {
   isDevDummyPaymentEnabled,
   isDuplicatePaymentConfirmation,
   normalizeWebhookPayment,
+  shouldApplyWebhookCancellation,
   toCancelledPaymentOrder,
   toConfirmedPaymentOrder,
   toFailedPaymentOrder,
   withLastWebhookEventId,
 } from './domain/paymentEngine.js';
+import {
+  PAYMENT_DUE_REMINDER_LEAD_TIME_MS,
+  RECEIPT_REMINDER_DELAY_MS,
+  REMINDER_QUERY_LOOKBACK_MS,
+  SHIPMENT_REMINDER_DELAY_MS,
+  isPaymentDueReminderCandidate,
+  isReceiptReminderCandidate,
+  isShipmentReminderCandidate,
+} from './domain/orderReminderEngine.js';
+import {
+  buildDeactivateDeviceTokenRecord,
+  buildDeviceTokenId,
+  buildRegisterDeviceTokenRecord,
+} from './domain/deviceTokenEngine.js';
+import {
+  buildReminderInboxNotificationId,
+  buildPushDataPayload,
+  getDeliverableTokens,
+  getNotificationCategoryForType,
+  InboxNotificationType,
+  ReminderNotificationType,
+  normalizeNotificationPreferences,
+  shouldDispatchPush,
+} from './domain/notificationDispatchEngine.js';
 import { AuditEventRecord, Order } from './domain/models.js';
 import {
   finalizeAuction,
@@ -140,6 +167,21 @@ function optionalString(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
 
+function ensureEnumString<T extends readonly string[]>(
+  value: unknown,
+  fieldName: string,
+  allowed: T,
+): T[number] {
+  const normalized = ensureString(value, fieldName);
+  if (!allowed.includes(normalized)) {
+    throw new HttpsError(
+      'invalid-argument',
+      `${fieldName} must be one of ${allowed.join(', ')}`,
+    );
+  }
+  return normalized as T[number];
+}
+
 function optionalPositiveNumber(value: unknown): number | null {
   if (typeof value !== 'number' || Number.isNaN(value)) {
     return null;
@@ -221,19 +263,187 @@ function buildTossCustomerKey(uid: string): string {
 
 async function createInboxNotification(
   uid: string,
-  type: string,
+  type: InboxNotificationType,
   title: string,
   body: string,
   deeplink: string,
+  entityType: 'AUCTION' | 'ORDER',
+  entityId: string,
+  options?: {
+    deterministicNotificationId?: string;
+    precondition?: {
+      ref: DocumentReference;
+      isSatisfied: (docId: string, data: AnyRecord) => boolean;
+    };
+  },
 ): Promise<void> {
-  const ref = db.collection('notifications').doc(uid).collection('inbox').doc();
-  await ref.set({
+  const inboxCollectionRef = db
+    .collection('notifications')
+    .doc(uid)
+    .collection('inbox');
+  const ref = options?.deterministicNotificationId
+    ? inboxCollectionRef.doc(options.deterministicNotificationId)
+    : inboxCollectionRef.doc();
+  const category = getNotificationCategoryForType(type);
+  const timestamp = new Date().toISOString();
+
+  const payload = {
     type,
+    category,
     title,
     body,
     deeplink,
+    entityType,
+    entityId,
     isRead: false,
     createdAt: FieldValue.serverTimestamp(),
+  };
+
+  const created = options?.deterministicNotificationId
+    ? await db.runTransaction(async (tx) => {
+        if (options.precondition) {
+          const conditionSnap = await tx.get(options.precondition.ref);
+          if (!conditionSnap.exists) {
+            return false;
+          }
+          const conditionData = conditionSnap.data();
+          if (
+            !conditionData ||
+            !options.precondition.isSatisfied(
+              conditionSnap.id,
+              conditionData as AnyRecord,
+            )
+          ) {
+            return false;
+          }
+        }
+        const existing = await tx.get(ref);
+        if (existing.exists) {
+          return false;
+        }
+        tx.set(ref, payload);
+        return true;
+      })
+    : true;
+  if (!options?.deterministicNotificationId) {
+    await ref.set(payload);
+  }
+  if (!created) {
+    logger.info('createInboxNotification deduplicated', {
+      uid,
+      type,
+      category,
+      entityType,
+      entityId,
+      notificationId: ref.id,
+    });
+    return;
+  }
+
+  try {
+    await dispatchPushForInboxNotification({
+      uid,
+      notificationId: ref.id,
+      type,
+      category,
+      title,
+      body,
+      deeplink,
+      entityType,
+      entityId,
+      timestamp,
+    });
+  } catch (error) {
+    logger.error('dispatchPushForInboxNotification failed', {
+      uid,
+      notificationId: ref.id,
+      type,
+      category,
+      entityType,
+      entityId,
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+async function dispatchPushForInboxNotification(input: {
+  uid: string;
+  notificationId: string;
+  type: InboxNotificationType;
+  category: ReturnType<typeof getNotificationCategoryForType>;
+  title: string;
+  body: string;
+  deeplink: string;
+  entityType: 'AUCTION' | 'ORDER';
+  entityId: string;
+  timestamp: string;
+}): Promise<void> {
+  const userRef = db.collection('users').doc(input.uid);
+  const tokenCollectionRef = userRef.collection('deviceTokens');
+  const [userSnap, tokenSnap] = await Promise.all([
+    userRef.get(),
+    tokenCollectionRef.get(),
+  ]);
+
+  const preferences = normalizeNotificationPreferences(userSnap.data());
+  const tokens = getDeliverableTokens(
+    tokenSnap.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        token: typeof data.token === 'string' ? data.token : null,
+        isActive: data.isActive === true,
+        permissionStatus:
+          typeof data.permissionStatus === 'string'
+            ? data.permissionStatus
+            : null,
+      };
+    }),
+  );
+
+  if (!shouldDispatchPush(preferences, input.category, tokens.length)) {
+    logger.info('dispatchPushForInboxNotification skipped', {
+      uid: input.uid,
+      notificationId: input.notificationId,
+      type: input.type,
+      category: input.category,
+      pushEnabled: preferences.pushEnabled,
+      categoryEnabled: preferences.notificationCategories[input.category],
+      tokenCount: tokens.length,
+    });
+    return;
+  }
+
+  const response = await getMessaging().sendEachForMulticast({
+    tokens,
+    notification: {
+      title: input.title,
+      body: input.body,
+    },
+    data: buildPushDataPayload({
+      notificationId: input.notificationId,
+      type: input.type,
+      category: input.category,
+      deeplink: input.deeplink,
+      entityType: input.entityType,
+      entityId: input.entityId,
+      timestamp: input.timestamp,
+    }),
+  });
+
+  const failedCodes = response.responses
+    .filter((entry) => !entry.success)
+    .map((entry) => entry.error?.code)
+    .filter((code): code is string => typeof code === 'string');
+
+  logger.info('dispatchPushForInboxNotification sent', {
+    uid: input.uid,
+    notificationId: input.notificationId,
+    type: input.type,
+    category: input.category,
+    tokenCount: tokens.length,
+    successCount: response.successCount,
+    failureCount: response.failureCount,
+    failedCodes,
   });
 }
 
@@ -435,6 +645,32 @@ function deserializeOrder(id: string, data: AnyRecord): Order {
         typeof fees.sellerReceivable === 'number' ? fees.sellerReceivable : 0,
     },
   };
+}
+
+function isReminderCandidateFromDocument(
+  type: ReminderNotificationType,
+  orderId: string,
+  data: AnyRecord,
+  now: Date,
+): boolean {
+  try {
+    const order = deserializeOrder(orderId, data);
+    switch (type) {
+      case 'PAYMENT_DUE':
+        return isPaymentDueReminderCandidate(order, now);
+      case 'SHIPMENT_REMINDER':
+        return isShipmentReminderCandidate(order, now);
+      case 'RECEIPT_REMINDER':
+        return isReceiptReminderCandidate(order, now);
+    }
+  } catch (error) {
+    logger.warn('order reminder precondition parse failed', {
+      orderId,
+      type,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return false;
+  }
 }
 
 async function confirmTossPayment(
@@ -1251,6 +1487,7 @@ export const placeBid = onCall(async (req) => {
 
   const auctionRef = db.collection('auctions').doc(auctionId);
   let outbidUserId: string | undefined;
+  let autoBidCeilingReachedUserId: string | undefined;
   let finalPrice = amount;
 
   await db.runTransaction(async (tx) => {
@@ -1312,6 +1549,7 @@ export const placeBid = onCall(async (req) => {
     });
 
     outbidUserId = result.outbidUserId;
+    autoBidCeilingReachedUserId = result.autoBidCeilingReachedUserId;
     finalPrice = result.auction.currentPrice;
 
     tx.update(auctionRef, {
@@ -1345,13 +1583,31 @@ export const placeBid = onCall(async (req) => {
     });
   });
 
-  if (outbidUserId && outbidUserId !== bidderId) {
+  if (autoBidCeilingReachedUserId && autoBidCeilingReachedUserId !== bidderId) {
+    await createInboxNotification(
+      autoBidCeilingReachedUserId,
+      'AUTO_BID_CEILING_REACHED',
+      '자동입찰 한도에 도달했습니다',
+      `현재 최고가 ${finalPrice}원으로 자동입찰 상한을 넘었습니다.`,
+      buildDeepLink('auction', auctionId),
+      'AUCTION',
+      auctionId,
+    );
+  }
+
+  if (
+    outbidUserId &&
+    outbidUserId !== bidderId &&
+    outbidUserId !== autoBidCeilingReachedUserId
+  ) {
     await createInboxNotification(
       outbidUserId,
       'OUTBID',
       '입찰가가 갱신되었습니다',
       `현재 최고가 ${finalPrice}원`,
       buildDeepLink('auction', auctionId),
+      'AUCTION',
+      auctionId,
     );
   }
 
@@ -1410,7 +1666,7 @@ export const buyNow = onCall(async (req) => {
   const auctionId = ensureString(payload.auctionId, 'auctionId');
   const auctionRef = db.collection('auctions').doc(auctionId);
 
-  return db.runTransaction(async (tx) => {
+  const result = await db.runTransaction(async (tx) => {
     const snap = await tx.get(auctionRef);
     if (!snap.exists) {
       throw new HttpsError('not-found', 'Auction not found');
@@ -1474,8 +1730,33 @@ export const buyNow = onCall(async (req) => {
       payload: { auctionId, finalPrice: auction.buyNowPrice },
     });
 
-    return { orderId: orderRef.id };
+    return {
+      orderId: orderRef.id,
+      buyerId: uid,
+      sellerId: ensureString(auction.sellerId, 'sellerId'),
+    };
   });
+
+  await createInboxNotification(
+    result.buyerId,
+    'BUY_NOW_COMPLETED',
+    '즉시 구매가 완료되었습니다',
+    '결제 기한 내 결제를 진행해주세요.',
+    buildDeepLink('orders', result.orderId),
+    'ORDER',
+    result.orderId,
+  );
+  await createInboxNotification(
+    result.sellerId,
+    'ORDER_AWAITING_PAYMENT',
+    '새 주문이 결제 대기 중입니다',
+    '구매자 결제 완료 후 배송 정보를 등록해주세요.',
+    buildDeepLink('orders', result.orderId),
+    'ORDER',
+    result.orderId,
+  );
+
+  return { orderId: result.orderId };
 });
 
 export const createPaymentSession = onCall(async (req) => {
@@ -1590,6 +1871,15 @@ export const confirmOrderPayment = onCall(async (req) => {
       paymentStatus: failedOrder.paymentStatus,
       updatedAt: FieldValue.serverTimestamp(),
     });
+    await createInboxNotification(
+      order.buyerId,
+      'PAYMENT_FAILED',
+      '결제가 완료되지 않았습니다',
+      '결제 정보를 확인한 뒤 다시 시도해주세요.',
+      buildDeepLink('orders', orderId),
+      'ORDER',
+      orderId,
+    );
     await writeAuditEvent({
       entityType: 'PAYMENT',
       entityId: paymentKey,
@@ -1612,6 +1902,8 @@ export const confirmOrderPayment = onCall(async (req) => {
     '결제 완료',
     '구매자 결제가 완료되었습니다.',
     buildDeepLink('orders', orderId),
+    'ORDER',
+    orderId,
   );
   await writeAuditEvent({
     entityType: 'PAYMENT',
@@ -1817,6 +2109,8 @@ export const tossPaymentWebhook = onRequest(async (req, res) => {
         '결제 완료',
         '구매자 결제가 완료되었습니다.',
         buildDeepLink('orders', order.id),
+        'ORDER',
+        order.id,
       );
       await writeAuditEvent({
         entityType: 'PAYMENT',
@@ -1830,18 +2124,56 @@ export const tossPaymentWebhook = onRequest(async (req, res) => {
     payment.status &&
     ['CANCELED', 'ABORTED', 'EXPIRED'].includes(payment.status)
   ) {
-    const cancelledOrder = toCancelledPaymentOrder(order, eventMarker);
-    await orderRef.update({
-      ...serializeOrder(cancelledOrder),
-      updatedAt: FieldValue.serverTimestamp(),
-    });
-    await writeAuditEvent({
-      entityType: 'PAYMENT',
-      entityId: payment.paymentKey ?? order.id,
-      eventType: 'PAYMENT_WEBHOOK_CANCELLED',
-      actorId: null,
-      payload: { orderId: order.id, status: payment.status, eventMarker },
-    });
+    if (shouldApplyWebhookCancellation(order)) {
+      const cancelledOrder = toCancelledPaymentOrder(order, eventMarker);
+      await orderRef.update({
+        ...serializeOrder(cancelledOrder),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      await writeAuditEvent({
+        entityType: 'PAYMENT',
+        entityId: payment.paymentKey ?? order.id,
+        eventType: 'PAYMENT_WEBHOOK_CANCELLED',
+        actorId: null,
+        payload: {
+          orderId: order.id,
+          status: payment.status,
+          eventMarker,
+          applied: true,
+        },
+      });
+      await createInboxNotification(
+        order.buyerId,
+        'PAYMENT_FAILED',
+        payment.status === 'EXPIRED'
+          ? '결제 기한이 만료되었습니다'
+          : '결제가 취소되었습니다',
+        payment.status === 'EXPIRED'
+          ? '미결제로 주문이 취소되었습니다.'
+          : '결제가 완료되지 않아 주문이 취소되었습니다.',
+        buildDeepLink('orders', order.id),
+        'ORDER',
+        order.id,
+      );
+    } else {
+      const markedOrder = withLastWebhookEventId(order, eventMarker);
+      await orderRef.update({
+        ...serializeOrder(markedOrder),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      await writeAuditEvent({
+        entityType: 'PAYMENT',
+        entityId: payment.paymentKey ?? order.id,
+        eventType: 'PAYMENT_WEBHOOK_CANCELLED',
+        actorId: null,
+        payload: {
+          orderId: order.id,
+          status: payment.status,
+          eventMarker,
+          applied: false,
+        },
+      });
+    }
   }
 
   logger.info('tossPaymentWebhook', {
@@ -1900,6 +2232,8 @@ export const shipmentUpdate = onCall(async (req) => {
     '배송이 시작되었습니다',
     `${carrierName} ${trackingNumber}`,
     buildDeepLink('orders', orderId),
+    'ORDER',
+    orderId,
   );
   await writeAuditEvent({
     entityType: 'ORDER',
@@ -1951,6 +2285,15 @@ export const confirmReceipt = onCall(async (req) => {
     actorId: uid,
     payload: { expectedAt: expectedAt.toISOString() },
   });
+  await createInboxNotification(
+    order.sellerId,
+    'RECEIPT_CONFIRMED',
+    '구매자가 수령을 확인했습니다',
+    '정산 예정 일정을 확인해주세요.',
+    buildDeepLink('orders', orderId),
+    'ORDER',
+    orderId,
+  );
 
   return { ok: true };
 });
@@ -1971,6 +2314,85 @@ export const markNotificationRead = onCall(async (req) => {
   await notificationRef.update({
     isRead: true,
   });
+  return { ok: true };
+});
+
+export const registerDeviceToken = onCall(async (req) => {
+  const uid = requireAuthUid(req.auth?.uid);
+  const payload = ensureObject(req.data, 'device token payload is required');
+  const token = ensureString(payload.token, 'token');
+  const platform = ensureEnumString(payload.platform, 'platform', [
+    'ANDROID',
+    'IOS',
+  ] as const);
+  const appVersion = ensureString(payload.appVersion, 'appVersion');
+  const locale = ensureString(payload.locale, 'locale');
+  const timezone = ensureString(payload.timezone, 'timezone');
+  const permissionStatus = ensureEnumString(
+    payload.permissionStatus,
+    'permissionStatus',
+    ['AUTHORIZED', 'DENIED', 'PROVISIONAL', 'NOT_DETERMINED'] as const,
+  );
+  const tokenId = buildDeviceTokenId(token);
+  logger.info('registerDeviceToken', {
+    uid,
+    platform,
+    appVersion,
+    permissionStatus,
+  });
+  const tokenRef = db
+    .collection('users')
+    .doc(uid)
+    .collection('deviceTokens')
+    .doc(tokenId);
+  const snap = await tokenRef.get();
+
+  await tokenRef.set(
+    buildRegisterDeviceTokenRecord(
+      {
+        token,
+        platform,
+        appVersion,
+        locale,
+        timezone,
+        permissionStatus,
+      },
+      FieldValue.serverTimestamp(),
+      { includeCreatedAt: !snap.exists },
+    ),
+    { merge: true },
+  );
+
+  return { ok: true, tokenId };
+});
+
+export const deactivateDeviceToken = onCall(async (req) => {
+  const uid = requireAuthUid(req.auth?.uid);
+  const payload = ensureObject(req.data, 'device token payload is required');
+  const tokenId = ensureString(payload.tokenId, 'tokenId');
+  const permissionStatus = ensureEnumString(
+    payload.permissionStatus,
+    'permissionStatus',
+    ['AUTHORIZED', 'DENIED', 'PROVISIONAL', 'NOT_DETERMINED'] as const,
+  );
+  logger.info('deactivateDeviceToken', {
+    uid,
+    permissionStatus,
+  });
+  const tokenRef = db
+    .collection('users')
+    .doc(uid)
+    .collection('deviceTokens')
+    .doc(tokenId);
+
+  await tokenRef.set(
+    buildDeactivateDeviceTokenRecord(
+      permissionStatus,
+      FieldValue.serverTimestamp(),
+    ),
+    { merge: true },
+  );
+
   return { ok: true };
 });
 
@@ -2078,7 +2500,11 @@ export const finalizeAuctionsScheduler = onSchedule(
             payload: { auctionId: freshAuctionSnap.id },
           });
 
-          return { buyerId: order.buyerId, orderId: orderRef.id };
+          return {
+            buyerId: order.buyerId,
+            sellerId: order.sellerId,
+            orderId: orderRef.id,
+          };
         }
 
         tx.update(doc.ref, {
@@ -2105,6 +2531,17 @@ export const finalizeAuctionsScheduler = onSchedule(
           '낙찰되었습니다',
           '결제 기한 내 결제를 진행해주세요.',
           buildDeepLink('orders', notification.orderId),
+          'ORDER',
+          notification.orderId,
+        );
+        await createInboxNotification(
+          notification.sellerId,
+          'ORDER_AWAITING_PAYMENT',
+          '새 주문이 결제 대기 중입니다',
+          '구매자 결제 완료 후 배송 정보를 등록해주세요.',
+          buildDeepLink('orders', notification.orderId),
+          'ORDER',
+          notification.orderId,
         );
       }
     }
@@ -2190,13 +2627,178 @@ export const expireUnpaidOrdersScheduler = onSchedule(
       if (shouldNotify) {
         await createInboxNotification(
           doc.data().buyerId,
-          'PAYMENT_DUE',
+          'PAYMENT_FAILED',
           '결제 기한이 만료되었습니다',
           '미결제로 주문이 취소되었고 패널티가 반영되었습니다.',
           buildDeepLink('orders', doc.id),
+          'ORDER',
+          doc.id,
         );
       }
     }
+  },
+);
+
+export const orderReminderNotificationsScheduler = onSchedule(
+  'every 30 minutes',
+  async () => {
+    const now = new Date();
+    const nowTimestamp = Timestamp.fromDate(now);
+    const paymentDueReminderCutoff = Timestamp.fromDate(
+      new Date(now.getTime() + PAYMENT_DUE_REMINDER_LEAD_TIME_MS),
+    );
+    const shipmentReminderCutoff = Timestamp.fromDate(
+      new Date(now.getTime() - SHIPMENT_REMINDER_DELAY_MS),
+    );
+    const receiptReminderCutoff = Timestamp.fromDate(
+      new Date(now.getTime() - RECEIPT_REMINDER_DELAY_MS),
+    );
+    const shipmentReminderLookbackStart = Timestamp.fromDate(
+      new Date(
+        now.getTime() - SHIPMENT_REMINDER_DELAY_MS - REMINDER_QUERY_LOOKBACK_MS,
+      ),
+    );
+    const receiptReminderLookbackStart = Timestamp.fromDate(
+      new Date(
+        now.getTime() - RECEIPT_REMINDER_DELAY_MS - REMINDER_QUERY_LOOKBACK_MS,
+      ),
+    );
+
+    const [paymentDueSnap, shipmentReminderSnap, receiptReminderSnap] =
+      await Promise.all([
+        db
+          .collection('orders')
+          .where('orderStatus', '==', 'AWAITING_PAYMENT')
+          .where('paymentDueAt', '>', nowTimestamp)
+          .where('paymentDueAt', '<=', paymentDueReminderCutoff)
+          .get(),
+        db
+          .collection('orders')
+          .where('orderStatus', '==', 'PAID_ESCROW_HOLD')
+          .where('payment.approvedAt', '>=', shipmentReminderLookbackStart)
+          .where('payment.approvedAt', '<=', shipmentReminderCutoff)
+          .get(),
+        db
+          .collection('orders')
+          .where('orderStatus', '==', 'SHIPPED')
+          .where('shipping.shippedAt', '>=', receiptReminderLookbackStart)
+          .where('shipping.shippedAt', '<=', receiptReminderCutoff)
+          .get(),
+      ]);
+
+    for (const doc of paymentDueSnap.docs) {
+      try {
+        const order = deserializeOrder(doc.id, doc.data() as AnyRecord);
+        await createInboxNotification(
+          order.buyerId,
+          'PAYMENT_DUE',
+          '결제 기한이 곧 만료됩니다',
+          '결제 기한 전에 결제를 완료해주세요.',
+          buildDeepLink('orders', order.id),
+          'ORDER',
+          order.id,
+          {
+            deterministicNotificationId: buildReminderInboxNotificationId({
+              type: 'PAYMENT_DUE',
+              orderId: order.id,
+            }),
+            precondition: {
+              ref: doc.ref,
+              isSatisfied: (freshOrderId, freshData) =>
+                isReminderCandidateFromDocument(
+                  'PAYMENT_DUE',
+                  freshOrderId,
+                  freshData,
+                  now,
+                ),
+            },
+          },
+        );
+      } catch (error) {
+        logger.error('Skipping malformed PAYMENT_DUE reminder candidate', {
+          orderId: doc.id,
+          error,
+        });
+      }
+    }
+
+    for (const doc of shipmentReminderSnap.docs) {
+      try {
+        const order = deserializeOrder(doc.id, doc.data() as AnyRecord);
+        await createInboxNotification(
+          order.sellerId,
+          'SHIPMENT_REMINDER',
+          '배송 등록이 필요합니다',
+          '결제 완료 주문의 배송 정보를 등록해주세요.',
+          buildDeepLink('orders', order.id),
+          'ORDER',
+          order.id,
+          {
+            deterministicNotificationId: buildReminderInboxNotificationId({
+              type: 'SHIPMENT_REMINDER',
+              orderId: order.id,
+            }),
+            precondition: {
+              ref: doc.ref,
+              isSatisfied: (freshOrderId, freshData) =>
+                isReminderCandidateFromDocument(
+                  'SHIPMENT_REMINDER',
+                  freshOrderId,
+                  freshData,
+                  now,
+                ),
+            },
+          },
+        );
+      } catch (error) {
+        logger.error('Skipping malformed SHIPMENT_REMINDER candidate', {
+          orderId: doc.id,
+          error,
+        });
+      }
+    }
+
+    for (const doc of receiptReminderSnap.docs) {
+      try {
+        const order = deserializeOrder(doc.id, doc.data() as AnyRecord);
+        await createInboxNotification(
+          order.buyerId,
+          'RECEIPT_REMINDER',
+          '수령 확인이 필요합니다',
+          '배송 완료 주문의 수령 확인을 진행해주세요.',
+          buildDeepLink('orders', order.id),
+          'ORDER',
+          order.id,
+          {
+            deterministicNotificationId: buildReminderInboxNotificationId({
+              type: 'RECEIPT_REMINDER',
+              orderId: order.id,
+            }),
+            precondition: {
+              ref: doc.ref,
+              isSatisfied: (freshOrderId, freshData) =>
+                isReminderCandidateFromDocument(
+                  'RECEIPT_REMINDER',
+                  freshOrderId,
+                  freshData,
+                  now,
+                ),
+            },
+          },
+        );
+      } catch (error) {
+        logger.error('Skipping malformed RECEIPT_REMINDER candidate', {
+          orderId: doc.id,
+          error,
+        });
+      }
+    }
+
+    logger.info('orderReminderNotificationsScheduler', {
+      paymentDueCandidateCount: paymentDueSnap.size,
+      shipmentReminderCandidateCount: shipmentReminderSnap.size,
+      receiptReminderCandidateCount: receiptReminderSnap.size,
+    });
   },
 );
 
@@ -2229,6 +2831,8 @@ export const settleScheduler = onSchedule('every 60 minutes', async () => {
       '정산 완료',
       `주문 ${doc.id} 정산이 완료되었습니다.`,
       buildDeepLink('orders', doc.id),
+      'ORDER',
+      doc.id,
     );
     await writeAuditEvent({
       entityType: 'ORDER',

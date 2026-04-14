@@ -28,6 +28,8 @@ void main() {
         child: LoginScreen(
           configOverride: AppConfig(
             environment: AppEnvironment.dev,
+            backendTransport: AppBackendTransport.firebaseCallable,
+            apiBaseUrl: null,
             useFirebaseEmulators: false,
             tossClientKey: null,
             firebaseEmulatorHostOverride: null,
@@ -50,6 +52,8 @@ void main() {
         child: LoginScreen(
           configOverride: AppConfig(
             environment: AppEnvironment.dev,
+            backendTransport: AppBackendTransport.firebaseCallable,
+            apiBaseUrl: null,
             useFirebaseEmulators: false,
             tossClientKey: null,
             firebaseEmulatorHostOverride: null,

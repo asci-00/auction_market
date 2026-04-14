@@ -1,6 +1,6 @@
 # 경마(가칭) MVP Monorepo
 
-모바일 퍼스트 C2C 경매 MVP(Flutter + Firebase Emulator)입니다.
+모바일 퍼스트 C2C 경매 MVP(Flutter + Firebase)입니다.
 
 ## Detailed Docs
 - `Prompt.md`: product guardrails and release bar
@@ -70,8 +70,35 @@ npm run seed
 ```bash
 cd apps/mobile_flutter
 flutter pub get
-flutter run
+./scripts/bootstrap_render_dev.sh
+flutter run --flavor dev --dart-define-from-file=dart_defines.dev.json
 ```
+
+### 4.5 실기기 dev 실행 기본 경로
+- 기본 dev 경로는 로컬 emulator가 아니라 실 Firebase dev 프로젝트 + Render dev 서버입니다.
+- Render dev backend:
+  - `https://auction-market-dev-api.onrender.com`
+- Render health check:
+  - `https://auction-market-dev-api.onrender.com/healthz`
+- 필요한 로컬 파일:
+  - `apps/mobile_flutter/android/app/src/dev/google-services.json`
+  - `apps/mobile_flutter/ios/Runner/Firebase/dev/GoogleService-Info.plist`
+- `TOSS_CLIENT_KEY`는 결제 실험이 필요할 때만 `apps/mobile_flutter/dart_defines.dev.json`에 채우면 됩니다.
+
+### 4.6 로컬 Firebase Emulator 실행 경로
+```bash
+cd backend/functions
+npm run serve
+```
+
+새 터미널에서:
+```bash
+cd apps/mobile_flutter
+flutter run --flavor dev --dart-define-from-file=dart_defines.local-emulator.json
+```
+
+- `dart_defines.local-emulator.json`은 dev flavor를 유지한 채 Firebase Emulator + callable transport를 강제합니다.
+- Android 실기기는 `adb reverse` 기준으로 `FIREBASE_EMULATOR_HOST=127.0.0.1`을 사용합니다.
 
 ## 5) E2E 수동 검증 시나리오
 1. 로그인(구글/애플 버튼)
