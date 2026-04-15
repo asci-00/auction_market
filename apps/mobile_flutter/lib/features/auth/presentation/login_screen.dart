@@ -29,7 +29,7 @@ class LoginScreen extends ConsumerStatefulWidget {
   final AppConfig? configOverride;
   final bool? _releaseModeOverride;
 
-  bool get isReleaseMode => _releaseModeOverride ?? kReleaseMode;
+  bool get isReleaseMode => kReleaseMode || (_releaseModeOverride ?? false);
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();

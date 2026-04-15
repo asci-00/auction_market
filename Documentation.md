@@ -192,7 +192,7 @@
   - seller shipment required: `order-paid`, `order-paid-seller2`
   - buyer shipped and confirmed receipt: `order-shipped`, `order-confirmed`
   - settled payout and unpaid cancellation: `order-settled`, `order-cancelled-unpaid`
-- The mobile login screen surfaces only the buyer and seller quick-login actions in `dev` emulator mode.
+- The mobile login screen surfaces only the buyer and seller quick-login actions only when not in release mode and when `APP_ENV=dev` plus `USE_FIREBASE_EMULATORS=true`.
 - Buyer smoke test path for auction actions: sign in as `buyer1`, open a live seeded auction, place a manual bid or save an auto-bid ceiling from the auction detail action bar, or use buy-now and verify the app routes into the created order timeline.
 - Buyer payment smoke test path: sign in as `buyer1`, open `order-awaiting`, trigger payment preparation, open the Toss sandbox launcher, complete the integrated card-payment test path, and verify the app returns through `/payments/success` to move the order into `PAID_ESCROW_HOLD`.
 - Buyer payment return smoke test path: while signed in as `buyer1`, open `app://payments/success?orderId=order-awaiting&paymentKey=test_key&amount=18000` only as a recovery check and verify the payment return screen attempts the same confirmation path before routing back into the order timeline.
