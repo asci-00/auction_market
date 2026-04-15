@@ -1,4 +1,5 @@
 import 'package:auction_market_mobile/core/logging/app_logger.dart';
+import 'package:auction_market_mobile/core/app_config/app_config.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -43,5 +44,37 @@ void main() {
     expect(lines.single, isNot(contains('secret456')));
     expect(lines.single, isNot(contains('secret789')));
     expect(lines.single, contains('<redacted>'));
+  });
+
+  test('logger policy enforces production-safe settings in release mode', () {
+    const config = AppConfig(
+      environment: AppEnvironment.dev,
+      backendTransport: AppBackendTransport.http,
+      apiBaseUrl: 'https://dev.example.com',
+      useFirebaseEmulators: true,
+      tossClientKey: 'test_client',
+      firebaseEmulatorHostOverride: null,
+    );
+
+    final policy = AppLoggerPolicy.fromConfig(config, isReleaseMode: true);
+
+    expect(policy.level, Level.info);
+    expect(policy.redactSensitiveData, isTrue);
+  });
+
+  test('logger policy keeps verbose settings in non-release dev mode', () {
+    const config = AppConfig(
+      environment: AppEnvironment.dev,
+      backendTransport: AppBackendTransport.http,
+      apiBaseUrl: 'https://dev.example.com',
+      useFirebaseEmulators: true,
+      tossClientKey: 'test_client',
+      firebaseEmulatorHostOverride: null,
+    );
+
+    final policy = AppLoggerPolicy.fromConfig(config, isReleaseMode: false);
+
+    expect(policy.level, Level.trace);
+    expect(policy.redactSensitiveData, isFalse);
   });
 }

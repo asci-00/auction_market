@@ -43,7 +43,7 @@
   - `lib/core/app_config/app_config.dart` validates non-secret app defines such as `APP_ENV`, `APP_BACKEND_TRANSPORT`, `APP_API_BASE_URL`, emulator mode, and the currently wired payment launch key when the active adapter needs one.
   - `lib/core/backend/backend_gateway.dart` selects `FirebaseCallableBackendGateway` for prod and `HttpBackendGateway` for dev HTTP transport, so existing services keep the same high-level mutation contract while transport changes underneath.
   - `lib/core/firebase/firebase_bootstrap.dart` initializes Firebase from native iOS and Android config files, then attaches Auth, Firestore, Functions, and Storage emulators when enabled.
-  - `lib/core/logging/app_logger.dart` is the single structured mobile logger entrypoint and emits `timestamp | level | domain | source | message`.
+  - `lib/core/logging/app_logger.dart` is the single structured mobile logger entrypoint and emits `timestamp | level | domain | source | message`; release builds force production-safe logger policy (info-level minimum with redaction) even when runtime `APP_ENV` is `dev`.
   - `lib/core/l10n/app_localization.dart` resolves device locale to `ko` or `en` and exposes generated localization accessors.
   - `lib/core/extensions/build_context_x.dart` centralizes repeated `BuildContext` lookups like `Theme.of`, `ScaffoldMessenger.of`, `MediaQuery.of`, `Navigator.of`, and `GoRouter.of`.
   - `lib/core/routing/app_router.dart` owns guarded routing, deep-link normalization, payment return routes, and shared fade-plus-rise transitions for modal detail routes.
@@ -55,7 +55,7 @@
   - `lib/app/app.dart` wires `supportedLocales`, localization delegates, and locale fallback into `MaterialApp`.
   - Login, home, search, auction detail, sell, activity, orders, notifications, and my screens now use localized copy and the shared editorial design primitives.
   - Login now blocks Google and Apple browser sign-in when `USE_FIREBASE_EMULATORS=true`, because the project treats mobile social-login verification as a real-Firebase path rather than an Auth Emulator path.
-  - Login also exposes seeded buyer and seller quick-login actions only when `APP_ENV=dev` and `USE_FIREBASE_EMULATORS=true`, so emulator smoke tests can enter authenticated routes without live social login.
+  - Login also exposes seeded buyer and seller quick-login actions only when not in release mode and when `APP_ENV=dev` plus `USE_FIREBASE_EMULATORS=true`, so emulator smoke tests can enter authenticated routes without exposing debug shortcuts in release builds.
   - Login now keeps seeded account constants in `features/auth/data`, auth mutations in `features/auth/application`, and each major visual block in `features/auth/presentation/widgets`.
   - Auction detail now keeps the screen in `presentation`, pushes callable writes through `features/auction/application/auction_detail_action_service.dart`, and maps Firestore documents through `features/auction/data/auction_detail_view_data.dart`.
   - Auction detail now combines `auctions/{auctionId}` with the linked `items/{itemId}` document so the screen can render a real image gallery, item description, and lightweight item metadata above bid history.
@@ -90,6 +90,7 @@
   - My now maps the user document through `features/my/data/my_profile_summary.dart`, keeps verification label logic separate, and composes account and verification blocks from dedicated widgets.
   - Settings now lives under `features/settings/` with a dedicated data model for notification preferences, an application service for Firestore preference writes and OS permission helpers, and presentation widgets for notification controls plus app info.
   - The first Phase 4 settings slice now exposes `/settings` from both the global app bar and the My screen, and it currently covers notification preferences, OS notification-permission state, appearance mode, app version, licenses, and debug-only environment info.
+  - Settings now also includes a dedicated language behavior confirmation section that shows the current effective app language from locale resolution and explicitly documents supported locales (`ko`, `en`) with `ko` fallback.
   - The debug-only settings developer area now also exposes a server push-probe trigger for the signed-in user, routed through `core/backend/backend_gateway.dart` as `sendDebugPushProbe` so both dev HTTP and callable transports compile from the same feature-level call path.
   - Settings reads `users/{uid}.preferences` directly from Firestore and falls back to `SettingsPreferences.defaults()` when the signed-in user document exists without a populated `preferences` payload yet.
   - `app/app.dart` now applies theme mode from local `SharedPreferences` state instead of the signed-in user document, while locale always follows the device setting through the shared locale resolver.
@@ -131,6 +132,7 @@
 ## Localization Contract
 - Supported locales are `ko` and `en` only.
 - Locale resolution defaults to the device locale, with `ko` fallback when the device locale is unsupported.
+- Settings surfaces a read-only language behavior confirmation that reflects this system-locale resolution rule; no in-app language override exists in the current product scope.
 - Static user-facing copy must come from generated localizations, not hardcoded strings in widgets.
 - Dynamic Firestore content may remain backend-authored text, but fallback labels, badges, and empty/error states must be localized in the app.
 

@@ -650,6 +650,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsPermissionStatusNotDetermined => 'Notification permission has not been requested yet.';
 
   @override
+  String get settingsLanguageTitle => 'Language';
+
+  @override
+  String get settingsLanguageDescription => 'The app language automatically follows your system language settings.';
+
+  @override
+  String get settingsLanguageCurrentLabel => 'Current app language';
+
+  @override
+  String get settingsLanguageSupportedLabel => 'Supported languages';
+
+  @override
+  String get settingsLanguageSupportedValue => 'Korean and English (fallback: Korean).';
+
+  @override
+  String get settingsLanguageKoreanLabel => 'Korean';
+
+  @override
+  String get settingsLanguageEnglishLabel => 'English';
+
+  @override
   String get settingsPermissionStatusProvisional => 'Notifications are temporarily allowed with limited presentation.';
 
   @override

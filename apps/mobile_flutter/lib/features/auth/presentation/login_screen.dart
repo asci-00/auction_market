@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,10 +18,18 @@ import 'widgets/login_notes_panel.dart';
 import 'widgets/login_provider_panel.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key, this.returnTo, this.configOverride});
+  const LoginScreen({
+    super.key,
+    this.returnTo,
+    this.configOverride,
+    bool? releaseModeOverride,
+  }) : _releaseModeOverride = releaseModeOverride;
 
   final String? returnTo;
   final AppConfig? configOverride;
+  final bool? _releaseModeOverride;
+
+  bool get isReleaseMode => _releaseModeOverride ?? kReleaseMode;
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -37,7 +46,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         widget.configOverride ?? ref.watch(appBootstrapProvider).value?.config;
     final useFirebaseEmulators = config?.useFirebaseEmulators == true;
     final showDevQuickLogin =
-        config?.environment == AppEnvironment.dev && useFirebaseEmulators;
+        !widget.isReleaseMode &&
+        config?.environment == AppEnvironment.dev &&
+        useFirebaseEmulators;
 
     return AppPageScaffold(
       body: ListView(

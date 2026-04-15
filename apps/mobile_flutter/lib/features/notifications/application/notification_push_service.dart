@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,7 +15,9 @@ import '../../../core/routing/app_deeplink.dart';
 import '../../../core/routing/app_router.dart';
 import '../../../core/widgets/app_global_keys.dart';
 
-final notificationPushServiceProvider = Provider<NotificationPushService>((ref) {
+final notificationPushServiceProvider = Provider<NotificationPushService>((
+  ref,
+) {
   return NotificationPushService(
     markNotificationRead: ({required String notificationId}) {
       return ref
@@ -23,32 +26,37 @@ final notificationPushServiceProvider = Provider<NotificationPushService>((ref) 
     },
     logInfoMessage: (message) {
       try {
-        ref.read(appLoggerProvider).info(
-          message,
-          domain: AppLogDomain.notifications,
-          source: 'notification_push_service',
-        );
+        ref
+            .read(appLoggerProvider)
+            .info(
+              message,
+              domain: AppLogDomain.notifications,
+              source: 'notification_push_service',
+            );
       } catch (_) {
-        debugPrint('[notification-push] $message');
+        if (!kReleaseMode) {
+          debugPrint('[notification-push] $message');
+        }
       }
     },
-    logErrorMessage: ({
-      required String message,
-      Object? error,
-      StackTrace? stackTrace,
-    }) {
-      try {
-        ref.read(appLoggerProvider).error(
-          message,
-          domain: AppLogDomain.notifications,
-          source: 'notification_push_service',
-          error: error,
-          stackTrace: stackTrace,
-        );
-      } catch (_) {
-        debugPrint('[notification-push] $message error=$error');
-      }
-    },
+    logErrorMessage:
+        ({required String message, Object? error, StackTrace? stackTrace}) {
+          try {
+            ref
+                .read(appLoggerProvider)
+                .error(
+                  message,
+                  domain: AppLogDomain.notifications,
+                  source: 'notification_push_service',
+                  error: error,
+                  stackTrace: stackTrace,
+                );
+          } catch (_) {
+            if (!kReleaseMode) {
+              debugPrint('[notification-push] $message error=$error');
+            }
+          }
+        },
     scaffoldMessengerKey: ref.watch(rootScaffoldMessengerKeyProvider),
   );
 });
@@ -95,7 +103,9 @@ final notificationPushLifecycleProvider = Provider<void>((ref) {
     );
   });
 
-  final openSubscription = FirebaseMessaging.onMessageOpenedApp.listen((message) {
+  final openSubscription = FirebaseMessaging.onMessageOpenedApp.listen((
+    message,
+  ) {
     unawaited(
       runLifecycleTask(
         () => service.handleOpenMessage(router, message, source: 'background'),
@@ -229,9 +239,7 @@ class NotificationPushService {
     );
     if (payload.notificationId != null) {
       try {
-        await _markNotificationRead(
-          notificationId: payload.notificationId!,
-        );
+        await _markNotificationRead(notificationId: payload.notificationId!);
         logInfo(
           'markNotificationRead succeeded notificationId=${payload.notificationId}',
         );
@@ -250,16 +258,8 @@ class NotificationPushService {
     _logInfoMessage(message);
   }
 
-  void logError(
-    String message, {
-    Object? error,
-    StackTrace? stackTrace,
-  }) {
-    _logErrorMessage(
-      message: message,
-      error: error,
-      stackTrace: stackTrace,
-    );
+  void logError(String message, {Object? error, StackTrace? stackTrace}) {
+    _logErrorMessage(message: message, error: error, stackTrace: stackTrace);
   }
 
   static void _defaultNavigateToRoute(GoRouter router, String routePath) {
@@ -309,8 +309,8 @@ class NotificationPushPayload {
     final notificationId = data['notificationId'];
     final resolvedNotificationId =
         notificationId is String && notificationId.trim().isNotEmpty
-            ? notificationId.trim()
-            : null;
+        ? notificationId.trim()
+        : null;
     final deduplicationKey =
         messageId ??
         resolvedNotificationId ??

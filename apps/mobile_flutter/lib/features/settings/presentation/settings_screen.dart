@@ -20,6 +20,7 @@ import '../../notifications/application/notification_device_token_service.dart';
 import '../application/settings_preferences_service.dart';
 import '../data/settings_preferences.dart';
 import 'widgets/settings_app_info_section.dart';
+import 'widgets/settings_language_section.dart';
 import 'widgets/settings_notification_section.dart';
 import 'widgets/settings_theme_section.dart';
 
@@ -173,6 +174,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             darkTitle: context.l10n.settingsThemeDarkTitle,
             onChanged: (themeMode) =>
                 _handleThemeModeChanged(context, ref, themeMode),
+          ),
+          SizedBox(height: tokens.space6),
+          SettingsLanguageSection(
+            sectionTitle: context.l10n.settingsLanguageTitle,
+            sectionDescription: context.l10n.settingsLanguageDescription,
+            currentLanguageLabel: context.l10n.settingsLanguageCurrentLabel,
+            supportedLanguageLabel: context.l10n.settingsLanguageSupportedLabel,
+            supportedLanguageValue: context.l10n.settingsLanguageSupportedValue,
+            koreanLanguageLabel: context.l10n.settingsLanguageKoreanLabel,
+            englishLanguageLabel: context.l10n.settingsLanguageEnglishLabel,
           ),
           SizedBox(height: tokens.space6),
           SettingsAppInfoSection(
