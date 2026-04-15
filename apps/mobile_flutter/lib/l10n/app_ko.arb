@@ -308,6 +308,28 @@
   "settingsLicensesDescription": "사용 중인 패키지의 라이선스와 고지 내용을 확인합니다.",
   "settingsDeveloperTitle": "개발 환경 정보",
   "settingsDeveloperDescription": "릴리스 빌드가 아닌 경우에만 로컬 실행 환경을 확인할 수 있습니다.",
+  "settingsDebugPushProbeTitle": "푸시 프로브",
+  "settingsDebugPushProbeDescription": "현재 로그인 계정으로 서버 푸시 프로브를 요청합니다.",
+  "settingsDebugPushProbeAction": "전송",
+  "settingsDebugPushProbeSending": "전송 중...",
+  "settingsDebugPushProbeSuccess": "푸시 프로브를 요청했습니다. 잠시 후 알림을 확인해 주세요.",
+  "settingsDebugPushProbeSkipped": "푸시 프로브는 생성되었지만 푸시 발송은 건너뛰었습니다(전송 가능한 토큰: {tokenCount}). 알림 설정과 토큰 상태를 확인해 주세요.",
+  "@settingsDebugPushProbeSkipped": {
+    "placeholders": {
+      "tokenCount": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsDebugPushProbeFailure": "푸시 프로브 요청에 실패했습니다. 토큰 등록 및 백엔드 상태를 확인해 주세요.",
+  "settingsDebugPushProbeFailureWithReason": "푸시 프로브 요청 실패: {reason}",
+  "@settingsDebugPushProbeFailureWithReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "myTitle": "마이",
   "myHeroEyebrow": "프로필과 신뢰",
   "myHeroTitle": "구매와 판매를 위한 프로필 상태를 가까이 두세요.",

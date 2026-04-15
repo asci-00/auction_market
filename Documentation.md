@@ -90,6 +90,7 @@
   - My now maps the user document through `features/my/data/my_profile_summary.dart`, keeps verification label logic separate, and composes account and verification blocks from dedicated widgets.
   - Settings now lives under `features/settings/` with a dedicated data model for notification preferences, an application service for Firestore preference writes and OS permission helpers, and presentation widgets for notification controls plus app info.
   - The first Phase 4 settings slice now exposes `/settings` from both the global app bar and the My screen, and it currently covers notification preferences, OS notification-permission state, appearance mode, app version, licenses, and debug-only environment info.
+  - The debug-only settings developer area now also exposes a server push-probe trigger for the signed-in user, routed through `core/backend/backend_gateway.dart` as `sendDebugPushProbe` so both dev HTTP and callable transports compile from the same feature-level call path.
   - Settings reads `users/{uid}.preferences` directly from Firestore and falls back to `SettingsPreferences.defaults()` when the signed-in user document exists without a populated `preferences` payload yet.
   - `app/app.dart` now applies theme mode from local `SharedPreferences` state instead of the signed-in user document, while locale always follows the device setting through the shared locale resolver.
   - Notification device-token lifecycle now lives under `features/notifications/application/notification_device_token_service.dart`, where the signed-in app session calls `registerDeviceToken` after permission grant, re-syncs on app resume and FCM token rotation, and calls `deactivateDeviceToken` before sign-out or when push is disabled.
@@ -153,6 +154,7 @@
   - `shipmentUpdate`
   - `confirmReceipt`
   - `markNotificationRead`
+  - `sendDebugPushProbe` (`APP_ENV=dev` only)
   - `tossPaymentWebhook`
   - `activateDraftAuctionsScheduler`
   - `finalizeAuctionsScheduler`
@@ -168,7 +170,7 @@
 - In `dev` with `ENABLE_TOSS_SANDBOX=true`, the Render payment bridge explicitly opens the `CARD` payment flow in the default integrated window and narrows the visible card list for smoke tests. External app-dependent wallet and app-card paths are not part of the required dev payment smoke path.
 - The active provider webhook path verifies the configured webhook secret from the payload, applies idempotent payment transitions through `payment.lastWebhookEventId`, and updates the order instead of relying on a mock payment mutation.
 - Current notification delivery status is intentionally split:
-  - implemented: inbox document writes with notification metadata, device-token lifecycle, backend Firebase Admin Messaging dispatch for inbox-backed product events, reminder-event scheduler coverage with deterministic inbox ids, Android channel setup, foreground surfaced messages, and tap routing through `getInitialMessage` plus `onMessageOpenedApp`
+  - implemented: inbox document writes with notification metadata, device-token lifecycle, backend Firebase Admin Messaging dispatch for inbox-backed product events, reminder-event scheduler coverage with deterministic inbox ids, debug-only push-probe triggers for callable and Render HTTP in `dev`, Android channel setup, foreground surfaced messages, and tap routing through `getInitialMessage` plus `onMessageOpenedApp`
   - pending: final real-device verification of Android and iOS push behavior
 - The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `buyer2`, `seller1`, `seller2`, and `ops1`.
 - The seeded auction and order scenarios now cover live bidding, awaiting payment, seller shipment required, buyer receipt confirmed, settled payout, unpaid cancellation, unsold inventory, cancelled listings, and inbox notifications for both buyer and seller paths.
@@ -531,6 +533,10 @@
   - Validate buyer ownership and move order toward settlement.
 - `markNotificationRead`
   - Mark one inbox document as read for the current user.
+- `sendDebugPushProbe`
+  - Trigger one debug-only inbox plus push probe for the current signed-in user.
+  - Allowed only when backend runtime `APP_ENV=dev`.
+  - Writes `type`, `category`, `entityType`, `entityId`, and `deeplink` compatible with the existing push payload contract.
 - `registerDeviceToken`
   - Register or refresh one signed-in device token for the current user.
   - Persist locale, timezone, app version, and permission status for delivery diagnostics.
@@ -543,6 +549,13 @@
   - Verify the configured webhook secret from the payload.
   - Use an event marker plus `payment.lastWebhookEventId` to avoid double-processing.
   - Transition orders for `DONE`, `CANCELED`, `ABORTED`, and `EXPIRED` payment events.
+- Render dev server: `POST /api/notifications/debug/push-probe`
+  - Auth required via Firebase ID token bearer auth.
+  - Allowed only when server runtime `APP_ENV=dev`.
+  - Creates inbox notification and attempts push dispatch using the same preference and token eligibility rules as Functions:
+    - `preferences.pushEnabled`
+    - `preferences.notificationCategories.system`
+    - active token + deliverable permission (`AUTHORIZED` or `PROVISIONAL`)
 
 ## Scheduler Contract
 - `activateDraftAuctionsScheduler`

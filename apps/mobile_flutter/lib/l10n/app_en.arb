@@ -308,6 +308,28 @@
   "settingsLicensesDescription": "Review package attributions and license notices.",
   "settingsDeveloperTitle": "Developer context",
   "settingsDeveloperDescription": "Shown only in non-release builds to confirm local environment assumptions.",
+  "settingsDebugPushProbeTitle": "Push probe",
+  "settingsDebugPushProbeDescription": "Trigger a server push probe for the signed-in account.",
+  "settingsDebugPushProbeAction": "Send",
+  "settingsDebugPushProbeSending": "Sending...",
+  "settingsDebugPushProbeSuccess": "Push probe requested. Check your notifications in a few seconds.",
+  "settingsDebugPushProbeSkipped": "Push probe was created but push dispatch was skipped (eligible tokens: {tokenCount}). Check notification preference and token status.",
+  "@settingsDebugPushProbeSkipped": {
+    "placeholders": {
+      "tokenCount": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsDebugPushProbeFailure": "Push probe failed. Verify token registration and backend availability.",
+  "settingsDebugPushProbeFailureWithReason": "Push probe failed: {reason}",
+  "@settingsDebugPushProbeFailureWithReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "myTitle": "My",
   "myHeroEyebrow": "Profile and trust",
   "myHeroTitle": "Keep your profile ready for buying and selling.",

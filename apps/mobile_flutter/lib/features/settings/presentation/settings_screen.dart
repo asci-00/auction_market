@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/backend/backend_gateway.dart';
 import '../../../core/extensions/build_context_x.dart';
 import '../../../core/firebase/firebase_bootstrap.dart';
 import '../../../core/firebase/firebase_providers.dart';
@@ -30,6 +32,8 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen>
     with WidgetsBindingObserver {
+  bool _isSendingDebugPushProbe = false;
+
   @override
   void initState() {
     super.initState();
@@ -79,6 +83,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         permissionAsync.valueOrNull ?? AuthorizationStatus.notDetermined;
     final packageInfoAsync = ref.watch(appPackageInfoProvider);
     final config = ref.watch(appBootstrapProvider).valueOrNull?.config;
+    final canUseDebugPushProbe = !kReleaseMode && (config?.isDev ?? false);
 
     return AppPageScaffold(
       title: context.l10n.settingsTitle,
@@ -193,6 +198,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             config: config,
             debugTitle: context.l10n.settingsDeveloperTitle,
             debugDescription: context.l10n.settingsDeveloperDescription,
+            debugPushProbeTitle: context.l10n.settingsDebugPushProbeTitle,
+            debugPushProbeDescription:
+                context.l10n.settingsDebugPushProbeDescription,
+            debugPushProbeActionLabel: _isSendingDebugPushProbe
+                ? context.l10n.settingsDebugPushProbeSending
+                : context.l10n.settingsDebugPushProbeAction,
+            onDebugPushProbe: canUseDebugPushProbe
+                ? () => _handleDebugPushProbe(context, user.uid)
+                : null,
+            isDebugPushProbeInFlight: _isSendingDebugPushProbe,
           ),
         ],
       ),
@@ -368,6 +383,74 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     }
   }
 
+  Future<void> _handleDebugPushProbe(
+    BuildContext context,
+    String userId,
+  ) async {
+    final config = ref.read(appBootstrapProvider).valueOrNull?.config;
+    if (kReleaseMode || _isSendingDebugPushProbe || !(config?.isDev ?? false)) {
+      return;
+    }
+
+    setState(() {
+      _isSendingDebugPushProbe = true;
+    });
+    _logDebugPushProbeDiagnostics('probe requested userId=$userId', ref);
+
+    try {
+      final response = await ref
+          .read(backendGatewayProvider)
+          .sendDebugPushProbe();
+      final keys = response.keys.toList()..sort();
+      final pushAttempted = response['pushAttempted'] == true;
+      final tokenCount = switch (response['tokenCount']) {
+        final int value => value,
+        final num value => value.toInt(),
+        _ => 0,
+      };
+      _logDebugPushProbeDiagnostics(
+        'probe completed userId=$userId pushAttempted=$pushAttempted tokenCount=$tokenCount responseKeys=${keys.join(',')}',
+        ref,
+      );
+      if (!context.mounted) {
+        return;
+      }
+      if (!pushAttempted) {
+        context.showErrorSnackBar(
+          context.l10n.settingsDebugPushProbeSkipped(tokenCount),
+        );
+        return;
+      }
+      context.showSnackBarMessage(context.l10n.settingsDebugPushProbeSuccess);
+    } catch (error, stackTrace) {
+      final backendMessage = error is FirebaseFunctionsException
+          ? (error.message?.trim() ?? '')
+          : '';
+      _logDebugPushProbeDiagnostics(
+        'probe failed userId=$userId error=$error',
+        ref,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (!context.mounted) {
+        return;
+      }
+      if (backendMessage.isNotEmpty) {
+        context.showErrorSnackBar(
+          context.l10n.settingsDebugPushProbeFailureWithReason(backendMessage),
+        );
+      } else {
+        context.showErrorSnackBar(context.l10n.settingsDebugPushProbeFailure);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSendingDebugPushProbe = false;
+        });
+      }
+    }
+  }
+
   bool _isDevicePermissionActive(AuthorizationStatus status) {
     return switch (status) {
       AuthorizationStatus.authorized => true,
@@ -516,6 +599,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           message,
           domain: AppLogDomain.settings,
           source: 'settings_screen:notifications',
+        );
+  }
+
+  void _logDebugPushProbeDiagnostics(
+    String message,
+    WidgetRef ref, {
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
+    if (kReleaseMode) {
+      return;
+    }
+    ref
+        .read(appLoggerProvider)
+        .debug(
+          message,
+          domain: AppLogDomain.settings,
+          source: 'settings_screen:debug_push_probe',
+          error: error,
+          stackTrace: stackTrace,
         );
   }
 }

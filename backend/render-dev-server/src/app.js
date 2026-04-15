@@ -1,5 +1,6 @@
 import express from 'express';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { getMessaging } from 'firebase-admin/messaging';
 
 import { AppError, isAppError } from './errors.js';
 
@@ -144,16 +145,214 @@ function buildTossCustomerKey(uid) {
   return `buyer_${uid}`;
 }
 
-async function createInboxNotification(db, uid, type, title, body, deeplink) {
+const notificationCategoryByType = {
+  OUTBID: 'auctionActivity',
+  AUTO_BID_CEILING_REACHED: 'auctionActivity',
+  WON: 'orderPayment',
+  BUY_NOW_COMPLETED: 'orderPayment',
+  ORDER_AWAITING_PAYMENT: 'orderPayment',
+  PAYMENT_COMPLETED: 'orderPayment',
+  PAYMENT_DUE: 'orderPayment',
+  PAYMENT_FAILED: 'orderPayment',
+  SHIPMENT_REMINDER: 'shippingAndReceipt',
+  SHIPPED: 'shippingAndReceipt',
+  RECEIPT_REMINDER: 'shippingAndReceipt',
+  RECEIPT_CONFIRMED: 'shippingAndReceipt',
+  SETTLED: 'shippingAndReceipt',
+  SYSTEM_TEST: 'system',
+};
+
+const defaultNotificationCategories = {
+  auctionActivity: true,
+  orderPayment: true,
+  shippingAndReceipt: true,
+  system: true,
+};
+
+function getNotificationCategoryForType(type) {
+  const category = notificationCategoryByType[type];
+  if (!category) {
+    throw new AppError(
+      'failed-precondition',
+      `Unsupported notification type: ${type}`,
+    );
+  }
+  return category;
+}
+
+function normalizeNotificationPreferences(userData) {
+  const root = userData && typeof userData === 'object' ? userData : {};
+  const preferences =
+    root.preferences && typeof root.preferences === 'object'
+      ? root.preferences
+      : {};
+  const notificationCategories =
+    preferences.notificationCategories &&
+    typeof preferences.notificationCategories === 'object'
+      ? preferences.notificationCategories
+      : {};
+
+  return {
+    pushEnabled:
+      typeof preferences.pushEnabled === 'boolean'
+        ? preferences.pushEnabled
+        : true,
+    notificationCategories: {
+      auctionActivity:
+        typeof notificationCategories.auctionActivity === 'boolean'
+          ? notificationCategories.auctionActivity
+          : defaultNotificationCategories.auctionActivity,
+      orderPayment:
+        typeof notificationCategories.orderPayment === 'boolean'
+          ? notificationCategories.orderPayment
+          : defaultNotificationCategories.orderPayment,
+      shippingAndReceipt:
+        typeof notificationCategories.shippingAndReceipt === 'boolean'
+          ? notificationCategories.shippingAndReceipt
+          : defaultNotificationCategories.shippingAndReceipt,
+      system:
+        typeof notificationCategories.system === 'boolean'
+          ? notificationCategories.system
+          : defaultNotificationCategories.system,
+    },
+  };
+}
+
+function isDeliverablePermissionStatus(status) {
+  return status === 'AUTHORIZED' || status === 'PROVISIONAL';
+}
+
+function getDeliverableTokens(candidates) {
+  const seen = new Set();
+  const tokens = [];
+
+  for (const candidate of candidates) {
+    const token = meaningfulString(candidate.token);
+    if (!token || seen.has(token)) {
+      continue;
+    }
+    if (!candidate.isActive) {
+      continue;
+    }
+    if (!isDeliverablePermissionStatus(candidate.permissionStatus)) {
+      continue;
+    }
+    seen.add(token);
+    tokens.push(token);
+  }
+
+  return tokens;
+}
+
+function shouldDispatchPush(preferences, category, tokenCount) {
+  if (!preferences.pushEnabled) {
+    return false;
+  }
+  if (!preferences.notificationCategories[category]) {
+    return false;
+  }
+  return tokenCount > 0;
+}
+
+function buildPushDataPayload(input) {
+  return {
+    notificationId: input.notificationId,
+    type: input.type,
+    category: input.category,
+    deeplink: input.deeplink,
+    entityType: input.entityType,
+    entityId: input.entityId,
+    timestamp: input.timestamp,
+  };
+}
+
+async function createInboxNotification(
+  db,
+  uid,
+  type,
+  title,
+  body,
+  deeplink,
+  options = {},
+) {
   const ref = db.collection('notifications').doc(uid).collection('inbox').doc();
+  const category = getNotificationCategoryForType(type);
+  const entityType = options.entityType ?? null;
+  const entityId = options.entityId ?? null;
   await ref.set({
     type,
+    category,
     title,
     body,
     deeplink,
+    ...(entityType ? { entityType } : {}),
+    ...(entityId ? { entityId } : {}),
     isRead: false,
     createdAt: FieldValue.serverTimestamp(),
   });
+
+  return {
+    notificationId: ref.id,
+    type,
+    category,
+    deeplink,
+    entityType,
+    entityId,
+  };
+}
+
+async function dispatchPushForInboxNotification(services, input) {
+  const userRef = services.db.collection('users').doc(input.uid);
+  const tokenCollectionRef = userRef.collection('deviceTokens');
+  const [userSnap, tokenSnap] = await Promise.all([
+    userRef.get(),
+    tokenCollectionRef.get(),
+  ]);
+
+  const preferences = normalizeNotificationPreferences(userSnap.data());
+  const tokens = getDeliverableTokens(
+    tokenSnap.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        token: typeof data.token === 'string' ? data.token : null,
+        isActive: data.isActive === true,
+        permissionStatus:
+          typeof data.permissionStatus === 'string'
+            ? data.permissionStatus
+            : null,
+      };
+    }),
+  );
+
+  if (!shouldDispatchPush(preferences, input.category, tokens.length)) {
+    return {
+      attempted: false,
+      tokenCount: tokens.length,
+    };
+  }
+
+  const messaging = services.messaging ?? getMessaging();
+  await messaging.sendEachForMulticast({
+    tokens,
+    notification: {
+      title: input.title,
+      body: input.body,
+    },
+    data: buildPushDataPayload({
+      notificationId: input.notificationId,
+      type: input.type,
+      category: input.category,
+      deeplink: input.deeplink,
+      entityType: input.entityType,
+      entityId: input.entityId,
+      timestamp: input.timestamp,
+    }),
+  });
+
+  return {
+    attempted: true,
+    tokenCount: tokens.length,
+  };
 }
 
 async function writeAuditEvent(db, event) {
@@ -1125,6 +1324,24 @@ function buildDeactivateDeviceTokenRecord(permissionStatus, serverTimestamp) {
     lastSeenAt: serverTimestamp,
     updatedAt: serverTimestamp,
   };
+}
+
+const debugPushProbeNotification = {
+  type: 'SYSTEM_TEST',
+  title: '개발용 푸시 점검',
+  body: '실기기 푸시 수신 경로 점검용 테스트 알림입니다.',
+  deeplink: 'app://notifications',
+  entityType: 'ORDER',
+  entityId: 'debug-push-probe',
+};
+
+function requireDevAppEnv(config, featureName) {
+  if (config.appEnv !== 'dev') {
+    throw new AppError(
+      'failed-precondition',
+      `${featureName} is available only when APP_ENV=dev.`,
+    );
+  }
 }
 
 async function authenticateRequest(req, auth) {
@@ -2116,6 +2333,53 @@ export function createApp(services) {
       });
 
       res.json({ ok: true });
+    }, services),
+  );
+
+  app.post(
+    '/api/notifications/debug/push-probe',
+    bindAuthenticated(async (_req, res, authContext) => {
+      requireDevAppEnv(config, 'debug push probe');
+
+      const created = await createInboxNotification(
+        db,
+        authContext.uid,
+        debugPushProbeNotification.type,
+        debugPushProbeNotification.title,
+        debugPushProbeNotification.body,
+        debugPushProbeNotification.deeplink,
+        {
+          entityType: debugPushProbeNotification.entityType,
+          entityId: debugPushProbeNotification.entityId,
+        },
+      );
+      const dispatchResult = await dispatchPushForInboxNotification(
+        services,
+        {
+          uid: authContext.uid,
+          notificationId: created.notificationId,
+          type: created.type,
+          category: created.category,
+          title: debugPushProbeNotification.title,
+          body: debugPushProbeNotification.body,
+          deeplink: created.deeplink,
+          entityType: created.entityType,
+          entityId: created.entityId,
+          timestamp: new Date().toISOString(),
+        },
+      );
+
+      res.json({
+        ok: true,
+        notificationId: created.notificationId,
+        type: created.type,
+        category: created.category,
+        entityType: created.entityType,
+        entityId: created.entityId,
+        deeplink: created.deeplink,
+        pushAttempted: dispatchResult.attempted,
+        tokenCount: dispatchResult.tokenCount,
+      });
     }, services),
   );
 

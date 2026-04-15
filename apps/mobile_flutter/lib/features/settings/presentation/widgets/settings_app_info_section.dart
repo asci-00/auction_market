@@ -20,6 +20,11 @@ class SettingsAppInfoSection extends StatelessWidget {
     this.config,
     this.debugTitle,
     this.debugDescription,
+    this.debugPushProbeTitle,
+    this.debugPushProbeDescription,
+    this.debugPushProbeActionLabel,
+    this.onDebugPushProbe,
+    this.isDebugPushProbeInFlight = false,
   });
 
   final String sectionTitle;
@@ -32,6 +37,11 @@ class SettingsAppInfoSection extends StatelessWidget {
   final AppConfig? config;
   final String? debugTitle;
   final String? debugDescription;
+  final String? debugPushProbeTitle;
+  final String? debugPushProbeDescription;
+  final String? debugPushProbeActionLabel;
+  final VoidCallback? onDebugPushProbe;
+  final bool isDebugPushProbeInFlight;
 
   @override
   Widget build(BuildContext context) {
@@ -75,9 +85,76 @@ class SettingsAppInfoSection extends StatelessWidget {
               label: 'Use emulators',
               value: config!.useFirebaseEmulators ? 'true' : 'false',
             ),
+            if (onDebugPushProbe != null &&
+                debugPushProbeTitle != null &&
+                debugPushProbeDescription != null &&
+                debugPushProbeActionLabel != null) ...[
+              SizedBox(height: tokens.space1),
+              _DebugActionRow(
+                key: const ValueKey('settings-debug-push-probe-action'),
+                title: debugPushProbeTitle!,
+                description: debugPushProbeDescription!,
+                actionLabel: debugPushProbeActionLabel!,
+                isBusy: isDebugPushProbeInFlight,
+                onPressed: onDebugPushProbe!,
+              ),
+            ],
           ],
         ],
       ),
+    );
+  }
+}
+
+class _DebugActionRow extends StatelessWidget {
+  const _DebugActionRow({
+    super.key,
+    required this.title,
+    required this.description,
+    required this.actionLabel,
+    required this.isBusy,
+    required this.onPressed,
+  });
+
+  final String title;
+  final String description;
+  final String actionLabel;
+  final bool isBusy;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(right: tokens.space3),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: context.textTheme.titleSmall),
+                SizedBox(height: tokens.space1),
+                Text(description, style: context.textTheme.bodySmall),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 120,
+          child: FilledButton.tonal(
+            onPressed: isBusy ? null : onPressed,
+            child: isBusy
+                ? const SizedBox.square(
+                    key: ValueKey('settings-debug-push-probe-progress'),
+                    dimension: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(actionLabel),
+          ),
+        ),
+      ],
     );
   }
 }

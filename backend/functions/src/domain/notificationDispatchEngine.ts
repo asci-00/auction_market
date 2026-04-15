@@ -17,7 +17,8 @@ export type InboxNotificationType =
   | 'SHIPPED'
   | 'RECEIPT_REMINDER'
   | 'RECEIPT_CONFIRMED'
-  | 'SETTLED';
+  | 'SETTLED'
+  | 'SYSTEM_TEST';
 
 export type ReminderNotificationType =
   | 'PAYMENT_DUE'
@@ -59,6 +60,7 @@ const CATEGORY_BY_NOTIFICATION_TYPE: Record<
   RECEIPT_REMINDER: 'shippingAndReceipt',
   RECEIPT_CONFIRMED: 'shippingAndReceipt',
   SETTLED: 'shippingAndReceipt',
+  SYSTEM_TEST: 'system',
 };
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -153,7 +155,7 @@ export function buildPushDataPayload(input: {
   type: InboxNotificationType;
   category: NotificationCategory;
   deeplink: string;
-  entityType: 'AUCTION' | 'ORDER';
+  entityType: 'AUCTION' | 'ORDER' | 'SYSTEM';
   entityId: string;
   timestamp: string;
 }): Record<string, string> {

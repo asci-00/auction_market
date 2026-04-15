@@ -755,6 +755,34 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsDeveloperDescription => '릴리스 빌드가 아닌 경우에만 로컬 실행 환경을 확인할 수 있습니다.';
 
   @override
+  String get settingsDebugPushProbeTitle => '푸시 프로브';
+
+  @override
+  String get settingsDebugPushProbeDescription => '현재 로그인 계정으로 서버 푸시 프로브를 요청합니다.';
+
+  @override
+  String get settingsDebugPushProbeAction => '전송';
+
+  @override
+  String get settingsDebugPushProbeSending => '전송 중...';
+
+  @override
+  String get settingsDebugPushProbeSuccess => '푸시 프로브를 요청했습니다. 잠시 후 알림을 확인해 주세요.';
+
+  @override
+  String settingsDebugPushProbeSkipped(int tokenCount) {
+    return '푸시 프로브는 생성되었지만 푸시 발송은 건너뛰었습니다(전송 가능한 토큰: $tokenCount). 알림 설정과 토큰 상태를 확인해 주세요.';
+  }
+
+  @override
+  String get settingsDebugPushProbeFailure => '푸시 프로브 요청에 실패했습니다. 토큰 등록 및 백엔드 상태를 확인해 주세요.';
+
+  @override
+  String settingsDebugPushProbeFailureWithReason(String reason) {
+    return '푸시 프로브 요청 실패: $reason';
+  }
+
+  @override
   String get myTitle => '마이';
 
   @override
