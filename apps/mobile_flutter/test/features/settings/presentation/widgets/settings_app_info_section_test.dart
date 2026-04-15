@@ -31,7 +31,7 @@ void main() {
       ),
     );
 
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     expect(
       find.byKey(const ValueKey('settings-debug-push-probe-action')),
@@ -67,13 +67,59 @@ void main() {
       ),
     );
 
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     expect(
       find.byKey(const ValueKey('settings-debug-push-probe-action')),
       findsNothing,
     );
     expect(find.text('Push probe'), findsNothing);
+  });
+
+  testWidgets('shows debug push probe loading state while in flight', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _TestApp(
+        child: SettingsAppInfoSection(
+          sectionTitle: 'App information',
+          sectionDescription: 'Version and licenses',
+          versionLabel: 'Version',
+          versionValue: '1.0.0 (1)',
+          licensesLabel: 'Licenses',
+          licensesDescription: 'Open source notices',
+          onOpenLicenses: () {},
+          config: _debugConfig,
+          debugTitle: 'Developer',
+          debugDescription: 'Non-release only',
+          debugPushProbeTitle: 'Push probe',
+          debugPushProbeDescription: 'Trigger push probe',
+          debugPushProbeActionLabel: 'Send',
+          onDebugPushProbe: () {},
+          isDebugPushProbeInFlight: true,
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('settings-debug-push-probe-action')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('settings-debug-push-probe-progress')),
+      findsOneWidget,
+    );
+    expect(find.text('Send'), findsNothing);
+
+    final button = tester.widget<FilledButton>(
+      find.descendant(
+        of: find.byKey(const ValueKey('settings-debug-push-probe-action')),
+        matching: find.byType(FilledButton),
+      ),
+    );
+    expect(button.onPressed, isNull);
   });
 }
 

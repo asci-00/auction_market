@@ -155,7 +155,7 @@ export function buildPushDataPayload(input: {
   type: InboxNotificationType;
   category: NotificationCategory;
   deeplink: string;
-  entityType: 'AUCTION' | 'ORDER';
+  entityType: 'AUCTION' | 'ORDER' | 'SYSTEM';
   entityId: string;
   timestamp: string;
 }): Record<string, string> {

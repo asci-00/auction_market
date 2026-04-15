@@ -131,6 +131,7 @@
   - Deep link: `app://orders/{orderId}`
 
 ### Debug Verification Event
+
 - Debug push probe (dev only)
   - Trigger: authenticated caller invokes `sendDebugPushProbe` callable or `POST /api/notifications/debug/push-probe`.
   - Guard: only allowed when backend runtime `APP_ENV=dev`.

@@ -266,7 +266,7 @@ const DEBUG_PUSH_PROBE = {
   title: '개발용 푸시 점검',
   body: '실기기 푸시 수신 경로 점검용 테스트 알림입니다.',
   deeplink: 'app://notifications',
-  entityType: 'ORDER' as const,
+  entityType: 'SYSTEM' as const,
   entityId: 'debug-push-probe',
 };
 
@@ -285,10 +285,11 @@ async function createInboxNotification(
   title: string,
   body: string,
   deeplink: string,
-  entityType: 'AUCTION' | 'ORDER',
+  entityType: 'AUCTION' | 'ORDER' | 'SYSTEM',
   entityId: string,
   options?: {
     deterministicNotificationId?: string;
+    failOnDispatchError?: boolean;
     precondition?: {
       ref: DocumentReference;
       isSatisfied: (docId: string, data: AnyRecord) => boolean;
@@ -298,6 +299,7 @@ async function createInboxNotification(
   notificationId: string;
   pushAttempted: boolean;
   tokenCount: number;
+  pushDispatchFailed: boolean;
 }> {
   const inboxCollectionRef = db
     .collection('notifications')
@@ -363,6 +365,7 @@ async function createInboxNotification(
       notificationId: ref.id,
       pushAttempted: false,
       tokenCount: 0,
+      pushDispatchFailed: false,
     };
   }
 
@@ -383,6 +386,7 @@ async function createInboxNotification(
       notificationId: ref.id,
       pushAttempted: dispatchResult.attempted,
       tokenCount: dispatchResult.tokenCount,
+      pushDispatchFailed: false,
     };
   } catch (error) {
     logger.error('dispatchPushForInboxNotification failed', {
@@ -394,10 +398,19 @@ async function createInboxNotification(
       entityId,
       message: error instanceof Error ? error.message : String(error),
     });
+    if (options?.failOnDispatchError) {
+      throw new HttpsError(
+        'internal',
+        error instanceof Error
+          ? `Push dispatch failed: ${error.message}`
+          : 'Push dispatch failed.',
+      );
+    }
     return {
       notificationId: ref.id,
       pushAttempted: false,
       tokenCount: 0,
+      pushDispatchFailed: true,
     };
   }
 }
@@ -410,7 +423,7 @@ async function dispatchPushForInboxNotification(input: {
   title: string;
   body: string;
   deeplink: string;
-  entityType: 'AUCTION' | 'ORDER';
+  entityType: 'AUCTION' | 'ORDER' | 'SYSTEM';
   entityId: string;
   timestamp: string;
 }): Promise<{ attempted: boolean; tokenCount: number }> {
@@ -2373,6 +2386,7 @@ export const sendDebugPushProbe = onCall(async (req) => {
     DEBUG_PUSH_PROBE.deeplink,
     DEBUG_PUSH_PROBE.entityType,
     DEBUG_PUSH_PROBE.entityId,
+    { failOnDispatchError: true },
   );
   await writeAuditEvent({
     entityType: 'USER',
