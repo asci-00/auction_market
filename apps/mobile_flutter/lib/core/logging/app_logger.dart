@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
+import 'package:flutter/foundation.dart';
 
 import '../app_config/app_config.dart';
 import '../firebase/firebase_bootstrap.dart';
@@ -24,13 +25,15 @@ class AppLogger {
   AppLogger._(this._logger);
 
   factory AppLogger.fromConfig(AppConfig config) {
+    final policy = AppLoggerPolicy.fromConfig(
+      config,
+      isReleaseMode: kReleaseMode,
+    );
     return AppLogger._(
       Logger(
-        level: config.isProd ? Level.info : Level.trace,
+        level: policy.level,
         filter: ProductionFilter(),
-        printer: AppLogPrinter(
-          redactSensitiveData: config.isProd,
-        ),
+        printer: AppLogPrinter(redactSensitiveData: policy.redactSensitiveData),
       ),
     );
   }
@@ -134,6 +137,27 @@ class AppLogger {
   }
 }
 
+class AppLoggerPolicy {
+  const AppLoggerPolicy({
+    required this.level,
+    required this.redactSensitiveData,
+  });
+
+  factory AppLoggerPolicy.fromConfig(
+    AppConfig config, {
+    required bool isReleaseMode,
+  }) {
+    final safeProductionMode = config.isProd || isReleaseMode;
+    return AppLoggerPolicy(
+      level: safeProductionMode ? Level.info : Level.trace,
+      redactSensitiveData: safeProductionMode,
+    );
+  }
+
+  final Level level;
+  final bool redactSensitiveData;
+}
+
 class AppLogPrinter extends LogPrinter {
   AppLogPrinter({required this.redactSensitiveData});
 
@@ -213,10 +237,7 @@ class AppLogSource {
     }
 
     return lines
-        .firstWhere(
-          (line) => line.trim().isNotEmpty,
-          orElse: () => 'unknown',
-        )
+        .firstWhere((line) => line.trim().isNotEmpty, orElse: () => 'unknown')
         .trim();
   }
 }

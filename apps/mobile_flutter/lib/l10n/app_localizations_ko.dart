@@ -650,6 +650,27 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsPermissionStatusNotDetermined => '아직 알림 권한을 요청하지 않았습니다.';
 
   @override
+  String get settingsLanguageTitle => '언어';
+
+  @override
+  String get settingsLanguageDescription => '앱 언어는 시스템 언어 설정을 자동으로 따릅니다.';
+
+  @override
+  String get settingsLanguageCurrentLabel => '현재 앱 언어';
+
+  @override
+  String get settingsLanguageSupportedLabel => '지원 언어';
+
+  @override
+  String get settingsLanguageSupportedValue => '한국어와 영어를 지원합니다. (기본값: 한국어)';
+
+  @override
+  String get settingsLanguageKoreanLabel => '한국어';
+
+  @override
+  String get settingsLanguageEnglishLabel => '영어';
+
+  @override
   String get settingsPermissionStatusProvisional => '제한된 방식으로만 임시 알림이 허용되어 있습니다.';
 
   @override

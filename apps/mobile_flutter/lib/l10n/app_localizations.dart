@@ -1337,6 +1337,48 @@ abstract class AppLocalizations {
   /// **'Notification permission has not been requested yet.'**
   String get settingsPermissionStatusNotDetermined;
 
+  /// No description provided for @settingsLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguageTitle;
+
+  /// No description provided for @settingsLanguageDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The app language automatically follows your system language settings.'**
+  String get settingsLanguageDescription;
+
+  /// No description provided for @settingsLanguageCurrentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current app language'**
+  String get settingsLanguageCurrentLabel;
+
+  /// No description provided for @settingsLanguageSupportedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Supported languages'**
+  String get settingsLanguageSupportedLabel;
+
+  /// No description provided for @settingsLanguageSupportedValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Korean and English (fallback: Korean).'**
+  String get settingsLanguageSupportedValue;
+
+  /// No description provided for @settingsLanguageKoreanLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Korean'**
+  String get settingsLanguageKoreanLabel;
+
+  /// No description provided for @settingsLanguageEnglishLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get settingsLanguageEnglishLabel;
+
   /// No description provided for @settingsPermissionStatusProvisional.
   ///
   /// In en, this message translates to:
