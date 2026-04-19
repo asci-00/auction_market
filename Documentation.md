@@ -174,7 +174,6 @@
 - Current notification delivery status is intentionally split:
   - implemented: inbox document writes with notification metadata, device-token lifecycle, backend Firebase Admin Messaging dispatch for inbox-backed product events, reminder-event scheduler coverage with deterministic inbox ids, debug-only push-probe triggers for callable and Render HTTP in `dev`, Android channel setup, foreground surfaced messages, and tap routing through `getInitialMessage` plus `onMessageOpenedApp`
   - pending: final real-device verification of Android and iOS push behavior
-<<<<<<< HEAD
 - Render dev server notification copy for currently emitted inbox-backed event types now resolves through centralized `ko`/`en` templates instead of route-level hardcoded strings.
 - Render dev server locale resolution priority is:
   - `users/{uid}.preferences.languageCode` when it normalizes to `ko` or `en`
