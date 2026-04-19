@@ -312,6 +312,55 @@ async function createInboxNotification(
     : inboxCollectionRef.doc();
   const category = getNotificationCategoryForType(type);
   const timestamp = new Date().toISOString();
+
+  if (options?.deterministicNotificationId) {
+    if (options.precondition) {
+      const preconditionSnap = await options.precondition.ref.get();
+      const preconditionData = preconditionSnap.data();
+      if (
+        !preconditionSnap.exists ||
+        !preconditionData ||
+        !options.precondition.isSatisfied(
+          preconditionSnap.id,
+          preconditionData as AnyRecord,
+        )
+      ) {
+        logger.info('createInboxNotification precondition failed', {
+          uid,
+          type,
+          category,
+          entityType,
+          entityId,
+          notificationId: ref.id,
+        });
+        return {
+          notificationId: ref.id,
+          pushAttempted: false,
+          tokenCount: 0,
+          pushDispatchFailed: false,
+        };
+      }
+    }
+
+    const existingSnap = await ref.get();
+    if (existingSnap.exists) {
+      logger.info('createInboxNotification deduplicated', {
+        uid,
+        type,
+        category,
+        entityType,
+        entityId,
+        notificationId: ref.id,
+      });
+      return {
+        notificationId: ref.id,
+        pushAttempted: false,
+        tokenCount: 0,
+        pushDispatchFailed: false,
+      };
+    }
+  }
+
   const recipientContext = await loadNotificationRecipientContext(uid);
   const locale = resolveNotificationLocale({
     userData: recipientContext.userData,
