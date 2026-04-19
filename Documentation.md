@@ -174,7 +174,14 @@
 - Current notification delivery status is intentionally split:
   - implemented: inbox document writes with notification metadata, device-token lifecycle, backend Firebase Admin Messaging dispatch for inbox-backed product events, reminder-event scheduler coverage with deterministic inbox ids, debug-only push-probe triggers for callable and Render HTTP in `dev`, Android channel setup, foreground surfaced messages, and tap routing through `getInitialMessage` plus `onMessageOpenedApp`
   - pending: final real-device verification of Android and iOS push behavior
-- Firebase Functions notification copy now resolves through a centralized localization engine keyed by `InboxNotificationType`, covering `ko` and `en` for all currently supported push/inbox event types.
+<<<<<<< HEAD
+- Render dev server notification copy for currently emitted inbox-backed event types now resolves through centralized `ko`/`en` templates instead of route-level hardcoded strings.
+- Render dev server locale resolution priority is:
+  - `users/{uid}.preferences.languageCode` when it normalizes to `ko` or `en`
+  - active device-token locale metadata under `users/{uid}/deviceTokens/{tokenId}` ordered deterministically by latest token activity metadata
+  - fallback `ko`
+- Render debug push-probe dispatch now reuses the same localized title and body generated for inbox writes so inbox and push copy remain aligned for the same event.
+- Firebase Functions notification copy now resolves through a centralized localization engine keyed by `InboxNotificationType`, covering `ko` and `en` for all currently supported push and inbox event types.
 - Functions locale resolution priority is:
   - `users/{uid}.preferences.languageCode` when it normalizes to `ko` or `en`
   - latest deliverable device-token locale from `users/{uid}/deviceTokens/{tokenId}` (`isActive=true` and permission `AUTHORIZED` or `PROVISIONAL`)
