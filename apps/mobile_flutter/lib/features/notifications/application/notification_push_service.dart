@@ -14,6 +14,12 @@ import '../../../core/logging/app_logger.dart';
 import '../../../core/routing/app_deeplink.dart';
 import '../../../core/routing/app_router.dart';
 import '../../../core/widgets/app_global_keys.dart';
+import '../../auction/presentation/auction_view_model.dart';
+import '../../orders/presentation/order_view_model.dart';
+import '../presentation/notifications_view_model.dart';
+
+const _buyerOrderFieldKey = 'buyerId';
+const _sellerOrderFieldKey = 'sellerId';
 
 final notificationPushServiceProvider = Provider<NotificationPushService>((
   ref,
@@ -58,8 +64,65 @@ final notificationPushServiceProvider = Provider<NotificationPushService>((
           }
         },
     scaffoldMessengerKey: ref.watch(rootScaffoldMessengerKeyProvider),
+    resolveCurrentRoutePath: _defaultResolveCurrentRoutePath,
+    refreshRouteStateForPath: (routePath) {
+      _refreshForegroundRouteState(ref, routePath);
+    },
   );
 });
+
+String _defaultResolveCurrentRoutePath(GoRouter router) {
+  return router.state.uri.toString();
+}
+
+void _refreshForegroundRouteState(Ref ref, String routePath) {
+  final routeUri = Uri.tryParse(routePath);
+  if (routeUri == null) {
+    return;
+  }
+
+  if (routeUri.path == '/notifications') {
+    final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
+    if (userId == null || userId.isEmpty) {
+      return;
+    }
+    ref.invalidate(notificationsViewModelProvider(userId));
+    return;
+  }
+
+  final pathSegments = routeUri.pathSegments;
+  if (pathSegments.length == 2 &&
+      pathSegments.first == 'auction' &&
+      pathSegments.last.isNotEmpty) {
+    ref.invalidate(auctionViewModelProvider(pathSegments.last));
+    return;
+  }
+
+  final isOrdersRoute =
+      routeUri.path == '/orders' ||
+      (pathSegments.length == 2 &&
+          pathSegments.first == 'orders' &&
+          pathSegments.last.isNotEmpty);
+  if (!isOrdersRoute) {
+    return;
+  }
+
+  final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
+  if (userId == null || userId.isEmpty) {
+    return;
+  }
+
+  ref.invalidate(
+    ordersViewModelProvider(
+      OrderQuery(userId: userId, fieldKey: _buyerOrderFieldKey),
+    ),
+  );
+  ref.invalidate(
+    ordersViewModelProvider(
+      OrderQuery(userId: userId, fieldKey: _sellerOrderFieldKey),
+    ),
+  );
+}
 
 final notificationPushLifecycleProvider = Provider<void>((ref) {
   final service = ref.watch(notificationPushServiceProvider);
@@ -152,11 +215,17 @@ class NotificationPushService {
     logErrorMessage,
     required GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey,
     void Function(GoRouter router, String routePath)? navigateToRoute,
+    String Function(GoRouter router)? resolveCurrentRoutePath,
+    void Function(String routePath)? refreshRouteStateForPath,
   }) : _markNotificationRead = markNotificationRead,
        _logInfoMessage = logInfoMessage,
        _logErrorMessage = logErrorMessage,
        _scaffoldMessengerKey = scaffoldMessengerKey,
-       _navigateToRoute = navigateToRoute ?? _defaultNavigateToRoute;
+       _navigateToRoute = navigateToRoute ?? _defaultNavigateToRoute,
+       _resolveCurrentRoutePath =
+           resolveCurrentRoutePath ?? _defaultResolveCurrentRoutePath,
+       _refreshRouteStateForPath =
+           refreshRouteStateForPath ?? _defaultRefreshRouteStateForPath;
 
   final Future<void> Function({required String notificationId})
   _markNotificationRead;
@@ -169,6 +238,8 @@ class NotificationPushService {
   _logErrorMessage;
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey;
   final void Function(GoRouter router, String routePath) _navigateToRoute;
+  final String Function(GoRouter router) _resolveCurrentRoutePath;
+  final void Function(String routePath) _refreshRouteStateForPath;
   final Set<String> _handledOpenKeys = <String>{};
 
   Future<void> handleForegroundMessage(
@@ -184,6 +255,7 @@ class NotificationPushService {
     logInfo(
       'foreground push received key=${payload.deduplicationKey} route=${payload.routePath}',
     );
+    _refreshRouteStateIfCurrentRouteMatches(router, payload);
 
     final messenger = _scaffoldMessengerKey.currentState;
     final context = _scaffoldMessengerKey.currentContext;
@@ -262,9 +334,50 @@ class NotificationPushService {
     _logErrorMessage(message: message, error: error, stackTrace: stackTrace);
   }
 
+  void _refreshRouteStateIfCurrentRouteMatches(
+    GoRouter router,
+    NotificationPushPayload payload,
+  ) {
+    final currentRoutePath = _resolveCurrentRoutePath(router);
+    if (!_routePathsMatch(currentRoutePath, payload.routePath)) {
+      logInfo(
+        'skip foreground push refresh: route mismatch current=$currentRoutePath route=${payload.routePath}',
+      );
+      return;
+    }
+
+    logInfo(
+      'foreground push route matched: refresh route=${payload.routePath}',
+    );
+    try {
+      _refreshRouteStateForPath(payload.routePath);
+    } catch (error, stackTrace) {
+      logError(
+        'foreground route refresh failed route=${payload.routePath}',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  static bool _routePathsMatch(String currentRoutePath, String routePath) {
+    return _normalizeRoutePath(currentRoutePath) ==
+        _normalizeRoutePath(routePath);
+  }
+
+  static String _normalizeRoutePath(String routePath) {
+    final uri = Uri.tryParse(routePath);
+    if (uri == null) {
+      return routePath;
+    }
+    return uri.path;
+  }
+
   static void _defaultNavigateToRoute(GoRouter router, String routePath) {
     router.push(routePath);
   }
+
+  static void _defaultRefreshRouteStateForPath(String routePath) {}
 }
 
 @immutable
