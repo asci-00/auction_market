@@ -63,6 +63,7 @@
 - Android notification permission declaration is present, and the app can request permission plus register or deactivate FCM tokens against the dev backend.
 - Backend now writes inbox documents with `category`, `entityType`, and `entityId`, then best-effort fans out Firebase Admin Messaging payloads for `OUTBID`, `AUTO_BID_CEILING_REACHED`, `WON`, `BUY_NOW_COMPLETED`, `ORDER_AWAITING_PAYMENT`, `PAYMENT_COMPLETED`, `PAYMENT_FAILED`, `SHIPPED`, `RECEIPT_CONFIRMED`, and `SETTLED` when user preferences and active device tokens allow delivery.
 - Backend now also emits `PAYMENT_DUE`, `SHIPMENT_REMINDER`, and `RECEIPT_REMINDER` from an order reminder scheduler, with deterministic inbox ids per order reminder type to prevent repeated scheduler duplicates.
+- Backend Functions inbox and push copy for all supported notification event types now resolve from a centralized `ko`/`en` localization engine, with locale priority `users/{uid}.preferences.languageCode` then latest deliverable token locale then `ko` fallback.
 - Mobile now handles push payloads through `onMessage`, `getInitialMessage`, and `onMessageOpenedApp`, surfaces foreground messages with a `SnackBar`, routes opened notifications through the existing deep-link resolver, and falls back to `/notifications` when a push deeplink is missing or unsupported.
 - Android now declares a default Firebase Messaging channel id in the manifest and creates the matching notification channel from `MainActivity` on Android O and above.
 - Emulator seed data now covers separate buyer and seller notification, payment, shipment, confirmed-receipt, settled, cancelled-unpaid, draft, unsold, and cancelled-listing paths without cross-linking orders to unrelated auctions.
@@ -103,6 +104,7 @@
 - `cd backend/functions && npx eslint src/index.ts src/domain/notificationDispatchEngine.ts test/notificationDispatchEngine.test.ts && npx tsc --noEmit` passed on April 14, 2026 after adding the debug push probe callable path.
 - `cd backend/functions && npm run build` passed on April 14, 2026 after adding the debug push probe callable path.
 - `cd backend/functions && npm test` passed on April 14, 2026 after adding the debug push probe callable path.
+- `cd backend/functions && npm run format:check && npm run lint && npm run build && npm test` passed on April 19, 2026 after adding localized notification copy resolution for all supported inbox-backed event types in Firebase Functions.
 - `cd apps/mobile_flutter && flutter gen-l10n` passed on April 6, 2026 after adding the settings localization keys.
 - `cd apps/mobile_flutter && dart format --output=none --set-exit-if-changed lib test` passed on April 6, 2026.
 - `cd apps/mobile_flutter && flutter analyze` passed on April 6, 2026.

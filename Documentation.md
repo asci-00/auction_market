@@ -174,6 +174,12 @@
 - Current notification delivery status is intentionally split:
   - implemented: inbox document writes with notification metadata, device-token lifecycle, backend Firebase Admin Messaging dispatch for inbox-backed product events, reminder-event scheduler coverage with deterministic inbox ids, debug-only push-probe triggers for callable and Render HTTP in `dev`, Android channel setup, foreground surfaced messages, and tap routing through `getInitialMessage` plus `onMessageOpenedApp`
   - pending: final real-device verification of Android and iOS push behavior
+- Firebase Functions notification copy now resolves through a centralized localization engine keyed by `InboxNotificationType`, covering `ko` and `en` for all currently supported push/inbox event types.
+- Functions locale resolution priority is:
+  - `users/{uid}.preferences.languageCode` when it normalizes to `ko` or `en`
+  - latest deliverable device-token locale from `users/{uid}/deviceTokens/{tokenId}` (`isActive=true` and permission `AUTHORIZED` or `PROVISIONAL`)
+  - fallback `ko`
+- Functions now pass semantic notification context (for example final price, shipment tracking details, payment-failure reason, settlement order id) into localized template rendering instead of callsite-level hardcoded title and body strings.
 - The emulator seed now creates deterministic Auth Emulator accounts plus Firestore documents for `buyer1`, `buyer2`, `seller1`, `seller2`, and `ops1`.
 - The seeded auction and order scenarios now cover live bidding, awaiting payment, seller shipment required, buyer receipt confirmed, settled payout, unpaid cancellation, unsold inventory, cancelled listings, and inbox notifications for both buyer and seller paths.
 - The default seeded orders now include both `seller1` and `seller2` shipment-required scenarios, plus separate ended-auction records for awaiting-payment, confirmed-receipt, and unpaid-cancelled flows so emulator smoke tests stay internally consistent.
