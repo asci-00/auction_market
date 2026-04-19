@@ -54,6 +54,11 @@ import {
   normalizeNotificationPreferences,
   shouldDispatchPush,
 } from './domain/notificationDispatchEngine.js';
+import {
+  buildInboxNotificationCopy,
+  type InboxNotificationCopyContext,
+  resolveNotificationLocale,
+} from './domain/notificationLocalizationEngine.js';
 import { AuditEventRecord, Order } from './domain/models.js';
 import {
   finalizeAuction,
@@ -263,8 +268,6 @@ function buildTossCustomerKey(uid: string): string {
 
 const DEBUG_PUSH_PROBE = {
   type: 'SYSTEM_TEST' as const,
-  title: '개발용 푸시 점검',
-  body: '실기기 푸시 수신 경로 점검용 테스트 알림입니다.',
   deeplink: 'app://notifications',
   entityType: 'SYSTEM' as const,
   entityId: 'debug-push-probe',
@@ -282,12 +285,11 @@ function requireDevAppEnv(appEnv: RuntimeConfig['appEnv'], feature: string) {
 async function createInboxNotification(
   uid: string,
   type: InboxNotificationType,
-  title: string,
-  body: string,
   deeplink: string,
   entityType: 'AUCTION' | 'ORDER' | 'SYSTEM',
   entityId: string,
   options?: {
+    copyContext?: InboxNotificationCopyContext;
     deterministicNotificationId?: string;
     failOnDispatchError?: boolean;
     precondition?: {
@@ -310,12 +312,29 @@ async function createInboxNotification(
     : inboxCollectionRef.doc();
   const category = getNotificationCategoryForType(type);
   const timestamp = new Date().toISOString();
+  const recipientContext = await loadNotificationRecipientContext(uid);
+  const locale = resolveNotificationLocale({
+    userData: recipientContext.userData,
+    tokenCandidates: recipientContext.tokenMetadata.map((metadata) => ({
+      tokenId: metadata.tokenId,
+      locale: metadata.locale,
+      isActive: metadata.isActive,
+      permissionStatus: metadata.permissionStatus,
+      lastSeenAtMs: metadata.lastSeenAtMs,
+    })),
+    fallbackLocale: 'ko',
+  });
+  const localizedCopy = buildInboxNotificationCopy({
+    type,
+    locale,
+    context: options?.copyContext,
+  });
 
   const payload = {
     type,
     category,
-    title,
-    body,
+    title: localizedCopy.title,
+    body: localizedCopy.body,
     deeplink,
     entityType,
     entityId,
@@ -375,12 +394,13 @@ async function createInboxNotification(
       notificationId: ref.id,
       type,
       category,
-      title,
-      body,
+      title: localizedCopy.title,
+      body: localizedCopy.body,
       deeplink,
       entityType,
       entityId,
       timestamp,
+      recipientContext,
     });
     return {
       notificationId: ref.id,
@@ -426,25 +446,17 @@ async function dispatchPushForInboxNotification(input: {
   entityType: 'AUCTION' | 'ORDER' | 'SYSTEM';
   entityId: string;
   timestamp: string;
+  recipientContext: NotificationRecipientContext;
 }): Promise<{ attempted: boolean; tokenCount: number }> {
-  const userRef = db.collection('users').doc(input.uid);
-  const tokenCollectionRef = userRef.collection('deviceTokens');
-  const [userSnap, tokenSnap] = await Promise.all([
-    userRef.get(),
-    tokenCollectionRef.get(),
-  ]);
-
-  const preferences = normalizeNotificationPreferences(userSnap.data());
+  const preferences = normalizeNotificationPreferences(
+    input.recipientContext.userData,
+  );
   const tokens = getDeliverableTokens(
-    tokenSnap.docs.map((doc) => {
-      const data = doc.data();
+    input.recipientContext.tokenMetadata.map((metadata) => {
       return {
-        token: typeof data.token === 'string' ? data.token : null,
-        isActive: data.isActive === true,
-        permissionStatus:
-          typeof data.permissionStatus === 'string'
-            ? data.permissionStatus
-            : null,
+        token: metadata.token,
+        isActive: metadata.isActive,
+        permissionStatus: metadata.permissionStatus,
       };
     }),
   );
@@ -500,6 +512,67 @@ async function dispatchPushForInboxNotification(input: {
   return {
     attempted: true,
     tokenCount: tokens.length,
+  };
+}
+
+interface RecipientTokenMetadata {
+  tokenId: string;
+  token: string | null;
+  locale: string | null;
+  isActive: boolean;
+  permissionStatus: string | null;
+  lastSeenAtMs: number | null;
+}
+
+interface NotificationRecipientContext {
+  userData: AnyRecord | undefined;
+  tokenMetadata: RecipientTokenMetadata[];
+}
+
+function timestampMillisOrNull(value: unknown): number | null {
+  if (value instanceof Timestamp) {
+    return value.toMillis();
+  }
+  if (value instanceof Date) {
+    const millis = value.getTime();
+    return Number.isNaN(millis) ? null : millis;
+  }
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const parsed = new Date(value).getTime();
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+  return null;
+}
+
+async function loadNotificationRecipientContext(
+  uid: string,
+): Promise<NotificationRecipientContext> {
+  const userRef = db.collection('users').doc(uid);
+  const tokenCollectionRef = userRef.collection('deviceTokens');
+  const [userSnap, tokenSnap] = await Promise.all([
+    userRef.get(),
+    tokenCollectionRef.get(),
+  ]);
+
+  return {
+    userData: (userSnap.data() as AnyRecord | undefined) ?? undefined,
+    tokenMetadata: tokenSnap.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        tokenId: doc.id,
+        token: typeof data.token === 'string' ? data.token : null,
+        locale: typeof data.locale === 'string' ? data.locale : null,
+        isActive: data.isActive === true,
+        permissionStatus:
+          typeof data.permissionStatus === 'string'
+            ? data.permissionStatus
+            : null,
+        lastSeenAtMs: timestampMillisOrNull(data.lastSeenAt),
+      };
+    }),
   };
 }
 
@@ -1643,11 +1716,14 @@ export const placeBid = onCall(async (req) => {
     await createInboxNotification(
       autoBidCeilingReachedUserId,
       'AUTO_BID_CEILING_REACHED',
-      '자동입찰 한도에 도달했습니다',
-      `현재 최고가 ${finalPrice}원으로 자동입찰 상한을 넘었습니다.`,
       buildDeepLink('auction', auctionId),
       'AUCTION',
       auctionId,
+      {
+        copyContext: {
+          finalPrice,
+        },
+      },
     );
   }
 
@@ -1659,11 +1735,14 @@ export const placeBid = onCall(async (req) => {
     await createInboxNotification(
       outbidUserId,
       'OUTBID',
-      '입찰가가 갱신되었습니다',
-      `현재 최고가 ${finalPrice}원`,
       buildDeepLink('auction', auctionId),
       'AUCTION',
       auctionId,
+      {
+        copyContext: {
+          finalPrice,
+        },
+      },
     );
   }
 
@@ -1796,8 +1875,6 @@ export const buyNow = onCall(async (req) => {
   await createInboxNotification(
     result.buyerId,
     'BUY_NOW_COMPLETED',
-    '즉시 구매가 완료되었습니다',
-    '결제 기한 내 결제를 진행해주세요.',
     buildDeepLink('orders', result.orderId),
     'ORDER',
     result.orderId,
@@ -1805,8 +1882,6 @@ export const buyNow = onCall(async (req) => {
   await createInboxNotification(
     result.sellerId,
     'ORDER_AWAITING_PAYMENT',
-    '새 주문이 결제 대기 중입니다',
-    '구매자 결제 완료 후 배송 정보를 등록해주세요.',
     buildDeepLink('orders', result.orderId),
     'ORDER',
     result.orderId,
@@ -1930,11 +2005,14 @@ export const confirmOrderPayment = onCall(async (req) => {
     await createInboxNotification(
       order.buyerId,
       'PAYMENT_FAILED',
-      '결제가 완료되지 않았습니다',
-      '결제 정보를 확인한 뒤 다시 시도해주세요.',
       buildDeepLink('orders', orderId),
       'ORDER',
       orderId,
+      {
+        copyContext: {
+          paymentFailedReason: 'FAILED',
+        },
+      },
     );
     await writeAuditEvent({
       entityType: 'PAYMENT',
@@ -1955,8 +2033,6 @@ export const confirmOrderPayment = onCall(async (req) => {
   await createInboxNotification(
     order.sellerId,
     'PAYMENT_COMPLETED',
-    '결제 완료',
-    '구매자 결제가 완료되었습니다.',
     buildDeepLink('orders', orderId),
     'ORDER',
     orderId,
@@ -2162,8 +2238,6 @@ export const tossPaymentWebhook = onRequest(async (req, res) => {
       await createInboxNotification(
         order.sellerId,
         'PAYMENT_COMPLETED',
-        '결제 완료',
-        '구매자 결제가 완료되었습니다.',
         buildDeepLink('orders', order.id),
         'ORDER',
         order.id,
@@ -2201,15 +2275,15 @@ export const tossPaymentWebhook = onRequest(async (req, res) => {
       await createInboxNotification(
         order.buyerId,
         'PAYMENT_FAILED',
-        payment.status === 'EXPIRED'
-          ? '결제 기한이 만료되었습니다'
-          : '결제가 취소되었습니다',
-        payment.status === 'EXPIRED'
-          ? '미결제로 주문이 취소되었습니다.'
-          : '결제가 완료되지 않아 주문이 취소되었습니다.',
         buildDeepLink('orders', order.id),
         'ORDER',
         order.id,
+        {
+          copyContext: {
+            paymentFailedReason:
+              payment.status === 'EXPIRED' ? 'EXPIRED' : 'CANCELLED',
+          },
+        },
       );
     } else {
       const markedOrder = withLastWebhookEventId(order, eventMarker);
@@ -2285,11 +2359,15 @@ export const shipmentUpdate = onCall(async (req) => {
   await createInboxNotification(
     order.buyerId,
     'SHIPPED',
-    '배송이 시작되었습니다',
-    `${carrierName} ${trackingNumber}`,
     buildDeepLink('orders', orderId),
     'ORDER',
     orderId,
+    {
+      copyContext: {
+        carrierName,
+        trackingNumber,
+      },
+    },
   );
   await writeAuditEvent({
     entityType: 'ORDER',
@@ -2344,8 +2422,6 @@ export const confirmReceipt = onCall(async (req) => {
   await createInboxNotification(
     order.sellerId,
     'RECEIPT_CONFIRMED',
-    '구매자가 수령을 확인했습니다',
-    '정산 예정 일정을 확인해주세요.',
     buildDeepLink('orders', orderId),
     'ORDER',
     orderId,
@@ -2381,8 +2457,6 @@ export const sendDebugPushProbe = onCall(async (req) => {
   const debugProbeResult = await createInboxNotification(
     uid,
     DEBUG_PUSH_PROBE.type,
-    DEBUG_PUSH_PROBE.title,
-    DEBUG_PUSH_PROBE.body,
     DEBUG_PUSH_PROBE.deeplink,
     DEBUG_PUSH_PROBE.entityType,
     DEBUG_PUSH_PROBE.entityId,
@@ -2626,8 +2700,6 @@ export const finalizeAuctionsScheduler = onSchedule(
         await createInboxNotification(
           notification.buyerId,
           'WON',
-          '낙찰되었습니다',
-          '결제 기한 내 결제를 진행해주세요.',
           buildDeepLink('orders', notification.orderId),
           'ORDER',
           notification.orderId,
@@ -2635,8 +2707,6 @@ export const finalizeAuctionsScheduler = onSchedule(
         await createInboxNotification(
           notification.sellerId,
           'ORDER_AWAITING_PAYMENT',
-          '새 주문이 결제 대기 중입니다',
-          '구매자 결제 완료 후 배송 정보를 등록해주세요.',
           buildDeepLink('orders', notification.orderId),
           'ORDER',
           notification.orderId,
@@ -2726,11 +2796,14 @@ export const expireUnpaidOrdersScheduler = onSchedule(
         await createInboxNotification(
           doc.data().buyerId,
           'PAYMENT_FAILED',
-          '결제 기한이 만료되었습니다',
-          '미결제로 주문이 취소되었고 패널티가 반영되었습니다.',
           buildDeepLink('orders', doc.id),
           'ORDER',
           doc.id,
+          {
+            copyContext: {
+              paymentFailedReason: 'EXPIRED_WITH_PENALTY',
+            },
+          },
         );
       }
     }
@@ -2790,8 +2863,6 @@ export const orderReminderNotificationsScheduler = onSchedule(
         await createInboxNotification(
           order.buyerId,
           'PAYMENT_DUE',
-          '결제 기한이 곧 만료됩니다',
-          '결제 기한 전에 결제를 완료해주세요.',
           buildDeepLink('orders', order.id),
           'ORDER',
           order.id,
@@ -2826,8 +2897,6 @@ export const orderReminderNotificationsScheduler = onSchedule(
         await createInboxNotification(
           order.sellerId,
           'SHIPMENT_REMINDER',
-          '배송 등록이 필요합니다',
-          '결제 완료 주문의 배송 정보를 등록해주세요.',
           buildDeepLink('orders', order.id),
           'ORDER',
           order.id,
@@ -2862,8 +2931,6 @@ export const orderReminderNotificationsScheduler = onSchedule(
         await createInboxNotification(
           order.buyerId,
           'RECEIPT_REMINDER',
-          '수령 확인이 필요합니다',
-          '배송 완료 주문의 수령 확인을 진행해주세요.',
           buildDeepLink('orders', order.id),
           'ORDER',
           order.id,
@@ -2926,11 +2993,14 @@ export const settleScheduler = onSchedule('every 60 minutes', async () => {
     await createInboxNotification(
       order.sellerId,
       'SETTLED',
-      '정산 완료',
-      `주문 ${doc.id} 정산이 완료되었습니다.`,
       buildDeepLink('orders', doc.id),
       'ORDER',
       doc.id,
+      {
+        copyContext: {
+          orderId: doc.id,
+        },
+      },
     );
     await writeAuditEvent({
       entityType: 'ORDER',
