@@ -3,29 +3,16 @@ import { once } from 'node:events';
 import test from 'node:test';
 
 import { createApp } from '../src/app.js';
-
-const debugPushProbeCopyByLocale = {
-  ko: {
-    title: '개발용 푸시 점검',
-    body: '실기기 푸시 수신 경로 점검용 테스트 알림입니다.',
-  },
-  en: {
-    title: 'Dev Push Probe',
-    body: 'Test notification for real-device push delivery checks.',
-  },
-};
+import {
+  buildNotificationCopy,
+  resolveNotificationLocale,
+} from '../src/notificationCopy.js';
 
 function resolveDebugPushProbeExpectedCopy(locale) {
-  if (typeof locale === 'string') {
-    const normalized = locale.trim().toLowerCase();
-    if (normalized.startsWith('en')) {
-      return debugPushProbeCopyByLocale.en;
-    }
-    if (normalized.startsWith('ko')) {
-      return debugPushProbeCopyByLocale.ko;
-    }
-  }
-  return debugPushProbeCopyByLocale.ko;
+  const resolvedLocale = resolveNotificationLocale({
+    tokenLocales: [locale],
+  });
+  return buildNotificationCopy('SYSTEM_TEST', resolvedLocale);
 }
 
 function createMockServices(options = {}) {
@@ -44,6 +31,9 @@ function createMockServices(options = {}) {
   ];
 
   const userPreferences = {
+    languageCode: options.userLanguageCode ?? null,
+    hasExplicitLanguagePreference:
+      options.hasExplicitLanguagePreference ?? false,
     pushEnabled: options.pushEnabled ?? true,
     notificationCategories: {
       auctionActivity: true,
@@ -245,6 +235,65 @@ test('debug push probe localizes notification copy for english locale context', 
   });
   const app = createApp(services);
   const expectedCopy = resolveDebugPushProbeExpectedCopy('en-US');
+
+  await withServer(app, async (port) => {
+    const response = await fetch(
+      `http://127.0.0.1:${port}/api/notifications/debug/push-probe`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer valid-token',
+        },
+      },
+    );
+    assert.equal(response.status, 200);
+  });
+
+  assert.equal(notificationWrites.length, 1);
+  assert.equal(notificationWrites[0].payload.title, expectedCopy.title);
+  assert.equal(notificationWrites[0].payload.body, expectedCopy.body);
+  assert.equal(multicastCalls.length, 1);
+  assert.equal(multicastCalls[0].notification.title, expectedCopy.title);
+  assert.equal(multicastCalls[0].notification.body, expectedCopy.body);
+});
+
+test('debug push probe uses token locale when korean preference is default value', async () => {
+  const { services, notificationWrites, multicastCalls } = createMockServices({
+    localeContext: 'en-US',
+    userLanguageCode: 'ko',
+  });
+  const app = createApp(services);
+  const expectedCopy = resolveDebugPushProbeExpectedCopy('en-US');
+
+  await withServer(app, async (port) => {
+    const response = await fetch(
+      `http://127.0.0.1:${port}/api/notifications/debug/push-probe`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer valid-token',
+        },
+      },
+    );
+    assert.equal(response.status, 200);
+  });
+
+  assert.equal(notificationWrites.length, 1);
+  assert.equal(notificationWrites[0].payload.title, expectedCopy.title);
+  assert.equal(notificationWrites[0].payload.body, expectedCopy.body);
+  assert.equal(multicastCalls.length, 1);
+  assert.equal(multicastCalls[0].notification.title, expectedCopy.title);
+  assert.equal(multicastCalls[0].notification.body, expectedCopy.body);
+});
+
+test('debug push probe keeps explicit korean preference over token locale', async () => {
+  const { services, notificationWrites, multicastCalls } = createMockServices({
+    localeContext: 'en-US',
+    userLanguageCode: 'ko',
+    hasExplicitLanguagePreference: true,
+  });
+  const app = createApp(services);
+  const expectedCopy = resolveDebugPushProbeExpectedCopy('ko-KR');
 
   await withServer(app, async (port) => {
     const response = await fetch(

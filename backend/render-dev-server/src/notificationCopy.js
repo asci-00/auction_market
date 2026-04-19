@@ -76,6 +76,36 @@ const notificationTemplates = {
       body: `Current highest bid: KRW ${ensureNumber(finalPrice)}.`,
     }),
   },
+  WON: {
+    ko: () => ({
+      title: '낙찰되었습니다',
+      body: '결제 기한 내 결제를 진행해주세요.',
+    }),
+    en: () => ({
+      title: 'You won the auction',
+      body: 'Please complete payment before the deadline.',
+    }),
+  },
+  BUY_NOW_COMPLETED: {
+    ko: () => ({
+      title: '즉시 구매가 완료되었습니다',
+      body: '결제 기한 내 결제를 진행해주세요.',
+    }),
+    en: () => ({
+      title: 'Buy now completed',
+      body: 'Please complete payment before the deadline.',
+    }),
+  },
+  ORDER_AWAITING_PAYMENT: {
+    ko: () => ({
+      title: '새 주문이 결제 대기 중입니다',
+      body: '구매자 결제 완료 후 배송 정보를 등록해주세요.',
+    }),
+    en: () => ({
+      title: 'New order awaiting payment',
+      body: 'Please register shipment info after buyer payment is completed.',
+    }),
+  },
   PAYMENT_FAILED: {
     ko: () => ({
       title: '결제가 완료되지 않았습니다',
@@ -96,6 +126,16 @@ const notificationTemplates = {
       body: 'The buyer payment has been completed.',
     }),
   },
+  PAYMENT_DUE: {
+    ko: () => ({
+      title: '결제 기한이 곧 만료됩니다',
+      body: '결제 기한 전에 결제를 완료해주세요.',
+    }),
+    en: () => ({
+      title: 'Payment deadline approaching',
+      body: 'Please complete payment before the deadline.',
+    }),
+  },
   SHIPPED: {
     ko: ({ carrierName, trackingNumber }) => ({
       title: '배송이 시작되었습니다',
@@ -104,6 +144,50 @@ const notificationTemplates = {
     en: ({ carrierName, trackingNumber }) => ({
       title: 'Shipment is on the way',
       body: `${ensureNonEmptyString(carrierName) ?? ''} ${ensureNonEmptyString(trackingNumber) ?? ''}`.trim(),
+    }),
+  },
+  SHIPMENT_REMINDER: {
+    ko: () => ({
+      title: '배송 등록이 필요합니다',
+      body: '결제 완료 주문의 배송 정보를 등록해주세요.',
+    }),
+    en: () => ({
+      title: 'Shipment registration required',
+      body: 'Please register shipment info for paid orders.',
+    }),
+  },
+  RECEIPT_REMINDER: {
+    ko: () => ({
+      title: '수령 확인이 필요합니다',
+      body: '배송 완료 주문의 수령 확인을 진행해주세요.',
+    }),
+    en: () => ({
+      title: 'Receipt confirmation required',
+      body: 'Please confirm receipt for shipped orders.',
+    }),
+  },
+  RECEIPT_CONFIRMED: {
+    ko: () => ({
+      title: '구매자가 수령을 확인했습니다',
+      body: '정산 예정 일정을 확인해주세요.',
+    }),
+    en: () => ({
+      title: 'Buyer confirmed receipt',
+      body: 'Please check the settlement schedule.',
+    }),
+  },
+  SETTLED: {
+    ko: ({ orderId }) => ({
+      title: '정산 완료',
+      body: ensureNonEmptyString(orderId)
+        ? `주문 ${ensureNonEmptyString(orderId)} 정산이 완료되었습니다.`
+        : '정산이 완료되었습니다.',
+    }),
+    en: ({ orderId }) => ({
+      title: 'Settlement completed',
+      body: ensureNonEmptyString(orderId)
+        ? `Settlement completed for order ${ensureNonEmptyString(orderId)}.`
+        : 'Settlement has been completed.',
     }),
   },
 };

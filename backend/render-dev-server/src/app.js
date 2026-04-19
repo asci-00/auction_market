@@ -5,6 +5,7 @@ import { getMessaging } from 'firebase-admin/messaging';
 import { AppError, isAppError } from './errors.js';
 import {
   buildNotificationCopy,
+  normalizeNotificationLocale,
   resolveNotificationLocale,
 } from './notificationCopy.js';
 
@@ -303,8 +304,22 @@ function resolveUserNotificationLocale(userData, tokenCandidates) {
   const tokenLocales = sortedCandidates
     .filter((candidate) => candidate.isActive)
     .map((candidate) => candidate.locale);
+  const preferredLanguageCode = meaningfulString(preferences.languageCode);
+  const hasExplicitLanguagePreference =
+    preferences.hasExplicitLanguagePreference === true;
+  const normalizedPreferredLanguageCode =
+    normalizeNotificationLocale(preferredLanguageCode);
+  const hasEnglishTokenLocale = tokenLocales.some(
+    (locale) => normalizeNotificationLocale(locale) === 'en',
+  );
+  const userLanguageCode =
+    !hasExplicitLanguagePreference &&
+    normalizedPreferredLanguageCode === 'ko' &&
+    hasEnglishTokenLocale
+      ? null
+      : preferredLanguageCode;
   return resolveNotificationLocale({
-    userLanguageCode: preferences.languageCode,
+    userLanguageCode,
     tokenLocales,
   });
 }
