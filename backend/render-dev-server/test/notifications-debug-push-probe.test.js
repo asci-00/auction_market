@@ -267,6 +267,34 @@ test('debug push probe localizes notification copy for english locale context', 
   assert.equal(multicastCalls[0].notification.body, expectedCopy.body);
 });
 
+test('debug push probe localizes english copy for underscore locale context', async () => {
+  const { services, notificationWrites, multicastCalls } = createMockServices({
+    localeContext: 'EN_us',
+  });
+  const app = createApp(services);
+  const expectedCopy = resolveDebugPushProbeExpectedCopy('EN_us');
+
+  await withServer(app, async (port) => {
+    const response = await fetch(
+      `http://127.0.0.1:${port}/api/notifications/debug/push-probe`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer valid-token',
+        },
+      },
+    );
+    assert.equal(response.status, 200);
+  });
+
+  assert.equal(notificationWrites.length, 1);
+  assert.equal(notificationWrites[0].payload.title, expectedCopy.title);
+  assert.equal(notificationWrites[0].payload.body, expectedCopy.body);
+  assert.equal(multicastCalls.length, 1);
+  assert.equal(multicastCalls[0].notification.title, expectedCopy.title);
+  assert.equal(multicastCalls[0].notification.body, expectedCopy.body);
+});
+
 test('debug push probe falls back to korean copy for unsupported locale context', async () => {
   const { services, notificationWrites, multicastCalls } = createMockServices({
     localeContext: 'fr-FR',

@@ -5,7 +5,7 @@ function normalizeNotificationLocale(value) {
     return null;
   }
 
-  const normalized = value.trim().toLowerCase();
+  const normalized = value.trim().toLowerCase().replaceAll('_', '-');
   if (!normalized) {
     return null;
   }
