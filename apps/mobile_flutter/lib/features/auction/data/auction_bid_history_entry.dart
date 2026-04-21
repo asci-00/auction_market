@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'auction_detail_view_data.dart';
+
 class AuctionBidHistoryEntry {
   const AuctionBidHistoryEntry({required this.amount, required this.createdAt});
 
@@ -9,10 +11,13 @@ class AuctionBidHistoryEntry {
   factory AuctionBidHistoryEntry.fromDocument(
     QueryDocumentSnapshot<Map<String, dynamic>> document,
   ) {
-    final data = document.data();
+    return AuctionBidHistoryEntry.fromMap(document.data());
+  }
+
+  factory AuctionBidHistoryEntry.fromMap(Map<String, dynamic> data) {
     return AuctionBidHistoryEntry(
       amount: (data['amount'] as num?) ?? 0,
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      createdAt: dateTimeFromPayload(data['createdAt']),
     );
   }
 }

@@ -1194,7 +1194,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ordersPaymentSheetDevDescription => 'This dev order can complete payment entirely through the server-driven dummy flow. Confirm once to move the order into paid escrow hold.';
 
   @override
-  String get ordersPaymentSheetReadyDescription => 'This order already has the payment return path prepared. Review the session details before you continue outside the app.';
+  String get ordersPaymentSheetReadyDescription => 'This order is ready to open the Toss checkout flow. Review the session details before continuing outside the app.';
 
   @override
   String get ordersPaymentSheetBlockedDescription => 'This order can still be confirmed from a returned payment result. If you already completed Toss checkout elsewhere, enter the payment key below.';
@@ -1203,7 +1203,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ordersPaymentSheetStatusDev => 'Dev dummy payment';
 
   @override
-  String get ordersPaymentSheetStatusReady => 'Return path prepared';
+  String get ordersPaymentSheetStatusReady => 'Toss checkout ready';
 
   @override
   String get ordersPaymentSheetStatusBlocked => 'Manual recovery path';

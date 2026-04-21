@@ -1,8 +1,10 @@
-import { cert, initializeApp } from 'firebase-admin/app';
+import { applicationDefault, cert, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
   emulatorAuthAccounts,
@@ -17,6 +19,9 @@ interface EnvMap {
 const envFileArg = process.argv
   .slice(2)
   .find((arg) => arg.startsWith('--env-file='));
+const projectArg = process.argv
+  .slice(2)
+  .find((arg) => arg.startsWith('--project='));
 const skipAuthUsers = process.argv.includes('--skip-auth-users');
 
 if (envFileArg) {
@@ -24,15 +29,25 @@ if (envFileArg) {
   loadEnvFile(resolve(process.cwd(), envFilePath));
 }
 
-const projectId = resolveRequiredEnv('FIREBASE_PROJECT_ID');
-const serviceAccountJson = parseServiceAccountJson(
-  resolveRequiredEnv('FIREBASE_SERVICE_ACCOUNT_JSON'),
-);
+const confirmWriteToReal =
+  process.argv.includes('--yes') || process.env.CONFIRM_WRITE_TO_REAL === '1';
 
-const app = initializeApp({
-  credential: cert(serviceAccountJson),
-  projectId,
-});
+const projectId = resolveProjectId(projectArg);
+const credential = resolveCredential();
+const isEmulatorTarget =
+  (process.env.FIRESTORE_EMULATOR_HOST?.trim().length ?? 0) > 0 ||
+  (process.env.FIREBASE_AUTH_EMULATOR_HOST?.trim().length ?? 0) > 0;
+
+console.warn(
+  `[seed_dev] target projectId=${projectId} mode=${isEmulatorTarget ? 'EMULATOR' : 'REAL'}`,
+);
+if (!isEmulatorTarget && !confirmWriteToReal) {
+  throw new Error(
+    `Refusing to seed real Firebase project "${projectId}" without explicit confirmation. Pass --yes or set CONFIRM_WRITE_TO_REAL=1.`,
+  );
+}
+
+const app = initializeApp({ credential, projectId });
 const db = getFirestore(app);
 const auth = getAuth(app);
 
@@ -147,12 +162,71 @@ function parseEnvFile(content: string): EnvMap {
   return result;
 }
 
-function resolveRequiredEnv(key: string): string {
-  const value = process.env[key]?.trim();
-  if (!value) {
-    throw new Error(`${key} is required.`);
+function resolveProjectId(projectArgValue?: string): string {
+  const fromArg = projectArgValue?.slice('--project='.length).trim();
+  if (fromArg) {
+    return fromArg;
   }
-  return value;
+
+  const fromEnv =
+    process.env.FIREBASE_PROJECT_ID?.trim() ??
+    process.env.GCLOUD_PROJECT?.trim();
+  if (fromEnv) {
+    return fromEnv;
+  }
+
+  try {
+    const currentDir = dirname(fileURLToPath(import.meta.url));
+    const firebaseRcPath = resolve(currentDir, '../../../.firebaserc');
+    const firebaseRc = JSON.parse(readFileSync(firebaseRcPath, 'utf8')) as {
+      projects?: { default?: string };
+    };
+    const defaultProject = firebaseRc.projects?.default?.trim();
+    if (defaultProject) {
+      return defaultProject;
+    }
+  } catch (error) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === 'ENOENT'
+    ) {
+      // Fall through and raise explicit error below.
+    } else {
+      throw error;
+    }
+  }
+
+  throw new Error(
+    'FIREBASE_PROJECT_ID is required (or pass --project=<firebase-project-id>).',
+  );
+}
+
+function resolveCredential() {
+  const serviceAccountRaw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON?.trim();
+  if (serviceAccountRaw) {
+    return cert(parseServiceAccountJson(serviceAccountRaw));
+  }
+
+  const serviceAccountFile =
+    process.env.FIREBASE_SERVICE_ACCOUNT_JSON_FILE?.trim();
+  if (serviceAccountFile) {
+    const absolutePath = resolve(process.cwd(), serviceAccountFile);
+    const raw = readFileSync(absolutePath, 'utf8');
+    return cert(parseServiceAccountJson(raw));
+  }
+
+  const adcPath =
+    process.env.GOOGLE_APPLICATION_CREDENTIALS?.trim() ||
+    resolve(homedir(), '.config/gcloud/application_default_credentials.json');
+  if (!existsSync(adcPath)) {
+    throw new Error(
+      'Missing credentials. Set FIREBASE_SERVICE_ACCOUNT_JSON, or set FIREBASE_SERVICE_ACCOUNT_JSON_FILE=<path>, or run "gcloud auth application-default login".',
+    );
+  }
+
+  return applicationDefault();
 }
 
 function parseServiceAccountJson(rawValue: string): Record<string, unknown> {

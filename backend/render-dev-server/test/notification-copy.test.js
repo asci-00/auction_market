@@ -14,20 +14,20 @@ test('normalizeNotificationLocale supports underscore locale separators', () => 
 
 test('notification copy templates cover all render notification types', () => {
   const notificationTypes = [
-    'OUTBID',
+    'SYSTEM_TEST',
     'AUTO_BID_CEILING_REACHED',
+    'OUTBID',
     'WON',
     'BUY_NOW_COMPLETED',
     'ORDER_AWAITING_PAYMENT',
-    'PAYMENT_COMPLETED',
     'PAYMENT_DUE',
     'PAYMENT_FAILED',
+    'PAYMENT_COMPLETED',
     'SHIPPED',
     'SHIPMENT_REMINDER',
     'RECEIPT_REMINDER',
     'RECEIPT_CONFIRMED',
     'SETTLED',
-    'SYSTEM_TEST',
   ];
 
   for (const type of notificationTypes) {
@@ -53,9 +53,9 @@ test('notification copy templates cover all render notification types', () => {
   }
 });
 
-test('resolveNotificationLocale falls back to english token locale when available', () => {
+test('resolveNotificationLocale falls back to token locale when user locale is unsupported', () => {
   const locale = resolveNotificationLocale({
-    userLanguageCode: null,
+    userLanguageCode: 'ja',
     tokenLocales: ['EN_us', 'ko-KR'],
   });
   assert.equal(locale, 'en');

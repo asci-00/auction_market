@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 import '../core/error/app_error.dart';
 import '../core/error/error_views.dart';
@@ -36,7 +35,6 @@ class AuctionMarketApp extends ConsumerWidget {
         ref.watch(notificationPushLifecycleProvider);
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
-          builder: FToastBuilder(),
           scaffoldMessengerKey: scaffoldMessengerKey,
           theme: lightTheme,
           darkTheme: darkTheme,
@@ -51,7 +49,6 @@ class AuctionMarketApp extends ConsumerWidget {
       },
       loading: () => MaterialApp(
         debugShowCheckedModeBanner: false,
-        builder: FToastBuilder(),
         scaffoldMessengerKey: scaffoldMessengerKey,
         theme: lightTheme,
         darkTheme: darkTheme,
@@ -64,7 +61,6 @@ class AuctionMarketApp extends ConsumerWidget {
       ),
       error: (error, _) => MaterialApp(
         debugShowCheckedModeBanner: false,
-        builder: FToastBuilder(),
         scaffoldMessengerKey: scaffoldMessengerKey,
         theme: lightTheme,
         darkTheme: darkTheme,

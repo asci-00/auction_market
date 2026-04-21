@@ -1194,7 +1194,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get ordersPaymentSheetDevDescription => '이 dev 주문은 서버 주도 더미 결제 흐름으로 바로 완료할 수 있습니다. 한 번 확인하면 주문이 결제 완료 에스크로 보관 단계로 이동합니다.';
 
   @override
-  String get ordersPaymentSheetReadyDescription => '이 주문은 결제 복귀 경로 준비가 완료되었습니다. 앱 밖에서 계속 진행하기 전에 세션 정보를 확인해 주세요.';
+  String get ordersPaymentSheetReadyDescription => '이 주문은 Toss 결제창으로 이동할 준비가 완료되었습니다. 앱 밖에서 계속 진행하기 전에 세션 정보를 확인해 주세요.';
 
   @override
   String get ordersPaymentSheetBlockedDescription => '복귀한 결제 결과만 있다면 이 주문을 계속 확인할 수 있습니다. 다른 곳에서 Toss checkout을 마쳤다면 아래에서 payment key를 입력해 주세요.';
@@ -1203,7 +1203,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get ordersPaymentSheetStatusDev => 'dev 더미 결제';
 
   @override
-  String get ordersPaymentSheetStatusReady => '복귀 경로 준비 완료';
+  String get ordersPaymentSheetStatusReady => 'Toss 결제창 준비 완료';
 
   @override
   String get ordersPaymentSheetStatusBlocked => '수동 복구 경로';

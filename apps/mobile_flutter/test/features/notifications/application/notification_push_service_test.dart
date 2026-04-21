@@ -4,6 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+GoRouter _buildTestRouter() {
+  return GoRouter(
+    routes: [
+      GoRoute(path: '/', builder: (context, state) => const SizedBox.shrink()),
+    ],
+  );
+}
+
 void main() {
   group('NotificationPushPayload', () {
     test('normalizes app deeplinks into router paths', () {
@@ -59,9 +67,7 @@ void main() {
 
     test('falls back to notifications for unsupported app deeplinks', () {
       final payload = NotificationPushPayload.fromMessageParts(
-        data: const {
-          'deeplink': 'app://unsupported/path',
-        },
+        data: const {'deeplink': 'app://unsupported/path'},
         messageId: 'message-3',
         title: 'Unknown route',
         body: null,
@@ -75,9 +81,7 @@ void main() {
 
     test('falls back to notifications for unsupported slash routes', () {
       final payload = NotificationPushPayload.fromMessageParts(
-        data: const {
-          'deeplink': '/unknown/path',
-        },
+        data: const {'deeplink': '/unknown/path'},
         messageId: 'message-4',
         title: 'Unknown route',
         body: null,
@@ -91,9 +95,94 @@ void main() {
   });
 
   group('NotificationPushService', () {
-    test('marks inbox item read and routes once for opened messages', () async {
+    test(
+      'refreshes foreground route state when current route matches',
+      () async {
+        final refreshedRoutes = <String>[];
+        final service = NotificationPushService(
+          markNotificationRead: ({required notificationId}) async {},
+          logInfoMessage: (_) {},
+          logErrorMessage: ({required message, error, stackTrace}) {},
+          scaffoldMessengerKey: GlobalKey<ScaffoldMessengerState>(),
+          resolveCurrentRoutePath: (_) => '/orders/order-123',
+          refreshRouteStateForPath: refreshedRoutes.add,
+        );
+
+        final router = _buildTestRouter();
+        addTearDown(router.dispose);
+
+        final message = RemoteMessage.fromMap({
+          'messageId': 'message-foreground-1',
+          'data': {'deeplink': 'app://orders/order-123'},
+          'sentTime': DateTime.utc(2026, 4, 11, 5).millisecondsSinceEpoch,
+        });
+
+        await service.handleForegroundMessage(router, message);
+
+        expect(refreshedRoutes, ['/orders/order-123']);
+      },
+    );
+
+    test(
+      'does not refresh foreground route state when route does not match',
+      () async {
+        final refreshedRoutes = <String>[];
+        final service = NotificationPushService(
+          markNotificationRead: ({required notificationId}) async {},
+          logInfoMessage: (_) {},
+          logErrorMessage: ({required message, error, stackTrace}) {},
+          scaffoldMessengerKey: GlobalKey<ScaffoldMessengerState>(),
+          resolveCurrentRoutePath: (_) => '/orders/order-999',
+          refreshRouteStateForPath: refreshedRoutes.add,
+        );
+
+        final router = _buildTestRouter();
+        addTearDown(router.dispose);
+
+        final message = RemoteMessage.fromMap({
+          'messageId': 'message-foreground-2',
+          'data': {'deeplink': 'app://orders/order-123'},
+          'sentTime': DateTime.utc(2026, 4, 11, 6).millisecondsSinceEpoch,
+        });
+
+        await service.handleForegroundMessage(router, message);
+
+        expect(refreshedRoutes, isEmpty);
+      },
+    );
+
+    test(
+      'refreshes orders list when payload targets an order detail route',
+      () async {
+        final refreshedRoutes = <String>[];
+        final service = NotificationPushService(
+          markNotificationRead: ({required notificationId}) async {},
+          logInfoMessage: (_) {},
+          logErrorMessage: ({required message, error, stackTrace}) {},
+          scaffoldMessengerKey: GlobalKey<ScaffoldMessengerState>(),
+          resolveCurrentRoutePath: (_) => '/orders',
+          refreshRouteStateForPath: refreshedRoutes.add,
+        );
+
+        final router = _buildTestRouter();
+        addTearDown(router.dispose);
+
+        final message = RemoteMessage.fromMap({
+          'messageId': 'message-foreground-3',
+          'data': {'deeplink': 'app://orders/order-123'},
+          'sentTime': DateTime.utc(2026, 4, 11, 7).millisecondsSinceEpoch,
+        });
+
+        await service.handleForegroundMessage(router, message);
+
+        expect(refreshedRoutes, ['/orders/order-123']);
+      },
+    );
+
+    test('keeps opened-message dedupe for mark-read and routing', () async {
       final markedReadIds = <String>[];
       final routedPaths = <String>[];
+      var foregroundRefreshed = false;
       final service = NotificationPushService(
         markNotificationRead: ({required notificationId}) async {
           markedReadIds.add(notificationId);
@@ -104,16 +193,12 @@ void main() {
         navigateToRoute: (_, routePath) {
           routedPaths.add(routePath);
         },
+        refreshRouteStateForPath: (_) {
+          foregroundRefreshed = true;
+        },
       );
 
-      final router = GoRouter(
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, state) => const SizedBox.shrink(),
-          ),
-        ],
-      );
+      final router = _buildTestRouter();
       addTearDown(router.dispose);
 
       final message = RemoteMessage.fromMap({
@@ -130,42 +215,36 @@ void main() {
 
       expect(markedReadIds, ['notif-open-1']);
       expect(routedPaths, ['/orders/order-123']);
+      expect(foregroundRefreshed, isFalse);
     });
 
-    test('falls back to notifications when opened message route is unsupported',
-        () async {
-      final routedPaths = <String>[];
-      final service = NotificationPushService(
-        markNotificationRead: ({required notificationId}) async {},
-        logInfoMessage: (_) {},
-        logErrorMessage: ({required message, error, stackTrace}) {},
-        scaffoldMessengerKey: GlobalKey<ScaffoldMessengerState>(),
-        navigateToRoute: (_, routePath) {
-          routedPaths.add(routePath);
-        },
-      );
+    test(
+      'falls back to notifications when opened message route is unsupported',
+      () async {
+        final routedPaths = <String>[];
+        final service = NotificationPushService(
+          markNotificationRead: ({required notificationId}) async {},
+          logInfoMessage: (_) {},
+          logErrorMessage: ({required message, error, stackTrace}) {},
+          scaffoldMessengerKey: GlobalKey<ScaffoldMessengerState>(),
+          navigateToRoute: (_, routePath) {
+            routedPaths.add(routePath);
+          },
+        );
 
-      final router = GoRouter(
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, state) => const SizedBox.shrink(),
-          ),
-        ],
-      );
-      addTearDown(router.dispose);
+        final router = _buildTestRouter();
+        addTearDown(router.dispose);
 
-      final message = RemoteMessage.fromMap({
-        'messageId': 'message-open-2',
-        'data': {
-          'deeplink': '/not-a-real-route',
-        },
-        'sentTime': DateTime.utc(2026, 4, 11, 6).millisecondsSinceEpoch,
-      });
+        final message = RemoteMessage.fromMap({
+          'messageId': 'message-open-2',
+          'data': {'deeplink': '/not-a-real-route'},
+          'sentTime': DateTime.utc(2026, 4, 11, 6).millisecondsSinceEpoch,
+        });
 
-      await service.handleOpenMessage(router, message, source: 'terminated');
+        await service.handleOpenMessage(router, message, source: 'terminated');
 
-      expect(routedPaths, ['/notifications']);
-    });
+        expect(routedPaths, ['/notifications']);
+      },
+    );
   });
 }

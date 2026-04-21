@@ -262,6 +262,28 @@ function getTimestampMillis(value) {
   return 0;
 }
 
+function timestampJsonValue(value) {
+  if (value == null) {
+    return null;
+  }
+  if (value instanceof Timestamp) {
+    return value.toDate().toISOString();
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  if (value && typeof value.toDate === 'function') {
+    return value.toDate().toISOString();
+  }
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (typeof value === 'number') {
+    return new Date(value).toISOString();
+  }
+  return null;
+}
+
 function sortTokenCandidates(candidates) {
   return [...candidates].sort((left, right) => {
     const updatedAtDiff =
@@ -1507,6 +1529,57 @@ export function createApp(services) {
 
   app.get('/health', sendHealth);
   app.get('/healthz', sendHealth);
+
+  app.get(
+    '/api/auctions/:auctionId/detail',
+    asyncRoute(async (req, res) => {
+      const auctionId = ensureString(req.params.auctionId, 'auctionId');
+      const auctionRef = db.collection('auctions').doc(auctionId);
+      const auctionSnap = await auctionRef.get();
+      if (!auctionSnap.exists) {
+        throw new AppError('not-found', 'Auction not found');
+      }
+
+      const auction = auctionSnap.data();
+      const itemId = optionalString(auction.itemId);
+      const [itemSnap, bidsSnap] = await Promise.all([
+        itemId ? db.collection('items').doc(itemId).get() : Promise.resolve(null),
+        auctionRef.collection('bids').orderBy('createdAt').limitToLast(6).get(),
+      ]);
+      const item = itemSnap?.exists ? itemSnap.data() : {};
+
+      res.set('Cache-Control', 'no-store').json({
+        detail: {
+          id: auctionSnap.id,
+          itemId: itemId ?? '',
+          titleSnapshot: optionalString(auction.titleSnapshot) ?? '',
+          heroImageUrl: optionalString(auction.heroImageUrl),
+          imageUrls: stringArray(item.imageUrls),
+          description: optionalString(item.description) ?? '',
+          categorySub:
+            optionalString(item.categorySub) ??
+            optionalString(auction.categorySub) ??
+            '',
+          condition: optionalString(item.condition) ?? '',
+          sellerId: optionalString(auction.sellerId),
+          status: optionalString(auction.status) ?? 'DRAFT',
+          currentPrice:
+            typeof auction.currentPrice === 'number' ? auction.currentPrice : 0,
+          buyNowPrice:
+            typeof auction.buyNowPrice === 'number' ? auction.buyNowPrice : null,
+          orderId: optionalString(auction.orderId),
+          endAt: timestampJsonValue(auction.endAt),
+        },
+        bidHistory: bidsSnap.docs.map((doc) => {
+          const bid = doc.data();
+          return {
+            amount: typeof bid.amount === 'number' ? bid.amount : 0,
+            createdAt: timestampJsonValue(bid.createdAt),
+          };
+        }),
+      });
+    }),
+  );
 
   app.get(
     '/payments/*',

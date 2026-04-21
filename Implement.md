@@ -31,6 +31,7 @@
   - Android: `dev` and `prod`
   - iOS: `dev` and `prod` schemes with `Debug-dev`/`Release-dev`/`Profile-dev` and `Debug-prod`/`Release-prod`/`Profile-prod`
 - The mobile backend gateway now keeps prod on Firebase callable and dev on Render HTTP without changing feature-level mutation contracts.
+- Dev auction detail now uses the Render HTTP detail endpoint with short polling, while prod/Firebase-callable transport keeps the Firestore listener path. This avoids opening the Android Firestore gRPC channel on that physical-device dev detail route.
 - Structured mobile logging now flows through `AppLogger`, with timestamp, level, domain, and source.
 - Mobile foundation folders, guarded routing, Firebase bootstrap, localized core screens, and shared editorial design primitives exist.
 - Firestore read paths and Functions write paths cover login, browse, auction detail, sell, orders, notifications, and activity flows.
@@ -66,6 +67,7 @@
 - Render dev server now resolves currently emitted inbox-backed notification copy through centralized `ko`/`en` templates, with locale priority `users/{uid}.preferences.languageCode` then active device-token locale metadata then `ko` fallback.
 - Backend Functions inbox and push copy for all supported notification event types now resolve from a centralized `ko`/`en` localization engine, with locale priority `users/{uid}.preferences.languageCode` then latest deliverable token locale then `ko` fallback.
 - Mobile now handles push payloads through `onMessage`, `getInitialMessage`, and `onMessageOpenedApp`, surfaces foreground messages with a `SnackBar`, routes opened notifications through the existing deep-link resolver, and falls back to `/notifications` when a push deeplink is missing or unsupported.
+- Foreground push handling now also refreshes route state when the currently visible route already matches the pushed entity path, covering `/auction/:id`, `/orders`, `/orders/:orderId`, and `/notifications` without waiting for tap-open navigation.
 - Android now declares a default Firebase Messaging channel id in the manifest and creates the matching notification channel from `MainActivity` on Android O and above.
 - Emulator seed data now covers separate buyer and seller notification, payment, shipment, confirmed-receipt, settled, cancelled-unpaid, draft, unsold, and cancelled-listing paths without cross-linking orders to unrelated auctions.
 - Backend callables cover bootstrap, draft lifecycle, bid and auto-bid, buy now, payment-session preparation, payment confirmation, shipment update, receipt confirmation, and notification read state.

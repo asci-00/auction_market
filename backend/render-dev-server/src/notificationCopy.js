@@ -1,5 +1,3 @@
-const supportedNotificationLocales = new Set(['ko', 'en']);
-
 function normalizeNotificationLocale(value) {
   if (typeof value !== 'string') {
     return null;
@@ -29,7 +27,7 @@ function resolveNotificationLocale(input = {}) {
   const tokenLocales = Array.isArray(input.tokenLocales) ? input.tokenLocales : [];
   for (const locale of tokenLocales) {
     const normalized = normalizeNotificationLocale(locale);
-    if (normalized && supportedNotificationLocales.has(normalized)) {
+    if (normalized) {
       return normalized;
     }
   }
@@ -37,8 +35,8 @@ function resolveNotificationLocale(input = {}) {
   return 'ko';
 }
 
-function ensureNumber(value) {
-  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+function ensureNumberOrNull(value) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 function ensureNonEmptyString(value) {
@@ -59,21 +57,33 @@ const notificationTemplates = {
   AUTO_BID_CEILING_REACHED: {
     ko: ({ finalPrice }) => ({
       title: '자동입찰 한도에 도달했습니다',
-      body: `현재 최고가 ${ensureNumber(finalPrice)}원으로 자동입찰 상한을 넘었습니다.`,
+      body:
+        ensureNumberOrNull(finalPrice) == null
+          ? '현재 최고가를 확인한 뒤 자동입찰 한도를 조정해 주세요.'
+          : `현재 최고가 ${finalPrice}원으로 자동입찰 상한을 넘었습니다.`,
     }),
     en: ({ finalPrice }) => ({
       title: 'Auto-bid ceiling reached',
-      body: `Your auto-bid ceiling was exceeded at KRW ${ensureNumber(finalPrice)}.`,
+      body:
+        ensureNumberOrNull(finalPrice) == null
+          ? 'Check the latest highest bid and adjust your auto-bid ceiling.'
+          : `Your auto-bid ceiling was exceeded at KRW ${finalPrice}.`,
     }),
   },
   OUTBID: {
     ko: ({ finalPrice }) => ({
       title: '입찰가가 갱신되었습니다',
-      body: `현재 최고가 ${ensureNumber(finalPrice)}원`,
+      body:
+        ensureNumberOrNull(finalPrice) == null
+          ? '현재 최고가를 확인해 주세요.'
+          : `현재 최고가 ${finalPrice}원`,
     }),
     en: ({ finalPrice }) => ({
       title: 'You were outbid',
-      body: `Current highest bid: KRW ${ensureNumber(finalPrice)}.`,
+      body:
+        ensureNumberOrNull(finalPrice) == null
+          ? 'Please check the current highest bid.'
+          : `Current highest bid: KRW ${finalPrice}.`,
     }),
   },
   WON: {
@@ -129,7 +139,7 @@ const notificationTemplates = {
   PAYMENT_DUE: {
     ko: () => ({
       title: '결제 기한이 곧 만료됩니다',
-      body: '결제 기한 전에 결제를 완료해주세요.',
+      body: '결제 기한 전에 결제를 완료해 주세요.',
     }),
     en: () => ({
       title: 'Payment deadline approaching',
@@ -139,11 +149,15 @@ const notificationTemplates = {
   SHIPPED: {
     ko: ({ carrierName, trackingNumber }) => ({
       title: '배송이 시작되었습니다',
-      body: `${ensureNonEmptyString(carrierName) ?? ''} ${ensureNonEmptyString(trackingNumber) ?? ''}`.trim(),
+      body:
+        `${ensureNonEmptyString(carrierName) ?? ''} ${ensureNonEmptyString(trackingNumber) ?? ''}`.trim() ||
+        '배송 정보가 곧 업데이트됩니다.',
     }),
     en: ({ carrierName, trackingNumber }) => ({
       title: 'Shipment is on the way',
-      body: `${ensureNonEmptyString(carrierName) ?? ''} ${ensureNonEmptyString(trackingNumber) ?? ''}`.trim(),
+      body:
+        `${ensureNonEmptyString(carrierName) ?? ''} ${ensureNonEmptyString(trackingNumber) ?? ''}`.trim() ||
+        'Tracking details will be available soon.',
     }),
   },
   SHIPMENT_REMINDER: {
