@@ -151,6 +151,34 @@ void main() {
       },
     );
 
+    test(
+      'refreshes orders list when payload targets an order detail route',
+      () async {
+        final refreshedRoutes = <String>[];
+        final service = NotificationPushService(
+          markNotificationRead: ({required notificationId}) async {},
+          logInfoMessage: (_) {},
+          logErrorMessage: ({required message, error, stackTrace}) {},
+          scaffoldMessengerKey: GlobalKey<ScaffoldMessengerState>(),
+          resolveCurrentRoutePath: (_) => '/orders',
+          refreshRouteStateForPath: refreshedRoutes.add,
+        );
+
+        final router = _buildTestRouter();
+        addTearDown(router.dispose);
+
+        final message = RemoteMessage.fromMap({
+          'messageId': 'message-foreground-3',
+          'data': {'deeplink': 'app://orders/order-123'},
+          'sentTime': DateTime.utc(2026, 4, 11, 7).millisecondsSinceEpoch,
+        });
+
+        await service.handleForegroundMessage(router, message);
+
+        expect(refreshedRoutes, ['/orders/order-123']);
+      },
+    );
+
     test('keeps opened-message dedupe for mark-read and routing', () async {
       final markedReadIds = <String>[];
       final routedPaths = <String>[];

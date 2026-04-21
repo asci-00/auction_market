@@ -29,8 +29,23 @@ if (envFileArg) {
   loadEnvFile(resolve(process.cwd(), envFilePath));
 }
 
+const confirmWriteToReal =
+  process.argv.includes('--yes') || process.env.CONFIRM_WRITE_TO_REAL === '1';
+
 const projectId = resolveProjectId(projectArg);
 const credential = resolveCredential();
+const isEmulatorTarget =
+  (process.env.FIRESTORE_EMULATOR_HOST?.trim().length ?? 0) > 0 ||
+  (process.env.FIREBASE_AUTH_EMULATOR_HOST?.trim().length ?? 0) > 0;
+
+console.warn(
+  `[seed_dev] target projectId=${projectId} mode=${isEmulatorTarget ? 'EMULATOR' : 'REAL'}`,
+);
+if (!isEmulatorTarget && !confirmWriteToReal) {
+  throw new Error(
+    `Refusing to seed real Firebase project "${projectId}" without explicit confirmation. Pass --yes or set CONFIRM_WRITE_TO_REAL=1.`,
+  );
+}
 
 const app = initializeApp({ credential, projectId });
 const db = getFirestore(app);
@@ -170,8 +185,17 @@ function resolveProjectId(projectArgValue?: string): string {
     if (defaultProject) {
       return defaultProject;
     }
-  } catch (_) {
-    // Fall through and raise explicit error below.
+  } catch (error) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === 'ENOENT'
+    ) {
+      // Fall through and raise explicit error below.
+    } else {
+      throw error;
+    }
   }
 
   throw new Error(
@@ -185,8 +209,8 @@ function resolveCredential() {
     return cert(parseServiceAccountJson(serviceAccountRaw));
   }
 
-  const serviceAccountFile = process.env.FIREBASE_SERVICE_ACCOUNT_JSON_FILE
-    ?.trim();
+  const serviceAccountFile =
+    process.env.FIREBASE_SERVICE_ACCOUNT_JSON_FILE?.trim();
   if (serviceAccountFile) {
     const absolutePath = resolve(process.cwd(), serviceAccountFile);
     const raw = readFileSync(absolutePath, 'utf8');

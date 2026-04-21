@@ -85,6 +85,8 @@ final notificationDeviceTokenLifecycleProvider = Provider<void>((ref) {
     }, context: 'while synchronizing the current notification device token');
   }
 
+  // Initial token sync relies on FirebaseAuth.authStateChanges() initial
+  // emission, with onTokenRefresh/onResume as additional recovery paths.
   final authSubscription = ref
       .read(firebaseAuthProvider)
       .authStateChanges()

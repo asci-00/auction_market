@@ -31,7 +31,7 @@ class HomeAuctionSummary {
       title: data['titleSnapshot'] as String? ?? '',
       categoryMain: data['categoryMain'] as String? ?? 'GOODS',
       currentPrice: data['currentPrice'] as num? ?? 0,
-      bidCount: data['bidCount'] as int? ?? 0,
+      bidCount: (data['bidCount'] as num?)?.toInt() ?? 0,
       heroImageUrl: data['heroImageUrl'] as String?,
       buyNowPrice: data['buyNowPrice'] as num?,
       endAt: (data['endAt'] as Timestamp?)?.toDate(),

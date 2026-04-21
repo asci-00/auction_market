@@ -197,6 +197,15 @@
   - `entityId`
 - Client routing must use the existing deep-link resolver and must not add a separate push-only routing format.
 
+## Localization Contract
+- Notification copy is centralized by event type with `ko` and `en` templates.
+- Render dev server and Firebase Functions must both resolve inbox-backed event copy through those centralized templates instead of route-level hardcoded strings.
+- Locale resolution priority is:
+  - `users/{uid}.preferences.languageCode` when normalized to `ko` or `en`
+  - device-token locale metadata under `users/{uid}/deviceTokens/{tokenId}` (latest active token first)
+  - fallback `ko`
+- Debug push-probe must reuse the same localized `title` and `body` generated for inbox writes so push and inbox copy stay aligned for the same event.
+
 ## Client Behavior
 - Foreground
   - Show an in-app banner or surfaced message for supported push events.

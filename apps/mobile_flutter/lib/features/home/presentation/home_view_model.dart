@@ -51,15 +51,21 @@ class HomeViewModel extends _$HomeViewModel {
         (state.valueOrNull ?? HomeViewState(endingSoon: initial[0], hot: initial[1]))
             .copyWith(endingSoon: items),
       ),
+      onError: _handleStreamError,
     );
     _hotSub = hotStream.listen(
       (items) => state = AsyncData(
         (state.valueOrNull ?? HomeViewState(endingSoon: initial[0], hot: initial[1]))
             .copyWith(hot: items),
       ),
+      onError: _handleStreamError,
     );
 
     return HomeViewState(endingSoon: initial[0], hot: initial[1]);
+  }
+
+  void _handleStreamError(Object error, StackTrace stackTrace) {
+    state = AsyncError(error, stackTrace);
   }
 }
 

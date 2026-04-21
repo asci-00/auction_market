@@ -160,6 +160,12 @@ Future<AuthorizationStatus> resolveNotificationPermissionStatus({
     if (status.isGranted || status.isProvisional) {
       return AuthorizationStatus.authorized;
     }
+    if (status.isPermanentlyDenied) {
+      return AuthorizationStatus.denied;
+    }
+    if (status.isDenied) {
+      return AuthorizationStatus.notDetermined;
+    }
     return AuthorizationStatus.denied;
   }
 

@@ -369,8 +369,23 @@ class NotificationPushService {
   }
 
   static bool _routePathsMatch(String currentRoutePath, String routePath) {
-    return _normalizeRoutePath(currentRoutePath) ==
-        _normalizeRoutePath(routePath);
+    final normalizedCurrent = _normalizeRoutePath(currentRoutePath);
+    final normalizedTarget = _normalizeRoutePath(routePath);
+    if (normalizedCurrent == normalizedTarget) {
+      return true;
+    }
+
+    final currentUri = Uri.tryParse(normalizedCurrent);
+    final targetUri = Uri.tryParse(normalizedTarget);
+    if (currentUri == null || targetUri == null) {
+      return false;
+    }
+
+    if (_isOrdersListOrDetailPath(currentUri.path) &&
+        _isOrdersListOrDetailPath(targetUri.path)) {
+      return currentUri.path == '/orders' || targetUri.path == '/orders';
+    }
+    return false;
   }
 
   static String _normalizeRoutePath(String routePath) {
@@ -379,6 +394,16 @@ class NotificationPushService {
       return routePath;
     }
     return uri.path;
+  }
+
+  static bool _isOrdersListOrDetailPath(String path) {
+    if (path == '/orders') {
+      return true;
+    }
+    final segments = Uri.parse(path).pathSegments;
+    return segments.length == 2 &&
+        segments.first == 'orders' &&
+        segments.last.isNotEmpty;
   }
 
   static void _defaultNavigateToRoute(GoRouter router, String routePath) {

@@ -59,6 +59,19 @@ class AuctionViewModel extends _$AuctionViewModel {
           .listen(
             (value) => state = AsyncData(value),
             onError: (Object error, StackTrace stackTrace) {
+              if (state.valueOrNull != null) {
+                FlutterError.reportError(
+                  FlutterErrorDetails(
+                    exception: error,
+                    stack: stackTrace,
+                    library: 'auction_view_model',
+                    context: ErrorDescription(
+                      'while polling HTTP auction detail',
+                    ),
+                  ),
+                );
+                return;
+              }
               state = AsyncError(error, stackTrace);
             },
           );
