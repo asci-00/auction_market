@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/backend/dev_read_api.dart';
+import '../../../core/firebase/firebase_bootstrap.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../data/activity_hub_summary.dart';
 
@@ -39,9 +41,35 @@ class ActivityViewModel extends _$ActivityViewModel {
   StreamSubscription<ActivityHubSummary>? _buyerSub;
   StreamSubscription<ActivityHubSummary>? _sellerSub;
   StreamSubscription<ActivityHubSummary>? _notificationsSub;
+  StreamSubscription<ActivityViewPayload>? _httpPollSub;
 
   @override
   Future<ActivityViewState> build(String userId) async {
+    final config = ref.watch(appConfigProvider);
+    if (config.usesHttpBackend) {
+      final api = ref.watch(devReadApiProvider);
+      final stream = api.poll(api.fetchActivity);
+      final initial = await stream.first;
+      _httpPollSub = stream.listen(
+        (payload) => state = AsyncData(
+          ActivityViewState(
+            buyerSummary: payload.buyerSummary,
+            sellerSummary: payload.sellerSummary,
+            notificationsSummary: payload.notificationsSummary,
+          ),
+        ),
+        onError: _handleStreamError,
+      );
+      ref.onDispose(() {
+        unawaited(_httpPollSub?.cancel());
+      });
+      return ActivityViewState(
+        buyerSummary: initial.buyerSummary,
+        sellerSummary: initial.sellerSummary,
+        notificationsSummary: initial.notificationsSummary,
+      );
+    }
+
     final buyerStream = _buyerSummaryStream(ref, userId);
     final sellerStream = _sellerSummaryStream(ref, userId);
     final notificationsStream = _notificationsSummaryStream(ref, userId);
@@ -51,9 +79,9 @@ class ActivityViewModel extends _$ActivityViewModel {
     final notifications = await notificationsStream.first;
 
     ref.onDispose(() {
-      _buyerSub?.cancel();
-      _sellerSub?.cancel();
-      _notificationsSub?.cancel();
+      unawaited(_buyerSub?.cancel());
+      unawaited(_sellerSub?.cancel());
+      unawaited(_notificationsSub?.cancel());
     });
 
     _buyerSub = buyerStream.listen((value) {

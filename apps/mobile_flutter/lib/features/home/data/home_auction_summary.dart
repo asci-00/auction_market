@@ -24,17 +24,32 @@ class HomeAuctionSummary {
   factory HomeAuctionSummary.fromDocument(
     QueryDocumentSnapshot<Map<String, dynamic>> document,
   ) {
-    final data = document.data();
+    return HomeAuctionSummary.fromMap({'id': document.id, ...document.data()});
+  }
 
+  factory HomeAuctionSummary.fromMap(Map<String, dynamic> data) {
     return HomeAuctionSummary(
-      id: document.id,
+      id: data['id'] as String? ?? '',
       title: data['titleSnapshot'] as String? ?? '',
       categoryMain: data['categoryMain'] as String? ?? 'GOODS',
       currentPrice: data['currentPrice'] as num? ?? 0,
       bidCount: (data['bidCount'] as num?)?.toInt() ?? 0,
       heroImageUrl: data['heroImageUrl'] as String?,
       buyNowPrice: data['buyNowPrice'] as num?,
-      endAt: (data['endAt'] as Timestamp?)?.toDate(),
+      endAt: _dateTimeFromPayload(data['endAt']),
     );
   }
+}
+
+DateTime? _dateTimeFromPayload(Object? value) {
+  if (value is Timestamp) {
+    return value.toDate();
+  }
+  if (value is String) {
+    return DateTime.tryParse(value);
+  }
+  if (value is num) {
+    return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+  }
+  return null;
 }

@@ -144,7 +144,7 @@
   - `APP_BACKEND_TRANSPORT=http`
   - `APP_API_BASE_URL=https://auction-market-dev-api.onrender.com`
   - `USE_FIREBASE_EMULATORS=false`
-- With dev HTTP transport, auction detail reads use the Render dev server endpoint `GET /api/auctions/:auctionId/detail` and short client polling instead of opening a mobile Firestore listener. Other live read surfaces keep their documented Firestore paths unless they are explicitly moved to the HTTP surface.
+- With dev HTTP transport, home, search, auction detail, orders, notifications, activity, my profile, sell drafts, and settings preferences use Render dev server read endpoints with short client polling where a screen needs live-ish refreshes. Firebase-callable and prod transports keep the direct mobile Firestore read paths.
 
 ## Local Emulator Quick Start
 - Local emulator define file:

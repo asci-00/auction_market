@@ -1,4 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:math';
+
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -10,27 +11,23 @@ import '../../../core/firebase/firebase_providers.dart';
 import '../data/sell_draft_form_data.dart';
 
 final sellFlowServiceProvider = Provider<SellFlowService>((ref) {
-    return SellFlowService(
-      auth: ref.watch(firebaseAuthProvider),
-      firestore: ref.watch(firestoreProvider),
-      gateway: ref.watch(backendGatewayProvider),
-      storage: ref.watch(firebaseStorageProvider),
-    );
+  return SellFlowService(
+    auth: ref.watch(firebaseAuthProvider),
+    gateway: ref.watch(backendGatewayProvider),
+    storage: ref.watch(firebaseStorageProvider),
+  );
 });
 
 class SellFlowService {
   const SellFlowService({
     required FirebaseAuth auth,
-    required FirebaseFirestore firestore,
     required BackendGateway gateway,
     required FirebaseStorage storage,
-  })  : _auth = auth,
-        _firestore = firestore,
-        _gateway = gateway,
-        _storage = storage;
+  }) : _auth = auth,
+       _gateway = gateway,
+       _storage = storage;
 
   final FirebaseAuth _auth;
-  final FirebaseFirestore _firestore;
   final BackendGateway _gateway;
   final FirebaseStorage _storage;
 
@@ -47,7 +44,7 @@ class SellFlowService {
       );
     }
 
-    final itemId = form.itemId ?? _firestore.collection('items').doc().id;
+    final itemId = form.itemId ?? _newClientId();
     final uploadedImageUrls = await _uploadImages(
       uid: uid,
       itemId: itemId,
@@ -84,9 +81,7 @@ class SellFlowService {
           'buyNowPrice': form.buyNowPrice,
           'durationDays': form.durationDays,
         },
-        'appraisal': {
-          'status': form.appraisalRequested ? 'REQUESTED' : 'NONE',
-        },
+        'appraisal': {'status': form.appraisalRequested ? 'REQUESTED' : 'NONE'},
       },
     );
 
@@ -148,6 +143,16 @@ class SellFlowService {
   }
 }
 
+String _newClientId() {
+  const alphabet =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  final random = Random.secure();
+  return List.generate(
+    20,
+    (_) => alphabet[random.nextInt(alphabet.length)],
+  ).join();
+}
+
 class SellDraftSaveResult {
   const SellDraftSaveResult({
     required this.itemId,
@@ -160,10 +165,7 @@ class SellDraftSaveResult {
   final List<String> authImageUrls;
 }
 
-enum _SellUploadScope {
-  gallery,
-  auth,
-}
+enum _SellUploadScope { gallery, auth }
 
 String _fileExtension(String name) {
   final segments = name.split('.');

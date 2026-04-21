@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/backend/dev_read_api.dart';
+import '../../../core/firebase/firebase_bootstrap.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../data/notification_item.dart';
 
@@ -26,11 +28,30 @@ class NotificationsViewModel extends _$NotificationsViewModel {
 
   @override
   Future<NotificationsViewState> build(String userId) async {
+    final config = ref.watch(appConfigProvider);
+    if (config.usesHttpBackend) {
+      final api = ref.watch(devReadApiProvider);
+      final stream = api.poll(api.fetchNotifications);
+      final first = await stream.first;
+
+      ref.onDispose(() {
+        unawaited(_sub?.cancel());
+      });
+
+      _sub = stream.listen((items) {
+        final current =
+            state.valueOrNull ?? NotificationsViewState(items: items);
+        state = AsyncData(current.copyWith(items: items));
+      }, onError: _handleStreamError);
+
+      return NotificationsViewState(items: first);
+    }
+
     final stream = _notificationsStream(ref, userId);
     final first = await stream.first;
 
     ref.onDispose(() {
-      _sub?.cancel();
+      unawaited(_sub?.cancel());
     });
 
     _sub = stream.listen((items) {

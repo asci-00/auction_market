@@ -22,15 +22,18 @@ class OrderSummary {
   factory OrderSummary.fromDocument(
     QueryDocumentSnapshot<Map<String, dynamic>> document,
   ) {
-    final data = document.data();
+    return OrderSummary.fromMap({'id': document.id, ...document.data()});
+  }
+
+  factory OrderSummary.fromMap(Map<String, dynamic> data) {
     final shipping = (data['shipping'] as Map<String, dynamic>?) ?? const {};
 
     return OrderSummary(
-      id: document.id,
+      id: data['id'] as String? ?? '',
       paymentStatus: (data['paymentStatus'] as String?) ?? 'PENDING',
       orderStatus: (data['orderStatus'] as String?) ?? 'PENDING',
       finalPrice: (data['finalPrice'] as num?) ?? 0,
-      paymentDueAt: (data['paymentDueAt'] as Timestamp?)?.toDate(),
+      paymentDueAt: _dateTimeFromPayload(data['paymentDueAt']),
       carrierName: shipping['carrierName'] as String?,
       trackingNumber: shipping['trackingNumber'] as String?,
     );
@@ -39,4 +42,17 @@ class OrderSummary {
   bool get hasShipmentSummary =>
       (carrierName?.isNotEmpty ?? false) &&
       (trackingNumber?.isNotEmpty ?? false);
+}
+
+DateTime? _dateTimeFromPayload(Object? value) {
+  if (value is Timestamp) {
+    return value.toDate();
+  }
+  if (value is String) {
+    return DateTime.tryParse(value);
+  }
+  if (value is num) {
+    return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+  }
+  return null;
 }

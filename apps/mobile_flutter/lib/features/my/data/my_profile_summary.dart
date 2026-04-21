@@ -14,7 +14,12 @@ class MyProfileSummary {
   factory MyProfileSummary.fromDocument(
     DocumentSnapshot<Map<String, dynamic>> document,
   ) {
-    final data = document.data() ?? const <String, dynamic>{};
+    return MyProfileSummary.fromMap(
+      document.data() ?? const <String, dynamic>{},
+    );
+  }
+
+  factory MyProfileSummary.fromMap(Map<String, dynamic> data) {
     final verification =
         (data['verification'] as Map<String, dynamic>?) ?? const {};
 

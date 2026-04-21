@@ -76,4 +76,16 @@ class ActivityHubSummary {
       unreadNotificationCount: unreadNotificationCount,
     );
   }
+
+  factory ActivityHubSummary.fromMap(Map<String, dynamic> data) {
+    return ActivityHubSummary(
+      pendingPaymentCount: (data['pendingPaymentCount'] as num?)?.toInt() ?? 0,
+      awaitingReceiptCount:
+          (data['awaitingReceiptCount'] as num?)?.toInt() ?? 0,
+      awaitingShipmentCount:
+          (data['awaitingShipmentCount'] as num?)?.toInt() ?? 0,
+      unreadNotificationCount:
+          (data['unreadNotificationCount'] as num?)?.toInt() ?? 0,
+    );
+  }
 }

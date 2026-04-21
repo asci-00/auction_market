@@ -20,15 +20,30 @@ class NotificationItem {
   factory NotificationItem.fromDocument(
     QueryDocumentSnapshot<Map<String, dynamic>> document,
   ) {
-    final data = document.data();
+    return NotificationItem.fromMap({'id': document.id, ...document.data()});
+  }
 
+  factory NotificationItem.fromMap(Map<String, dynamic> data) {
     return NotificationItem(
-      id: document.id,
+      id: data['id'] as String? ?? '',
       title: (data['title'] as String?) ?? '',
       body: (data['body'] as String?) ?? '',
       deeplink: data['deeplink'] as String?,
       isRead: data['isRead'] as bool? ?? false,
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      createdAt: _dateTimeFromPayload(data['createdAt']),
     );
   }
+}
+
+DateTime? _dateTimeFromPayload(Object? value) {
+  if (value is Timestamp) {
+    return value.toDate();
+  }
+  if (value is String) {
+    return DateTime.tryParse(value);
+  }
+  if (value is num) {
+    return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+  }
+  return null;
 }

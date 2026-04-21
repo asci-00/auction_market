@@ -31,10 +31,10 @@
   - Android: `dev` and `prod`
   - iOS: `dev` and `prod` schemes with `Debug-dev`/`Release-dev`/`Profile-dev` and `Debug-prod`/`Release-prod`/`Profile-prod`
 - The mobile backend gateway now keeps prod on Firebase callable and dev on Render HTTP without changing feature-level mutation contracts.
-- Dev auction detail now uses the Render HTTP detail endpoint with short polling, while prod/Firebase-callable transport keeps the Firestore listener path. This avoids opening the Android Firestore gRPC channel on that physical-device dev detail route.
+- Dev HTTP transport now uses Render read endpoints for home, search, auction detail, orders, notifications, activity, my profile, sell drafts, and settings preferences with short polling where needed, while prod/Firebase-callable transport keeps the Firestore listener path. This avoids opening the Android Firestore gRPC channel on those physical-device dev app surfaces.
 - Structured mobile logging now flows through `AppLogger`, with timestamp, level, domain, and source.
 - Mobile foundation folders, guarded routing, Firebase bootstrap, localized core screens, and shared editorial design primitives exist.
-- Firestore read paths and Functions write paths cover login, browse, auction detail, sell, orders, notifications, and activity flows.
+- Firestore read paths and Functions write paths cover prod/default login, browse, auction detail, sell, orders, notifications, and activity flows; dev HTTP routes cover the equivalent mobile read surfaces through the Render server.
 - Phase 3 polish already includes dark-theme groundwork, shared loading overlays, keyboard-safe modal handling, Hero-enabled auction continuity, and localized empty or error states.
 - The sell route now surfaces visible step progress and draft-save status, so category/details/pricing/images/publish readiness and unsaved-draft state are legible before save or publish.
 - The sell route now renders field-level validation errors inline and a localized summary near the submit actions, so sellers do not have to infer correction targets from one snackbar line.

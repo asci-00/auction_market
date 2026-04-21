@@ -6,6 +6,10 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart' as permission;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/backend/dev_read_api.dart';
+import '../../../core/app_config/app_config.dart';
+import '../../../core/error/app_error.dart';
+import '../../../core/firebase/firebase_bootstrap.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../data/settings_preferences.dart';
 
@@ -18,7 +22,13 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 final settingsPreferencesServiceProvider = Provider<SettingsPreferencesService>(
   (ref) {
     return SettingsPreferencesService(
-      firestore: ref.watch(firestoreProvider),
+      config: ref.watch(appConfigProvider),
+      devReadApi: ref.watch(appConfigProvider).usesHttpBackend
+          ? ref.watch(devReadApiProvider)
+          : null,
+      firestore: ref.watch(appConfigProvider).usesHttpBackend
+          ? null
+          : ref.watch(firestoreProvider),
       messaging: ref.watch(firebaseMessagingProvider),
       sharedPreferences: ref.watch(sharedPreferencesProvider),
     );
@@ -27,6 +37,12 @@ final settingsPreferencesServiceProvider = Provider<SettingsPreferencesService>(
 
 final settingsPreferencesProvider =
     StreamProvider.family<SettingsPreferences, String>((ref, userId) {
+      final config = _tryReadAppConfig(ref);
+      if (config.usesHttpBackend) {
+        final api = ref.watch(devReadApiProvider);
+        return api.poll(api.fetchSettingsPreferences);
+      }
+
       final firestore = ref.watch(firestoreProvider);
       return firestore.collection('users').doc(userId).snapshots().map((snap) {
         if (!snap.exists) {
@@ -40,6 +56,17 @@ final appSettingsPreferencesProvider = StreamProvider<SettingsPreferences>((
   ref,
 ) {
   final auth = ref.watch(firebaseAuthProvider);
+  final config = _tryReadAppConfig(ref);
+  if (config.usesHttpBackend) {
+    final api = ref.watch(devReadApiProvider);
+    return auth.authStateChanges().asyncExpand((user) {
+      if (user == null) {
+        return Stream.value(const SettingsPreferences.defaults());
+      }
+      return api.poll(api.fetchSettingsPreferences);
+    });
+  }
+
   final firestore = ref.watch(firestoreProvider);
 
   return auth.authStateChanges().asyncExpand((user) {
@@ -55,6 +82,17 @@ final appSettingsPreferencesProvider = StreamProvider<SettingsPreferences>((
     });
   });
 });
+
+AppConfig _tryReadAppConfig(Ref ref) {
+  try {
+    return ref.watch(appConfigProvider);
+  } on AppConfigurationException {
+    return AppConfig.fromValues(
+      environment: AppEnvironment.prod,
+      tossClientKey: 'test_client_key',
+    );
+  }
+}
 
 final themeModePreferenceProvider = StateProvider<SettingsThemeModePreference>((
   ref,
@@ -77,19 +115,28 @@ final appPackageInfoProvider = FutureProvider<PackageInfo>((ref) async {
 
 class SettingsPreferencesService {
   const SettingsPreferencesService({
-    required FirebaseFirestore firestore,
+    required AppConfig config,
+    required DevReadApi? devReadApi,
+    required FirebaseFirestore? firestore,
     required FirebaseMessaging messaging,
     required SharedPreferences sharedPreferences,
-  }) : _firestore = firestore,
+  }) : _config = config,
+       _devReadApi = devReadApi,
+       _firestore = firestore,
        _messaging = messaging,
        _sharedPreferences = sharedPreferences;
 
-  final FirebaseFirestore _firestore;
+  final AppConfig _config;
+  final DevReadApi? _devReadApi;
+  final FirebaseFirestore? _firestore;
   final FirebaseMessaging _messaging;
   final SharedPreferences _sharedPreferences;
 
   Future<void> setPushEnabled({required String userId, required bool enabled}) {
-    return _firestore
+    if (_config.usesHttpBackend) {
+      return _devReadApi!.setPushEnabled(enabled: enabled);
+    }
+    return _firestore!
         .collection('users')
         .doc(userId)
         .set(pushEnabledPayload(enabled), SetOptions(merge: true));
@@ -100,7 +147,13 @@ class SettingsPreferencesService {
     required SettingsNotificationCategory category,
     required bool enabled,
   }) {
-    return _firestore
+    if (_config.usesHttpBackend) {
+      return _devReadApi!.setCategoryEnabled(
+        category: category,
+        enabled: enabled,
+      );
+    }
+    return _firestore!
         .collection('users')
         .doc(userId)
         .set(
