@@ -3,21 +3,37 @@ import { once } from 'node:events';
 import test from 'node:test';
 
 import { createApp } from '../src/app.js';
+import {
+  buildNotificationCopy,
+  resolveNotificationLocale,
+} from '../src/notificationCopy.js';
+
+function resolveDebugPushProbeExpectedCopy(locale) {
+  const resolvedLocale = resolveNotificationLocale({
+    tokenLocales: [locale],
+  });
+  return buildNotificationCopy('SYSTEM_TEST', resolvedLocale);
+}
 
 function createMockServices(options = {}) {
   const notificationWrites = [];
   const multicastCalls = [];
   let notificationCounter = 0;
+  const localeContext = options.localeContext ?? 'ko-KR';
 
   const tokenDocs = options.deviceTokens ?? [
     {
       token: 'token-a',
       isActive: true,
       permissionStatus: 'AUTHORIZED',
+      locale: localeContext,
     },
   ];
 
   const userPreferences = {
+    languageCode: options.userLanguageCode ?? null,
+    hasExplicitLanguagePreference:
+      options.hasExplicitLanguagePreference ?? false,
     pushEnabled: options.pushEnabled ?? true,
     notificationCategories: {
       auctionActivity: true,
@@ -40,7 +56,7 @@ function createMockServices(options = {}) {
         if (token !== 'valid-token') {
           throw new Error('invalid token');
         }
-        return { uid: 'buyer1' };
+        return { uid: 'buyer1', locale: localeContext };
       },
     },
     db: {
@@ -82,6 +98,7 @@ function createMockServices(options = {}) {
                     id: uid,
                     data() {
                       return {
+                        locale: localeContext,
                         preferences: userPreferences,
                       };
                     },
@@ -166,6 +183,7 @@ test('debug push probe requires authorization', async () => {
 test('debug push probe creates inbox and dispatches push when eligible', async () => {
   const { services, notificationWrites, multicastCalls } = createMockServices();
   const app = createApp(services);
+  const expectedCopy = resolveDebugPushProbeExpectedCopy('ko-KR');
 
   await withServer(app, async (port) => {
     const response = await fetch(
@@ -193,11 +211,15 @@ test('debug push probe creates inbox and dispatches push when eligible', async (
   assert.equal(notificationWrites.length, 1);
   assert.equal(notificationWrites[0].payload.type, 'SYSTEM_TEST');
   assert.equal(notificationWrites[0].payload.category, 'system');
+  assert.equal(notificationWrites[0].payload.title, expectedCopy.title);
+  assert.equal(notificationWrites[0].payload.body, expectedCopy.body);
   assert.equal(notificationWrites[0].payload.entityType, 'ORDER');
   assert.equal(notificationWrites[0].payload.entityId, 'debug-push-probe');
 
   assert.equal(multicastCalls.length, 1);
   assert.deepEqual(multicastCalls[0].tokens, ['token-a']);
+  assert.equal(multicastCalls[0].notification.title, expectedCopy.title);
+  assert.equal(multicastCalls[0].notification.body, expectedCopy.body);
   assert.equal(multicastCalls[0].data.type, 'SYSTEM_TEST');
   assert.equal(multicastCalls[0].data.category, 'system');
   assert.equal(multicastCalls[0].data.deeplink, 'app://notifications');
@@ -205,6 +227,149 @@ test('debug push probe creates inbox and dispatches push when eligible', async (
   assert.equal(multicastCalls[0].data.entityId, 'debug-push-probe');
   assert.equal(typeof multicastCalls[0].data.notificationId, 'string');
   assert.equal(typeof multicastCalls[0].data.timestamp, 'string');
+});
+
+test('debug push probe localizes notification copy for english locale context', async () => {
+  const { services, notificationWrites, multicastCalls } = createMockServices({
+    localeContext: 'en-US',
+  });
+  const app = createApp(services);
+  const expectedCopy = resolveDebugPushProbeExpectedCopy('en-US');
+
+  await withServer(app, async (port) => {
+    const response = await fetch(
+      `http://127.0.0.1:${port}/api/notifications/debug/push-probe`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer valid-token',
+        },
+      },
+    );
+    assert.equal(response.status, 200);
+  });
+
+  assert.equal(notificationWrites.length, 1);
+  assert.equal(notificationWrites[0].payload.title, expectedCopy.title);
+  assert.equal(notificationWrites[0].payload.body, expectedCopy.body);
+  assert.equal(multicastCalls.length, 1);
+  assert.equal(multicastCalls[0].notification.title, expectedCopy.title);
+  assert.equal(multicastCalls[0].notification.body, expectedCopy.body);
+});
+
+test('debug push probe uses token locale when korean preference is default value', async () => {
+  const { services, notificationWrites, multicastCalls } = createMockServices({
+    localeContext: 'en-US',
+    userLanguageCode: 'ko',
+  });
+  const app = createApp(services);
+  const expectedCopy = resolveDebugPushProbeExpectedCopy('en-US');
+
+  await withServer(app, async (port) => {
+    const response = await fetch(
+      `http://127.0.0.1:${port}/api/notifications/debug/push-probe`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer valid-token',
+        },
+      },
+    );
+    assert.equal(response.status, 200);
+  });
+
+  assert.equal(notificationWrites.length, 1);
+  assert.equal(notificationWrites[0].payload.title, expectedCopy.title);
+  assert.equal(notificationWrites[0].payload.body, expectedCopy.body);
+  assert.equal(multicastCalls.length, 1);
+  assert.equal(multicastCalls[0].notification.title, expectedCopy.title);
+  assert.equal(multicastCalls[0].notification.body, expectedCopy.body);
+});
+
+test('debug push probe keeps explicit korean preference over token locale', async () => {
+  const { services, notificationWrites, multicastCalls } = createMockServices({
+    localeContext: 'en-US',
+    userLanguageCode: 'ko',
+    hasExplicitLanguagePreference: true,
+  });
+  const app = createApp(services);
+  const expectedCopy = resolveDebugPushProbeExpectedCopy('ko-KR');
+
+  await withServer(app, async (port) => {
+    const response = await fetch(
+      `http://127.0.0.1:${port}/api/notifications/debug/push-probe`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer valid-token',
+        },
+      },
+    );
+    assert.equal(response.status, 200);
+  });
+
+  assert.equal(notificationWrites.length, 1);
+  assert.equal(notificationWrites[0].payload.title, expectedCopy.title);
+  assert.equal(notificationWrites[0].payload.body, expectedCopy.body);
+  assert.equal(multicastCalls.length, 1);
+  assert.equal(multicastCalls[0].notification.title, expectedCopy.title);
+  assert.equal(multicastCalls[0].notification.body, expectedCopy.body);
+});
+
+test('debug push probe localizes english copy for underscore locale context', async () => {
+  const { services, notificationWrites, multicastCalls } = createMockServices({
+    localeContext: 'EN_us',
+  });
+  const app = createApp(services);
+  const expectedCopy = resolveDebugPushProbeExpectedCopy('EN_us');
+
+  await withServer(app, async (port) => {
+    const response = await fetch(
+      `http://127.0.0.1:${port}/api/notifications/debug/push-probe`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer valid-token',
+        },
+      },
+    );
+    assert.equal(response.status, 200);
+  });
+
+  assert.equal(notificationWrites.length, 1);
+  assert.equal(notificationWrites[0].payload.title, expectedCopy.title);
+  assert.equal(notificationWrites[0].payload.body, expectedCopy.body);
+  assert.equal(multicastCalls.length, 1);
+  assert.equal(multicastCalls[0].notification.title, expectedCopy.title);
+  assert.equal(multicastCalls[0].notification.body, expectedCopy.body);
+});
+
+test('debug push probe falls back to korean copy for unsupported locale context', async () => {
+  const { services, notificationWrites, multicastCalls } = createMockServices({
+    localeContext: 'fr-FR',
+  });
+  const app = createApp(services);
+  const expectedCopy = resolveDebugPushProbeExpectedCopy('fr-FR');
+
+  await withServer(app, async (port) => {
+    const response = await fetch(
+      `http://127.0.0.1:${port}/api/notifications/debug/push-probe`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer valid-token',
+        },
+      },
+    );
+    assert.equal(response.status, 200);
+  });
+
+  assert.equal(notificationWrites.length, 1);
+  assert.equal(notificationWrites[0].payload.title, expectedCopy.title);
+  assert.equal(notificationWrites[0].payload.body, expectedCopy.body);
+  assert.equal(multicastCalls.length, 1);
+  assert.equal(multicastCalls[0].notification.title, expectedCopy.title);
+  assert.equal(multicastCalls[0].notification.body, expectedCopy.body);
 });
 
 test('debug push probe skips dispatch when system category is disabled', async () => {

@@ -3,6 +3,11 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
 
 import { AppError, isAppError } from './errors.js';
+import {
+  buildNotificationCopy,
+  normalizeNotificationLocale,
+  resolveNotificationLocale,
+} from './notificationCopy.js';
 
 const featureFlags = {
   autoBid: true,
@@ -244,6 +249,81 @@ function getDeliverableTokens(candidates) {
   return tokens;
 }
 
+function getTimestampMillis(value) {
+  if (value instanceof Timestamp) {
+    return value.toMillis();
+  }
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+  if (value && typeof value.toMillis === 'function') {
+    return value.toMillis();
+  }
+  return 0;
+}
+
+function sortTokenCandidates(candidates) {
+  return [...candidates].sort((left, right) => {
+    const updatedAtDiff =
+      getTimestampMillis(right.updatedAt) - getTimestampMillis(left.updatedAt);
+    if (updatedAtDiff !== 0) {
+      return updatedAtDiff;
+    }
+    const lastSeenAtDiff =
+      getTimestampMillis(right.lastSeenAt) - getTimestampMillis(left.lastSeenAt);
+    if (lastSeenAtDiff !== 0) {
+      return lastSeenAtDiff;
+    }
+    const leftToken = meaningfulString(left.token) ?? '';
+    const rightToken = meaningfulString(right.token) ?? '';
+    return leftToken.localeCompare(rightToken);
+  });
+}
+
+function parseTokenCandidate(data) {
+  return {
+    token: typeof data.token === 'string' ? data.token : null,
+    isActive: data.isActive === true,
+    permissionStatus:
+      typeof data.permissionStatus === 'string' ? data.permissionStatus : null,
+    locale: typeof data.locale === 'string' ? data.locale : null,
+    updatedAt: data.updatedAt ?? null,
+    lastSeenAt: data.lastSeenAt ?? null,
+  };
+}
+
+function resolveUserNotificationLocale(userData, tokenCandidates) {
+  const preferences =
+    userData &&
+    typeof userData === 'object' &&
+    userData.preferences &&
+    typeof userData.preferences === 'object'
+      ? userData.preferences
+      : {};
+  const sortedCandidates = sortTokenCandidates(tokenCandidates);
+  const tokenLocales = sortedCandidates
+    .filter((candidate) => candidate.isActive)
+    .map((candidate) => candidate.locale);
+  const preferredLanguageCode = meaningfulString(preferences.languageCode);
+  const hasExplicitLanguagePreference =
+    preferences.hasExplicitLanguagePreference === true;
+  const normalizedPreferredLanguageCode =
+    normalizeNotificationLocale(preferredLanguageCode);
+  const hasEnglishTokenLocale = tokenLocales.some(
+    (locale) => normalizeNotificationLocale(locale) === 'en',
+  );
+  const userLanguageCode =
+    !hasExplicitLanguagePreference &&
+    normalizedPreferredLanguageCode === 'ko' &&
+    hasEnglishTokenLocale
+      ? null
+      : preferredLanguageCode;
+  return resolveNotificationLocale({
+    userLanguageCode,
+    tokenLocales,
+  });
+}
+
 function shouldDispatchPush(preferences, category, tokenCount) {
   if (!preferences.pushEnabled) {
     return false;
@@ -270,11 +350,24 @@ async function createInboxNotification(
   db,
   uid,
   type,
-  title,
-  body,
   deeplink,
   options = {},
 ) {
+  const userRef = db.collection('users').doc(uid);
+  const tokenCollectionRef = userRef.collection('deviceTokens');
+  const [userSnap, tokenSnap] = await Promise.all([
+    userRef.get(),
+    tokenCollectionRef.get(),
+  ]);
+  const tokenCandidates = tokenSnap.docs.map((doc) => parseTokenCandidate(doc.data()));
+  const locale = resolveUserNotificationLocale(userSnap.data(), tokenCandidates);
+  const copy = buildNotificationCopy(type, locale, options.copyContext);
+  if (!copy) {
+    throw new AppError(
+      'failed-precondition',
+      `Unsupported notification type copy: ${type}`,
+    );
+  }
   const ref = db.collection('notifications').doc(uid).collection('inbox').doc();
   const category = getNotificationCategoryForType(type);
   const entityType = options.entityType ?? null;
@@ -282,8 +375,8 @@ async function createInboxNotification(
   await ref.set({
     type,
     category,
-    title,
-    body,
+    title: copy.title,
+    body: copy.body,
     deeplink,
     ...(entityType ? { entityType } : {}),
     ...(entityId ? { entityId } : {}),
@@ -295,9 +388,12 @@ async function createInboxNotification(
     notificationId: ref.id,
     type,
     category,
+    title: copy.title,
+    body: copy.body,
     deeplink,
     entityType,
     entityId,
+    locale,
   };
 }
 
@@ -310,19 +406,8 @@ async function dispatchPushForInboxNotification(services, input) {
   ]);
 
   const preferences = normalizeNotificationPreferences(userSnap.data());
-  const tokens = getDeliverableTokens(
-    tokenSnap.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        token: typeof data.token === 'string' ? data.token : null,
-        isActive: data.isActive === true,
-        permissionStatus:
-          typeof data.permissionStatus === 'string'
-            ? data.permissionStatus
-            : null,
-      };
-    }),
-  );
+  const tokenCandidates = tokenSnap.docs.map((doc) => parseTokenCandidate(doc.data()));
+  const tokens = getDeliverableTokens(tokenCandidates);
 
   if (!shouldDispatchPush(preferences, input.category, tokens.length)) {
     return {
@@ -1328,8 +1413,6 @@ function buildDeactivateDeviceTokenRecord(permissionStatus, serverTimestamp) {
 
 const debugPushProbeNotification = {
   type: 'SYSTEM_TEST',
-  title: '개발용 푸시 점검',
-  body: '실기기 푸시 수신 경로 점검용 테스트 알림입니다.',
   deeplink: 'app://notifications',
   entityType: 'ORDER',
   entityId: 'debug-push-probe',
@@ -1598,8 +1681,6 @@ export function createApp(services) {
             db,
             order.sellerId,
             'PAYMENT_COMPLETED',
-            '결제 완료',
-            '구매자 결제가 완료되었습니다.',
             buildDeepLink('orders', order.id),
           );
           await writeAuditEvent(db, {
@@ -1893,9 +1974,8 @@ export function createApp(services) {
           db,
           autoBidCeilingReachedUserId,
           'AUTO_BID_CEILING_REACHED',
-          '자동입찰 한도에 도달했습니다',
-          `현재 최고가 ${finalPrice}원으로 자동입찰 상한을 넘었습니다.`,
           buildDeepLink('auction', auctionId),
+          { copyContext: { finalPrice } },
         );
       }
 
@@ -1908,9 +1988,8 @@ export function createApp(services) {
           db,
           outbidUserId,
           'OUTBID',
-          '입찰가가 갱신되었습니다',
-          `현재 최고가 ${finalPrice}원`,
           buildDeepLink('auction', auctionId),
+          { copyContext: { finalPrice } },
         );
       }
 
@@ -2182,8 +2261,6 @@ export function createApp(services) {
             db,
             order.buyerId,
             'PAYMENT_FAILED',
-            '결제가 완료되지 않았습니다',
-            '결제 정보를 확인한 뒤 다시 시도해주세요.',
             buildDeepLink('orders', orderId),
           );
         }
@@ -2207,8 +2284,6 @@ export function createApp(services) {
         db,
         order.sellerId,
         'PAYMENT_COMPLETED',
-        '결제 완료',
-        '구매자 결제가 완료되었습니다.',
         buildDeepLink('orders', orderId),
       );
       await writeAuditEvent(db, {
@@ -2273,9 +2348,8 @@ export function createApp(services) {
         db,
         order.buyerId,
         'SHIPPED',
-        '배송이 시작되었습니다',
-        `${carrierName} ${trackingNumber}`,
         buildDeepLink('orders', orderId),
+        { copyContext: { carrierName, trackingNumber } },
       );
       await writeAuditEvent(db, {
         entityType: 'ORDER',
@@ -2345,8 +2419,6 @@ export function createApp(services) {
         db,
         authContext.uid,
         debugPushProbeNotification.type,
-        debugPushProbeNotification.title,
-        debugPushProbeNotification.body,
         debugPushProbeNotification.deeplink,
         {
           entityType: debugPushProbeNotification.entityType,
@@ -2360,8 +2432,8 @@ export function createApp(services) {
           notificationId: created.notificationId,
           type: created.type,
           category: created.category,
-          title: debugPushProbeNotification.title,
-          body: debugPushProbeNotification.body,
+          title: created.title,
+          body: created.body,
           deeplink: created.deeplink,
           entityType: created.entityType,
           entityId: created.entityId,
