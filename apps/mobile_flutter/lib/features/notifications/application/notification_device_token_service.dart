@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -27,6 +28,17 @@ final notificationDeviceTokenServiceProvider =
     });
 
 final notificationDeviceTokenLifecycleProvider = Provider<void>((ref) {
+  final permissionStatus = ref
+      .watch(notificationPermissionStatusProvider)
+      .valueOrNull;
+  if (!isRemoteNotificationStatusActive(permissionStatus)) {
+    final appLifecycleListener = AppLifecycleListener(
+      onResume: () => ref.invalidate(notificationPermissionStatusProvider),
+    );
+    ref.onDispose(appLifecycleListener.dispose);
+    return;
+  }
+
   final service = ref.watch(notificationDeviceTokenServiceProvider);
   String? previousUserId = ref.watch(firebaseAuthProvider).currentUser?.uid;
 
@@ -37,6 +49,15 @@ final notificationDeviceTokenLifecycleProvider = Provider<void>((ref) {
     try {
       await operation();
     } catch (error, stackTrace) {
+      if (_isTransientBackendError(error)) {
+        service.logDiagnostic(
+          'lifecycle task transient failure: $context -> $error',
+          level: AppLogLevel.info,
+          error: error,
+          stackTrace: stackTrace,
+        );
+        return;
+      }
       service.logDiagnostic(
         'lifecycle task failed: $context -> $error',
         level: AppLogLevel.error,
@@ -103,14 +124,19 @@ final notificationDeviceTokenLifecycleProvider = Provider<void>((ref) {
     },
   );
 
-  unawaited(syncCurrentUser());
-
   ref.onDispose(() {
     authSubscription.cancel();
     tokenRefreshSubscription.cancel();
     appLifecycleListener.dispose();
   });
 });
+
+bool _isTransientBackendError(Object error) {
+  if (error is! FirebaseFunctionsException) {
+    return false;
+  }
+  return error.code == 'deadline-exceeded' || error.code == 'unavailable';
+}
 
 class NotificationDeviceTokenService {
   const NotificationDeviceTokenService({
@@ -191,18 +217,17 @@ class NotificationDeviceTokenService {
     }
 
     final appVersion = (await PackageInfo.fromPlatform()).version;
-    final result = await _gateway
-        .registerDeviceToken(
-          payload: buildRegisterPayload(
-            token: token,
-            appVersion: appVersion,
-            locale: WidgetsBinding.instance.platformDispatcher.locale
-                .toLanguageTag(),
-            timezone: DateTime.now().timeZoneName,
-            platform: currentDevicePlatform(),
-            permissionStatus: permissionStatusLabel(permissionStatus),
-          ),
-        );
+    final result = await _gateway.registerDeviceToken(
+      payload: buildRegisterPayload(
+        token: token,
+        appVersion: appVersion,
+        locale: WidgetsBinding.instance.platformDispatcher.locale
+            .toLanguageTag(),
+        timezone: DateTime.now().timeZoneName,
+        platform: currentDevicePlatform(),
+        permissionStatus: permissionStatusLabel(permissionStatus),
+      ),
+    );
     final data = result;
     final returnedTokenId = data['tokenId'];
     if (returnedTokenId is! String || returnedTokenId.isEmpty) {
@@ -258,21 +283,19 @@ class NotificationDeviceTokenService {
   }
 
   Future<AuthorizationStatus> _currentPermissionStatus() async {
-    final settings = await _messaging.getNotificationSettings();
-    return settings.authorizationStatus;
+    return resolveNotificationPermissionStatus(messaging: _messaging);
   }
 
   Future<void> _deactivateToken({
     required String tokenId,
     required AuthorizationStatus permissionStatus,
   }) async {
-    await _gateway
-        .deactivateDeviceToken(
-          payload: buildDeactivatePayload(
-            tokenId: tokenId,
-            permissionStatus: permissionStatusLabel(permissionStatus),
-          ),
-        );
+    await _gateway.deactivateDeviceToken(
+      payload: buildDeactivatePayload(
+        tokenId: tokenId,
+        permissionStatus: permissionStatusLabel(permissionStatus),
+      ),
+    );
     logDiagnostic(
       'deactivateDeviceToken succeeded tokenId=$tokenId permission=${permissionStatusLabel(permissionStatus)}',
     );
@@ -411,11 +434,7 @@ class NotificationDeviceTokenService {
   }
 }
 
-enum AppLogLevel {
-  debug,
-  info,
-  error,
-}
+enum AppLogLevel { debug, info, error }
 
 class _ResolvedMessagingToken {
   const _ResolvedMessagingToken.ready(this.token) : isPendingApnsToken = false;

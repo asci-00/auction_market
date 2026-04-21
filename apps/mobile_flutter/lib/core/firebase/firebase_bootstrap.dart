@@ -43,15 +43,14 @@ class FirebaseBootstrap {
       }
 
       if (!_appCheckConfigured) {
-        final debugToken = _appCheckDebugToken();
-        await FirebaseAppCheck.instance.activate(
-          providerAndroid: kReleaseMode
-              ? const AndroidPlayIntegrityProvider()
-              : AndroidDebugProvider(debugToken: debugToken),
-          providerApple: kReleaseMode
-              ? const AppleDeviceCheckProvider()
-              : AppleDebugProvider(debugToken: debugToken),
-        );
+        // App Check provider activation can trigger noisy Google broker calls on
+        // debug builds. Keep enforcement on production release builds only.
+        if (config.isProd && kReleaseMode) {
+          await FirebaseAppCheck.instance.activate(
+            providerAndroid: const AndroidPlayIntegrityProvider(),
+            providerApple: const AppleDeviceCheckProvider(),
+          );
+        }
         _appCheckConfigured = true;
       }
 
@@ -72,7 +71,9 @@ class FirebaseBootstrap {
         _emulatorsConfigured = true;
       }
 
-      await FirebaseAuth.instance.authStateChanges().first;
+      // Auth listeners are attached by the router after bootstrap. Waiting for
+      // the first auth event here forces Google Play services security provider
+      // initialization during startup, which is noisy on recent Android builds.
     } on AppConfigurationException {
       rethrow;
     } on FirebaseException catch (error) {
@@ -88,10 +89,4 @@ class FirebaseBootstrap {
       );
     }
   }
-}
-
-String? _appCheckDebugToken() {
-  const override = String.fromEnvironment('APP_CHECK_DEBUG_TOKEN');
-  final value = override.trim();
-  return value.isEmpty ? null : value;
 }

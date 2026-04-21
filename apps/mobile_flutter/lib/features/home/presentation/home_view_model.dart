@@ -34,35 +34,32 @@ class HomeViewModel extends _$HomeViewModel {
 
   @override
   Future<HomeViewState> build() async {
-    final endingSoonStream = _homeEndingSoonStream(ref);
-    final hotStream = _homeHotStream(ref);
-
-    final endingSoon = await endingSoonStream.first;
-    final hot = await hotStream.first;
-
     ref.onDispose(() {
-      _endingSoonSub?.cancel();
-      _hotSub?.cancel();
+      unawaited(_endingSoonSub?.cancel());
+      unawaited(_hotSub?.cancel());
     });
 
-    _endingSoonSub = endingSoonStream.listen((items) {
-      final current =
-          state.valueOrNull ?? HomeViewState(endingSoon: items, hot: hot);
-      state = AsyncData(current.copyWith(endingSoon: items));
-    }, onError: _handleStreamError);
+    final endingSoonStream = _homeEndingSoonStream(ref);
+    final hotStream = _homeHotStream(ref);
+    final initial = await Future.wait([
+      endingSoonStream.first,
+      hotStream.first,
+    ]);
 
-    _hotSub = hotStream.listen((items) {
-      final current =
-          state.valueOrNull ??
-          HomeViewState(endingSoon: endingSoon, hot: items);
-      state = AsyncData(current.copyWith(hot: items));
-    }, onError: _handleStreamError);
+    _endingSoonSub = endingSoonStream.listen(
+      (items) => state = AsyncData(
+        (state.valueOrNull ?? HomeViewState(endingSoon: initial[0], hot: initial[1]))
+            .copyWith(endingSoon: items),
+      ),
+    );
+    _hotSub = hotStream.listen(
+      (items) => state = AsyncData(
+        (state.valueOrNull ?? HomeViewState(endingSoon: initial[0], hot: initial[1]))
+            .copyWith(hot: items),
+      ),
+    );
 
-    return HomeViewState(endingSoon: endingSoon, hot: hot);
-  }
-
-  void _handleStreamError(Object error, StackTrace stackTrace) {
-    state = AsyncError(error, stackTrace);
+    return HomeViewState(endingSoon: initial[0], hot: initial[1]);
   }
 }
 
@@ -75,8 +72,9 @@ Stream<List<HomeAuctionSummary>> _homeEndingSoonStream(Ref ref) {
       .limit(8)
       .snapshots()
       .map(
-        (snapshot) =>
-            snapshot.docs.map(HomeAuctionSummary.fromDocument).toList(),
+        (snapshot) => snapshot.docs
+            .map(HomeAuctionSummary.fromDocument)
+            .toList(growable: false),
       );
 }
 
@@ -89,7 +87,8 @@ Stream<List<HomeAuctionSummary>> _homeHotStream(Ref ref) {
       .limit(8)
       .snapshots()
       .map(
-        (snapshot) =>
-            snapshot.docs.map(HomeAuctionSummary.fromDocument).toList(),
+        (snapshot) => snapshot.docs
+            .map(HomeAuctionSummary.fromDocument)
+            .toList(growable: false),
       );
 }

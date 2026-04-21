@@ -118,6 +118,7 @@
   - `APP_BASE_URL=https://<render-service>.onrender.com`
   - `FIREBASE_PROJECT_ID=<firebase-dev-project-id>`
   - `FIREBASE_SERVICE_ACCOUNT_JSON=<single-line service account json>`
+  - `FIREBASE_SERVICE_ACCOUNT_JSON_FILE=<local json file path>` (optional alternative to inline JSON for local seed scripts)
   - `TOSS_SECRET_KEY=<optional for Toss sandbox confirm>`
   - `TOSS_WEBHOOK_SECRET=<optional for Toss webhook verify>`
   - `TOSS_API_BASE_URL=https://api.tosspayments.com`
@@ -143,6 +144,7 @@
   - `APP_BACKEND_TRANSPORT=http`
   - `APP_API_BASE_URL=https://auction-market-dev-api.onrender.com`
   - `USE_FIREBASE_EMULATORS=false`
+- With dev HTTP transport, auction detail reads use the Render dev server endpoint `GET /api/auctions/:auctionId/detail` and short client polling instead of opening a mobile Firestore listener. Other live read surfaces keep their documented Firestore paths unless they are explicitly moved to the HTTP surface.
 
 ## Local Emulator Quick Start
 - Local emulator define file:
@@ -169,3 +171,14 @@
   - `adb reverse` is not available.
   - Use the Mac LAN IP in `FIREBASE_EMULATOR_HOST`.
   - Ensure each required emulator port is reachable from the device on the local network.
+
+## Dev Seed Refresh
+
+- If dev bids stop working because seeded `LIVE` auctions expired, rerun dev seeding:
+  - `cd backend/functions && npm run seed:dev -- --env-file=.env`
+- `seed:dev` now accepts any of:
+  - `FIREBASE_SERVICE_ACCOUNT_JSON`
+  - `FIREBASE_SERVICE_ACCOUNT_JSON_FILE`
+  - ADC from `gcloud auth application-default login`
+- Optional explicit project override:
+  - `npm run seed:dev -- --project=<firebase-project-id> --env-file=.env`

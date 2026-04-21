@@ -65,9 +65,10 @@ final themeModePreferenceProvider = StateProvider<SettingsThemeModePreference>((
 
 final notificationPermissionStatusProvider =
     FutureProvider<AuthorizationStatus>((ref) async {
-      final messaging = ref.watch(firebaseMessagingProvider);
-      final settings = await messaging.getNotificationSettings();
-      return settings.authorizationStatus;
+      final messaging = defaultTargetPlatform == TargetPlatform.android
+          ? null
+          : ref.watch(firebaseMessagingProvider);
+      return resolveNotificationPermissionStatus(messaging: messaging);
     });
 
 final appPackageInfoProvider = FutureProvider<PackageInfo>((ref) async {
@@ -149,4 +150,25 @@ class SettingsPreferencesService {
   Future<bool> openSystemSettings() {
     return permission.openAppSettings();
   }
+}
+
+Future<AuthorizationStatus> resolveNotificationPermissionStatus({
+  FirebaseMessaging? messaging,
+}) async {
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    final status = await permission.Permission.notification.status;
+    if (status.isGranted || status.isProvisional) {
+      return AuthorizationStatus.authorized;
+    }
+    return AuthorizationStatus.denied;
+  }
+
+  final settings = await (messaging ?? FirebaseMessaging.instance)
+      .getNotificationSettings();
+  return settings.authorizationStatus;
+}
+
+bool isRemoteNotificationStatusActive(AuthorizationStatus? status) {
+  return status == AuthorizationStatus.authorized ||
+      status == AuthorizationStatus.provisional;
 }

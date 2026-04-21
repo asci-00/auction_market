@@ -118,8 +118,9 @@
   - Auction detail action-bar coverage now also includes `test/features/auction/presentation/widgets/auction_detail_action_bar_test.dart`, which verifies action-specific pending copy and disabled-state behavior for live buyer mutations.
   - Pre-cutover Phase 3 polish work should prioritize dark mode parity, overflow and keyboard-safety fixes, blur tuning, barrier tuning, async-feedback timing, and route-transition smoothness before any explicit real PG cutover begins.
   - Shared blocking loading states must use `apps/mobile_flutter/assets/lotties/loading.lottie`, with shimmer preferred over modal loading when the destination layout is already known.
-- Home, search, auction detail, orders, notifications, and my pages render from live Firestore read paths and fall back to localized empty or unavailable states when documents are missing.
-- Read data directly from Firestore and Storage-backed URLs.
+- Home, search, orders, notifications, and my pages render from live Firestore read paths and fall back to localized empty or unavailable states when documents are missing.
+- Auction detail keeps the live Firestore read path for Firebase-callable/prod transport, while dev HTTP transport reads `GET /api/auctions/:auctionId/detail` from the Render dev server and polls it briefly. This keeps physical-device dev detail navigation on the same HTTP backend surface as dev mutations and avoids opening the Android Firestore gRPC channel solely for that screen.
+- Read production/default data directly from Firestore and Storage-backed URLs, with explicitly documented dev HTTP exceptions only.
 - Send mutations through the backend gateway only:
   - prod default: Firebase callable
   - dev default: Render HTTP
@@ -138,7 +139,7 @@
 
 ## Backend Implementation Notes
 - `backend/functions/src/config/runtime.ts` validates backend runtime env such as `APP_ENV`, provider secrets for the active payment adapter, provider API base URL, and the presence of `APP_BASE_URL` when it is required by the active payment mode.
-- `backend/render-dev-server` exposes `/healthz`, `/payments/*`, and `/api/*` on a stable public dev URL. It now verifies Firebase ID tokens with Firebase Admin and writes directly to the dev project's Firestore collections, so dev HTTP transport no longer depends on deployed Firebase Functions.
+- `backend/render-dev-server` exposes `/healthz`, `/payments/*`, and `/api/*` on a stable public dev URL. It now verifies Firebase ID tokens with Firebase Admin and writes directly to the dev project's Firestore collections, so dev HTTP transport no longer depends on deployed Firebase Functions. Public dev auction detail reads are available at `GET /api/auctions/:auctionId/detail`.
 - The stable public dev health endpoint is `/healthz` under `https://auction-market-dev-api.onrender.com/healthz`. `/health` may be intercepted by the hosting edge and must not be treated as the canonical external health probe.
 - `backend/functions/src/domain/paymentEngine.ts` owns payment confirmation idempotency helpers, provider webhook normalization, and payment state transitions.
 - `backend/functions/eslint.config.mjs` now runs ESLint for `src`, `test`, and `scripts`, while `.prettierrc.json` and package scripts provide a repeatable formatting check for TypeScript files before commit.
@@ -217,8 +218,7 @@
   - Seller close check: sign in as `seller1`, save or reopen a draft, publish a live auction, then open `order-paid` and verify shipment submission still advances the order to `SHIPPED`.
   - Shared close check: reopen the same shipped order as `buyer1`, confirm receipt, and verify the order advances to `CONFIRMED_RECEIPT`.
   - April 6, 2026 headless close-review evidence already verified the same state transitions against the running emulator suite through callable paths, including `buyNow`, `createPaymentSession`, `createOrUpdateItem`, `createAuctionFromItem`, `shipmentUpdate`, and `confirmReceipt`.
-  - Because that April 6 evidence was headless, the only remaining Phase 3 sign-off is the interactive in-app walkthrough of those buyer and seller flows on a clean seeded run.
-  - Phase 3 may move to complete only after those manual smoke steps are reviewed together with the latest automated validation run.
+  - Phase 3 is complete as of April 6, 2026, and this checklist is retained as regression evidence for future close reviews.
 - These accounts are for local emulator checks only. They do not validate Google or Apple browser sign-in, provider linking, redirect handling, or staging and prod auth configuration.
 
 

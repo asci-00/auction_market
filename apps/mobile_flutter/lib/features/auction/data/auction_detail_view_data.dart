@@ -73,7 +73,7 @@ class AuctionDetailViewData {
       currentPrice: (auctionData['currentPrice'] as num?) ?? 0,
       buyNowPrice: auctionData['buyNowPrice'] as num?,
       orderId: auctionData['orderId'] as String?,
-      endAt: (auctionData['endAt'] as Timestamp?)?.toDate(),
+      endAt: dateTimeFromPayload(auctionData['endAt']),
     );
   }
 
@@ -81,6 +81,28 @@ class AuctionDetailViewData {
   bool get hasOrder => orderId != null && orderId!.isNotEmpty;
   bool get hasBuyNow => buyNowPrice != null;
   int get minimumBid => (currentPrice + _minIncrementFor(currentPrice)).toInt();
+}
+
+DateTime? dateTimeFromPayload(Object? value) {
+  if (value == null) {
+    return null;
+  }
+  if (value is Timestamp) {
+    return value.toDate();
+  }
+  if (value is DateTime) {
+    return value;
+  }
+  if (value is int) {
+    return DateTime.fromMillisecondsSinceEpoch(value);
+  }
+  if (value is num) {
+    return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+  }
+  if (value is String) {
+    return DateTime.tryParse(value);
+  }
+  return null;
 }
 
 List<String> _stringList(Object? value) {

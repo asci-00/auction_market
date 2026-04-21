@@ -17,6 +17,7 @@ import '../../../core/widgets/app_global_keys.dart';
 import '../../auction/presentation/auction_view_model.dart';
 import '../../orders/presentation/order_view_model.dart';
 import '../presentation/notifications_view_model.dart';
+import '../../settings/application/settings_preferences_service.dart';
 
 const _buyerOrderFieldKey = 'buyerId';
 const _sellerOrderFieldKey = 'sellerId';
@@ -128,6 +129,13 @@ final notificationPushLifecycleProvider = Provider<void>((ref) {
   final service = ref.watch(notificationPushServiceProvider);
   if (Firebase.apps.isEmpty) {
     service.logInfo('skip push lifecycle: Firebase app is not initialized');
+    return;
+  }
+
+  final permissionStatus = ref
+      .watch(notificationPermissionStatusProvider)
+      .valueOrNull;
+  if (!isRemoteNotificationStatusActive(permissionStatus)) {
     return;
   }
 
