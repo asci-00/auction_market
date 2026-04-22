@@ -60,3 +60,13 @@
 - Why tracked here: current planning docs do not contain a dedicated render-dev endpoint robustness test slice.
 - Follow-up change to implement:
   - Add focused tests for missing auction/item docs, empty bids, and timestamp-type variation handling in `backend/render-dev-server/test/auction-detail.test.js`.
+
+## PR #30
+
+### Review `#3118302979` (activity count aggregation precision)
+- Reason deferred: direction is valid, but this PR is scoped to HTTP read-path parity and safety fixes; moving `/api/activity` to status-specific count aggregations requires index additions and a cross-path contract update because current Firestore path also uses bounded recent-document sampling.
+- Why tracked here: current planning docs do not include a dedicated migration task for activity counter semantics and index rollout.
+- Follow-up change to implement:
+  - Redefine activity counter contract to use authoritative count queries instead of sampled `limit(20)` lists.
+  - Add required Firestore indexes (`buyerId+orderStatus`, `sellerId+orderStatus`, notifications unread count path) and update both HTTP and Firestore read paths to preserve parity.
+  - Add regression tests for users with over-20 orders/notifications to validate badge count accuracy.

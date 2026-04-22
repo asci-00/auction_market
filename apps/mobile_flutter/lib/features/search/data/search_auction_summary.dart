@@ -26,10 +26,15 @@ class SearchAuctionSummary {
   factory SearchAuctionSummary.fromDocument(
     QueryDocumentSnapshot<Map<String, dynamic>> document,
   ) {
-    final data = document.data();
+    return SearchAuctionSummary.fromMap({
+      'id': document.id,
+      ...document.data(),
+    });
+  }
 
+  factory SearchAuctionSummary.fromMap(Map<String, dynamic> data) {
     return SearchAuctionSummary(
-      id: document.id,
+      id: data['id'] as String? ?? '',
       title: (data['titleSnapshot'] as String?) ?? '',
       categoryMain: (data['categoryMain'] as String?) ?? 'GOODS',
       categorySub: (data['categorySub'] as String?) ?? '',
@@ -37,7 +42,7 @@ class SearchAuctionSummary {
       bidCount: ((data['bidCount'] as num?) ?? 0).toInt(),
       heroImageUrl: data['heroImageUrl'] as String?,
       buyNowPrice: data['buyNowPrice'] as num?,
-      endAt: (data['endAt'] as Timestamp?)?.toDate(),
+      endAt: _dateTimeFromPayload(data['endAt']),
     );
   }
 
@@ -50,4 +55,17 @@ class SearchAuctionSummary {
     return title.toLowerCase().contains(normalizedQuery) ||
         categorySub.toLowerCase().contains(normalizedQuery);
   }
+}
+
+DateTime? _dateTimeFromPayload(Object? value) {
+  if (value is Timestamp) {
+    return value.toDate();
+  }
+  if (value is String) {
+    return DateTime.tryParse(value);
+  }
+  if (value is num) {
+    return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+  }
+  return null;
 }

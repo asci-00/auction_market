@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/backend/dev_read_api.dart';
+import '../../../core/firebase/firebase_bootstrap.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../data/order_summary.dart';
 
@@ -44,11 +46,38 @@ class OrdersViewModel extends _$OrdersViewModel {
 
   @override
   Future<OrdersViewState> build(OrderQuery query) async {
+    final config = ref.watch(appConfigProvider);
+    if (config.usesHttpBackend) {
+      final authUserId = ref.read(firebaseAuthProvider).currentUser?.uid;
+      if (authUserId != null && authUserId != query.userId) {
+        return const OrdersViewState(orders: <OrderSummary>[]);
+      }
+      final api = ref.watch(devReadApiProvider);
+      assert(
+        query.fieldKey == 'sellerId' || query.fieldKey == 'buyerId',
+        'Unexpected OrderQuery.fieldKey: ${query.fieldKey}',
+      );
+      final role = query.fieldKey == 'sellerId' ? 'seller' : 'buyer';
+      final stream = api.poll(() => api.fetchOrders(role: role));
+      final first = await stream.first;
+
+      ref.onDispose(() {
+        unawaited(_sub?.cancel());
+      });
+
+      _sub = stream.listen((orders) {
+        final current = state.valueOrNull ?? OrdersViewState(orders: orders);
+        state = AsyncData(current.copyWith(orders: orders));
+      }, onError: _handleStreamError);
+
+      return OrdersViewState(orders: first);
+    }
+
     final stream = _ordersStream(ref, query);
     final first = await stream.first;
 
     ref.onDispose(() {
-      _sub?.cancel();
+      unawaited(_sub?.cancel());
     });
 
     _sub = stream.listen((orders) {

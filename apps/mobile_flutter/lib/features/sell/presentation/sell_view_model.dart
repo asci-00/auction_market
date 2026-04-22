@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/backend/dev_read_api.dart';
+import '../../../core/firebase/firebase_bootstrap.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../data/sell_draft_summary.dart';
 
@@ -26,11 +28,34 @@ class SellViewModel extends _$SellViewModel {
 
   @override
   Future<SellViewState> build(String userId) async {
+    final config = ref.watch(appConfigProvider);
+    if (config.usesHttpBackend) {
+      final authUserId = ref.read(firebaseAuthProvider).currentUser?.uid;
+      if (authUserId != null && authUserId != userId) {
+        return const SellViewState(recentDrafts: <SellDraftSummary>[]);
+      }
+      final api = ref.watch(devReadApiProvider);
+      final stream = api.poll(api.fetchSellDrafts);
+      final first = await stream.first;
+
+      ref.onDispose(() {
+        unawaited(_sub?.cancel());
+      });
+
+      _sub = stream.listen((drafts) {
+        final current =
+            state.valueOrNull ?? SellViewState(recentDrafts: drafts);
+        state = AsyncData(current.copyWith(recentDrafts: drafts));
+      }, onError: _handleStreamError);
+
+      return SellViewState(recentDrafts: first);
+    }
+
     final stream = _recentDraftsStream(ref, userId);
     final first = await stream.first;
 
     ref.onDispose(() {
-      _sub?.cancel();
+      unawaited(_sub?.cancel());
     });
 
     _sub = stream.listen((drafts) {

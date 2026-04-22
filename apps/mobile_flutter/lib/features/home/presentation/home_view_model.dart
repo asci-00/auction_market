@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/backend/dev_read_api.dart';
+import '../../../core/firebase/firebase_bootstrap.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../data/home_auction_summary.dart';
 
@@ -31,9 +33,27 @@ class HomeViewState {
 class HomeViewModel extends _$HomeViewModel {
   StreamSubscription<List<HomeAuctionSummary>>? _endingSoonSub;
   StreamSubscription<List<HomeAuctionSummary>>? _hotSub;
+  StreamSubscription<HomePayload>? _homePollSub;
 
   @override
   Future<HomeViewState> build() async {
+    final config = ref.watch(appConfigProvider);
+    if (config.usesHttpBackend) {
+      final api = ref.watch(devReadApiProvider);
+      final stream = api.poll(api.fetchHome);
+      final initial = await stream.first;
+      _homePollSub = stream.listen(
+        (payload) => state = AsyncData(
+          HomeViewState(endingSoon: payload.endingSoon, hot: payload.hot),
+        ),
+        onError: _handleStreamError,
+      );
+      ref.onDispose(() {
+        unawaited(_homePollSub?.cancel());
+      });
+      return HomeViewState(endingSoon: initial.endingSoon, hot: initial.hot);
+    }
+
     ref.onDispose(() {
       unawaited(_endingSoonSub?.cancel());
       unawaited(_hotSub?.cancel());
@@ -48,14 +68,16 @@ class HomeViewModel extends _$HomeViewModel {
 
     _endingSoonSub = endingSoonStream.listen(
       (items) => state = AsyncData(
-        (state.valueOrNull ?? HomeViewState(endingSoon: initial[0], hot: initial[1]))
+        (state.valueOrNull ??
+                HomeViewState(endingSoon: initial[0], hot: initial[1]))
             .copyWith(endingSoon: items),
       ),
       onError: _handleStreamError,
     );
     _hotSub = hotStream.listen(
       (items) => state = AsyncData(
-        (state.valueOrNull ?? HomeViewState(endingSoon: initial[0], hot: initial[1]))
+        (state.valueOrNull ??
+                HomeViewState(endingSoon: initial[0], hot: initial[1]))
             .copyWith(hot: items),
       ),
       onError: _handleStreamError,

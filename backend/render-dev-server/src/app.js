@@ -284,6 +284,93 @@ function timestampJsonValue(value) {
   return null;
 }
 
+function auctionSummaryJson(doc) {
+  const data = doc.data();
+  return {
+    id: doc.id,
+    titleSnapshot: optionalString(data.titleSnapshot) ?? '',
+    categoryMain: optionalString(data.categoryMain) ?? 'GOODS',
+    categorySub: optionalString(data.categorySub) ?? '',
+    currentPrice: typeof data.currentPrice === 'number' ? data.currentPrice : 0,
+    bidCount: typeof data.bidCount === 'number' ? data.bidCount : 0,
+    heroImageUrl: optionalString(data.heroImageUrl),
+    buyNowPrice:
+      typeof data.buyNowPrice === 'number' ? data.buyNowPrice : null,
+    endAt: timestampJsonValue(data.endAt),
+  };
+}
+
+function orderSummaryJson(doc) {
+  const data = doc.data();
+  const shipping =
+    data.shipping && typeof data.shipping === 'object' ? data.shipping : {};
+  return {
+    id: doc.id,
+    paymentStatus: optionalString(data.paymentStatus) ?? 'PENDING',
+    orderStatus: optionalString(data.orderStatus) ?? 'PENDING',
+    finalPrice: typeof data.finalPrice === 'number' ? data.finalPrice : 0,
+    paymentDueAt: timestampJsonValue(data.paymentDueAt),
+    shipping: {
+      carrierName: optionalString(shipping.carrierName),
+      trackingNumber: optionalString(shipping.trackingNumber),
+    },
+  };
+}
+
+function notificationJson(doc) {
+  const data = doc.data();
+  return {
+    id: doc.id,
+    title: optionalString(data.title) ?? '',
+    body: optionalString(data.body) ?? '',
+    deeplink: optionalString(data.deeplink),
+    isRead: data.isRead === true,
+    createdAt: timestampJsonValue(data.createdAt),
+  };
+}
+
+function sellDraftJson(doc) {
+  const data = doc.data();
+  return {
+    id: doc.id,
+    status: optionalString(data.status) ?? 'DRAFT',
+    categoryMain: optionalString(data.categoryMain) ?? 'GOODS',
+    categorySub: optionalString(data.categorySub) ?? '',
+    title: optionalString(data.title) ?? '',
+    description: optionalString(data.description) ?? '',
+    condition: optionalString(data.condition) ?? '',
+    tags: stringArray(data.tags),
+    imageUrls: stringArray(data.imageUrls),
+    authImageUrls: stringArray(data.authImageUrls),
+    appraisal: data.appraisal ?? {},
+    draftAuction: data.draftAuction ?? {},
+    updatedAt: timestampJsonValue(data.updatedAt),
+  };
+}
+
+function profileJson(data) {
+  return {
+    verification:
+      data && typeof data.verification === 'object' ? data.verification : {},
+    preferences:
+      data && typeof data.preferences === 'object' ? data.preferences : {},
+  };
+}
+
+function activitySummaryJson({
+  pendingPaymentCount = 0,
+  awaitingReceiptCount = 0,
+  awaitingShipmentCount = 0,
+  unreadNotificationCount = 0,
+}) {
+  return {
+    pendingPaymentCount,
+    awaitingReceiptCount,
+    awaitingShipmentCount,
+    unreadNotificationCount,
+  };
+}
+
 function sortTokenCandidates(candidates) {
   return [...candidates].sort((left, right) => {
     const updatedAtDiff =
@@ -1531,6 +1618,56 @@ export function createApp(services) {
   app.get('/healthz', sendHealth);
 
   app.get(
+    '/api/auctions/home',
+    asyncRoute(async (_req, res) => {
+      const now = new Date();
+      const [endingSoonSnap, hotSnap] = await Promise.all([
+        db
+          .collection('auctions')
+          .where('status', '==', 'LIVE')
+          .where('endAt', '>', now)
+          .orderBy('endAt')
+          .limit(8)
+          .get(),
+        db
+          .collection('auctions')
+          .where('status', '==', 'LIVE')
+          .orderBy('bidCount', 'desc')
+          .limit(24)
+          .get(),
+      ]);
+
+      res.set('Cache-Control', 'no-store').json({
+        endingSoon: endingSoonSnap.docs.map(auctionSummaryJson),
+        hot: hotSnap.docs
+          .filter((doc) => {
+            const endAt = toDateOrNull(doc.data().endAt);
+            return endAt != null && endAt > now;
+          })
+          .slice(0, 8)
+          .map(auctionSummaryJson),
+      });
+    }),
+  );
+
+  app.get(
+    '/api/auctions/search',
+    asyncRoute(async (_req, res) => {
+      const now = new Date();
+      const snap = await db
+        .collection('auctions')
+        .where('status', '==', 'LIVE')
+        .where('endAt', '>', now)
+        .orderBy('endAt')
+        .limit(24)
+        .get();
+      res.set('Cache-Control', 'no-store').json({
+        results: snap.docs.map(auctionSummaryJson),
+      });
+    }),
+  );
+
+  app.get(
     '/api/auctions/:auctionId/detail',
     asyncRoute(async (req, res) => {
       const auctionId = ensureString(req.params.auctionId, 'auctionId');
@@ -1579,6 +1716,146 @@ export function createApp(services) {
         }),
       });
     }),
+  );
+
+  app.get(
+    '/api/orders',
+    bindAuthenticated(async (req, res, authContext) => {
+      const role = optionalString(req.query.role) ?? 'buyer';
+      const field = role === 'seller' ? 'sellerId' : 'buyerId';
+      const snap = await db
+        .collection('orders')
+        .where(field, '==', authContext.uid)
+        .orderBy('createdAt', 'desc')
+        .limit(20)
+        .get();
+      res.set('Cache-Control', 'no-store').json({
+        orders: snap.docs.map(orderSummaryJson),
+      });
+    }, services),
+  );
+
+  app.get(
+    '/api/notifications',
+    bindAuthenticated(async (_req, res, authContext) => {
+      const snap = await db
+        .collection('notifications')
+        .doc(authContext.uid)
+        .collection('inbox')
+        .orderBy('createdAt', 'desc')
+        .limit(20)
+        .get();
+      res.set('Cache-Control', 'no-store').json({
+        items: snap.docs.map(notificationJson),
+      });
+    }, services),
+  );
+
+  app.get(
+    '/api/activity',
+    bindAuthenticated(async (_req, res, authContext) => {
+      const [buyerSnap, sellerSnap, notificationsSnap] = await Promise.all([
+        db
+          .collection('orders')
+          .where('buyerId', '==', authContext.uid)
+          .limit(20)
+          .get(),
+        db
+          .collection('orders')
+          .where('sellerId', '==', authContext.uid)
+          .limit(20)
+          .get(),
+        db
+          .collection('notifications')
+          .doc(authContext.uid)
+          .collection('inbox')
+          .limit(20)
+          .get(),
+      ]);
+
+      res.set('Cache-Control', 'no-store').json({
+        buyerSummary: activitySummaryJson({
+          pendingPaymentCount: buyerSnap.docs.filter(
+            (doc) => doc.data().orderStatus === 'AWAITING_PAYMENT',
+          ).length,
+          awaitingReceiptCount: buyerSnap.docs.filter(
+            (doc) => doc.data().orderStatus === 'SHIPPED',
+          ).length,
+        }),
+        sellerSummary: activitySummaryJson({
+          awaitingShipmentCount: sellerSnap.docs.filter(
+            (doc) => doc.data().orderStatus === 'PAID_ESCROW_HOLD',
+          ).length,
+        }),
+        notificationsSummary: activitySummaryJson({
+          unreadNotificationCount: notificationsSnap.docs.filter(
+            (doc) => doc.data().isRead !== true,
+          ).length,
+        }),
+      });
+    }, services),
+  );
+
+  app.get(
+    '/api/users/me',
+    bindAuthenticated(async (_req, res, authContext) => {
+      const snap = await db.collection('users').doc(authContext.uid).get();
+      res.set('Cache-Control', 'no-store').json({
+        profile: snap.exists ? profileJson(snap.data()) : null,
+      });
+    }, services),
+  );
+
+  app.get(
+    '/api/sell/drafts',
+    bindAuthenticated(async (_req, res, authContext) => {
+      const snap = await db
+        .collection('items')
+        .where('sellerId', '==', authContext.uid)
+        .where('status', '==', 'DRAFT')
+        .orderBy('updatedAt', 'desc')
+        .limit(8)
+        .get();
+      res.set('Cache-Control', 'no-store').json({
+        drafts: snap.docs.map(sellDraftJson),
+      });
+    }, services),
+  );
+
+  app.get(
+    '/api/settings/preferences',
+    bindAuthenticated(async (_req, res, authContext) => {
+      const snap = await db.collection('users').doc(authContext.uid).get();
+      const profile = profileJson(snap.exists ? snap.data() : {});
+      res.set('Cache-Control', 'no-store').json({
+        preferences: profile.preferences,
+      });
+    }, services),
+  );
+
+  app.post(
+    '/api/settings/preferences',
+    bindAuthenticated(async (req, res, authContext) => {
+      const payload = ensureObject(req.body, 'settings payload is required');
+      const preferences = ensureObject(
+        payload.preferences ?? {},
+        'preferences must be an object',
+      );
+      const sanitizedPreferences = normalizeNotificationPreferences({
+        preferences,
+      });
+      await db
+        .collection('users')
+        .doc(authContext.uid)
+        .set(
+          {
+            preferences: sanitizedPreferences,
+            updatedAt: FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
+      res.json({ ok: true });
+    }, services),
   );
 
   app.get(

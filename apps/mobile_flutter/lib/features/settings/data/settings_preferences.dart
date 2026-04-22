@@ -58,7 +58,12 @@ class SettingsPreferences {
   factory SettingsPreferences.fromDocument(
     DocumentSnapshot<Map<String, dynamic>> document,
   ) {
-    final data = document.data() ?? const <String, dynamic>{};
+    return SettingsPreferences.fromMap(
+      document.data() ?? const <String, dynamic>{},
+    );
+  }
+
+  factory SettingsPreferences.fromMap(Map<String, dynamic> data) {
     final preferences =
         (data['preferences'] as Map<String, dynamic>?) ?? const {};
     final notificationCategories =

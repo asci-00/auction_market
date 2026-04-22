@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/backend/dev_read_api.dart';
+import '../../../core/firebase/firebase_bootstrap.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../application/search_auction_filter.dart';
 import '../data/search_auction_summary.dart';
@@ -27,12 +29,32 @@ class SearchViewModel extends _$SearchViewModel {
 
   @override
   Future<SearchViewState> build(String query) async {
+    final config = ref.watch(appConfigProvider);
+    if (config.usesHttpBackend) {
+      final api = ref.watch(devReadApiProvider);
+      final stream = api.poll(api.fetchSearchAuctions);
+      final first = await stream.first;
+      final initial = filterSearchAuctions(first, query: query);
+
+      ref.onDispose(() {
+        unawaited(_sub?.cancel());
+      });
+
+      _sub = stream.listen((auctions) {
+        final filtered = filterSearchAuctions(auctions, query: query);
+        final current = state.valueOrNull ?? SearchViewState(results: filtered);
+        state = AsyncData(current.copyWith(results: filtered));
+      }, onError: _handleStreamError);
+
+      return SearchViewState(results: initial);
+    }
+
     final stream = _searchAuctionsStream(ref);
     final first = await stream.first;
     final initial = filterSearchAuctions(first, query: query);
 
     ref.onDispose(() {
-      _sub?.cancel();
+      unawaited(_sub?.cancel());
     });
 
     _sub = stream.listen((auctions) {
