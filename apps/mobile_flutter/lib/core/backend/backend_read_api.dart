@@ -19,16 +19,16 @@ import '../../features/settings/data/settings_preferences.dart';
 import '../firebase/firebase_bootstrap.dart';
 import '../firebase/firebase_providers.dart';
 
-final devReadApiProvider = Provider<DevReadApi>((ref) {
+final backendReadApiProvider = Provider<BackendReadApi>((ref) {
   final config = ref.watch(appConfigProvider);
-  return DevReadApi(
+  return BackendReadApi(
     baseUri: Uri.parse(config.apiBaseUrl!),
     auth: ref.watch(firebaseAuthProvider),
   );
 });
 
-class DevReadApi {
-  DevReadApi({
+class BackendReadApi {
+  BackendReadApi({
     required Uri baseUri,
     required FirebaseAuth auth,
     HttpClient? client,
@@ -40,15 +40,7 @@ class DevReadApi {
   final FirebaseAuth _auth;
   final HttpClient _client;
 
-  static const pollInterval = Duration(seconds: 4);
   static const _requestTimeout = Duration(seconds: 15);
-
-  Stream<T> poll<T>(Future<T> Function() fetch) {
-    return (() async* {
-      yield await fetch();
-      yield* Stream<void>.periodic(pollInterval).asyncMap((_) => fetch());
-    })().asBroadcastStream();
-  }
 
   Future<HomePayload> fetchHome() async {
     final payload = await _get('/api/auctions/home');

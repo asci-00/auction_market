@@ -86,10 +86,8 @@ class HomeAuctionRail extends StatelessWidget {
                 badgeKind: auction.buyNowPrice != null
                     ? AppStatusKind.buyNow
                     : defaultBadge,
-                onTap: () => onTapAuction(
-                  auction.id,
-                  '$heroNamespace-${auction.id}',
-                ),
+                onTap: () =>
+                    onTapAuction(auction.id, '$heroNamespace-${auction.id}'),
               ),
             ),
           );

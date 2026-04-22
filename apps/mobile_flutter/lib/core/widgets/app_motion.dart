@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppPageEntrance extends StatelessWidget {
-  const AppPageEntrance({
-    super.key,
-    required this.child,
-  });
+  const AppPageEntrance({super.key, required this.child});
 
   final Widget child;
 

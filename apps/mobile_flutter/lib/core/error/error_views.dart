@@ -37,11 +37,7 @@ class AppBootstrapLoadingScreen extends StatelessWidget {
 }
 
 class StartupFailureView extends StatelessWidget {
-  const StartupFailureView({
-    super.key,
-    required this.error,
-    this.onRetry,
-  });
+  const StartupFailureView({super.key, required this.error, this.onRetry});
 
   final AppError error;
   final VoidCallback? onRetry;

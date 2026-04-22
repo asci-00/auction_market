@@ -1,12 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../core/backend/dev_read_api.dart';
-import '../../../core/firebase/firebase_bootstrap.dart';
-import '../../../core/firebase/firebase_providers.dart';
+import '../../../core/backend/backend_read_api.dart';
+import '../../../core/backend/backend_refresh_event.dart';
+import '../../../core/events/event_bus.dart';
 import '../data/home_auction_summary.dart';
 
 part 'home_view_model.g.dart';
@@ -31,92 +30,38 @@ class HomeViewState {
 
 @riverpod
 class HomeViewModel extends _$HomeViewModel {
-  StreamSubscription<List<HomeAuctionSummary>>? _endingSoonSub;
-  StreamSubscription<List<HomeAuctionSummary>>? _hotSub;
-  StreamSubscription<HomePayload>? _homePollSub;
+  StreamSubscription<BackendRefreshEvent>? _refreshSub;
 
   @override
   Future<HomeViewState> build() async {
-    final config = ref.watch(appConfigProvider);
-    if (config.usesHttpBackend) {
-      final api = ref.watch(devReadApiProvider);
-      final stream = api.poll(api.fetchHome);
-      final initial = await stream.first;
-      _homePollSub = stream.listen(
-        (payload) => state = AsyncData(
-          HomeViewState(endingSoon: payload.endingSoon, hot: payload.hot),
-        ),
-        onError: _handleStreamError,
-      );
-      ref.onDispose(() {
-        unawaited(_homePollSub?.cancel());
-      });
-      return HomeViewState(endingSoon: initial.endingSoon, hot: initial.hot);
+    _listenForRefreshes();
+    return _fetchState();
+  }
+
+  Future<HomeViewState> _fetchState() async {
+    final payload = await ref.read(backendReadApiProvider).fetchHome();
+    return HomeViewState(endingSoon: payload.endingSoon, hot: payload.hot);
+  }
+
+  Future<void> _refreshState() async {
+    try {
+      state = AsyncData(await _fetchState());
+    } catch (error, stackTrace) {
+      state = AsyncError(error, stackTrace);
     }
+  }
 
+  void _listenForRefreshes() {
+    _refreshSub ??= listenEvent<BackendRefreshEvent>(
+      onEvent: (event) async {
+        if (event.includes(BackendRefreshArea.home)) {
+          await _refreshState();
+        }
+      },
+    );
     ref.onDispose(() {
-      unawaited(_endingSoonSub?.cancel());
-      unawaited(_hotSub?.cancel());
+      unawaited(_refreshSub?.cancel());
+      _refreshSub = null;
     });
-
-    final endingSoonStream = _homeEndingSoonStream(ref);
-    final hotStream = _homeHotStream(ref);
-    final initial = await Future.wait([
-      endingSoonStream.first,
-      hotStream.first,
-    ]);
-
-    _endingSoonSub = endingSoonStream.listen(
-      (items) => state = AsyncData(
-        (state.valueOrNull ??
-                HomeViewState(endingSoon: initial[0], hot: initial[1]))
-            .copyWith(endingSoon: items),
-      ),
-      onError: _handleStreamError,
-    );
-    _hotSub = hotStream.listen(
-      (items) => state = AsyncData(
-        (state.valueOrNull ??
-                HomeViewState(endingSoon: initial[0], hot: initial[1]))
-            .copyWith(hot: items),
-      ),
-      onError: _handleStreamError,
-    );
-
-    return HomeViewState(endingSoon: initial[0], hot: initial[1]);
   }
-
-  void _handleStreamError(Object error, StackTrace stackTrace) {
-    state = AsyncError(error, stackTrace);
-  }
-}
-
-Stream<List<HomeAuctionSummary>> _homeEndingSoonStream(Ref ref) {
-  final firestore = ref.watch(firestoreProvider);
-  return firestore
-      .collection('auctions')
-      .where('status', isEqualTo: 'LIVE')
-      .orderBy('endAt')
-      .limit(8)
-      .snapshots()
-      .map(
-        (snapshot) => snapshot.docs
-            .map(HomeAuctionSummary.fromDocument)
-            .toList(growable: false),
-      );
-}
-
-Stream<List<HomeAuctionSummary>> _homeHotStream(Ref ref) {
-  final firestore = ref.watch(firestoreProvider);
-  return firestore
-      .collection('auctions')
-      .where('status', isEqualTo: 'LIVE')
-      .orderBy('bidCount', descending: true)
-      .limit(8)
-      .snapshots()
-      .map(
-        (snapshot) => snapshot.docs
-            .map(HomeAuctionSummary.fromDocument)
-            .toList(growable: false),
-      );
 }

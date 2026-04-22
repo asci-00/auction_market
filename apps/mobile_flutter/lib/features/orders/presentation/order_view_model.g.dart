@@ -33,9 +33,7 @@ abstract class _$OrdersViewModel
     extends BuildlessAutoDisposeAsyncNotifier<OrdersViewState> {
   late final OrderQuery query;
 
-  FutureOr<OrdersViewState> build(
-    OrderQuery query,
-  );
+  FutureOr<OrdersViewState> build(OrderQuery query);
 }
 
 /// See also [OrdersViewModel].
@@ -48,21 +46,15 @@ class OrdersViewModelFamily extends Family<AsyncValue<OrdersViewState>> {
   const OrdersViewModelFamily();
 
   /// See also [OrdersViewModel].
-  OrdersViewModelProvider call(
-    OrderQuery query,
-  ) {
-    return OrdersViewModelProvider(
-      query,
-    );
+  OrdersViewModelProvider call(OrderQuery query) {
+    return OrdersViewModelProvider(query);
   }
 
   @override
   OrdersViewModelProvider getProviderOverride(
     covariant OrdersViewModelProvider provider,
   ) {
-    return call(
-      provider.query,
-    );
+    return call(provider.query);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -81,24 +73,23 @@ class OrdersViewModelFamily extends Family<AsyncValue<OrdersViewState>> {
 }
 
 /// See also [OrdersViewModel].
-class OrdersViewModelProvider extends AutoDisposeAsyncNotifierProviderImpl<
-    OrdersViewModel, OrdersViewState> {
+class OrdersViewModelProvider
+    extends
+        AutoDisposeAsyncNotifierProviderImpl<OrdersViewModel, OrdersViewState> {
   /// See also [OrdersViewModel].
-  OrdersViewModelProvider(
-    OrderQuery query,
-  ) : this._internal(
-          () => OrdersViewModel()..query = query,
-          from: ordersViewModelProvider,
-          name: r'ordersViewModelProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$ordersViewModelHash,
-          dependencies: OrdersViewModelFamily._dependencies,
-          allTransitiveDependencies:
-              OrdersViewModelFamily._allTransitiveDependencies,
-          query: query,
-        );
+  OrdersViewModelProvider(OrderQuery query)
+    : this._internal(
+        () => OrdersViewModel()..query = query,
+        from: ordersViewModelProvider,
+        name: r'ordersViewModelProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$ordersViewModelHash,
+        dependencies: OrdersViewModelFamily._dependencies,
+        allTransitiveDependencies:
+            OrdersViewModelFamily._allTransitiveDependencies,
+        query: query,
+      );
 
   OrdersViewModelProvider._internal(
     super._createNotifier, {
@@ -116,9 +107,7 @@ class OrdersViewModelProvider extends AutoDisposeAsyncNotifierProviderImpl<
   FutureOr<OrdersViewState> runNotifierBuild(
     covariant OrdersViewModel notifier,
   ) {
-    return notifier.build(
-      query,
-    );
+    return notifier.build(query);
   }
 
   @override
@@ -139,7 +128,7 @@ class OrdersViewModelProvider extends AutoDisposeAsyncNotifierProviderImpl<
 
   @override
   AutoDisposeAsyncNotifierProviderElement<OrdersViewModel, OrdersViewState>
-      createElement() {
+  createElement() {
     return _OrdersViewModelProviderElement(this);
   }
 
@@ -166,12 +155,17 @@ mixin OrdersViewModelRef
 }
 
 class _OrdersViewModelProviderElement
-    extends AutoDisposeAsyncNotifierProviderElement<OrdersViewModel,
-        OrdersViewState> with OrdersViewModelRef {
+    extends
+        AutoDisposeAsyncNotifierProviderElement<
+          OrdersViewModel,
+          OrdersViewState
+        >
+    with OrdersViewModelRef {
   _OrdersViewModelProviderElement(super.provider);
 
   @override
   OrderQuery get query => (origin as OrdersViewModelProvider).query;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

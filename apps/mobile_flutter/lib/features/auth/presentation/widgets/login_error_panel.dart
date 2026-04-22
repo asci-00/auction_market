@@ -5,10 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_panel.dart';
 
 class LoginErrorPanel extends StatelessWidget {
-  const LoginErrorPanel({
-    super.key,
-    required this.message,
-  });
+  const LoginErrorPanel({super.key, required this.message});
 
   final String message;
 

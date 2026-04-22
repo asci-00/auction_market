@@ -3,14 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('adds bottom keyboard inset to animated padding', (
-    tester,
-  ) async {
+  testWidgets('adds bottom keyboard inset to animated padding', (tester) async {
     await tester.pumpWidget(
       const MediaQuery(
-        data: MediaQueryData(
-          viewInsets: EdgeInsets.only(bottom: 120),
-        ),
+        data: MediaQueryData(viewInsets: EdgeInsets.only(bottom: 120)),
         child: Directionality(
           textDirection: TextDirection.ltr,
           child: Material(

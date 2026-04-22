@@ -46,7 +46,7 @@
 - No hardcoded external values in the repo.
 - No fake repository or production-facing mock payment path in app or backend.
 - No placeholder screens or disabled primary actions on core flows.
-- All screens render from Firestore reads and Functions writes.
+- All screens render from backend HTTP read APIs and server-mediated writes; the backend owns Firestore access for runtime product data.
 - Emulator can boot with seed data and exercise the full buyer and seller flow.
 - Staging can boot with real Firebase. Deferred external PG cutover is activated only when the user explicitly requests it.
 - UI polish such as dark mode, async feedback, overflow fixes, blur tuning, and transition smoothing can ship before deferred external provider handoff work begins.

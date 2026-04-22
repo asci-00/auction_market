@@ -21,12 +21,7 @@ class AppShimmer extends StatelessWidget {
 }
 
 class AppShimmerBlock extends StatelessWidget {
-  const AppShimmerBlock({
-    super.key,
-    this.width,
-    this.height,
-    this.radius,
-  });
+  const AppShimmerBlock({super.key, this.width, this.height, this.radius});
 
   final double? width;
   final double? height;
@@ -71,11 +66,7 @@ class AppShimmerCardPlaceholder extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: AppShimmerBlock(
-                  radius: tokens.cardRadius,
-                ),
-              ),
+              Expanded(child: AppShimmerBlock(radius: tokens.cardRadius)),
               SizedBox(height: tokens.space4),
               const AppShimmerBlock(width: 72, height: 12, radius: 999),
               SizedBox(height: tokens.space2),

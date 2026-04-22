@@ -6,10 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_panel.dart';
 
 class LoginNotesPanel extends StatelessWidget {
-  const LoginNotesPanel({
-    super.key,
-    required this.showReturnNotice,
-  });
+  const LoginNotesPanel({super.key, required this.showReturnNotice});
 
   final bool showReturnNotice;
 

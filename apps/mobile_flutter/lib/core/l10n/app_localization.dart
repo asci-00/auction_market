@@ -3,10 +3,7 @@ import '../../l10n/app_localizations.dart';
 
 export '../../l10n/app_localizations.dart';
 
-const supportedAppLocales = <Locale>[
-  Locale('ko'),
-  Locale('en'),
-];
+const supportedAppLocales = <Locale>[Locale('ko'), Locale('en')];
 
 const fallbackAppLocale = Locale('ko');
 

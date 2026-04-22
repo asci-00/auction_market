@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/backend/backend_gateway.dart';
+import '../../../core/backend/backend_refresh_event.dart';
+import '../../../core/events/event_bus.dart';
 
 final auctionDetailActionServiceProvider = Provider<AuctionDetailActionService>(
   (ref) {
@@ -22,6 +24,7 @@ class AuctionDetailActionService {
     }
 
     await _gateway.placeBid(auctionId: auctionId, amount: amount);
+    sendToEventBus(BackendRefreshEvent.auctionChanged(auctionId));
   }
 
   Future<void> setAutoBid({
@@ -37,9 +40,17 @@ class AuctionDetailActionService {
     }
 
     await _gateway.setAutoBid(auctionId: auctionId, maxAmount: maxAmount);
+    sendToEventBus(BackendRefreshEvent.auctionChanged(auctionId));
   }
 
   Future<String?> buyNow({required String auctionId}) async {
-    return _gateway.buyNow(auctionId: auctionId);
+    final orderId = await _gateway.buyNow(auctionId: auctionId);
+    sendToEventBus(
+      BackendRefreshEvent.buyNowCompleted(
+        auctionId: auctionId,
+        orderId: orderId,
+      ),
+    );
+    return orderId;
   }
 }

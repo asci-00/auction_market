@@ -2,9 +2,9 @@
 
 ## Current Task
 - Phase 4 settings and notification foundation is active.
-- The current slice now includes the real Firebase dev project split, Render dev server deployment, dev/prod mobile flavor separation, structured mobile logging, backend gateway split, device-token lifecycle, backend Firebase Admin Messaging fan-out for the inbox-backed product events that already exist, and mobile push presentation plus tap-routing foundation.
-- Android physical-device dev builds now default to real Firebase dev + Render HTTP instead of local emulator networking.
-- A debug-only push probe trigger now exists in both backend transports: callable `sendDebugPushProbe` and Render `POST /api/notifications/debug/push-probe`, both guarded by `APP_ENV=dev` and aligned to current push eligibility rules.
+- The current slice now includes the real Firebase dev project split, Render/mobile HTTP backend deployment, dev/prod mobile flavor separation, structured mobile logging, unified HTTP backend gateway, device-token lifecycle, backend Firebase Admin Messaging fan-out for the inbox-backed product events that already exist, and mobile push presentation plus tap-routing foundation.
+- Android physical-device dev builds now default to real Firebase dev + the same HTTP backend contract used by prod.
+- A debug-only push probe trigger now exists at `POST /api/notifications/debug/push-probe`, guarded by backend `APP_ENV=dev` and aligned to current push eligibility rules.
 - Real push delivery is still incomplete: token registration, backend dispatch, Android channel wiring, foreground surfaced messages, and push tap routing now exist, but the remaining unsupported push-event gaps and final real-device verification are still open.
 
 ## Locked Decisions
@@ -26,15 +26,15 @@
 ## Validation Status
 - The public dev backend is live at `https://auction-market-dev-api.onrender.com`, and `https://auction-market-dev-api.onrender.com/healthz` returns runtime metadata for the dev Firebase project.
 - Dev Firebase project split is in place for Android and iOS local native config files, and Render now uses Firebase Admin directly instead of deployed Firebase Functions.
-- Mobile dev builds now read `APP_ENV`, `APP_BACKEND_TRANSPORT`, `APP_API_BASE_URL`, emulator mode, and `TOSS_CLIENT_KEY` from flavor-specific define files.
+- Mobile builds now read `APP_ENV`, `APP_BACKEND_TRANSPORT=http`, `APP_API_BASE_URL`, emulator mode, and `TOSS_CLIENT_KEY` from flavor-specific define files.
 - Android and iOS flavors plus native config selection are wired as:
   - Android: `dev` and `prod`
   - iOS: `dev` and `prod` schemes with `Debug-dev`/`Release-dev`/`Profile-dev` and `Debug-prod`/`Release-prod`/`Profile-prod`
-- The mobile backend gateway now keeps prod on Firebase callable and dev on Render HTTP without changing feature-level mutation contracts.
-- Dev HTTP transport now uses Render read endpoints for home, search, auction detail, orders, notifications, activity, my profile, sell drafts, and settings preferences with short polling where needed, while prod/Firebase-callable transport keeps the Firestore listener path. This avoids opening the Android Firestore gRPC channel on those physical-device dev app surfaces.
+- The mobile backend gateway now uses the same HTTP backend API in dev and prod without feature-level transport forks.
+- The shared HTTP transport uses backend read endpoints for home, search, auction detail, orders, notifications, activity, my profile, sell drafts, and settings preferences. Successful mobile mutations publish `BackendRefreshEvent` on the app event bus, and interested Riverpod view models refetch their own state from the shared HTTP API. This avoids opening the Android Firestore gRPC channel on mobile app read surfaces without adding periodic polling.
 - Structured mobile logging now flows through `AppLogger`, with timestamp, level, domain, and source.
 - Mobile foundation folders, guarded routing, Firebase bootstrap, localized core screens, and shared editorial design primitives exist.
-- Firestore read paths and Functions write paths cover prod/default login, browse, auction detail, sell, orders, notifications, and activity flows; dev HTTP routes cover the equivalent mobile read surfaces through the Render server.
+- Backend HTTP routes cover mobile browse, auction detail, sell, orders, notifications, settings, and activity flows; Firebase Functions remain for scheduler/webhook/backend jobs that are not part of the mobile transport contract.
 - Phase 3 polish already includes dark-theme groundwork, shared loading overlays, keyboard-safe modal handling, Hero-enabled auction continuity, and localized empty or error states.
 - The sell route now surfaces visible step progress and draft-save status, so category/details/pricing/images/publish readiness and unsaved-draft state are legible before save or publish.
 - The sell route now renders field-level validation errors inline and a localized summary near the submit actions, so sellers do not have to infer correction targets from one snackbar line.
@@ -54,7 +54,7 @@
 - Phase 4 now has its first settings foundation slice: `/settings` exists, the app bar and My screen can open it, signed-in users see notification preference toggles backed by `users/{uid}.preferences`, and signed-out users are redirected back through `/login?from=/settings`.
 - Settings now falls back to an in-app default preference model when `users/{uid}` exists without a `preferences` payload yet, so notification controls can still render before a full profile bootstrap is complete.
 - The settings screen now shows current OS notification permission state, a request-permission or open-system-settings recovery action when applicable, app version, open-source licenses, and debug-only environment info.
-- The debug-only developer settings area now includes a compact push-probe action that calls `sendDebugPushProbe` through the backend gateway abstraction, so dev HTTP and callable modes keep one feature-level trigger path for signed-in tester diagnostics.
+- The debug-only developer settings area now includes a compact push-probe action that calls `sendDebugPushProbe` through the shared HTTP backend gateway path for signed-in tester diagnostics.
 - The second Phase 4 settings slice now applies a local `SharedPreferences` theme preference to `MaterialApp`, and `/settings` now exposes a compact theme preview selector instead of a verbose radio list.
 - The settings screen now includes a dedicated language behavior confirmation section that states locale follows the system setting, surfaces the current effective app language, and explicitly documents the supported `ko` or `en` set with `ko` fallback.
 - Signed-in routes no longer expose a global locale picker in the shared app bar, and the signed-out login surface also no longer carries a manual locale menu; the app now follows the device locale only.

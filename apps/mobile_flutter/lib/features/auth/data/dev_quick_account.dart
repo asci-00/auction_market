@@ -1,8 +1,5 @@
 class DevQuickAccount {
-  const DevQuickAccount({
-    required this.email,
-    required this.password,
-  });
+  const DevQuickAccount({required this.email, required this.password});
 
   final String email;
   final String password;

@@ -12,14 +12,14 @@ String _$homeViewModelHash() => r'a4c9dee899c0d837f933218a83a0173a4cce5065';
 @ProviderFor(HomeViewModel)
 final homeViewModelProvider =
     AutoDisposeAsyncNotifierProvider<HomeViewModel, HomeViewState>.internal(
-  HomeViewModel.new,
-  name: r'homeViewModelProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$homeViewModelHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      HomeViewModel.new,
+      name: r'homeViewModelProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$homeViewModelHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$HomeViewModel = AutoDisposeAsyncNotifier<HomeViewState>;
 // ignore_for_file: type=lint

@@ -33,9 +33,7 @@ abstract class _$SellViewModel
     extends BuildlessAutoDisposeAsyncNotifier<SellViewState> {
   late final String userId;
 
-  FutureOr<SellViewState> build(
-    String userId,
-  );
+  FutureOr<SellViewState> build(String userId);
 }
 
 /// See also [SellViewModel].
@@ -48,21 +46,15 @@ class SellViewModelFamily extends Family<AsyncValue<SellViewState>> {
   const SellViewModelFamily();
 
   /// See also [SellViewModel].
-  SellViewModelProvider call(
-    String userId,
-  ) {
-    return SellViewModelProvider(
-      userId,
-    );
+  SellViewModelProvider call(String userId) {
+    return SellViewModelProvider(userId);
   }
 
   @override
   SellViewModelProvider getProviderOverride(
     covariant SellViewModelProvider provider,
   ) {
-    return call(
-      provider.userId,
-    );
+    return call(provider.userId);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -84,21 +76,19 @@ class SellViewModelFamily extends Family<AsyncValue<SellViewState>> {
 class SellViewModelProvider
     extends AutoDisposeAsyncNotifierProviderImpl<SellViewModel, SellViewState> {
   /// See also [SellViewModel].
-  SellViewModelProvider(
-    String userId,
-  ) : this._internal(
-          () => SellViewModel()..userId = userId,
-          from: sellViewModelProvider,
-          name: r'sellViewModelProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$sellViewModelHash,
-          dependencies: SellViewModelFamily._dependencies,
-          allTransitiveDependencies:
-              SellViewModelFamily._allTransitiveDependencies,
-          userId: userId,
-        );
+  SellViewModelProvider(String userId)
+    : this._internal(
+        () => SellViewModel()..userId = userId,
+        from: sellViewModelProvider,
+        name: r'sellViewModelProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$sellViewModelHash,
+        dependencies: SellViewModelFamily._dependencies,
+        allTransitiveDependencies:
+            SellViewModelFamily._allTransitiveDependencies,
+        userId: userId,
+      );
 
   SellViewModelProvider._internal(
     super._createNotifier, {
@@ -113,12 +103,8 @@ class SellViewModelProvider
   final String userId;
 
   @override
-  FutureOr<SellViewState> runNotifierBuild(
-    covariant SellViewModel notifier,
-  ) {
-    return notifier.build(
-      userId,
-    );
+  FutureOr<SellViewState> runNotifierBuild(covariant SellViewModel notifier) {
+    return notifier.build(userId);
   }
 
   @override
@@ -139,7 +125,7 @@ class SellViewModelProvider
 
   @override
   AutoDisposeAsyncNotifierProviderElement<SellViewModel, SellViewState>
-      createElement() {
+  createElement() {
     return _SellViewModelProviderElement(this);
   }
 
@@ -165,12 +151,14 @@ mixin SellViewModelRef on AutoDisposeAsyncNotifierProviderRef<SellViewState> {
 }
 
 class _SellViewModelProviderElement
-    extends AutoDisposeAsyncNotifierProviderElement<SellViewModel,
-        SellViewState> with SellViewModelRef {
+    extends
+        AutoDisposeAsyncNotifierProviderElement<SellViewModel, SellViewState>
+    with SellViewModelRef {
   _SellViewModelProviderElement(super.provider);
 
   @override
   String get userId => (origin as SellViewModelProvider).userId;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

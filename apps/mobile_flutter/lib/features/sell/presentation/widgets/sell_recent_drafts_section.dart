@@ -52,25 +52,16 @@ class SellRecentDraftsSection extends StatelessWidget {
             description: context.l10n.sellDraftEmptyDescription,
           )
         else if (isLoading)
-          const AppShimmerListPlaceholder(
-            itemCount: 3,
-            itemHeight: 108,
-          )
+          const AppShimmerListPlaceholder(itemCount: 3, itemHeight: 108)
         else
-          _DraftsBody(
-            drafts: drafts,
-            onSelectDraft: onSelectDraft,
-          ),
+          _DraftsBody(drafts: drafts, onSelectDraft: onSelectDraft),
       ],
     );
   }
 }
 
 class _DraftsBody extends StatelessWidget {
-  const _DraftsBody({
-    required this.drafts,
-    required this.onSelectDraft,
-  });
+  const _DraftsBody({required this.drafts, required this.onSelectDraft});
 
   final List<SellDraftSummary> drafts;
   final ValueChanged<SellDraftSummary> onSelectDraft;

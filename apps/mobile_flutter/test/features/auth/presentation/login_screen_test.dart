@@ -60,10 +60,10 @@ void main() {
 
 const _devEmulatorConfig = AppConfig(
   environment: AppEnvironment.dev,
-  backendTransport: AppBackendTransport.firebaseCallable,
-  apiBaseUrl: null,
+  backendTransport: AppBackendTransport.http,
+  apiBaseUrl: 'https://api.example.com',
   useFirebaseEmulators: true,
-  tossClientKey: null,
+  tossClientKey: 'test_ck_example',
   firebaseEmulatorHostOverride: null,
 );
 

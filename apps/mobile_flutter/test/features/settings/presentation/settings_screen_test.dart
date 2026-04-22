@@ -98,7 +98,7 @@ void main() {
               (ref) async => AppBootstrapState(
                 config: AppConfig.fromValues(
                   environment: AppEnvironment.dev,
-                  backendTransportRawValue: 'firebase_callable',
+                  backendTransportRawValue: 'http',
                   useFirebaseEmulatorsRawValue: 'false',
                 ),
               ),

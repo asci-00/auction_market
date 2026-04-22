@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/backend/backend_gateway.dart';
+import '../../../core/backend/backend_refresh_event.dart';
+import '../../../core/events/event_bus.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../data/sell_draft_form_data.dart';
 
@@ -84,6 +86,7 @@ class SellFlowService {
         'appraisal': {'status': form.appraisalRequested ? 'REQUESTED' : 'NONE'},
       },
     );
+    sendToEventBus(BackendRefreshEvent.sellDraftsChanged);
 
     return SellDraftSaveResult(
       itemId: itemId,
@@ -105,7 +108,7 @@ class SellFlowService {
 
     final now = DateTime.now();
     final endAt = now.add(Duration(days: form.durationDays));
-    return _gateway.createAuctionFromItem(
+    final auctionId = await _gateway.createAuctionFromItem(
       payload: {
         'itemId': savedDraft.itemId,
         'startAt': now.toIso8601String(),
@@ -114,6 +117,8 @@ class SellFlowService {
         'buyNowPrice': form.buyNowPrice,
       },
     );
+    sendToEventBus(BackendRefreshEvent.auctionPublished(auctionId));
+    return auctionId;
   }
 
   Future<List<String>> _uploadImages({

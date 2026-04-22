@@ -33,9 +33,7 @@ abstract class _$ActivityViewModel
     extends BuildlessAutoDisposeAsyncNotifier<ActivityViewState> {
   late final String userId;
 
-  FutureOr<ActivityViewState> build(
-    String userId,
-  );
+  FutureOr<ActivityViewState> build(String userId);
 }
 
 /// See also [ActivityViewModel].
@@ -48,21 +46,15 @@ class ActivityViewModelFamily extends Family<AsyncValue<ActivityViewState>> {
   const ActivityViewModelFamily();
 
   /// See also [ActivityViewModel].
-  ActivityViewModelProvider call(
-    String userId,
-  ) {
-    return ActivityViewModelProvider(
-      userId,
-    );
+  ActivityViewModelProvider call(String userId) {
+    return ActivityViewModelProvider(userId);
   }
 
   @override
   ActivityViewModelProvider getProviderOverride(
     covariant ActivityViewModelProvider provider,
   ) {
-    return call(
-      provider.userId,
-    );
+    return call(provider.userId);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -81,24 +73,26 @@ class ActivityViewModelFamily extends Family<AsyncValue<ActivityViewState>> {
 }
 
 /// See also [ActivityViewModel].
-class ActivityViewModelProvider extends AutoDisposeAsyncNotifierProviderImpl<
-    ActivityViewModel, ActivityViewState> {
+class ActivityViewModelProvider
+    extends
+        AutoDisposeAsyncNotifierProviderImpl<
+          ActivityViewModel,
+          ActivityViewState
+        > {
   /// See also [ActivityViewModel].
-  ActivityViewModelProvider(
-    String userId,
-  ) : this._internal(
-          () => ActivityViewModel()..userId = userId,
-          from: activityViewModelProvider,
-          name: r'activityViewModelProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$activityViewModelHash,
-          dependencies: ActivityViewModelFamily._dependencies,
-          allTransitiveDependencies:
-              ActivityViewModelFamily._allTransitiveDependencies,
-          userId: userId,
-        );
+  ActivityViewModelProvider(String userId)
+    : this._internal(
+        () => ActivityViewModel()..userId = userId,
+        from: activityViewModelProvider,
+        name: r'activityViewModelProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$activityViewModelHash,
+        dependencies: ActivityViewModelFamily._dependencies,
+        allTransitiveDependencies:
+            ActivityViewModelFamily._allTransitiveDependencies,
+        userId: userId,
+      );
 
   ActivityViewModelProvider._internal(
     super._createNotifier, {
@@ -116,9 +110,7 @@ class ActivityViewModelProvider extends AutoDisposeAsyncNotifierProviderImpl<
   FutureOr<ActivityViewState> runNotifierBuild(
     covariant ActivityViewModel notifier,
   ) {
-    return notifier.build(
-      userId,
-    );
+    return notifier.build(userId);
   }
 
   @override
@@ -139,7 +131,7 @@ class ActivityViewModelProvider extends AutoDisposeAsyncNotifierProviderImpl<
 
   @override
   AutoDisposeAsyncNotifierProviderElement<ActivityViewModel, ActivityViewState>
-      createElement() {
+  createElement() {
     return _ActivityViewModelProviderElement(this);
   }
 
@@ -166,12 +158,17 @@ mixin ActivityViewModelRef
 }
 
 class _ActivityViewModelProviderElement
-    extends AutoDisposeAsyncNotifierProviderElement<ActivityViewModel,
-        ActivityViewState> with ActivityViewModelRef {
+    extends
+        AutoDisposeAsyncNotifierProviderElement<
+          ActivityViewModel,
+          ActivityViewState
+        >
+    with ActivityViewModelRef {
   _ActivityViewModelProviderElement(super.provider);
 
   @override
   String get userId => (origin as ActivityViewModelProvider).userId;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

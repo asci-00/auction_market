@@ -121,10 +121,7 @@ void main() {
     );
 
     final errors = <Object>[];
-    final subscription = stream.listen(
-      (_) {},
-      onError: errors.add,
-    );
+    final subscription = stream.listen((_) {}, onError: errors.add);
 
     auctionController.add(
       const AuctionDetailDocument(

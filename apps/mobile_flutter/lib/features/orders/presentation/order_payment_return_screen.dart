@@ -168,11 +168,13 @@ class _OrderPaymentReturnScreenState
     if (normalized == null || normalized.isEmpty) {
       return;
     }
-    ref.read(appLoggerProvider).warning(
-      normalized,
-      domain: AppLogDomain.payment,
-      source: 'order_payment_return_screen:$context',
-    );
+    ref
+        .read(appLoggerProvider)
+        .warning(
+          normalized,
+          domain: AppLogDomain.payment,
+          source: 'order_payment_return_screen:$context',
+        );
   }
 }
 

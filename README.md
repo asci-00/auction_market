@@ -97,7 +97,7 @@ cd apps/mobile_flutter
 flutter run --flavor dev --dart-define-from-file=dart_defines.local-emulator.json
 ```
 
-- `dart_defines.local-emulator.json`은 dev flavor를 유지한 채 Firebase Emulator + callable transport를 강제합니다.
+- `dart_defines.local-emulator.json`은 dev flavor를 유지한 채 동일한 HTTP backend contract를 로컬 API URL로 연결합니다.
 - Android 실기기는 `adb reverse` 기준으로 `FIREBASE_EMULATOR_HOST=127.0.0.1`을 사용합니다.
 
 ## 5) E2E 수동 검증 시나리오

@@ -23,18 +23,19 @@ enum AppEnvironment {
 }
 
 enum AppBackendTransport {
-  firebaseCallable,
   http;
 
   static AppBackendTransport parse(String rawValue) {
     switch (rawValue) {
-      case 'firebase_callable':
-        return AppBackendTransport.firebaseCallable;
       case 'http':
         return AppBackendTransport.http;
+      case 'firebase_callable':
+        throw const AppConfigurationException(
+          'APP_BACKEND_TRANSPORT=firebase_callable is no longer supported. Use http so dev and prod share the same backend contract.',
+        );
       default:
         throw const AppConfigurationException(
-          'APP_BACKEND_TRANSPORT must be one of firebase_callable or http.',
+          'APP_BACKEND_TRANSPORT must be http.',
         );
     }
   }
@@ -71,8 +72,7 @@ class AppConfig {
     String? firebaseEmulatorHostOverride,
   }) {
     final backendTransport = AppBackendTransport.parse(
-      backendTransportRawValue ??
-          (environment == AppEnvironment.dev ? 'http' : 'firebase_callable'),
+      backendTransportRawValue ?? 'http',
     );
     final useFirebaseEmulators = _readBoolValue(
       useFirebaseEmulatorsRawValue,
@@ -91,29 +91,17 @@ class AppConfig {
       ),
     );
 
-    if (config.backendTransport == AppBackendTransport.http &&
-        !config.hasApiBaseUrl) {
-      throw const AppConfigurationException(
-        'APP_API_BASE_URL is required when APP_BACKEND_TRANSPORT=http.',
-      );
+    if (!config.hasApiBaseUrl) {
+      throw const AppConfigurationException('APP_API_BASE_URL is required.');
     }
-    if (config.backendTransport == AppBackendTransport.http &&
-        !_isValidHttpBaseUrl(config.apiBaseUrl!)) {
+    if (!_isValidHttpBaseUrl(config.apiBaseUrl!)) {
       throw const AppConfigurationException(
         'APP_API_BASE_URL must be a valid http or https URL.',
       );
     }
 
-    if (config.usesHttpBackend && !config.hasMeaningfulTossClientKey) {
-      throw const AppConfigurationException(
-        'TOSS_CLIENT_KEY is required when APP_BACKEND_TRANSPORT=http.',
-      );
-    }
-
-    if (config.isProd && !config.hasMeaningfulTossClientKey) {
-      throw const AppConfigurationException(
-        'TOSS_CLIENT_KEY is required in prod builds.',
-      );
+    if (!config.hasMeaningfulTossClientKey) {
+      throw const AppConfigurationException('TOSS_CLIENT_KEY is required.');
     }
 
     return config;
@@ -130,7 +118,7 @@ class AppConfig {
 
   bool get isProd => environment == AppEnvironment.prod;
 
-  bool get usesHttpBackend => backendTransport == AppBackendTransport.http;
+  bool get usesHttpBackend => true;
 
   bool get hasApiBaseUrl => _isMeaningful(apiBaseUrl);
 

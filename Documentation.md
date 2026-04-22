@@ -16,10 +16,10 @@
 
 ## Environment Model
 - `dev`: real Firebase development project plus the Render dev server for public mobile HTTP entrypoints and payment redirect pages.
-- `prod`: real Firebase production project with Firebase callable remaining the default mutation transport.
+- `prod`: real Firebase production project using the same mobile HTTP API contract as `dev`; environment differences are backend URL, Firebase native app files, and backend runtime secrets.
 - When a third-party dependency is not ready yet, `dev` may expose server-driven dummy integration payloads so the mobile app can validate the surrounding product flow before the final real handoff is wired.
 - External PG cutover planning is tracked only in `Plan.md` under `Phase Undecided`.
-- The app switches environment only through build-time public config for `APP_ENV`, backend transport, emulator mode, and other non-secret app settings.
+- The app switches environment only through build-time public config for `APP_ENV`, backend API URL, emulator mode, and other non-secret app settings.
 - Backend runtime switches environment only through env variables.
 - Flutter mobile boot on iOS and Android reads Firebase app registration from native platform files instead of `dart-define` values.
 - Mobile public config now comes from flavor-specific `dart_defines.dev.json`, `dart_defines.local-emulator.json`, and `dart_defines.prod.json`.
@@ -40,8 +40,8 @@
   - `widgets`: reusable layout and interaction components.
 - Current Phase 1 implementation details:
   - `lib/main.dart` installs zoned startup error capture for Flutter framework and platform errors.
-  - `lib/core/app_config/app_config.dart` validates non-secret app defines such as `APP_ENV`, `APP_BACKEND_TRANSPORT`, `APP_API_BASE_URL`, emulator mode, and the currently wired payment launch key when the active adapter needs one.
-  - `lib/core/backend/backend_gateway.dart` selects `FirebaseCallableBackendGateway` for prod and `HttpBackendGateway` for dev HTTP transport, so existing services keep the same high-level mutation contract while transport changes underneath.
+  - `lib/core/app_config/app_config.dart` validates non-secret app defines such as `APP_ENV`, `APP_BACKEND_TRANSPORT=http`, `APP_API_BASE_URL`, emulator mode, and the currently wired payment launch key.
+  - `lib/core/backend/backend_gateway.dart` always uses the HTTP backend contract for both dev and prod so feature services do not fork behavior by environment.
   - `lib/core/firebase/firebase_bootstrap.dart` initializes Firebase from native iOS and Android config files, then attaches Auth, Firestore, Functions, and Storage emulators when enabled.
   - `lib/core/logging/app_logger.dart` is the single structured mobile logger entrypoint and emits `timestamp | level | domain | source | message`; release builds force production-safe logger policy (info-level minimum with redaction) even when runtime `APP_ENV` is `dev`.
   - `lib/core/l10n/app_localization.dart` resolves device locale to `ko` or `en` and exposes generated localization accessors.
@@ -57,12 +57,12 @@
   - Login now blocks Google and Apple browser sign-in when `USE_FIREBASE_EMULATORS=true`, because the project treats mobile social-login verification as a real-Firebase path rather than an Auth Emulator path.
   - Login also exposes seeded buyer and seller quick-login actions only when not in release mode and when `APP_ENV=dev` plus `USE_FIREBASE_EMULATORS=true`, so emulator smoke tests can enter authenticated routes without exposing debug shortcuts in release builds.
   - Login now keeps seeded account constants in `features/auth/data`, auth mutations in `features/auth/application`, and each major visual block in `features/auth/presentation/widgets`.
-  - Auction detail now keeps the screen in `presentation`, pushes callable writes through `features/auction/application/auction_detail_action_service.dart`, and maps Firestore documents through `features/auction/data/auction_detail_view_data.dart`.
+  - Auction detail now keeps the screen in `presentation`, pushes writes through `features/auction/application/auction_detail_action_service.dart`, and maps backend API payloads through `features/auction/data/auction_detail_view_data.dart`.
   - Auction detail now combines `auctions/{auctionId}` with the linked `items/{itemId}` document so the screen can render a real image gallery, item description, and lightweight item metadata above bid history.
-  - Auction detail now binds the auction stream and linked item stream through `features/auction/data/auction_detail_stream.dart`, so item enrichment does not suppress later auction updates when price, order, or status changes continue in Firestore.
+  - Auction detail now reads the merged auction/item detail payload through the shared backend read API so item enrichment and bid history follow the same mobile transport as the rest of the app.
   - Auction detail header now clamps its gallery index when the backing image list shrinks, preventing stale page state from surviving a live image-list update.
   - Auction detail now exposes `features/auction/presentation/widgets/auction_detail_view.dart` so route composition can be tested directly for live buyer, seller-owned, and unavailable states without pulling Firebase providers into widget tests.
-  - Orders now keeps the screen layout in `presentation`, pushes payment, shipment, and receipt callables through `features/orders/application/order_action_service.dart`, and maps Firestore documents through `features/orders/data/order_summary.dart`.
+  - Orders now keeps the screen layout in `presentation`, pushes payment, shipment, and receipt actions through `features/orders/application/order_action_service.dart`, and maps backend API payloads through `features/orders/data/order_summary.dart`.
   - Sell now keeps Functions and Storage writes in `features/sell/application/sell_flow_service.dart`, draft mapping in `features/sell/data`, and section widgets in `features/sell/presentation/widgets`, so the route screen mostly owns form state and composition.
   - Sell now also renders a dedicated `SellProgressPanel` that tracks category, details, pricing, image, and publish readiness plus current draft-save state, so the `docs/Design.md` requirement for visible step progress and draft-save status is met without turning the route into a full wizard.
   - Sell validation now keeps action-aware form errors in presentation state, so `save draft` and `publish auction` can each render inline `errorText` feedback on the affected fields plus a localized summary block near the submit actions instead of relying on a snackbar-only correction loop.
@@ -91,7 +91,7 @@
   - Settings now lives under `features/settings/` with a dedicated data model for notification preferences, an application service for preference writes and OS permission helpers, and presentation widgets for notification controls plus app info.
   - The first Phase 4 settings slice now exposes `/settings` from both the global app bar and the My screen, and it currently covers notification preferences, OS notification-permission state, appearance mode, app version, licenses, and debug-only environment info.
   - Settings now also includes a dedicated language behavior confirmation section that shows the current effective app language from locale resolution and explicitly documents supported locales (`ko`, `en`) with `ko` fallback.
-  - The debug-only settings developer area now also exposes a server push-probe trigger for the signed-in user, routed through `core/backend/backend_gateway.dart` as `sendDebugPushProbe` so both dev HTTP and callable transports compile from the same feature-level call path.
+  - The debug-only settings developer area now also exposes a server push-probe trigger for the signed-in user, routed through `core/backend/backend_gateway.dart` as `sendDebugPushProbe` on the shared HTTP backend path.
   - Settings reads `users/{uid}.preferences` through the active read transport and falls back to `SettingsPreferences.defaults()` when the signed-in user document exists without a populated `preferences` payload yet.
   - `app/app.dart` now applies theme mode from local `SharedPreferences` state instead of the signed-in user document, while locale always follows the device setting through the shared locale resolver.
   - Notification device-token lifecycle now lives under `features/notifications/application/notification_device_token_service.dart`, where the signed-in app session calls `registerDeviceToken` after permission grant, re-syncs on app resume and FCM token rotation, and calls `deactivateDeviceToken` before sign-out or when push is disabled.
@@ -119,11 +119,11 @@
   - Pre-cutover Phase 3 polish work should prioritize dark mode parity, overflow and keyboard-safety fixes, blur tuning, barrier tuning, async-feedback timing, and route-transition smoothness before any explicit real PG cutover begins.
   - Shared blocking loading states must use `apps/mobile_flutter/assets/lotties/loading.lottie`, with shimmer preferred over modal loading when the destination layout is already known.
 - Home, search, orders, notifications, activity, my, sell drafts, settings, and auction detail render from live backend read paths and fall back to localized empty or unavailable states when documents are missing.
-- Firebase-callable/prod transport keeps the direct mobile Firestore read path. Dev HTTP transport reads through the Render dev server for home, search, auction detail, orders, notifications, activity, my profile, sell drafts, and settings preferences, then polls briefly where screens need live-ish updates. This keeps Android physical-device dev navigation on the same HTTP backend surface as dev mutations and avoids opening the Android Firestore gRPC channel for those app surfaces.
-- Read production/default data directly from Firestore and Storage-backed URLs, with documented dev HTTP read exceptions only.
+- Dev and prod both read through the same backend HTTP API for home, search, auction detail, orders, notifications, activity, my profile, sell drafts, and settings preferences. Successful mobile mutations publish `BackendRefreshEvent` through `core/events/event_bus.dart`; each interested Riverpod view model listens and refetches its own state. This keeps mobile behavior unified and avoids opening the Android Firestore gRPC channel for product read surfaces without periodic polling.
+- Read production/default data through backend-authored API payloads and Storage-backed URLs; direct mobile Firestore reads are not part of the app runtime contract.
 - Send mutations through the backend gateway only:
-  - prod default: Firebase callable
-  - dev default: Render HTTP
+  - prod default: HTTP backend API
+  - dev default: HTTP backend API
 - Native Firebase config files live at:
   - `apps/mobile_flutter/ios/Runner/Firebase/dev/GoogleService-Info.plist`
   - `apps/mobile_flutter/ios/Runner/Firebase/prod/GoogleService-Info.plist`
@@ -139,7 +139,7 @@
 
 ## Backend Implementation Notes
 - `backend/functions/src/config/runtime.ts` validates backend runtime env such as `APP_ENV`, provider secrets for the active payment adapter, provider API base URL, and the presence of `APP_BASE_URL` when it is required by the active payment mode.
-- `backend/render-dev-server` exposes `/healthz`, `/payments/*`, and `/api/*` on a stable public dev URL. It now verifies Firebase ID tokens with Firebase Admin and reads or writes directly to the dev project's Firestore collections, so dev HTTP transport no longer depends on deployed Firebase Functions. Public dev read routes include `GET /api/auctions/home`, `GET /api/auctions/search`, `GET /api/auctions/:auctionId/detail`, `GET /api/orders`, `GET /api/notifications`, `GET /api/activity`, `GET /api/users/me`, `GET /api/sell/drafts`, and `GET /api/settings/preferences`.
+- `backend/render-dev-server` exposes `/healthz`, `/payments/*`, and `/api/*` on the mobile backend URL. It verifies Firebase ID tokens with Firebase Admin and reads or writes directly to the active environment's Firestore collections, so mobile read/write behavior does not depend on Firebase callable transport. Public read routes include `GET /api/auctions/home`, `GET /api/auctions/search`, `GET /api/auctions/:auctionId/detail`, `GET /api/orders`, `GET /api/notifications`, `GET /api/activity`, `GET /api/users/me`, `GET /api/sell/drafts`, and `GET /api/settings/preferences`.
 - The stable public dev health endpoint is `/healthz` under `https://auction-market-dev-api.onrender.com/healthz`. `/health` may be intercepted by the hosting edge and must not be treated as the canonical external health probe.
 - `backend/functions/src/domain/paymentEngine.ts` owns payment confirmation idempotency helpers, provider webhook normalization, and payment state transitions.
 - `backend/functions/eslint.config.mjs` now runs ESLint for `src`, `test`, and `scripts`, while `.prettierrc.json` and package scripts provide a repeatable formatting check for TypeScript files before commit.

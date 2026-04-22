@@ -67,8 +67,8 @@
 | Name | Secret | Required In | Example Format | Owner | Load Location | Missing Value Impact |
 | --- | --- | --- | --- | --- | --- | --- |
 | `APP_ENV` | No | dev, prod | `dev` | engineering | Flutter app config | Low. Labels and config branches may be wrong. |
-| `APP_BACKEND_TRANSPORT` | No | dev, prod | `http` or `firebase_callable` | engineering | Flutter app config | High. Mobile mutation transport will be wrong. |
-| `APP_API_BASE_URL` | No | dev HTTP transport | `https://auction-market-dev-api.onrender.com` | engineering | Flutter app config | High. HTTP backend cannot be reached. |
+| `APP_BACKEND_TRANSPORT` | No | dev, prod | `http` | engineering | Flutter app config | High. Any value other than `http` is rejected. |
+| `APP_API_BASE_URL` | Yes | dev, prod | `https://auction-market-dev-api.onrender.com` | engineering | Flutter app config | High. HTTP backend cannot be reached. |
 | `USE_FIREBASE_EMULATORS` | No | optional local override | `false` | engineering | Flutter app config | Medium. App may hit emulator or real services unexpectedly. |
 | `FIREBASE_EMULATOR_HOST` | No | optional local override | `127.0.0.1` or a LAN IP | engineering | Flutter app config | Medium. Emulator path breaks on physical devices if wrong. |
 | `TOSS_CLIENT_KEY` | No | dev, prod | `test_ck_...` or `live_ck_...` | product ops | Flutter app config | Release blocker for real payment start. |
@@ -123,8 +123,7 @@
   - `TOSS_WEBHOOK_SECRET=<optional for Toss webhook verify>`
   - `TOSS_API_BASE_URL=https://api.tosspayments.com`
   - `ENABLE_TOSS_SANDBOX=false|true`
-- Render now talks to Firebase Auth and Firestore directly through Firebase Admin. It no longer requires deployed Firebase Functions just to support the dev HTTP transport.
-- Prod still defaults to Firebase callable transport. Dev continues to use the Render HTTP path.
+- The mobile backend talks to Firebase Auth and Firestore directly through Firebase Admin. Mobile dev and prod both use the same HTTP API contract; environment differences are URL, Firebase project credentials, and runtime secrets.
 
 ## Current Dev Quick Start
 - Public dev backend URL:
@@ -144,7 +143,7 @@
   - `APP_BACKEND_TRANSPORT=http`
   - `APP_API_BASE_URL=https://auction-market-dev-api.onrender.com`
   - `USE_FIREBASE_EMULATORS=false`
-- With dev HTTP transport, home, search, auction detail, orders, notifications, activity, my profile, sell drafts, and settings preferences use Render dev server read endpoints with short client polling where a screen needs live-ish refreshes. Firebase-callable and prod transports keep the direct mobile Firestore read paths.
+- With the shared HTTP transport, home, search, auction detail, orders, notifications, activity, my profile, sell drafts, and settings preferences use backend read endpoints. Mobile state refresh is mutation-driven: successful writes publish `BackendRefreshEvent` through the app event bus, and interested Riverpod view models listen and refetch their own state. Direct mobile Firestore reads and periodic client polling are not part of the runtime app contract.
 
 ## Local Emulator Quick Start
 - Local emulator define file:
@@ -153,8 +152,8 @@
   - `apps/mobile_flutter/dart_defines.local-emulator.example.json`
 - Current local emulator defaults:
   - `APP_ENV=dev`
-  - `APP_BACKEND_TRANSPORT=firebase_callable`
-  - `APP_API_BASE_URL=`
+  - `APP_BACKEND_TRANSPORT=http`
+  - `APP_API_BASE_URL=http://127.0.0.1:8765`
   - `USE_FIREBASE_EMULATORS=true`
   - `FIREBASE_EMULATOR_HOST=127.0.0.1`
 - Launch path:

@@ -113,7 +113,9 @@ void main() {
     expect(find.text('Item details'), findsNothing);
   });
 
-  testWidgets('renders error fallback when detail fails to load', (tester) async {
+  testWidgets('renders error fallback when detail fails to load', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _TestApp(
         child: AuctionDetailView(
