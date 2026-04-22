@@ -30,6 +30,10 @@ class SellViewModel extends _$SellViewModel {
   Future<SellViewState> build(String userId) async {
     final config = ref.watch(appConfigProvider);
     if (config.usesHttpBackend) {
+      final authUserId = ref.read(firebaseAuthProvider).currentUser?.uid;
+      if (authUserId != null && authUserId != userId) {
+        return const SellViewState(recentDrafts: <SellDraftSummary>[]);
+      }
       final api = ref.watch(devReadApiProvider);
       final stream = api.poll(api.fetchSellDrafts);
       final first = await stream.first;

@@ -37,8 +37,13 @@ final settingsPreferencesServiceProvider = Provider<SettingsPreferencesService>(
 
 final settingsPreferencesProvider =
     StreamProvider.family<SettingsPreferences, String>((ref, userId) {
-      final config = _tryReadAppConfig(ref);
-      if (config.usesHttpBackend) {
+      var usesHttpBackend = false;
+      try {
+        usesHttpBackend = ref.watch(appConfigProvider).usesHttpBackend;
+      } on AppConfigurationException {
+        usesHttpBackend = false;
+      }
+      if (usesHttpBackend) {
         final api = ref.watch(devReadApiProvider);
         return api.poll(api.fetchSettingsPreferences);
       }
@@ -56,8 +61,13 @@ final appSettingsPreferencesProvider = StreamProvider<SettingsPreferences>((
   ref,
 ) {
   final auth = ref.watch(firebaseAuthProvider);
-  final config = _tryReadAppConfig(ref);
-  if (config.usesHttpBackend) {
+  var usesHttpBackend = false;
+  try {
+    usesHttpBackend = ref.watch(appConfigProvider).usesHttpBackend;
+  } on AppConfigurationException {
+    usesHttpBackend = false;
+  }
+  if (usesHttpBackend) {
     final api = ref.watch(devReadApiProvider);
     return auth.authStateChanges().asyncExpand((user) {
       if (user == null) {
@@ -82,17 +92,6 @@ final appSettingsPreferencesProvider = StreamProvider<SettingsPreferences>((
     });
   });
 });
-
-AppConfig _tryReadAppConfig(Ref ref) {
-  try {
-    return ref.watch(appConfigProvider);
-  } on AppConfigurationException {
-    return AppConfig.fromValues(
-      environment: AppEnvironment.prod,
-      tossClientKey: 'test_client_key',
-    );
-  }
-}
 
 final themeModePreferenceProvider = StateProvider<SettingsThemeModePreference>((
   ref,

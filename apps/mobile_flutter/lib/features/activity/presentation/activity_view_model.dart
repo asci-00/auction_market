@@ -47,6 +47,20 @@ class ActivityViewModel extends _$ActivityViewModel {
   Future<ActivityViewState> build(String userId) async {
     final config = ref.watch(appConfigProvider);
     if (config.usesHttpBackend) {
+      final authUserId = ref.read(firebaseAuthProvider).currentUser?.uid;
+      if (authUserId != null && authUserId != userId) {
+        const empty = ActivityHubSummary(
+          pendingPaymentCount: 0,
+          awaitingReceiptCount: 0,
+          awaitingShipmentCount: 0,
+          unreadNotificationCount: 0,
+        );
+        return const ActivityViewState(
+          buyerSummary: empty,
+          sellerSummary: empty,
+          notificationsSummary: empty,
+        );
+      }
       final api = ref.watch(devReadApiProvider);
       final stream = api.poll(api.fetchActivity);
       final initial = await stream.first;

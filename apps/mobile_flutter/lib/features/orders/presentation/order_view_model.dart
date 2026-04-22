@@ -48,7 +48,15 @@ class OrdersViewModel extends _$OrdersViewModel {
   Future<OrdersViewState> build(OrderQuery query) async {
     final config = ref.watch(appConfigProvider);
     if (config.usesHttpBackend) {
+      final authUserId = ref.read(firebaseAuthProvider).currentUser?.uid;
+      if (authUserId != null && authUserId != query.userId) {
+        return const OrdersViewState(orders: <OrderSummary>[]);
+      }
       final api = ref.watch(devReadApiProvider);
+      assert(
+        query.fieldKey == 'sellerId' || query.fieldKey == 'buyerId',
+        'Unexpected OrderQuery.fieldKey: ${query.fieldKey}',
+      );
       final role = query.fieldKey == 'sellerId' ? 'seller' : 'buyer';
       final stream = api.poll(() => api.fetchOrders(role: role));
       final first = await stream.first;

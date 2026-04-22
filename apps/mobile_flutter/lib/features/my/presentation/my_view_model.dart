@@ -30,6 +30,10 @@ class MyViewModel extends _$MyViewModel {
   Future<MyViewState> build(String userId) async {
     final config = ref.watch(appConfigProvider);
     if (config.usesHttpBackend) {
+      final authUserId = ref.read(firebaseAuthProvider).currentUser?.uid;
+      if (authUserId != null && authUserId != userId) {
+        return const MyViewState(profile: null);
+      }
       final api = ref.watch(devReadApiProvider);
       final stream = api.poll(api.fetchMyProfile);
       final first = await stream.first;
@@ -40,7 +44,11 @@ class MyViewModel extends _$MyViewModel {
 
       _sub = stream.listen(
         (profile) {
-          state = AsyncData(MyViewState(profile: profile));
+          final current = state.valueOrNull ?? MyViewState(profile: profile);
+          final nextState = profile == null
+              ? const MyViewState(profile: null)
+              : current.copyWith(profile: profile);
+          state = AsyncData(nextState);
         },
         onError: (Object error, StackTrace stackTrace) {
           state = AsyncError(error, stackTrace);
