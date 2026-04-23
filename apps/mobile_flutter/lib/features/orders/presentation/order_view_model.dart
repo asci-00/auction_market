@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/backend/backend_read_api.dart';
 import '../../../core/backend/backend_refresh_event.dart';
 import '../../../core/events/event_bus.dart';
+import '../../../core/firebase/firebase_providers.dart';
 import '../data/order_summary.dart';
 
 part 'order_view_model.g.dart';
@@ -50,6 +51,14 @@ class OrdersViewModel extends _$OrdersViewModel {
   }
 
   Future<OrdersViewState> _fetchState(OrderQuery query) async {
+    assert(
+      query.fieldKey == 'sellerId' || query.fieldKey == 'buyerId',
+      'Unexpected OrderQuery.fieldKey: ${query.fieldKey}',
+    );
+    final authUserId = ref.read(firebaseAuthProvider).currentUser?.uid;
+    if (authUserId != null && authUserId != query.userId) {
+      return const OrdersViewState(orders: <OrderSummary>[]);
+    }
     final role = query.fieldKey == 'sellerId' ? 'seller' : 'buyer';
     final orders = await ref
         .read(backendReadApiProvider)

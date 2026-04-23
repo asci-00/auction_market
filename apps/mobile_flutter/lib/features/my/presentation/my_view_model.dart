@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/backend/backend_read_api.dart';
 import '../../../core/backend/backend_refresh_event.dart';
 import '../../../core/events/event_bus.dart';
+import '../../../core/firebase/firebase_providers.dart';
 import '../data/my_profile_summary.dart';
 
 part 'my_view_model.g.dart';
@@ -32,6 +33,10 @@ class MyViewModel extends _$MyViewModel {
   }
 
   Future<MyViewState> _fetchState() async {
+    final authUserId = ref.read(firebaseAuthProvider).currentUser?.uid;
+    if (authUserId != null && authUserId != userId) {
+      return const MyViewState(profile: null);
+    }
     final profile = await ref.read(backendReadApiProvider).fetchMyProfile();
     return MyViewState(profile: profile);
   }

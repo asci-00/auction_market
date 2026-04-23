@@ -21,10 +21,16 @@ import '../firebase/firebase_providers.dart';
 
 final backendReadApiProvider = Provider<BackendReadApi>((ref) {
   final config = ref.watch(appConfigProvider);
-  return BackendReadApi(
-    baseUri: Uri.parse(config.apiBaseUrl!),
+  final apiBaseUrl = config.apiBaseUrl;
+  if (apiBaseUrl == null) {
+    throw StateError('dev HTTP transport requires apiBaseUrl');
+  }
+  final api = BackendReadApi(
+    baseUri: Uri.parse(apiBaseUrl),
     auth: ref.watch(firebaseAuthProvider),
   );
+  ref.onDispose(api.close);
+  return api;
 });
 
 class BackendReadApi {
@@ -40,7 +46,50 @@ class BackendReadApi {
   final FirebaseAuth _auth;
   final HttpClient _client;
 
+  static const pollInterval = Duration(seconds: 4);
   static const _requestTimeout = Duration(seconds: 15);
+
+  void close() {
+    _client.close(force: true);
+  }
+
+  Stream<T> poll<T>(Future<T> Function() fetch) {
+    Timer? timer;
+    var inFlight = false;
+    late final StreamController<T> controller;
+
+    Future<void> tick() async {
+      if (inFlight) {
+        return;
+      }
+      inFlight = true;
+      try {
+        controller.add(await fetch());
+      } catch (error, stackTrace) {
+        controller.addError(error, stackTrace);
+      } finally {
+        inFlight = false;
+      }
+    }
+
+    controller = StreamController<T>.broadcast(
+      onListen: () {
+        unawaited(tick());
+        timer ??= Timer.periodic(pollInterval, (_) {
+          unawaited(tick());
+        });
+      },
+      onCancel: () {
+        if (controller.hasListener) {
+          return;
+        }
+        timer?.cancel();
+        timer = null;
+      },
+    );
+
+    return controller.stream;
+  }
 
   Future<HomePayload> fetchHome() async {
     final payload = await _get('/api/auctions/home');
@@ -210,23 +259,30 @@ class BackendReadApi {
         .join()
         .timeout(_requestTimeout);
     final trimmed = rawBody.trim();
-    Map<String, dynamic> payload;
+    Map<String, dynamic> payload = const <String, dynamic>{};
+    FormatException? parseError;
     if (trimmed.isEmpty) {
       payload = const <String, dynamic>{};
     } else {
       try {
         payload = jsonDecode(trimmed) as Map<String, dynamic>;
-      } on FormatException {
-        payload = <String, dynamic>{
-          'code': 'unknown',
-          'message': 'HTTP ${response.statusCode}: $trimmed',
-        };
+      } on FormatException catch (error) {
+        parseError = error;
       }
     }
     if (response.statusCode >= 400) {
       throw FirebaseFunctionsException(
         code: payload['code']?.toString() ?? 'unknown',
-        message: payload['message']?.toString() ?? 'Request failed.',
+        message:
+            payload['message']?.toString() ??
+            'HTTP ${response.statusCode}: ${trimmed.isEmpty ? '(empty)' : trimmed}',
+      );
+    }
+    if (parseError != null) {
+      throw FirebaseFunctionsException(
+        code: 'internal',
+        message:
+            'Malformed JSON from dev HTTP backend (HTTP ${response.statusCode}). body=$trimmed',
       );
     }
     return payload;

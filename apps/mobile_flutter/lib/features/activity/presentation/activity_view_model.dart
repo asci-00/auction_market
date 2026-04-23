@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/backend/backend_read_api.dart';
 import '../../../core/backend/backend_refresh_event.dart';
 import '../../../core/events/event_bus.dart';
+import '../../../core/firebase/firebase_providers.dart';
 import '../data/activity_hub_summary.dart';
 
 part 'activity_view_model.g.dart';
@@ -46,6 +47,10 @@ class ActivityViewModel extends _$ActivityViewModel {
   }
 
   Future<ActivityViewState> _fetchState() async {
+    final authUserId = ref.read(firebaseAuthProvider).currentUser?.uid;
+    if (authUserId != null && authUserId != userId) {
+      return _emptyState;
+    }
     final payload = await ref.read(backendReadApiProvider).fetchActivity();
     return ActivityViewState(
       buyerSummary: payload.buyerSummary,
@@ -76,3 +81,16 @@ class ActivityViewModel extends _$ActivityViewModel {
     });
   }
 }
+
+const _emptySummary = ActivityHubSummary(
+  pendingPaymentCount: 0,
+  awaitingReceiptCount: 0,
+  awaitingShipmentCount: 0,
+  unreadNotificationCount: 0,
+);
+
+const _emptyState = ActivityViewState(
+  buyerSummary: _emptySummary,
+  sellerSummary: _emptySummary,
+  notificationsSummary: _emptySummary,
+);

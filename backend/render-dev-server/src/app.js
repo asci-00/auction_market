@@ -1620,10 +1620,12 @@ export function createApp(services) {
   app.get(
     '/api/auctions/home',
     asyncRoute(async (_req, res) => {
+      const now = new Date();
       const [endingSoonSnap, hotSnap] = await Promise.all([
         db
           .collection('auctions')
           .where('status', '==', 'LIVE')
+          .where('endAt', '>', now)
           .orderBy('endAt')
           .limit(8)
           .get(),
@@ -1631,13 +1633,19 @@ export function createApp(services) {
           .collection('auctions')
           .where('status', '==', 'LIVE')
           .orderBy('bidCount', 'desc')
-          .limit(8)
+          .limit(24)
           .get(),
       ]);
 
       res.set('Cache-Control', 'no-store').json({
         endingSoon: endingSoonSnap.docs.map(auctionSummaryJson),
-        hot: hotSnap.docs.map(auctionSummaryJson),
+        hot: hotSnap.docs
+          .filter((doc) => {
+            const endAt = toDateOrNull(doc.data().endAt);
+            return endAt != null && endAt > now;
+          })
+          .slice(0, 8)
+          .map(auctionSummaryJson),
       });
     }),
   );
@@ -1645,9 +1653,11 @@ export function createApp(services) {
   app.get(
     '/api/auctions/search',
     asyncRoute(async (_req, res) => {
+      const now = new Date();
       const snap = await db
         .collection('auctions')
         .where('status', '==', 'LIVE')
+        .where('endAt', '>', now)
         .orderBy('endAt')
         .limit(24)
         .get();
@@ -1831,12 +1841,15 @@ export function createApp(services) {
         payload.preferences ?? {},
         'preferences must be an object',
       );
+      const sanitizedPreferences = normalizeNotificationPreferences({
+        preferences,
+      });
       await db
         .collection('users')
         .doc(authContext.uid)
         .set(
           {
-            preferences,
+            preferences: sanitizedPreferences,
             updatedAt: FieldValue.serverTimestamp(),
           },
           { merge: true },

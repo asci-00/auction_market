@@ -32,10 +32,12 @@ class AuctionViewState {
 @riverpod
 class AuctionViewModel extends _$AuctionViewModel {
   StreamSubscription<BackendRefreshEvent>? _refreshSub;
+  StreamSubscription<AuctionDetailHttpSnapshot>? _pollSub;
 
   @override
   Future<AuctionViewState> build(String auctionId) async {
     _listenForRefreshes();
+    _listenForPassiveRefreshes();
     return _fetchState(auctionId);
   }
 
@@ -79,6 +81,44 @@ class AuctionViewModel extends _$AuctionViewModel {
     ref.onDispose(() {
       unawaited(_refreshSub?.cancel());
       _refreshSub = null;
+    });
+  }
+
+  void _listenForPassiveRefreshes() {
+    if (_pollSub != null) {
+      return;
+    }
+
+    final api = ref.read(backendReadApiProvider);
+    final stream = api.poll(() => api.fetchAuctionDetail(auctionId));
+    _pollSub = stream.listen(
+      (snapshot) {
+        state = AsyncData(
+          AuctionViewState(
+            detail: snapshot.detail,
+            bidHistory: snapshot.bidHistory,
+          ),
+        );
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        if (state.valueOrNull != null) {
+          FlutterError.reportError(
+            FlutterErrorDetails(
+              exception: error,
+              stack: stackTrace,
+              library: 'auction_view_model',
+              context: ErrorDescription('while passive polling auction detail'),
+            ),
+          );
+          return;
+        }
+        state = AsyncError(error, stackTrace);
+      },
+    );
+
+    ref.onDispose(() {
+      unawaited(_pollSub?.cancel());
+      _pollSub = null;
     });
   }
 }
