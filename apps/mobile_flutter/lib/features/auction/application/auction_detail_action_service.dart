@@ -44,7 +44,7 @@ class AuctionDetailActionService {
     sendToEventBus(BackendRefreshEvent.auctionChanged(auctionId));
   }
 
-  Future<String?> buyNow({required String auctionId}) async {
+  Future<String> buyNow({required String auctionId}) async {
     final orderId = await _gateway.buyNow(auctionId: auctionId);
     if (orderId == null || orderId.isEmpty) {
       throw FirebaseFunctionsException(

@@ -143,7 +143,7 @@
   - `APP_BACKEND_TRANSPORT=http`
   - `APP_API_BASE_URL=https://auction-market-dev-api.onrender.com`
   - `USE_FIREBASE_EMULATORS=false`
-- With the shared HTTP transport, home, search, auction detail, orders, notifications, activity, my profile, sell drafts, and settings preferences use backend read endpoints. Mobile state refresh is mutation-driven: successful writes publish `BackendRefreshEvent` through the app event bus, and interested Riverpod view models listen and refetch their own state. Direct mobile Firestore reads and periodic client polling are not part of the runtime app contract.
+- With the shared HTTP transport, home, search, auction detail, orders, notifications, activity, my profile, sell drafts, and settings preferences use backend read endpoints. Mobile state refresh is mutation-driven: successful writes publish `BackendRefreshEvent` through the app event bus, and interested Riverpod view models listen and refetch their own state. Direct mobile Firestore reads are not part of the runtime app contract; the auction detail view additionally uses passive polling for live bid visibility.
 
 ## Local Emulator Quick Start
 - Local emulator define file:
@@ -156,6 +156,7 @@
   - `APP_API_BASE_URL=http://127.0.0.1:8765`
   - `USE_FIREBASE_EMULATORS=true`
   - `FIREBASE_EMULATOR_HOST=127.0.0.1`
+  - `TOSS_CLIENT_KEY=<local test client key>`
 - Launch path:
   1. `cd backend/functions && npm run serve`
   2. `cd backend/render-dev-server && PORT=8765 npm run start`

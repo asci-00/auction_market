@@ -46,7 +46,7 @@ class BackendRefreshEvent extends AppEvent {
 
   static BackendRefreshEvent buyNowCompleted({
     required String auctionId,
-    String? orderId,
+    required String orderId,
   }) {
     return BackendRefreshEvent(
       auctionId: auctionId,

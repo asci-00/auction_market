@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -37,12 +40,7 @@ final appSettingsPreferencesProvider = StreamProvider<SettingsPreferences>((
 ) {
   final auth = ref.watch(firebaseAuthProvider);
   final api = ref.watch(backendReadApiProvider);
-  return auth.authStateChanges().asyncExpand((user) {
-    if (user == null) {
-      return Stream.value(const SettingsPreferences.defaults());
-    }
-    return _settingsPreferencesEvents(api);
-  });
+  return _appSettingsPreferencesEvents(auth: auth, api: api);
 });
 
 Stream<SettingsPreferences> _settingsPreferencesEvents(BackendReadApi api) {
@@ -54,6 +52,38 @@ Stream<SettingsPreferences> _settingsPreferencesEvents(BackendReadApi api) {
       }
     }
   })();
+}
+
+Stream<SettingsPreferences> _appSettingsPreferencesEvents({
+  required FirebaseAuth auth,
+  required BackendReadApi api,
+}) {
+  final controller = StreamController<SettingsPreferences>();
+  StreamSubscription<User?>? authSub;
+  StreamSubscription<SettingsPreferences>? settingsSub;
+
+  Future<void> bindForUser(User? user) async {
+    await settingsSub?.cancel();
+    settingsSub = null;
+    if (user == null) {
+      controller.add(const SettingsPreferences.defaults());
+      return;
+    }
+    settingsSub = _settingsPreferencesEvents(
+      api,
+    ).listen(controller.add, onError: controller.addError);
+  }
+
+  authSub = auth.authStateChanges().listen((user) {
+    unawaited(bindForUser(user));
+  }, onError: controller.addError);
+
+  controller.onCancel = () async {
+    await settingsSub?.cancel();
+    await authSub?.cancel();
+  };
+
+  return controller.stream;
 }
 
 final themeModePreferenceProvider = StateProvider<SettingsThemeModePreference>((

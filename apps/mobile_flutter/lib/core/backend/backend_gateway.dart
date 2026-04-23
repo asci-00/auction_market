@@ -12,7 +12,9 @@ import '../firebase/firebase_providers.dart';
 final backendGatewayProvider = Provider<BackendGateway>((ref) {
   final config = ref.watch(appConfigProvider);
   final apiBaseUrl = config.apiBaseUrl;
-  if (apiBaseUrl == null || apiBaseUrl.trim().isEmpty) {
+  // AppConfig.fromValues validates and trims apiBaseUrl as an absolute
+  // http/https URL before it reaches this provider.
+  if (apiBaseUrl == null || apiBaseUrl.isEmpty) {
     throw StateError('backend gateway requires apiBaseUrl');
   }
   return HttpBackendGateway(
