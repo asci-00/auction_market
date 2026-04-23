@@ -103,7 +103,7 @@ void main() {
                 ),
               ),
             ),
-            settingsPreferencesProvider(user.uid).overrideWith(
+            settingsPreferencesProvider.overrideWith(
               (ref) => Stream.value(const SettingsPreferences.defaults()),
             ),
             themeModePreferenceProvider.overrideWith(

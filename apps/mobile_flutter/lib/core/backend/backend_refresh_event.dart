@@ -26,6 +26,8 @@ class BackendRefreshEvent extends AppEvent {
   bool includes(BackendRefreshArea area) => areas.contains(area);
 
   bool matchesAuction(String id) {
+    // When auctionId is null, auction-detail refresh intentionally fans out
+    // to all active auction detail view models.
     return includes(BackendRefreshArea.auctionDetail) &&
         (auctionId == null || auctionId == id);
   }

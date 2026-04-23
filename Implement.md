@@ -26,7 +26,7 @@
 ## Validation Status
 - The public dev backend is live at `https://auction-market-dev-api.onrender.com`, and `https://auction-market-dev-api.onrender.com/healthz` returns runtime metadata for the dev Firebase project.
 - Dev Firebase project split is in place for Android and iOS local native config files, and Render now uses Firebase Admin directly instead of deployed Firebase Functions.
-- Mobile builds now read `APP_ENV`, `APP_BACKEND_TRANSPORT=http`, `APP_API_BASE_URL`, emulator mode, and `TOSS_CLIENT_KEY` from flavor-specific define files.
+- Mobile builds now read `APP_ENV`, `APP_API_BASE_URL`, emulator mode, and `TOSS_CLIENT_KEY` from flavor-specific define files; backend transport is fixed to the HTTP contract.
 - Android and iOS flavors plus native config selection are wired as:
   - Android: `dev` and `prod`
   - iOS: `dev` and `prod` schemes with `Debug-dev`/`Release-dev`/`Profile-dev` and `Debug-prod`/`Release-prod`/`Profile-prod`

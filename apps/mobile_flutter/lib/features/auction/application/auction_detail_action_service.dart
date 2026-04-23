@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../../core/backend/backend_gateway.dart';
 import '../../../core/backend/backend_refresh_event.dart';
@@ -45,6 +46,12 @@ class AuctionDetailActionService {
 
   Future<String?> buyNow({required String auctionId}) async {
     final orderId = await _gateway.buyNow(auctionId: auctionId);
+    if (orderId == null || orderId.isEmpty) {
+      throw FirebaseFunctionsException(
+        code: 'internal',
+        message: 'Buy now completed without orderId.',
+      );
+    }
     sendToEventBus(
       BackendRefreshEvent.buyNowCompleted(
         auctionId: auctionId,

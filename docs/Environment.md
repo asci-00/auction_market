@@ -158,7 +158,8 @@
   - `FIREBASE_EMULATOR_HOST=127.0.0.1`
 - Launch path:
   1. `cd backend/functions && npm run serve`
-  2. `cd apps/mobile_flutter && flutter run --flavor dev --dart-define-from-file=dart_defines.local-emulator.json`
+  2. `cd backend/render-dev-server && PORT=8765 npm run start`
+  3. `cd apps/mobile_flutter && flutter run --flavor dev --dart-define-from-file=dart_defines.local-emulator.json`
 
 ## Physical-Device Emulator Notes
 

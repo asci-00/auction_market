@@ -70,3 +70,21 @@
   - Redefine activity counter contract to use authoritative count queries instead of sampled `limit(20)` lists.
   - Add required Firestore indexes (`buyerId+orderStatus`, `sellerId+orderStatus`, notifications unread count path) and update both HTTP and Firestore read paths to preserve parity.
   - Add regression tests for users with over-20 orders/notifications to validate badge count accuracy.
+
+## PR #31
+
+### Review `#3130832485` (home refresh stale-response guard)
+- Reason deferred: the race concern is valid, but introducing generation/cancellation guards across all event-driven view models is a broader consistency task and would expand this PR beyond the current HTTP read-path + refresh event stabilization goal.
+- Why tracked here: current planning docs do not include a dedicated hardening task for async refresh race handling in Riverpod view models.
+- Follow-up change to implement:
+  - Introduce a shared refresh helper or per-view-model generation guard to drop stale async responses.
+  - Apply consistently to home/search/orders/activity/my/sell refresh paths.
+  - Add regression tests that simulate out-of-order responses and assert latest-result-wins behavior.
+
+### Review `#3130832489` (search server-side filtering)
+- Reason deferred: direction is valid, but this PR is scoped to read-path unification and refresh contracts; switching search to server-side query filtering requires backend API contract and test updates.
+- Why tracked here: current planning docs do not schedule a dedicated migration for search query parameterization on the HTTP endpoint.
+- Follow-up change to implement:
+  - Extend `/api/auctions/search` contract with query parameters for text and filter conditions.
+  - Update `BackendReadApi.fetchSearchAuctions` and `SearchViewModel` to request filtered data server-side with a client fallback.
+  - Add backend and mobile tests for parity between server filtering and existing client filter behavior.

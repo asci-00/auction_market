@@ -16,10 +16,10 @@
 - Do not hardcode external IDs, tokens, or secrets.
 - Secrets live in backend runtime env only.
 - Public client values live in app config or build-time defines only.
-- The default and preferred dummy data path is Firebase Emulator + seed data that uses the real schema.
+- The default and preferred dummy data path is backend-owned HTTP APIs backed by Firebase Emulator + seed data that uses the real schema.
 - If a third-party handoff is blocked by missing real project values, `dev` may use a documented server-driven fallback only for that exact blocked handoff.
 - Do not add fake repositories, fake network layers, fake order states, or placeholder call-to-action buttons.
-- Sensitive writes go through Firebase Functions. Firestore direct writes stay blocked for auctions, bids, orders, and server-owned user fields.
+- Sensitive writes go through server-owned backend APIs. Firestore direct writes stay blocked for auctions, bids, orders, and server-owned user fields.
 
 ## Product Scope For v1
 - Auth: Apple sign in and Google sign in through Firebase Auth.
@@ -35,7 +35,7 @@
 - Routing: `go_router` with auth guard, session restore, deep link support, and tab state preservation.
 - Payment integration stays adapter-based until the user explicitly activates the deferred cutover work in `Plan.md`.
 - Storage provider: Firebase Storage.
-- Push and inbox notifications: Firebase Messaging + Firestore inbox documents.
+- Push and inbox notifications: Firebase Messaging + backend-owned inbox documents surfaced through HTTP APIs.
 - Theme mode default: follow system until the user selects a manual override in settings.
 - App design direction: premium resale market, warm neutral base, charcoal surfaces, copper and coral accents.
 - Shared loading animation asset: `apps/mobile_flutter/assets/lotties/loading.lottie`.

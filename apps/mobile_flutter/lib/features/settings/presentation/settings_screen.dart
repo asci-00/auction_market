@@ -77,7 +77,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       );
     }
 
-    final preferencesAsync = ref.watch(settingsPreferencesProvider(user.uid));
+    final preferencesAsync = ref.watch(settingsPreferencesProvider);
     final themeMode = ref.watch(themeModePreferenceProvider);
     final permissionAsync = ref.watch(notificationPermissionStatusProvider);
     final permissionStatus =
@@ -255,7 +255,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       if (!enabled) {
         await ref
             .read(settingsPreferencesServiceProvider)
-            .setPushEnabled(userId: userId, enabled: false);
+            .setPushEnabled(enabled: false);
         await ref
             .read(notificationDeviceTokenServiceProvider)
             .deactivateTokenForUser(userId);
@@ -289,7 +289,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
 
       await ref
           .read(settingsPreferencesServiceProvider)
-          .setPushEnabled(userId: userId, enabled: true);
+          .setPushEnabled(enabled: true);
       await ref
           .read(notificationDeviceTokenServiceProvider)
           .syncUserDeviceToken(userId);
@@ -326,11 +326,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     try {
       await ref
           .read(settingsPreferencesServiceProvider)
-          .setCategoryEnabled(
-            userId: userId,
-            category: category,
-            enabled: enabled,
-          );
+          .setCategoryEnabled(category: category, enabled: enabled);
       if (!context.mounted) {
         return;
       }

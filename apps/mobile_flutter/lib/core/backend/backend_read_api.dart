@@ -23,7 +23,7 @@ final backendReadApiProvider = Provider<BackendReadApi>((ref) {
   final config = ref.watch(appConfigProvider);
   final apiBaseUrl = config.apiBaseUrl;
   if (apiBaseUrl == null) {
-    throw StateError('dev HTTP transport requires apiBaseUrl');
+    throw StateError('BackendReadApi requires apiBaseUrl');
   }
   final api = BackendReadApi(
     baseUri: Uri.parse(apiBaseUrl),
@@ -282,7 +282,7 @@ class BackendReadApi {
       throw FirebaseFunctionsException(
         code: 'internal',
         message:
-            'Malformed JSON from dev HTTP backend (HTTP ${response.statusCode}). body=$trimmed',
+            'Malformed JSON from backend HTTP response (HTTP ${response.statusCode}). body=$trimmed',
       );
     }
     return payload;

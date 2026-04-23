@@ -27,11 +27,10 @@ final settingsPreferencesServiceProvider = Provider<SettingsPreferencesService>(
   },
 );
 
-final settingsPreferencesProvider =
-    StreamProvider.family<SettingsPreferences, String>((ref, userId) {
-      final api = ref.watch(backendReadApiProvider);
-      return _settingsPreferencesEvents(api);
-    });
+final settingsPreferencesProvider = StreamProvider<SettingsPreferences>((ref) {
+  final api = ref.watch(backendReadApiProvider);
+  return _settingsPreferencesEvents(api);
+});
 
 final appSettingsPreferencesProvider = StreamProvider<SettingsPreferences>((
   ref,
@@ -89,14 +88,13 @@ class SettingsPreferencesService {
   final FirebaseMessaging _messaging;
   final SharedPreferences _sharedPreferences;
 
-  Future<void> setPushEnabled({required String userId, required bool enabled}) {
+  Future<void> setPushEnabled({required bool enabled}) {
     return _backendReadApi.setPushEnabled(enabled: enabled).then((_) {
       sendToEventBus(BackendRefreshEvent.settingsChanged);
     });
   }
 
   Future<void> setCategoryEnabled({
-    required String userId,
     required SettingsNotificationCategory category,
     required bool enabled,
   }) {

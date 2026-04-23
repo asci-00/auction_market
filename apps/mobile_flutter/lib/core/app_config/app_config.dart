@@ -94,7 +94,9 @@ class AppConfig {
     if (!config.hasApiBaseUrl) {
       throw const AppConfigurationException('APP_API_BASE_URL is required.');
     }
-    if (!_isValidHttpBaseUrl(config.apiBaseUrl!)) {
+    final validatedApiBaseUrl = config.apiBaseUrl;
+    if (validatedApiBaseUrl == null ||
+        !_isValidHttpBaseUrl(validatedApiBaseUrl)) {
       throw const AppConfigurationException(
         'APP_API_BASE_URL must be a valid http or https URL.',
       );
