@@ -48,10 +48,7 @@ class MyVerificationSection extends StatelessWidget {
             description: context.l10n.mySessionUnavailable,
           )
         else if (isLoading)
-          const AppShimmerListPlaceholder(
-            itemCount: 3,
-            itemHeight: 84,
-          )
+          const AppShimmerListPlaceholder(itemCount: 3, itemHeight: 84)
         else
           _VerificationBody(profile: profile),
       ],
@@ -80,26 +77,17 @@ class _VerificationBody extends StatelessWidget {
       children: [
         MyVerificationRow(
           label: context.l10n.myVerificationPhone,
-          value: myVerificationLabel(
-            context,
-            profile!.phoneVerification,
-          ),
+          value: myVerificationLabel(context, profile!.phoneVerification),
         ),
         SizedBox(height: tokens.space3),
         MyVerificationRow(
           label: context.l10n.myVerificationIdentity,
-          value: myVerificationLabel(
-            context,
-            profile!.identityVerification,
-          ),
+          value: myVerificationLabel(context, profile!.identityVerification),
         ),
         SizedBox(height: tokens.space3),
         MyVerificationRow(
           label: context.l10n.myVerificationSeller,
-          value: myVerificationLabel(
-            context,
-            profile!.sellerVerification,
-          ),
+          value: myVerificationLabel(context, profile!.sellerVerification),
         ),
       ],
     );

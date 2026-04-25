@@ -1,7 +1,7 @@
 {
   "APP_ENV": "prod",
-  "APP_BACKEND_TRANSPORT": "firebase_callable",
-  "APP_API_BASE_URL": "",
+  "APP_BACKEND_TRANSPORT": "http",
+  "APP_API_BASE_URL": "https://auction-market-prod-api.example.com",
   "USE_FIREBASE_EMULATORS": "false",
   "FIREBASE_EMULATOR_HOST": "",
   "TOSS_CLIENT_KEY": "TODO_FROM_TOSS_PROD_DASHBOARD"

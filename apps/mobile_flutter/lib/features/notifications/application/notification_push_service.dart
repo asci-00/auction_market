@@ -8,28 +8,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/backend/backend_gateway.dart';
+import '../../../core/backend/backend_refresh_event.dart';
+import '../../../core/events/event_bus.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../core/routing/app_deeplink.dart';
 import '../../../core/routing/app_router.dart';
 import '../../../core/widgets/app_global_keys.dart';
-import '../../auction/presentation/auction_view_model.dart';
-import '../../orders/presentation/order_view_model.dart';
-import '../presentation/notifications_view_model.dart';
 import '../../settings/application/settings_preferences_service.dart';
-
-const _buyerOrderFieldKey = 'buyerId';
-const _sellerOrderFieldKey = 'sellerId';
 
 final notificationPushServiceProvider = Provider<NotificationPushService>((
   ref,
 ) {
   return NotificationPushService(
-    markNotificationRead: ({required String notificationId}) {
-      return ref
+    markNotificationRead: ({required String notificationId}) async {
+      await ref
           .read(backendGatewayProvider)
           .markNotificationRead(notificationId: notificationId);
+      sendToEventBus(BackendRefreshEvent.notificationsChanged);
     },
     logInfoMessage: (message) {
       try {
@@ -66,9 +63,7 @@ final notificationPushServiceProvider = Provider<NotificationPushService>((
         },
     scaffoldMessengerKey: ref.watch(rootScaffoldMessengerKeyProvider),
     resolveCurrentRoutePath: _defaultResolveCurrentRoutePath,
-    refreshRouteStateForPath: (routePath) {
-      _refreshForegroundRouteState(ref, routePath);
-    },
+    refreshRouteStateForPath: _refreshForegroundRouteState,
   );
 });
 
@@ -76,18 +71,14 @@ String _defaultResolveCurrentRoutePath(GoRouter router) {
   return router.state.uri.toString();
 }
 
-void _refreshForegroundRouteState(Ref ref, String routePath) {
+void _refreshForegroundRouteState(String routePath) {
   final routeUri = Uri.tryParse(routePath);
   if (routeUri == null) {
     return;
   }
 
   if (routeUri.path == '/notifications') {
-    final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
-    if (userId == null || userId.isEmpty) {
-      return;
-    }
-    ref.invalidate(notificationsViewModelProvider(userId));
+    sendToEventBus(BackendRefreshEvent.notificationsChanged);
     return;
   }
 
@@ -95,7 +86,7 @@ void _refreshForegroundRouteState(Ref ref, String routePath) {
   if (pathSegments.length == 2 &&
       pathSegments.first == 'auction' &&
       pathSegments.last.isNotEmpty) {
-    ref.invalidate(auctionViewModelProvider(pathSegments.last));
+    sendToEventBus(BackendRefreshEvent.auctionChanged(pathSegments.last));
     return;
   }
 
@@ -108,21 +99,7 @@ void _refreshForegroundRouteState(Ref ref, String routePath) {
     return;
   }
 
-  final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
-  if (userId == null || userId.isEmpty) {
-    return;
-  }
-
-  ref.invalidate(
-    ordersViewModelProvider(
-      OrderQuery(userId: userId, fieldKey: _buyerOrderFieldKey),
-    ),
-  );
-  ref.invalidate(
-    ordersViewModelProvider(
-      OrderQuery(userId: userId, fieldKey: _sellerOrderFieldKey),
-    ),
-  );
+  sendToEventBus(BackendRefreshEvent.ordersChanged());
 }
 
 final notificationPushLifecycleProvider = Provider<void>((ref) {

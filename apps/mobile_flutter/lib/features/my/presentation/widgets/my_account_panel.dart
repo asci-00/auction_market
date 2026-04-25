@@ -7,10 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_panel.dart';
 
 class MyAccountPanel extends StatelessWidget {
-  const MyAccountPanel({
-    super.key,
-    required this.user,
-  });
+  const MyAccountPanel({super.key, required this.user});
 
   final User? user;
 
@@ -23,15 +20,9 @@ class MyAccountPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            context.l10n.mySignedInAs,
-            style: context.textTheme.bodySmall,
-          ),
+          Text(context.l10n.mySignedInAs, style: context.textTheme.bodySmall),
           SizedBox(height: tokens.space2),
-          Text(
-            _displayLabel(context),
-            style: context.textTheme.headlineSmall,
-          ),
+          Text(_displayLabel(context), style: context.textTheme.headlineSmall),
         ],
       ),
     );

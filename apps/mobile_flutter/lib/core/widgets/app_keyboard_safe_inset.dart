@@ -18,17 +18,11 @@ class AppKeyboardSafeInset extends StatelessWidget {
 
     Widget content = SingleChildScrollView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      child: Padding(
-        padding: padding,
-        child: child,
-      ),
+      child: Padding(padding: padding, child: child),
     );
 
     if (useSafeArea) {
-      content = SafeArea(
-        top: false,
-        child: content,
-      );
+      content = SafeArea(top: false, child: content);
     }
 
     return AnimatedPadding(

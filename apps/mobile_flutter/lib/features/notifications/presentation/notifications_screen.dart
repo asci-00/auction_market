@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/backend/backend_gateway.dart';
+import '../../../core/backend/backend_refresh_event.dart';
+import '../../../core/events/event_bus.dart';
 import '../../../core/extensions/build_context_x.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_formatters.dart';
@@ -194,6 +196,7 @@ class _NotificationCard extends ConsumerWidget {
                     await ref
                         .read(backendGatewayProvider)
                         .markNotificationRead(notificationId: item.id);
+                    sendToEventBus(BackendRefreshEvent.notificationsChanged);
                   } catch (_) {
                     // Keep navigation responsive even if the read marker fails.
                   }

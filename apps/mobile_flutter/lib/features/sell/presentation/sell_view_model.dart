@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../core/backend/dev_read_api.dart';
-import '../../../core/firebase/firebase_bootstrap.dart';
+import '../../../core/backend/backend_read_api.dart';
+import '../../../core/backend/backend_refresh_event.dart';
+import '../../../core/events/event_bus.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../data/sell_draft_summary.dart';
 
@@ -24,63 +24,42 @@ class SellViewState {
 
 @riverpod
 class SellViewModel extends _$SellViewModel {
-  StreamSubscription<List<SellDraftSummary>>? _sub;
+  StreamSubscription<BackendRefreshEvent>? _refreshSub;
 
   @override
   Future<SellViewState> build(String userId) async {
-    final config = ref.watch(appConfigProvider);
-    if (config.usesHttpBackend) {
-      final authUserId = ref.read(firebaseAuthProvider).currentUser?.uid;
-      if (authUserId != null && authUserId != userId) {
-        return const SellViewState(recentDrafts: <SellDraftSummary>[]);
-      }
-      final api = ref.watch(devReadApiProvider);
-      final stream = api.poll(api.fetchSellDrafts);
-      final first = await stream.first;
+    _listenForRefreshes();
+    return _fetchState(userId);
+  }
 
-      ref.onDispose(() {
-        unawaited(_sub?.cancel());
-      });
-
-      _sub = stream.listen((drafts) {
-        final current =
-            state.valueOrNull ?? SellViewState(recentDrafts: drafts);
-        state = AsyncData(current.copyWith(recentDrafts: drafts));
-      }, onError: _handleStreamError);
-
-      return SellViewState(recentDrafts: first);
+  Future<SellViewState> _fetchState(String userId) async {
+    final authUserId = ref.read(firebaseAuthProvider).currentUser?.uid;
+    if (authUserId != null && authUserId != userId) {
+      return const SellViewState(recentDrafts: <SellDraftSummary>[]);
     }
+    final drafts = await ref.read(backendReadApiProvider).fetchSellDrafts();
+    return SellViewState(recentDrafts: drafts);
+  }
 
-    final stream = _recentDraftsStream(ref, userId);
-    final first = await stream.first;
+  Future<void> _refreshState() async {
+    try {
+      state = AsyncData(await _fetchState(userId));
+    } catch (error, stackTrace) {
+      state = AsyncError(error, stackTrace);
+    }
+  }
 
+  void _listenForRefreshes() {
+    _refreshSub ??= listenEvent<BackendRefreshEvent>(
+      onEvent: (event) async {
+        if (event.includes(BackendRefreshArea.sellDrafts)) {
+          await _refreshState();
+        }
+      },
+    );
     ref.onDispose(() {
-      unawaited(_sub?.cancel());
+      unawaited(_refreshSub?.cancel());
+      _refreshSub = null;
     });
-
-    _sub = stream.listen((drafts) {
-      final current = state.valueOrNull ?? SellViewState(recentDrafts: drafts);
-      state = AsyncData(current.copyWith(recentDrafts: drafts));
-    }, onError: _handleStreamError);
-
-    return SellViewState(recentDrafts: first);
   }
-
-  void _handleStreamError(Object error, StackTrace stackTrace) {
-    state = AsyncError(error, stackTrace);
-  }
-}
-
-Stream<List<SellDraftSummary>> _recentDraftsStream(Ref ref, String userId) {
-  final firestore = ref.watch(firestoreProvider);
-  return firestore
-      .collection('items')
-      .where('sellerId', isEqualTo: userId)
-      .where('status', isEqualTo: 'DRAFT')
-      .orderBy('updatedAt', descending: true)
-      .limit(8)
-      .snapshots()
-      .map(
-        (snapshot) => snapshot.docs.map(SellDraftSummary.fromDocument).toList(),
-      );
 }

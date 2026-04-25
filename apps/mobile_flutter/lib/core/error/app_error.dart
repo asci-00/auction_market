@@ -1,9 +1,5 @@
 class AppError implements Exception {
-  const AppError({
-    required this.kind,
-    required this.message,
-    this.details,
-  });
+  const AppError({required this.kind, required this.message, this.details});
 
   factory AppError.from(Object error) {
     if (error is AppError) {
@@ -34,11 +30,7 @@ class AppError implements Exception {
   final String? details;
 }
 
-enum AppErrorKind {
-  configuration,
-  bootstrap,
-  unknown,
-}
+enum AppErrorKind { configuration, bootstrap, unknown }
 
 class AppConfigurationException implements Exception {
   const AppConfigurationException(this.message);

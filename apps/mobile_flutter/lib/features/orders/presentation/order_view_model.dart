@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../core/backend/dev_read_api.dart';
-import '../../../core/firebase/firebase_bootstrap.dart';
+import '../../../core/backend/backend_read_api.dart';
+import '../../../core/backend/backend_refresh_event.dart';
+import '../../../core/events/event_bus.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../data/order_summary.dart';
 
@@ -42,64 +42,49 @@ class OrdersViewState {
 
 @riverpod
 class OrdersViewModel extends _$OrdersViewModel {
-  StreamSubscription<List<OrderSummary>>? _sub;
+  StreamSubscription<BackendRefreshEvent>? _refreshSub;
 
   @override
   Future<OrdersViewState> build(OrderQuery query) async {
-    final config = ref.watch(appConfigProvider);
-    if (config.usesHttpBackend) {
-      final authUserId = ref.read(firebaseAuthProvider).currentUser?.uid;
-      if (authUserId != null && authUserId != query.userId) {
-        return const OrdersViewState(orders: <OrderSummary>[]);
-      }
-      final api = ref.watch(devReadApiProvider);
-      assert(
-        query.fieldKey == 'sellerId' || query.fieldKey == 'buyerId',
-        'Unexpected OrderQuery.fieldKey: ${query.fieldKey}',
-      );
-      final role = query.fieldKey == 'sellerId' ? 'seller' : 'buyer';
-      final stream = api.poll(() => api.fetchOrders(role: role));
-      final first = await stream.first;
+    _listenForRefreshes();
+    return _fetchState(query);
+  }
 
-      ref.onDispose(() {
-        unawaited(_sub?.cancel());
-      });
-
-      _sub = stream.listen((orders) {
-        final current = state.valueOrNull ?? OrdersViewState(orders: orders);
-        state = AsyncData(current.copyWith(orders: orders));
-      }, onError: _handleStreamError);
-
-      return OrdersViewState(orders: first);
+  Future<OrdersViewState> _fetchState(OrderQuery query) async {
+    assert(
+      query.fieldKey == 'sellerId' || query.fieldKey == 'buyerId',
+      'Unexpected OrderQuery.fieldKey: ${query.fieldKey}',
+    );
+    final authUserId = ref.read(firebaseAuthProvider).currentUser?.uid;
+    if (authUserId != null && authUserId != query.userId) {
+      return const OrdersViewState(orders: <OrderSummary>[]);
     }
+    final role = query.fieldKey == 'sellerId' ? 'seller' : 'buyer';
+    final orders = await ref
+        .read(backendReadApiProvider)
+        .fetchOrders(role: role);
+    return OrdersViewState(orders: orders);
+  }
 
-    final stream = _ordersStream(ref, query);
-    final first = await stream.first;
+  Future<void> _refreshState() async {
+    try {
+      state = AsyncData(await _fetchState(query));
+    } catch (error, stackTrace) {
+      state = AsyncError(error, stackTrace);
+    }
+  }
 
+  void _listenForRefreshes() {
+    _refreshSub ??= listenEvent<BackendRefreshEvent>(
+      onEvent: (event) async {
+        if (event.includes(BackendRefreshArea.orders)) {
+          await _refreshState();
+        }
+      },
+    );
     ref.onDispose(() {
-      unawaited(_sub?.cancel());
+      unawaited(_refreshSub?.cancel());
+      _refreshSub = null;
     });
-
-    _sub = stream.listen((orders) {
-      final current = state.valueOrNull ?? OrdersViewState(orders: orders);
-      state = AsyncData(current.copyWith(orders: orders));
-    }, onError: _handleStreamError);
-
-    return OrdersViewState(orders: first);
   }
-
-  void _handleStreamError(Object error, StackTrace stackTrace) {
-    state = AsyncError(error, stackTrace);
-  }
-}
-
-Stream<List<OrderSummary>> _ordersStream(Ref ref, OrderQuery query) {
-  final firestore = ref.watch(firestoreProvider);
-  return firestore
-      .collection('orders')
-      .where(query.fieldKey, isEqualTo: query.userId)
-      .orderBy('createdAt', descending: true)
-      .limit(20)
-      .snapshots()
-      .map((snapshot) => snapshot.docs.map(OrderSummary.fromDocument).toList());
 }

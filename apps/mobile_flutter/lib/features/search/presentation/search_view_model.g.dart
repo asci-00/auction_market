@@ -33,9 +33,7 @@ abstract class _$SearchViewModel
     extends BuildlessAutoDisposeAsyncNotifier<SearchViewState> {
   late final String query;
 
-  FutureOr<SearchViewState> build(
-    String query,
-  );
+  FutureOr<SearchViewState> build(String query);
 }
 
 /// See also [SearchViewModel].
@@ -48,21 +46,15 @@ class SearchViewModelFamily extends Family<AsyncValue<SearchViewState>> {
   const SearchViewModelFamily();
 
   /// See also [SearchViewModel].
-  SearchViewModelProvider call(
-    String query,
-  ) {
-    return SearchViewModelProvider(
-      query,
-    );
+  SearchViewModelProvider call(String query) {
+    return SearchViewModelProvider(query);
   }
 
   @override
   SearchViewModelProvider getProviderOverride(
     covariant SearchViewModelProvider provider,
   ) {
-    return call(
-      provider.query,
-    );
+    return call(provider.query);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -81,24 +73,23 @@ class SearchViewModelFamily extends Family<AsyncValue<SearchViewState>> {
 }
 
 /// See also [SearchViewModel].
-class SearchViewModelProvider extends AutoDisposeAsyncNotifierProviderImpl<
-    SearchViewModel, SearchViewState> {
+class SearchViewModelProvider
+    extends
+        AutoDisposeAsyncNotifierProviderImpl<SearchViewModel, SearchViewState> {
   /// See also [SearchViewModel].
-  SearchViewModelProvider(
-    String query,
-  ) : this._internal(
-          () => SearchViewModel()..query = query,
-          from: searchViewModelProvider,
-          name: r'searchViewModelProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$searchViewModelHash,
-          dependencies: SearchViewModelFamily._dependencies,
-          allTransitiveDependencies:
-              SearchViewModelFamily._allTransitiveDependencies,
-          query: query,
-        );
+  SearchViewModelProvider(String query)
+    : this._internal(
+        () => SearchViewModel()..query = query,
+        from: searchViewModelProvider,
+        name: r'searchViewModelProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$searchViewModelHash,
+        dependencies: SearchViewModelFamily._dependencies,
+        allTransitiveDependencies:
+            SearchViewModelFamily._allTransitiveDependencies,
+        query: query,
+      );
 
   SearchViewModelProvider._internal(
     super._createNotifier, {
@@ -116,9 +107,7 @@ class SearchViewModelProvider extends AutoDisposeAsyncNotifierProviderImpl<
   FutureOr<SearchViewState> runNotifierBuild(
     covariant SearchViewModel notifier,
   ) {
-    return notifier.build(
-      query,
-    );
+    return notifier.build(query);
   }
 
   @override
@@ -139,7 +128,7 @@ class SearchViewModelProvider extends AutoDisposeAsyncNotifierProviderImpl<
 
   @override
   AutoDisposeAsyncNotifierProviderElement<SearchViewModel, SearchViewState>
-      createElement() {
+  createElement() {
     return _SearchViewModelProviderElement(this);
   }
 
@@ -166,12 +155,17 @@ mixin SearchViewModelRef
 }
 
 class _SearchViewModelProviderElement
-    extends AutoDisposeAsyncNotifierProviderElement<SearchViewModel,
-        SearchViewState> with SearchViewModelRef {
+    extends
+        AutoDisposeAsyncNotifierProviderElement<
+          SearchViewModel,
+          SearchViewState
+        >
+    with SearchViewModelRef {
   _SearchViewModelProviderElement(super.provider);
 
   @override
   String get query => (origin as SearchViewModelProvider).query;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

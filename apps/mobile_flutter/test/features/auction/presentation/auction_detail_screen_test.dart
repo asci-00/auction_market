@@ -23,7 +23,7 @@ void main() {
   testWidgets(
     'buy now shows pending state then navigates with returned order id',
     (tester) async {
-      final completer = Completer<String?>();
+      final completer = Completer<String>();
       final actionService = _FakeAuctionDetailActionService(
         buyNowHandler: ({required auctionId}) => completer.future,
       );
@@ -144,10 +144,10 @@ class _FakeAuctionDetailActionService extends AuctionDetailActionService {
   _FakeAuctionDetailActionService({required this.buyNowHandler})
     : super(_FakeBackendGateway());
 
-  final Future<String?> Function({required String auctionId}) buyNowHandler;
+  final Future<String> Function({required String auctionId}) buyNowHandler;
 
   @override
-  Future<String?> buyNow({required String auctionId}) async {
+  Future<String> buyNow({required String auctionId}) async {
     return buyNowHandler(auctionId: auctionId);
   }
 }

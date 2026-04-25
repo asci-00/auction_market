@@ -1,12 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../core/backend/dev_read_api.dart';
-import '../../../core/firebase/firebase_bootstrap.dart';
-import '../../../core/firebase/firebase_providers.dart';
+import '../../../core/backend/backend_read_api.dart';
+import '../../../core/backend/backend_refresh_event.dart';
+import '../../../core/events/event_bus.dart';
 import '../application/search_auction_filter.dart';
 import '../data/search_auction_summary.dart';
 
@@ -25,62 +24,42 @@ class SearchViewState {
 
 @riverpod
 class SearchViewModel extends _$SearchViewModel {
-  StreamSubscription<List<SearchAuctionSummary>>? _sub;
+  StreamSubscription<BackendRefreshEvent>? _refreshSub;
 
   @override
   Future<SearchViewState> build(String query) async {
-    final config = ref.watch(appConfigProvider);
-    if (config.usesHttpBackend) {
-      final api = ref.watch(devReadApiProvider);
-      final stream = api.poll(api.fetchSearchAuctions);
-      final first = await stream.first;
-      final initial = filterSearchAuctions(first, query: query);
+    _listenForRefreshes();
+    return _fetchState(query);
+  }
 
-      ref.onDispose(() {
-        unawaited(_sub?.cancel());
-      });
+  Future<SearchViewState> _fetchState(String query) async {
+    final auctions = await ref
+        .read(backendReadApiProvider)
+        .fetchSearchAuctions();
+    return SearchViewState(
+      results: filterSearchAuctions(auctions, query: query),
+    );
+  }
 
-      _sub = stream.listen((auctions) {
-        final filtered = filterSearchAuctions(auctions, query: query);
-        final current = state.valueOrNull ?? SearchViewState(results: filtered);
-        state = AsyncData(current.copyWith(results: filtered));
-      }, onError: _handleStreamError);
-
-      return SearchViewState(results: initial);
+  Future<void> _refreshState() async {
+    try {
+      state = AsyncData(await _fetchState(query));
+    } catch (error, stackTrace) {
+      state = AsyncError(error, stackTrace);
     }
+  }
 
-    final stream = _searchAuctionsStream(ref);
-    final first = await stream.first;
-    final initial = filterSearchAuctions(first, query: query);
-
+  void _listenForRefreshes() {
+    _refreshSub ??= listenEvent<BackendRefreshEvent>(
+      onEvent: (event) async {
+        if (event.includes(BackendRefreshArea.search)) {
+          await _refreshState();
+        }
+      },
+    );
     ref.onDispose(() {
-      unawaited(_sub?.cancel());
+      unawaited(_refreshSub?.cancel());
+      _refreshSub = null;
     });
-
-    _sub = stream.listen((auctions) {
-      final filtered = filterSearchAuctions(auctions, query: query);
-      final current = state.valueOrNull ?? SearchViewState(results: filtered);
-      state = AsyncData(current.copyWith(results: filtered));
-    }, onError: _handleStreamError);
-
-    return SearchViewState(results: initial);
   }
-
-  void _handleStreamError(Object error, StackTrace stackTrace) {
-    state = AsyncError(error, stackTrace);
-  }
-}
-
-Stream<List<SearchAuctionSummary>> _searchAuctionsStream(Ref ref) {
-  final firestore = ref.watch(firestoreProvider);
-  return firestore
-      .collection('auctions')
-      .where('status', isEqualTo: 'LIVE')
-      .orderBy('endAt')
-      .limit(24)
-      .snapshots()
-      .map(
-        (snapshot) =>
-            snapshot.docs.map(SearchAuctionSummary.fromDocument).toList(),
-      );
 }

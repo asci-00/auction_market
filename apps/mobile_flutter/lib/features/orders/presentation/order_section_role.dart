@@ -1,4 +1,1 @@
-enum OrderSectionRole {
-  buyer,
-  seller,
-}
+enum OrderSectionRole { buyer, seller }

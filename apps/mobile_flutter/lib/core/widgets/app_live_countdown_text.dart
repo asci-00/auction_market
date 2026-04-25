@@ -47,8 +47,9 @@ class _AppLiveCountdownTextState extends State<AppLiveCountdownText> {
   Widget build(BuildContext context) {
     final remaining = widget.targetTime.difference(DateTime.now());
     final isExpired = remaining <= Duration.zero;
-    final keyLabel =
-        isExpired ? 'expired' : formatRelativeCountdown(context, remaining);
+    final keyLabel = isExpired
+        ? 'expired'
+        : formatRelativeCountdown(context, remaining);
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 220),

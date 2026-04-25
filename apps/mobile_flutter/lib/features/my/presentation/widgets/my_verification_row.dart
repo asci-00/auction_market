@@ -25,12 +25,7 @@ class MyVerificationRow extends StatelessWidget {
         children: [
           const AppStatusBadge(kind: AppStatusKind.verified),
           SizedBox(width: tokens.space3),
-          Expanded(
-            child: Text(
-              label,
-              style: context.textTheme.titleMedium,
-            ),
-          ),
+          Expanded(child: Text(label, style: context.textTheme.titleMedium)),
           Flexible(
             child: Text(
               value,

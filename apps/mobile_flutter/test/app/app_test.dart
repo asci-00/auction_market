@@ -54,10 +54,10 @@ void main() {
               (ref) async => const AppBootstrapState(
                 config: AppConfig(
                   environment: AppEnvironment.dev,
-                  backendTransport: AppBackendTransport.firebaseCallable,
-                  apiBaseUrl: null,
+                  backendTransport: AppBackendTransport.http,
+                  apiBaseUrl: 'https://api.example.com',
                   useFirebaseEmulators: true,
-                  tossClientKey: null,
+                  tossClientKey: 'test_ck_example',
                   firebaseEmulatorHostOverride: null,
                 ),
               ),
@@ -129,10 +129,10 @@ void main() {
                 (ref) async => const AppBootstrapState(
                   config: AppConfig(
                     environment: AppEnvironment.dev,
-                    backendTransport: AppBackendTransport.firebaseCallable,
-                    apiBaseUrl: null,
+                    backendTransport: AppBackendTransport.http,
+                    apiBaseUrl: 'https://api.example.com',
                     useFirebaseEmulators: true,
-                    tossClientKey: null,
+                    tossClientKey: 'test_ck_example',
                     firebaseEmulatorHostOverride: null,
                   ),
                 ),

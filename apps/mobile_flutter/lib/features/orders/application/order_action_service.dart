@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/backend/backend_gateway.dart';
+import '../../../core/backend/backend_refresh_event.dart';
+import '../../../core/events/event_bus.dart';
 import '../data/order_payment_session.dart';
 
 final orderActionServiceProvider = Provider<OrderActionService>((ref) {
@@ -29,6 +31,7 @@ class OrderActionService {
       paymentKey: paymentKey,
       amount: amount,
     );
+    sendToEventBus(BackendRefreshEvent.ordersChanged(orderId: orderId));
   }
 
   Future<void> submitShipment({
@@ -41,11 +44,11 @@ class OrderActionService {
       carrierName: carrierName,
       trackingNumber: trackingNumber,
     );
+    sendToEventBus(BackendRefreshEvent.ordersChanged(orderId: orderId));
   }
 
-  Future<void> confirmReceipt({
-    required String orderId,
-  }) async {
+  Future<void> confirmReceipt({required String orderId}) async {
     await _gateway.confirmReceipt(orderId: orderId);
+    sendToEventBus(BackendRefreshEvent.ordersChanged(orderId: orderId));
   }
 }

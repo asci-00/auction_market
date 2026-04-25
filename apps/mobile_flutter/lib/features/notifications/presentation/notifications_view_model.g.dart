@@ -34,9 +34,7 @@ abstract class _$NotificationsViewModel
     extends BuildlessAutoDisposeAsyncNotifier<NotificationsViewState> {
   late final String userId;
 
-  FutureOr<NotificationsViewState> build(
-    String userId,
-  );
+  FutureOr<NotificationsViewState> build(String userId);
 }
 
 /// See also [NotificationsViewModel].
@@ -50,21 +48,15 @@ class NotificationsViewModelFamily
   const NotificationsViewModelFamily();
 
   /// See also [NotificationsViewModel].
-  NotificationsViewModelProvider call(
-    String userId,
-  ) {
-    return NotificationsViewModelProvider(
-      userId,
-    );
+  NotificationsViewModelProvider call(String userId) {
+    return NotificationsViewModelProvider(userId);
   }
 
   @override
   NotificationsViewModelProvider getProviderOverride(
     covariant NotificationsViewModelProvider provider,
   ) {
-    return call(
-      provider.userId,
-    );
+    return call(provider.userId);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -84,24 +76,25 @@ class NotificationsViewModelFamily
 
 /// See also [NotificationsViewModel].
 class NotificationsViewModelProvider
-    extends AutoDisposeAsyncNotifierProviderImpl<NotificationsViewModel,
-        NotificationsViewState> {
+    extends
+        AutoDisposeAsyncNotifierProviderImpl<
+          NotificationsViewModel,
+          NotificationsViewState
+        > {
   /// See also [NotificationsViewModel].
-  NotificationsViewModelProvider(
-    String userId,
-  ) : this._internal(
-          () => NotificationsViewModel()..userId = userId,
-          from: notificationsViewModelProvider,
-          name: r'notificationsViewModelProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$notificationsViewModelHash,
-          dependencies: NotificationsViewModelFamily._dependencies,
-          allTransitiveDependencies:
-              NotificationsViewModelFamily._allTransitiveDependencies,
-          userId: userId,
-        );
+  NotificationsViewModelProvider(String userId)
+    : this._internal(
+        () => NotificationsViewModel()..userId = userId,
+        from: notificationsViewModelProvider,
+        name: r'notificationsViewModelProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$notificationsViewModelHash,
+        dependencies: NotificationsViewModelFamily._dependencies,
+        allTransitiveDependencies:
+            NotificationsViewModelFamily._allTransitiveDependencies,
+        userId: userId,
+      );
 
   NotificationsViewModelProvider._internal(
     super._createNotifier, {
@@ -119,9 +112,7 @@ class NotificationsViewModelProvider
   FutureOr<NotificationsViewState> runNotifierBuild(
     covariant NotificationsViewModel notifier,
   ) {
-    return notifier.build(
-      userId,
-    );
+    return notifier.build(userId);
   }
 
   @override
@@ -141,8 +132,11 @@ class NotificationsViewModelProvider
   }
 
   @override
-  AutoDisposeAsyncNotifierProviderElement<NotificationsViewModel,
-      NotificationsViewState> createElement() {
+  AutoDisposeAsyncNotifierProviderElement<
+    NotificationsViewModel,
+    NotificationsViewState
+  >
+  createElement() {
     return _NotificationsViewModelProviderElement(this);
   }
 
@@ -169,12 +163,17 @@ mixin NotificationsViewModelRef
 }
 
 class _NotificationsViewModelProviderElement
-    extends AutoDisposeAsyncNotifierProviderElement<NotificationsViewModel,
-        NotificationsViewState> with NotificationsViewModelRef {
+    extends
+        AutoDisposeAsyncNotifierProviderElement<
+          NotificationsViewModel,
+          NotificationsViewState
+        >
+    with NotificationsViewModelRef {
   _NotificationsViewModelProviderElement(super.provider);
 
   @override
   String get userId => (origin as NotificationsViewModelProvider).userId;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

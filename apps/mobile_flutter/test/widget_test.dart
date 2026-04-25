@@ -28,10 +28,10 @@ void main() {
         child: LoginScreen(
           configOverride: AppConfig(
             environment: AppEnvironment.dev,
-            backendTransport: AppBackendTransport.firebaseCallable,
-            apiBaseUrl: null,
+            backendTransport: AppBackendTransport.http,
+            apiBaseUrl: 'https://api.example.com',
             useFirebaseEmulators: false,
-            tossClientKey: null,
+            tossClientKey: 'test_ck_example',
             firebaseEmulatorHostOverride: null,
           ),
         ),
@@ -52,10 +52,10 @@ void main() {
         child: LoginScreen(
           configOverride: AppConfig(
             environment: AppEnvironment.dev,
-            backendTransport: AppBackendTransport.firebaseCallable,
-            apiBaseUrl: null,
+            backendTransport: AppBackendTransport.http,
+            apiBaseUrl: 'https://api.example.com',
             useFirebaseEmulators: false,
-            tossClientKey: null,
+            tossClientKey: 'test_ck_example',
             firebaseEmulatorHostOverride: null,
           ),
         ),

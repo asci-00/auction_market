@@ -33,9 +33,7 @@ abstract class _$MyViewModel
     extends BuildlessAutoDisposeAsyncNotifier<MyViewState> {
   late final String userId;
 
-  FutureOr<MyViewState> build(
-    String userId,
-  );
+  FutureOr<MyViewState> build(String userId);
 }
 
 /// See also [MyViewModel].
@@ -48,21 +46,15 @@ class MyViewModelFamily extends Family<AsyncValue<MyViewState>> {
   const MyViewModelFamily();
 
   /// See also [MyViewModel].
-  MyViewModelProvider call(
-    String userId,
-  ) {
-    return MyViewModelProvider(
-      userId,
-    );
+  MyViewModelProvider call(String userId) {
+    return MyViewModelProvider(userId);
   }
 
   @override
   MyViewModelProvider getProviderOverride(
     covariant MyViewModelProvider provider,
   ) {
-    return call(
-      provider.userId,
-    );
+    return call(provider.userId);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -84,21 +76,18 @@ class MyViewModelFamily extends Family<AsyncValue<MyViewState>> {
 class MyViewModelProvider
     extends AutoDisposeAsyncNotifierProviderImpl<MyViewModel, MyViewState> {
   /// See also [MyViewModel].
-  MyViewModelProvider(
-    String userId,
-  ) : this._internal(
-          () => MyViewModel()..userId = userId,
-          from: myViewModelProvider,
-          name: r'myViewModelProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$myViewModelHash,
-          dependencies: MyViewModelFamily._dependencies,
-          allTransitiveDependencies:
-              MyViewModelFamily._allTransitiveDependencies,
-          userId: userId,
-        );
+  MyViewModelProvider(String userId)
+    : this._internal(
+        () => MyViewModel()..userId = userId,
+        from: myViewModelProvider,
+        name: r'myViewModelProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$myViewModelHash,
+        dependencies: MyViewModelFamily._dependencies,
+        allTransitiveDependencies: MyViewModelFamily._allTransitiveDependencies,
+        userId: userId,
+      );
 
   MyViewModelProvider._internal(
     super._createNotifier, {
@@ -113,12 +102,8 @@ class MyViewModelProvider
   final String userId;
 
   @override
-  FutureOr<MyViewState> runNotifierBuild(
-    covariant MyViewModel notifier,
-  ) {
-    return notifier.build(
-      userId,
-    );
+  FutureOr<MyViewState> runNotifierBuild(covariant MyViewModel notifier) {
+    return notifier.build(userId);
   }
 
   @override
@@ -139,7 +124,7 @@ class MyViewModelProvider
 
   @override
   AutoDisposeAsyncNotifierProviderElement<MyViewModel, MyViewState>
-      createElement() {
+  createElement() {
     return _MyViewModelProviderElement(this);
   }
 
@@ -172,5 +157,6 @@ class _MyViewModelProviderElement
   @override
   String get userId => (origin as MyViewModelProvider).userId;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

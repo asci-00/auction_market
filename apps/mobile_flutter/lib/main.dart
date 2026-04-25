@@ -15,61 +15,61 @@ import 'features/settings/application/settings_preferences_service.dart';
 
 Future<void> main() async {
   AppLogger? bootstrapLogger;
-  await runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    await EasyLocalization.ensureInitialized();
-    final sharedPreferences = await SharedPreferences.getInstance();
-    final config = AppConfig.fromEnvironment();
-    final logger = AppLogger.fromConfig(config);
-    bootstrapLogger = logger;
+  await runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
+      await EasyLocalization.ensureInitialized();
+      final sharedPreferences = await SharedPreferences.getInstance();
+      final config = AppConfig.fromEnvironment();
+      final logger = AppLogger.fromConfig(config);
+      bootstrapLogger = logger;
 
-    FlutterError.onError = (details) {
-      FlutterError.dumpErrorToConsole(details);
-      try {
-        _logFlutterErrorDetails(details, logger);
-      } catch (loggingError, loggingStack) {
-        logger.error(
-          'Failed to log FlutterErrorDetails: $loggingError',
-          domain: AppLogDomain.app,
-          source: 'main:flutter_error_logger',
-          error: loggingError,
-          stackTrace: loggingStack,
+      FlutterError.onError = (details) {
+        FlutterError.dumpErrorToConsole(details);
+        try {
+          _logFlutterErrorDetails(details, logger);
+        } catch (loggingError, loggingStack) {
+          logger.error(
+            'Failed to log FlutterErrorDetails: $loggingError',
+            domain: AppLogDomain.app,
+            source: 'main:flutter_error_logger',
+            error: loggingError,
+            stackTrace: loggingStack,
+          );
+        }
+        Zone.current.handleUncaughtError(
+          details.exception,
+          details.stack ?? StackTrace.current,
         );
-      }
-      Zone.current.handleUncaughtError(
-        details.exception,
-        details.stack ?? StackTrace.current,
-      );
-    };
+      };
 
-    PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
-      Zone.current.handleUncaughtError(error, stack);
-      return true;
-    };
+      PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+        Zone.current.handleUncaughtError(error, stack);
+        return true;
+      };
 
-    runApp(
-      EasyLocalization(
-        supportedLocales: supportedAppLocales,
-        fallbackLocale: fallbackAppLocale,
-        saveLocale: false,
-        path: translationAssetPath,
-        child: ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-            appConfigProvider.overrideWithValue(config),
-          ],
-          child: const AuctionMarketApp(),
+      runApp(
+        EasyLocalization(
+          supportedLocales: supportedAppLocales,
+          fallbackLocale: fallbackAppLocale,
+          saveLocale: false,
+          path: translationAssetPath,
+          child: ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+              appConfigProvider.overrideWithValue(config),
+            ],
+            child: const AuctionMarketApp(),
+          ),
         ),
-      ),
-    );
-  }, (error, stackTrace) => _reportFatalError(error, stackTrace, bootstrapLogger));
+      );
+    },
+    (error, stackTrace) =>
+        _reportFatalError(error, stackTrace, bootstrapLogger),
+  );
 }
 
-void _reportFatalError(
-  Object error,
-  StackTrace stackTrace,
-  AppLogger? logger,
-) {
+void _reportFatalError(Object error, StackTrace stackTrace, AppLogger? logger) {
   logger?.fatal(
     'Unhandled zone fatal error: $error',
     domain: AppLogDomain.app,
