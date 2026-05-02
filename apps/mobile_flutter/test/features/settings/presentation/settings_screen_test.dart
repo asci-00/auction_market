@@ -1,4 +1,5 @@
 import 'package:auction_market_mobile/core/app_config/app_config.dart';
+import 'package:auction_market_mobile/core/backend/backend_gateway.dart';
 import 'package:auction_market_mobile/core/firebase/firebase_bootstrap.dart';
 import 'package:auction_market_mobile/core/firebase/firebase_providers.dart';
 import 'package:auction_market_mobile/core/l10n/app_localization.dart';
@@ -7,6 +8,7 @@ import 'package:auction_market_mobile/features/settings/application/settings_pre
 import 'package:auction_market_mobile/features/settings/data/settings_preferences.dart';
 import 'package:auction_market_mobile/features/my/presentation/my_screen.dart';
 import 'package:auction_market_mobile/features/settings/presentation/settings_screen.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter/material.dart';
@@ -95,14 +97,9 @@ void main() {
           overrides: [
             firebaseAuthProvider.overrideWith((ref) => auth),
             appBootstrapProvider.overrideWith(
-              (ref) async => AppBootstrapState(
-                config: AppConfig.fromValues(
-                  environment: AppEnvironment.dev,
-                  backendTransportRawValue: 'http',
-                  useFirebaseEmulatorsRawValue: 'false',
-                ),
-              ),
+              (ref) async => AppBootstrapState(config: _devConfig()),
             ),
+            appConfigProvider.overrideWith((ref) => _devConfig()),
             settingsPreferencesProvider.overrideWith(
               (ref) => Stream.value(const SettingsPreferences.defaults()),
             ),
@@ -139,6 +136,151 @@ void main() {
       expect(find.text('English'), findsOneWidget);
     },
   );
+
+  testWidgets('debug push probe reports successful dispatch', (tester) async {
+    await tester.pumpWidget(
+      _TestApp(
+        locale: const Locale('en'),
+        home: const SettingsScreen(),
+        overrides: _signedInSettingsOverrides(
+          backendGateway: _FakeBackendGateway(
+            debugPushProbeHandler: () async => {
+              'pushAttempted': true,
+              'tokenCount': 1,
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _tapDebugPushProbeAction(tester);
+
+    expect(
+      find.text(
+        'Push probe requested. Check your notifications in a few seconds.',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('debug push probe reports skipped dispatch details', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _TestApp(
+        locale: const Locale('en'),
+        home: const SettingsScreen(),
+        overrides: _signedInSettingsOverrides(
+          backendGateway: _FakeBackendGateway(
+            debugPushProbeHandler: () async => {
+              'pushAttempted': false,
+              'tokenCount': 0,
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _tapDebugPushProbeAction(tester);
+
+    expect(
+      find.text(
+        'Push probe was created but push dispatch was skipped (eligible tokens: 0). Check notification preference and token status.',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('debug push probe surfaces backend failure reason', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _TestApp(
+        locale: const Locale('en'),
+        home: const SettingsScreen(),
+        overrides: _signedInSettingsOverrides(
+          backendGateway: _FakeBackendGateway(
+            debugPushProbeHandler: () async {
+              throw FirebaseFunctionsException(
+                code: 'failed-precondition',
+                message: 'No eligible token',
+              );
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _tapDebugPushProbeAction(tester);
+
+    expect(find.text('Push probe failed: No eligible token'), findsOneWidget);
+  });
+}
+
+AppConfig _devConfig() {
+  return AppConfig.fromValues(
+    environment: AppEnvironment.dev,
+    backendTransportRawValue: 'http',
+    apiBaseUrl: 'https://auction-market-dev-api.example',
+    useFirebaseEmulatorsRawValue: 'false',
+    tossClientKey: 'test_ck',
+  );
+}
+
+List<Override> _signedInSettingsOverrides({
+  required BackendGateway backendGateway,
+}) {
+  final user = MockUser(
+    uid: 'settings-user',
+    email: 'settings-user@example.com',
+  );
+  final auth = MockFirebaseAuth(mockUser: user, signedIn: true);
+  final config = _devConfig();
+
+  return [
+    firebaseAuthProvider.overrideWith((ref) => auth),
+    appConfigProvider.overrideWith((ref) => config),
+    appBootstrapProvider.overrideWith(
+      (ref) async => AppBootstrapState(config: config),
+    ),
+    settingsPreferencesProvider.overrideWith(
+      (ref) => Stream.value(const SettingsPreferences.defaults()),
+    ),
+    themeModePreferenceProvider.overrideWith(
+      (ref) => SettingsThemeModePreference.system,
+    ),
+    notificationPermissionStatusProvider.overrideWith(
+      (ref) async => AuthorizationStatus.authorized,
+    ),
+    appPackageInfoProvider.overrideWith(
+      (ref) async => PackageInfo(
+        appName: 'Auction Market',
+        packageName: 'com.example.auction',
+        version: '1.0.0',
+        buildNumber: '1',
+        buildSignature: '',
+        installerStore: null,
+      ),
+    ),
+    backendGatewayProvider.overrideWith((ref) => backendGateway),
+  ];
+}
+
+Future<void> _tapDebugPushProbeAction(WidgetTester tester) async {
+  final actionFinder = find.byKey(
+    const ValueKey('settings-debug-push-probe-action'),
+  );
+  await tester.dragUntilVisible(
+    actionFinder,
+    find.byType(Scrollable),
+    const Offset(0, -320),
+  );
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Send'));
+  await tester.pumpAndSettle();
 }
 
 class _TestApp extends StatelessWidget {
@@ -176,5 +318,16 @@ class _TestApp extends StatelessWidget {
               home: home,
             ),
     );
+  }
+}
+
+class _FakeBackendGateway extends Fake implements BackendGateway {
+  _FakeBackendGateway({required this.debugPushProbeHandler});
+
+  final Future<Map<String, dynamic>> Function() debugPushProbeHandler;
+
+  @override
+  Future<Map<String, dynamic>> sendDebugPushProbe() {
+    return debugPushProbeHandler();
   }
 }

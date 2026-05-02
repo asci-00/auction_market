@@ -131,6 +131,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                 masterTitle: context.l10n.settingsNotificationsMasterTitle,
                 masterDescription:
                     context.l10n.settingsNotificationsMasterDescription,
+                permissionTitle:
+                    context.l10n.settingsNotificationsPermissionTitle,
+                permissionDescription:
+                    context.l10n.settingsNotificationsPermissionDescription,
+                permissionStatusLabel: _permissionStatusLabel(
+                  context,
+                  permissionStatus,
+                ),
+                openPermissionSettingsLabel:
+                    context.l10n.settingsOpenSystemSettings,
+                onOpenPermissionSettings:
+                    permissionStatus == AuthorizationStatus.denied
+                    ? () => _handleOpenSystemSettingsInternal(
+                        context,
+                        showResultToast: true,
+                      )
+                    : null,
                 categoryTitle:
                     context.l10n.settingsNotificationsCategoriesTitle,
                 categoryDescription:
@@ -593,6 +610,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       AuthorizationStatus.denied => 'DENIED',
       AuthorizationStatus.notDetermined => 'NOT_DETERMINED',
       AuthorizationStatus.provisional => 'PROVISIONAL',
+    };
+  }
+
+  String _permissionStatusLabel(
+    BuildContext context,
+    AuthorizationStatus status,
+  ) {
+    return switch (status) {
+      AuthorizationStatus.authorized =>
+        context.l10n.settingsPermissionStatusAuthorized,
+      AuthorizationStatus.denied => context.l10n.settingsPermissionStatusDenied,
+      AuthorizationStatus.notDetermined =>
+        context.l10n.settingsPermissionStatusNotDetermined,
+      AuthorizationStatus.provisional =>
+        context.l10n.settingsPermissionStatusProvisional,
     };
   }
 
