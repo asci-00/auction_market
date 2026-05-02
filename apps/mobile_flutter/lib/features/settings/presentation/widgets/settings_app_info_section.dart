@@ -91,7 +91,6 @@ class SettingsAppInfoSection extends StatelessWidget {
                 debugPushProbeActionLabel != null) ...[
               SizedBox(height: tokens.space1),
               _DebugActionRow(
-                key: const ValueKey('settings-debug-push-probe-action'),
                 title: debugPushProbeTitle!,
                 description: debugPushProbeDescription!,
                 actionLabel: debugPushProbeActionLabel!,
@@ -108,7 +107,6 @@ class SettingsAppInfoSection extends StatelessWidget {
 
 class _DebugActionRow extends StatelessWidget {
   const _DebugActionRow({
-    super.key,
     required this.title,
     required this.description,
     required this.actionLabel,
@@ -144,6 +142,7 @@ class _DebugActionRow extends StatelessWidget {
         SizedBox(
           width: 120,
           child: FilledButton.tonal(
+            key: const ValueKey('settings-debug-push-probe-action'),
             onPressed: isBusy ? null : onPressed,
             child: isBusy
                 ? const SizedBox.square(

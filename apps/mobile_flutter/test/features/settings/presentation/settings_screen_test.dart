@@ -279,7 +279,7 @@ Future<void> _tapDebugPushProbeAction(WidgetTester tester) async {
     const Offset(0, -320),
   );
   await tester.pumpAndSettle();
-  await tester.tap(find.text('Send'));
+  await tester.tap(actionFinder);
   await tester.pumpAndSettle();
 }
 
