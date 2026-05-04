@@ -25,6 +25,10 @@ void main() {
           onCategoryChanged: _noopCategory,
           masterTitle: 'Push notifications',
           masterDescription: 'Turn updates on or off.',
+          permissionTitle: 'Device permission',
+          permissionDescription: 'Device permission copy',
+          permissionStatusLabel: 'Notifications are allowed on this device.',
+          openPermissionSettingsLabel: 'Open system settings',
           categoryTitle: 'Alert categories',
           categoryDescription: 'Category help text',
           categoryLabels: {
@@ -57,7 +61,7 @@ void main() {
     }
   });
 
-  testWidgets('does not show device permission panel', (tester) async {
+  testWidgets('shows current device permission state', (tester) async {
     await tester.pumpWidget(
       const _TestApp(
         child: SettingsNotificationSection(
@@ -66,6 +70,10 @@ void main() {
           onCategoryChanged: _noopCategory,
           masterTitle: 'Push notifications',
           masterDescription: 'Turn updates on or off.',
+          permissionTitle: 'Device permission',
+          permissionDescription: 'Device permission copy',
+          permissionStatusLabel: 'Notifications are allowed on this device.',
+          openPermissionSettingsLabel: 'Open system settings',
           categoryTitle: 'Alert categories',
           categoryDescription: 'Category help text',
           categoryLabels: {
@@ -88,8 +96,62 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Device permission'), findsNothing);
+    expect(find.text('Device permission'), findsOneWidget);
+    expect(find.text('Device permission copy'), findsOneWidget);
+    expect(
+      find.text('Notifications are allowed on this device.'),
+      findsOneWidget,
+    );
     expect(find.text('Open system settings'), findsNothing);
+  });
+
+  testWidgets('opens system settings from denied permission state', (
+    tester,
+  ) async {
+    var openSettingsCount = 0;
+
+    await tester.pumpWidget(
+      _TestApp(
+        child: SettingsNotificationSection(
+          preferences: const SettingsPreferences.defaults(),
+          onPushEnabledChanged: _noopBool,
+          onCategoryChanged: _noopCategory,
+          masterTitle: 'Push notifications',
+          masterDescription: 'Turn updates on or off.',
+          permissionTitle: 'Device permission',
+          permissionDescription: 'Device permission copy',
+          permissionStatusLabel:
+              'Notifications are blocked in system settings.',
+          openPermissionSettingsLabel: 'Open system settings',
+          onOpenPermissionSettings: () {
+            openSettingsCount += 1;
+          },
+          categoryTitle: 'Alert categories',
+          categoryDescription: 'Category help text',
+          categoryLabels: const {
+            SettingsNotificationCategory.auctionActivity: 'Auction activity',
+            SettingsNotificationCategory.orderPayment: 'Orders and payment',
+            SettingsNotificationCategory.shippingAndReceipt:
+                'Shipping and receipt',
+            SettingsNotificationCategory.system: 'System notices',
+          },
+          categoryDescriptions: const {
+            SettingsNotificationCategory.auctionActivity:
+                'Auction activity copy',
+            SettingsNotificationCategory.orderPayment: 'Order payment copy',
+            SettingsNotificationCategory.shippingAndReceipt: 'Shipping copy',
+            SettingsNotificationCategory.system: 'System copy',
+          },
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Open system settings'));
+    await tester.pumpAndSettle();
+
+    expect(openSettingsCount, 1);
   });
 }
 

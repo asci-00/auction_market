@@ -40,7 +40,9 @@ void main() {
     expect(find.text('Push probe'), findsOneWidget);
     expect(find.text('Send'), findsOneWidget);
 
-    await tester.tap(find.text('Send'));
+    await tester.tap(
+      find.byKey(const ValueKey('settings-debug-push-probe-action')),
+    );
     await tester.pump();
 
     expect(tapped, 1);
@@ -114,10 +116,7 @@ void main() {
     expect(find.text('Send'), findsNothing);
 
     final button = tester.widget<FilledButton>(
-      find.descendant(
-        of: find.byKey(const ValueKey('settings-debug-push-probe-action')),
-        matching: find.byType(FilledButton),
-      ),
+      find.byKey(const ValueKey('settings-debug-push-probe-action')),
     );
     expect(button.onPressed, isNull);
   });
