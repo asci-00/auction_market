@@ -92,9 +92,73 @@ void main() {
       expect(payload!.routePath, '/notifications');
       expect(payload.deduplicationKey, 'message-4');
     });
+
+    test('round-trips local notification payloads for tap routing', () {
+      const originalPayload = NotificationPushPayload(
+        deduplicationKey: 'message-local-1',
+        routePath: '/orders/order-123',
+        title: 'Payment confirmed',
+        body: 'Open the timeline',
+        notificationId: 'notif-local-1',
+      );
+
+      final restoredPayload =
+          NotificationPushPayload.fromLocalNotificationPayload(
+            originalPayload.toLocalNotificationPayload(),
+          );
+
+      expect(restoredPayload, isNotNull);
+      expect(restoredPayload!.deduplicationKey, 'message-local-1');
+      expect(restoredPayload.routePath, '/orders/order-123');
+      expect(restoredPayload.title, 'Payment confirmed');
+      expect(restoredPayload.body, 'Open the timeline');
+      expect(restoredPayload.notificationId, 'notif-local-1');
+    });
+
+    test('rejects unsupported local notification routes', () {
+      final payload = NotificationPushPayload.fromLocalNotificationPayload(
+        '{"deduplicationKey":"message-local-2","routePath":"/unknown"}',
+      );
+
+      expect(payload, isNull);
+    });
   });
 
   group('NotificationPushService', () {
+    test('presents foreground pushes through system notifications', () async {
+      final presentedPayloads = <NotificationPushPayload>[];
+      final service = NotificationPushService(
+        markNotificationRead: ({required notificationId}) async {},
+        logInfoMessage: (_) {},
+        logErrorMessage: ({required message, error, stackTrace}) {},
+        scaffoldMessengerKey: GlobalKey<ScaffoldMessengerState>(),
+        resolveCurrentRoutePath: (_) => '/orders/order-999',
+        showForegroundSystemNotification: (payload) async {
+          presentedPayloads.add(payload);
+          return true;
+        },
+      );
+
+      final router = _buildTestRouter();
+      addTearDown(router.dispose);
+
+      final message = RemoteMessage.fromMap({
+        'messageId': 'message-foreground-system-1',
+        'data': {
+          'deeplink': 'app://orders/order-123',
+          'notificationId': 'notif-system-1',
+        },
+        'sentTime': DateTime.utc(2026, 4, 11, 4).millisecondsSinceEpoch,
+      });
+
+      await service.handleForegroundMessage(router, message);
+
+      expect(presentedPayloads, hasLength(1));
+      expect(presentedPayloads.single.deduplicationKey, message.messageId);
+      expect(presentedPayloads.single.routePath, '/orders/order-123');
+      expect(presentedPayloads.single.notificationId, 'notif-system-1');
+    });
+
     test(
       'refreshes foreground route state when current route matches',
       () async {
@@ -216,6 +280,47 @@ void main() {
       expect(markedReadIds, ['notif-open-1']);
       expect(routedPaths, ['/orders/order-123']);
       expect(foregroundRefreshed, isFalse);
+    });
+
+    test('routes local notification taps through mark-read dedupe', () async {
+      final markedReadIds = <String>[];
+      final routedPaths = <String>[];
+      final service = NotificationPushService(
+        markNotificationRead: ({required notificationId}) async {
+          markedReadIds.add(notificationId);
+        },
+        logInfoMessage: (_) {},
+        logErrorMessage: ({required message, error, stackTrace}) {},
+        scaffoldMessengerKey: GlobalKey<ScaffoldMessengerState>(),
+        navigateToRoute: (_, routePath) {
+          routedPaths.add(routePath);
+        },
+      );
+
+      final router = _buildTestRouter();
+      addTearDown(router.dispose);
+
+      const payload = NotificationPushPayload(
+        deduplicationKey: 'message-local-open-1',
+        routePath: '/auction/auction-1',
+        title: 'Auction updated',
+        body: 'Open the auction',
+        notificationId: 'notif-local-open-1',
+      );
+
+      await service.handleLocalNotificationPayload(
+        router,
+        payload.toLocalNotificationPayload(),
+        source: 'foreground-local',
+      );
+      await service.handleLocalNotificationPayload(
+        router,
+        payload.toLocalNotificationPayload(),
+        source: 'foreground-local',
+      );
+
+      expect(markedReadIds, ['notif-local-open-1']);
+      expect(routedPaths, ['/auction/auction-1']);
     });
 
     test(

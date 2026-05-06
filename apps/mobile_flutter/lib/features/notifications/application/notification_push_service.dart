@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -18,9 +20,23 @@ import '../../../core/routing/app_router.dart';
 import '../../../core/widgets/app_global_keys.dart';
 import '../../settings/application/settings_preferences_service.dart';
 
+const _defaultNotificationChannelId = 'auction_market_updates';
+const _defaultNotificationChannelName = 'Auction updates';
+const _defaultNotificationChannelDescription =
+    'Auction, order, and shipment activity updates.';
+const _localNotificationFallbackTitle = 'Auction Market';
+
+final foregroundLocalNotificationBridgeProvider =
+    Provider<ForegroundLocalNotificationBridge>((ref) {
+      return ForegroundLocalNotificationBridge();
+    });
+
 final notificationPushServiceProvider = Provider<NotificationPushService>((
   ref,
 ) {
+  final foregroundLocalNotificationBridge = ref.watch(
+    foregroundLocalNotificationBridgeProvider,
+  );
   return NotificationPushService(
     markNotificationRead: ({required String notificationId}) async {
       await ref
@@ -64,6 +80,7 @@ final notificationPushServiceProvider = Provider<NotificationPushService>((
     scaffoldMessengerKey: ref.watch(rootScaffoldMessengerKeyProvider),
     resolveCurrentRoutePath: _defaultResolveCurrentRoutePath,
     refreshRouteStateForPath: _refreshForegroundRouteState,
+    showForegroundSystemNotification: foregroundLocalNotificationBridge.show,
   );
 });
 
@@ -118,6 +135,9 @@ final notificationPushLifecycleProvider = Provider<void>((ref) {
 
   final messaging = ref.watch(firebaseMessagingProvider);
   final router = ref.watch(goRouterProvider);
+  final foregroundLocalNotificationBridge = ref.watch(
+    foregroundLocalNotificationBridgeProvider,
+  );
 
   Future<void> runLifecycleTask(
     Future<void> Function() operation, {
@@ -141,6 +161,25 @@ final notificationPushLifecycleProvider = Provider<void>((ref) {
       );
     }
   }
+
+  unawaited(
+    runLifecycleTask(() async {
+      await foregroundLocalNotificationBridge.initialize(
+        onPayload: (payload) {
+          unawaited(
+            runLifecycleTask(
+              () => service.handleLocalNotificationPayload(
+                router,
+                payload,
+                source: 'foreground-local',
+              ),
+              context: 'while routing a foreground local notification tap',
+            ),
+          );
+        },
+      );
+    }, context: 'while initializing foreground local notifications'),
+  );
 
   final foregroundSubscription = FirebaseMessaging.onMessage.listen((message) {
     unawaited(
@@ -187,6 +226,102 @@ final notificationPushLifecycleProvider = Provider<void>((ref) {
   });
 });
 
+typedef ForegroundSystemNotificationPresenter =
+    Future<bool> Function(NotificationPushPayload payload);
+
+class ForegroundLocalNotificationBridge {
+  ForegroundLocalNotificationBridge({FlutterLocalNotificationsPlugin? plugin})
+    : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+
+  final FlutterLocalNotificationsPlugin _plugin;
+  bool _initialized = false;
+
+  Future<bool> initialize({
+    required void Function(String? payload) onPayload,
+  }) async {
+    if (_initialized) {
+      return true;
+    }
+    if (kIsWeb ||
+        (defaultTargetPlatform != TargetPlatform.android &&
+            defaultTargetPlatform != TargetPlatform.iOS &&
+            defaultTargetPlatform != TargetPlatform.macOS)) {
+      return false;
+    }
+
+    final initialized = await _plugin.initialize(
+      settings: const InitializationSettings(
+        android: AndroidInitializationSettings('ic_stat_notification'),
+        iOS: DarwinInitializationSettings(
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+          defaultPresentAlert: true,
+          defaultPresentBadge: true,
+          defaultPresentSound: true,
+          defaultPresentBanner: true,
+          defaultPresentList: true,
+        ),
+        macOS: DarwinInitializationSettings(
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+          defaultPresentAlert: true,
+          defaultPresentBadge: true,
+          defaultPresentSound: true,
+          defaultPresentBanner: true,
+          defaultPresentList: true,
+        ),
+      ),
+      onDidReceiveNotificationResponse: (response) {
+        onPayload(response.payload);
+      },
+    );
+    _initialized = initialized ?? true;
+    return _initialized;
+  }
+
+  Future<bool> show(NotificationPushPayload payload) async {
+    if (!_initialized) {
+      return false;
+    }
+
+    await _plugin.show(
+      id: payload.localNotificationId,
+      title: payload.title ?? _localNotificationFallbackTitle,
+      body: payload.body,
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          _defaultNotificationChannelId,
+          _defaultNotificationChannelName,
+          channelDescription: _defaultNotificationChannelDescription,
+          icon: 'ic_stat_notification',
+          importance: Importance.high,
+          priority: Priority.high,
+          category: AndroidNotificationCategory.status,
+          visibility: NotificationVisibility.public,
+        ),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          presentBanner: true,
+          presentList: true,
+        ),
+        macOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          presentBanner: true,
+          presentList: true,
+        ),
+      ),
+      payload: payload.toLocalNotificationPayload(),
+    );
+    return true;
+  }
+}
+
 class NotificationPushService {
   NotificationPushService({
     required Future<void> Function({required String notificationId})
@@ -202,6 +337,7 @@ class NotificationPushService {
     void Function(GoRouter router, String routePath)? navigateToRoute,
     String Function(GoRouter router)? resolveCurrentRoutePath,
     void Function(String routePath)? refreshRouteStateForPath,
+    ForegroundSystemNotificationPresenter? showForegroundSystemNotification,
   }) : _markNotificationRead = markNotificationRead,
        _logInfoMessage = logInfoMessage,
        _logErrorMessage = logErrorMessage,
@@ -210,7 +346,8 @@ class NotificationPushService {
        _resolveCurrentRoutePath =
            resolveCurrentRoutePath ?? _defaultResolveCurrentRoutePath,
        _refreshRouteStateForPath =
-           refreshRouteStateForPath ?? _defaultRefreshRouteStateForPath;
+           refreshRouteStateForPath ?? _defaultRefreshRouteStateForPath,
+       _showForegroundSystemNotification = showForegroundSystemNotification;
 
   final Future<void> Function({required String notificationId})
   _markNotificationRead;
@@ -225,6 +362,8 @@ class NotificationPushService {
   final void Function(GoRouter router, String routePath) _navigateToRoute;
   final String Function(GoRouter router) _resolveCurrentRoutePath;
   final void Function(String routePath) _refreshRouteStateForPath;
+  final ForegroundSystemNotificationPresenter?
+  _showForegroundSystemNotification;
   final Set<String> _handledOpenKeys = <String>{};
 
   Future<void> handleForegroundMessage(
@@ -242,6 +381,17 @@ class NotificationPushService {
     );
     _refreshRouteStateIfCurrentRouteMatches(router, payload);
 
+    if (await _showForegroundSystemNotificationIfAvailable(payload)) {
+      return;
+    }
+
+    _showForegroundSnackBar(router, payload);
+  }
+
+  void _showForegroundSnackBar(
+    GoRouter router,
+    NotificationPushPayload payload,
+  ) {
     final messenger = _scaffoldMessengerKey.currentState;
     final context = _scaffoldMessengerKey.currentContext;
     if (messenger == null || context == null) {
@@ -264,6 +414,23 @@ class NotificationPushService {
           ),
         ),
       );
+  }
+
+  Future<void> handleLocalNotificationPayload(
+    GoRouter router,
+    String? localNotificationPayload, {
+    required String source,
+  }) async {
+    final payload = NotificationPushPayload.fromLocalNotificationPayload(
+      localNotificationPayload,
+    );
+    if (payload == null) {
+      logInfo(
+        'skip local notification routing: payload missing source=$source',
+      );
+      return;
+    }
+    await _openPayload(router, payload, source: source);
   }
 
   Future<void> handleOpenMessage(
@@ -309,6 +476,36 @@ class NotificationPushService {
       }
     }
     _navigateToRoute(router, payload.routePath);
+  }
+
+  Future<bool> _showForegroundSystemNotificationIfAvailable(
+    NotificationPushPayload payload,
+  ) async {
+    final showForegroundSystemNotification = _showForegroundSystemNotification;
+    if (showForegroundSystemNotification == null) {
+      return false;
+    }
+
+    try {
+      final shown = await showForegroundSystemNotification(payload);
+      if (shown) {
+        logInfo(
+          'foreground push presented as system notification key=${payload.deduplicationKey}',
+        );
+        return true;
+      }
+      logInfo(
+        'foreground system notification unavailable key=${payload.deduplicationKey}',
+      );
+      return false;
+    } catch (error, stackTrace) {
+      logError(
+        'foreground system notification failed key=${payload.deduplicationKey}',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
   }
 
   void logInfo(String message) {
@@ -406,6 +603,8 @@ class NotificationPushPayload {
   final String? body;
   final String? notificationId;
 
+  int get localNotificationId => _positiveHash(deduplicationKey);
+
   static NotificationPushPayload? fromRemoteMessage(RemoteMessage message) {
     return fromMessageParts(
       data: message.data,
@@ -414,6 +613,51 @@ class NotificationPushPayload {
       body: message.notification?.body,
       sentTime: message.sentTime,
     );
+  }
+
+  static NotificationPushPayload? fromLocalNotificationPayload(
+    String? payload,
+  ) {
+    final trimmedPayload = _meaningfulString(payload);
+    if (trimmedPayload == null) {
+      return null;
+    }
+
+    try {
+      final decoded = jsonDecode(trimmedPayload);
+      if (decoded is! Map<String, dynamic>) {
+        return null;
+      }
+
+      final routePath = _meaningfulString(decoded['routePath'] as String?);
+      if (!_isSupportedRoutePath(routePath)) {
+        return null;
+      }
+
+      final deduplicationKey =
+          _meaningfulString(decoded['deduplicationKey'] as String?) ??
+          _meaningfulString(decoded['notificationId'] as String?) ??
+          routePath!;
+      return NotificationPushPayload(
+        deduplicationKey: deduplicationKey,
+        routePath: routePath!,
+        title: _meaningfulString(decoded['title'] as String?),
+        body: _meaningfulString(decoded['body'] as String?),
+        notificationId: _meaningfulString(decoded['notificationId'] as String?),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String toLocalNotificationPayload() {
+    return jsonEncode(<String, String?>{
+      'deduplicationKey': deduplicationKey,
+      'routePath': routePath,
+      'title': title,
+      'body': body,
+      'notificationId': notificationId,
+    });
   }
 
   static NotificationPushPayload? fromMessageParts({
@@ -484,6 +728,14 @@ class NotificationPushPayload {
     }
     final trimmed = value.trim();
     return trimmed.isEmpty ? null : trimmed;
+  }
+
+  static int _positiveHash(String value) {
+    var hash = 0;
+    for (final codeUnit in value.codeUnits) {
+      hash = (hash * 31 + codeUnit) & 0x7fffffff;
+    }
+    return hash;
   }
 
   static bool _isSupportedRoutePath(String? routePath) {
