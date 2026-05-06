@@ -242,36 +242,13 @@ class ForegroundLocalNotificationBridge {
     if (_initialized) {
       return true;
     }
-    if (kIsWeb ||
-        (defaultTargetPlatform != TargetPlatform.android &&
-            defaultTargetPlatform != TargetPlatform.iOS &&
-            defaultTargetPlatform != TargetPlatform.macOS)) {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
       return false;
     }
 
     final initialized = await _plugin.initialize(
       settings: const InitializationSettings(
         android: AndroidInitializationSettings('ic_stat_notification'),
-        iOS: DarwinInitializationSettings(
-          requestAlertPermission: false,
-          requestBadgePermission: false,
-          requestSoundPermission: false,
-          defaultPresentAlert: true,
-          defaultPresentBadge: true,
-          defaultPresentSound: true,
-          defaultPresentBanner: true,
-          defaultPresentList: true,
-        ),
-        macOS: DarwinInitializationSettings(
-          requestAlertPermission: false,
-          requestBadgePermission: false,
-          requestSoundPermission: false,
-          defaultPresentAlert: true,
-          defaultPresentBadge: true,
-          defaultPresentSound: true,
-          defaultPresentBanner: true,
-          defaultPresentList: true,
-        ),
       ),
       onDidReceiveNotificationResponse: (response) {
         onPayload(response.payload);
@@ -300,20 +277,6 @@ class ForegroundLocalNotificationBridge {
           priority: Priority.high,
           category: AndroidNotificationCategory.status,
           visibility: NotificationVisibility.public,
-        ),
-        iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-          presentBanner: true,
-          presentList: true,
-        ),
-        macOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-          presentBanner: true,
-          presentList: true,
         ),
       ),
       payload: payload.toLocalNotificationPayload(),
