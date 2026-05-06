@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -246,14 +247,19 @@ class ForegroundLocalNotificationBridge {
       return false;
     }
 
-    final initialized = await _plugin.initialize(
-      settings: const InitializationSettings(
-        android: AndroidInitializationSettings('ic_stat_notification'),
-      ),
-      onDidReceiveNotificationResponse: (response) {
-        onPayload(response.payload);
-      },
-    );
+    final bool? initialized;
+    try {
+      initialized = await _plugin.initialize(
+        settings: const InitializationSettings(
+          android: AndroidInitializationSettings('ic_stat_notification'),
+        ),
+        onDidReceiveNotificationResponse: (response) {
+          onPayload(response.payload);
+        },
+      );
+    } on MissingPluginException {
+      return false;
+    }
     _initialized = initialized ?? true;
     return _initialized;
   }
@@ -263,24 +269,29 @@ class ForegroundLocalNotificationBridge {
       return false;
     }
 
-    await _plugin.show(
-      id: payload.localNotificationId,
-      title: payload.title ?? _localNotificationFallbackTitle,
-      body: payload.body,
-      notificationDetails: const NotificationDetails(
-        android: AndroidNotificationDetails(
-          _defaultNotificationChannelId,
-          _defaultNotificationChannelName,
-          channelDescription: _defaultNotificationChannelDescription,
-          icon: 'ic_stat_notification',
-          importance: Importance.high,
-          priority: Priority.high,
-          category: AndroidNotificationCategory.status,
-          visibility: NotificationVisibility.public,
+    try {
+      await _plugin.show(
+        id: payload.localNotificationId,
+        title: payload.title ?? _localNotificationFallbackTitle,
+        body: payload.body,
+        notificationDetails: const NotificationDetails(
+          android: AndroidNotificationDetails(
+            _defaultNotificationChannelId,
+            _defaultNotificationChannelName,
+            channelDescription: _defaultNotificationChannelDescription,
+            icon: 'ic_stat_notification',
+            importance: Importance.high,
+            priority: Priority.high,
+            category: AndroidNotificationCategory.status,
+            visibility: NotificationVisibility.public,
+          ),
         ),
-      ),
-      payload: payload.toLocalNotificationPayload(),
-    );
+        payload: payload.toLocalNotificationPayload(),
+      );
+    } on MissingPluginException {
+      _initialized = false;
+      return false;
+    }
     return true;
   }
 }
