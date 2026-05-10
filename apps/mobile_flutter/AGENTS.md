@@ -129,7 +129,8 @@ Localization is real app behavior here, not polish.
 Follow the existing visual system instead of introducing ad hoc styles.
 
 - use `AppTheme`, `AppColors`, and `context.tokens`
-- prefer existing shared widgets such as `AppPageScaffold`, `AppPanel`, `AppEditorialHero`, `AppEmptyState`
+- prefer existing shared widgets such as `AppPageScaffold`, `AppPanel`, and `AppEmptyState`
+- reserve `AppEditorialHero` for screens that need first-visit orientation or conversion context, as defined in `docs/Design.md`
 - keep new UI consistent with the current editorial, card-based style
 
 ## Firebase and Environment Notes

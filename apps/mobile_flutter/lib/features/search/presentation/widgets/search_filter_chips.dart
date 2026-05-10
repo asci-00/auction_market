@@ -12,6 +12,8 @@ class SearchFilterChips extends StatelessWidget {
     required this.onCyclePrice,
     required this.onToggleEndingSoon,
     required this.onToggleBuyNow,
+    this.onReset,
+    this.scrollable = false,
   });
 
   final SearchFilterState filters;
@@ -19,36 +21,59 @@ class SearchFilterChips extends StatelessWidget {
   final VoidCallback onCyclePrice;
   final ValueChanged<bool> onToggleEndingSoon;
   final ValueChanged<bool> onToggleBuyNow;
+  final VoidCallback? onReset;
+  final bool scrollable;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final chips = <Widget>[
+      FilterChip(
+        label: Text(_categoryLabel(context)),
+        selected: filters.category != SearchCategoryFilter.all,
+        onSelected: (_) => onCycleCategory(),
+      ),
+      FilterChip(
+        label: Text(_priceLabel(context)),
+        selected: filters.price != SearchPriceFilter.all,
+        onSelected: (_) => onCyclePrice(),
+      ),
+      FilterChip(
+        label: Text(context.l10n.searchFilterEndingSoon),
+        selected: filters.endingSoonOnly,
+        onSelected: onToggleEndingSoon,
+      ),
+      FilterChip(
+        label: Text(context.l10n.searchFilterBuyNow),
+        selected: filters.buyNowOnly,
+        onSelected: onToggleBuyNow,
+      ),
+      if (onReset != null)
+        ActionChip(
+          avatar: const Icon(Icons.refresh_rounded, size: 18),
+          label: Text(context.l10n.searchResetFiltersAction),
+          onPressed: onReset,
+        ),
+    ];
+
+    if (scrollable) {
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (final chip in chips) ...[
+              chip,
+              if (chip != chips.last) SizedBox(width: tokens.space2),
+            ],
+          ],
+        ),
+      );
+    }
 
     return Wrap(
       spacing: tokens.space2,
       runSpacing: tokens.space2,
-      children: [
-        FilterChip(
-          label: Text(_categoryLabel(context)),
-          selected: filters.category != SearchCategoryFilter.all,
-          onSelected: (_) => onCycleCategory(),
-        ),
-        FilterChip(
-          label: Text(_priceLabel(context)),
-          selected: filters.price != SearchPriceFilter.all,
-          onSelected: (_) => onCyclePrice(),
-        ),
-        FilterChip(
-          label: Text(context.l10n.searchFilterEndingSoon),
-          selected: filters.endingSoonOnly,
-          onSelected: onToggleEndingSoon,
-        ),
-        FilterChip(
-          label: Text(context.l10n.searchFilterBuyNow),
-          selected: filters.buyNowOnly,
-          onSelected: onToggleBuyNow,
-        ),
-      ],
+      children: chips,
     );
   }
 

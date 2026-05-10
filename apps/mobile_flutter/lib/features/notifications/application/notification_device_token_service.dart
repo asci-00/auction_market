@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,6 +16,12 @@ import '../../../core/logging/app_logger.dart';
 import '../../settings/application/settings_preferences_service.dart';
 
 const _deviceTokenIdCacheKey = 'notifications.deviceTokenId';
+const _deviceTokenRegistrationCacheKey =
+    'notifications.deviceTokenRegistration';
+const _deviceTokenRegistrationAtCacheKey =
+    'notifications.deviceTokenRegistrationAt';
+const _deviceTokenRegistrationRefreshInterval = Duration(hours: 24);
+const _transientRetryDelay = Duration(seconds: 10);
 
 final notificationDeviceTokenServiceProvider =
     Provider<NotificationDeviceTokenService>((ref) {
@@ -41,20 +48,34 @@ final notificationDeviceTokenLifecycleProvider = Provider<void>((ref) {
 
   final service = ref.watch(notificationDeviceTokenServiceProvider);
   String? previousUserId = ref.watch(firebaseAuthProvider).currentUser?.uid;
+  Timer? transientRetryTimer;
 
   Future<void> runLifecycleTask(
     Future<void> Function() operation, {
     required String context,
+    bool allowRetry = true,
   }) async {
     try {
       await operation();
     } catch (error, stackTrace) {
       if (_isTransientBackendError(error)) {
+        if (allowRetry) {
+          transientRetryTimer?.cancel();
+          transientRetryTimer = Timer(_transientRetryDelay, () {
+            unawaited(
+              runLifecycleTask(
+                operation,
+                context: '$context retry',
+                allowRetry: false,
+              ),
+            );
+          });
+        }
         service.logDiagnostic(
-          'lifecycle task transient failure: $context -> $error',
-          level: AppLogLevel.info,
-          error: error,
-          stackTrace: stackTrace,
+          allowRetry
+              ? 'lifecycle task transient failure: $context; retry scheduled'
+              : 'lifecycle task transient failure after retry: $context',
+          level: AppLogLevel.debug,
         );
         return;
       }
@@ -127,6 +148,7 @@ final notificationDeviceTokenLifecycleProvider = Provider<void>((ref) {
   );
 
   ref.onDispose(() {
+    transientRetryTimer?.cancel();
     authSubscription.cancel();
     tokenRefreshSubscription.cancel();
     appLifecycleListener.dispose();
@@ -219,17 +241,24 @@ class NotificationDeviceTokenService {
     }
 
     final appVersion = (await PackageInfo.fromPlatform()).version;
-    final result = await _gateway.registerDeviceToken(
-      payload: buildRegisterPayload(
-        token: token,
-        appVersion: appVersion,
-        locale: WidgetsBinding.instance.platformDispatcher.locale
-            .toLanguageTag(),
-        timezone: DateTime.now().timeZoneName,
-        platform: currentDevicePlatform(),
-        permissionStatus: permissionStatusLabel(permissionStatus),
-      ),
+    final registerPayload = buildRegisterPayload(
+      token: token,
+      appVersion: appVersion,
+      locale: WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
+      timezone: DateTime.now().timeZoneName,
+      platform: currentDevicePlatform(),
+      permissionStatus: permissionStatusLabel(permissionStatus),
     );
+    final registrationFingerprint = deviceTokenRegistrationFingerprint(
+      tokenId: tokenId,
+      payload: registerPayload,
+    );
+    if (_hasFreshRegistrationCache(registrationFingerprint)) {
+      logDiagnostic('skip register: cached device token registration is fresh');
+      return;
+    }
+
+    final result = await _gateway.registerDeviceToken(payload: registerPayload);
     final data = result;
     final returnedTokenId = data['tokenId'];
     if (returnedTokenId is! String || returnedTokenId.isEmpty) {
@@ -239,6 +268,14 @@ class NotificationDeviceTokenService {
     }
 
     await _sharedPreferences.setString(_deviceTokenIdCacheKey, returnedTokenId);
+    await _sharedPreferences.setString(
+      _deviceTokenRegistrationCacheKey,
+      registrationFingerprint,
+    );
+    await _sharedPreferences.setInt(
+      _deviceTokenRegistrationAtCacheKey,
+      DateTime.now().millisecondsSinceEpoch,
+    );
     logDiagnostic('registerDeviceToken succeeded tokenId=$returnedTokenId');
   }
 
@@ -282,6 +319,8 @@ class NotificationDeviceTokenService {
   Future<void> clearCachedTokenReference() async {
     logDiagnostic('clearing cached token reference');
     await _sharedPreferences.remove(_deviceTokenIdCacheKey);
+    await _sharedPreferences.remove(_deviceTokenRegistrationCacheKey);
+    await _sharedPreferences.remove(_deviceTokenRegistrationAtCacheKey);
   }
 
   Future<AuthorizationStatus> _currentPermissionStatus() async {
@@ -355,6 +394,21 @@ class NotificationDeviceTokenService {
   @visibleForTesting
   static String deviceTokenDocumentId(String token) {
     return Uri.encodeComponent(token);
+  }
+
+  @visibleForTesting
+  static String deviceTokenRegistrationFingerprint({
+    required String tokenId,
+    required Map<String, Object?> payload,
+  }) {
+    return jsonEncode({
+      'tokenId': tokenId,
+      'platform': payload['platform'],
+      'appVersion': payload['appVersion'],
+      'locale': payload['locale'],
+      'timezone': payload['timezone'],
+      'permissionStatus': payload['permissionStatus'],
+    });
   }
 
   @visibleForTesting
@@ -433,6 +487,25 @@ class NotificationDeviceTokenService {
         );
         return;
     }
+  }
+
+  bool _hasFreshRegistrationCache(String registrationFingerprint) {
+    if (_sharedPreferences.getString(_deviceTokenRegistrationCacheKey) !=
+        registrationFingerprint) {
+      return false;
+    }
+
+    final registeredAt = _sharedPreferences.getInt(
+      _deviceTokenRegistrationAtCacheKey,
+    );
+    if (registeredAt == null) {
+      return false;
+    }
+
+    final age = DateTime.now().difference(
+      DateTime.fromMillisecondsSinceEpoch(registeredAt),
+    );
+    return age < _deviceTokenRegistrationRefreshInterval;
   }
 }
 

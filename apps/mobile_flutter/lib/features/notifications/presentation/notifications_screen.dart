@@ -11,7 +11,6 @@ import '../../../core/l10n/app_formatters.dart';
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/routing/app_deeplink.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_loading_overlay.dart';
 import '../../../core/widgets/app_motion.dart';
@@ -47,51 +46,60 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     final l10n = context.l10n;
     final tokens = context.tokens;
     final user = ref.watch(firebaseAuthProvider).currentUser;
-    final notificationsAsync = user == null
+    final notificationsProvider = user == null
         ? null
-        : ref.watch(notificationsViewModelProvider(user.uid));
+        : notificationsViewModelProvider(user.uid);
+    final notificationsAsync = notificationsProvider == null
+        ? null
+        : ref.watch(notificationsProvider);
+
+    final listView = ListView(
+      padding: EdgeInsets.fromLTRB(
+        tokens.screenPadding,
+        tokens.space4,
+        tokens.screenPadding,
+        tokens.space8 + context.shellBottomInset,
+      ),
+      children: [
+        if (user == null)
+          AppEmptyState(
+            icon: Icons.notifications_active_outlined,
+            title: l10n.notificationsEmptyTitle,
+            description: l10n.notificationsEmptyDescription,
+            action: TextButton(
+              onPressed: () => context.go(
+                '/login?from=${Uri.encodeComponent('/notifications')}',
+              ),
+              child: Text(l10n.genericSignInAction),
+            ),
+          )
+        else
+          _NotificationsBody(
+            state: notificationsAsync,
+            isNavigating: _isNavigating,
+            onNavigateStart: () => _setNavigating(true),
+            onNavigateEnd: () => _setNavigating(false),
+          ),
+      ],
+    );
 
     return AppPageScaffold(
       title: l10n.notificationsTitle,
       body: AppLoadingOverlay(
         isLoading: _isNavigating,
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(
-            tokens.screenPadding,
-            tokens.space4,
-            tokens.screenPadding,
-            tokens.space8 + context.shellBottomInset,
-          ),
-          children: [
-            AppEditorialHero(
-              eyebrow: l10n.notificationsHeroEyebrow,
-              title: l10n.notificationsHeroTitle,
-              description: l10n.notificationsHeroDescription,
-              badges: const [AppStatusBadge(kind: AppStatusKind.unread)],
-              tone: AppPanelTone.surface,
-            ),
-            SizedBox(height: tokens.space5),
-            if (user == null)
-              AppEmptyState(
-                icon: Icons.notifications_active_outlined,
-                title: l10n.notificationsEmptyTitle,
-                description: l10n.notificationsEmptyDescription,
-                action: TextButton(
-                  onPressed: () => context.go(
-                    '/login?from=${Uri.encodeComponent('/notifications')}',
-                  ),
-                  child: Text(l10n.genericSignInAction),
-                ),
-              )
-            else
-              _NotificationsBody(
-                state: notificationsAsync,
-                isNavigating: _isNavigating,
-                onNavigateStart: () => _setNavigating(true),
-                onNavigateEnd: () => _setNavigating(false),
+        child: notificationsProvider == null
+            ? listView
+            : RefreshIndicator(
+                onRefresh: () async {
+                  ref.invalidate(notificationsProvider);
+                  try {
+                    await ref.read(notificationsProvider.future);
+                  } catch (_) {
+                    // The list body renders the provider error state after refresh.
+                  }
+                },
+                child: listView,
               ),
-          ],
-        ),
       ),
     );
   }
@@ -134,25 +142,68 @@ class _NotificationsBody extends StatelessWidget {
         }
 
         return Column(
-          children: items.indexed.map((entry) {
-            final index = entry.$1;
-            final item = entry.$2;
+          children: [
+            _NotificationsSummaryCard(
+              unreadCount: items.where((item) => !item.isRead).length,
+            ),
+            SizedBox(height: tokens.space4),
+            ...items.indexed.map((entry) {
+              final index = entry.$1;
+              final item = entry.$2;
 
-            return AppStaggeredReveal(
-              index: index,
-              child: Padding(
-                padding: EdgeInsets.only(bottom: tokens.space3),
-                child: _NotificationCard(
-                  item: item,
-                  isNavigating: isNavigating,
-                  onNavigateStart: onNavigateStart,
-                  onNavigateEnd: onNavigateEnd,
+              return AppStaggeredReveal(
+                index: index,
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: tokens.space3),
+                  child: _NotificationCard(
+                    item: item,
+                    isNavigating: isNavigating,
+                    onNavigateStart: onNavigateStart,
+                    onNavigateEnd: onNavigateEnd,
+                  ),
                 ),
-              ),
-            );
-          }).toList(),
+              );
+            }),
+          ],
         );
       },
+    );
+  }
+}
+
+class _NotificationsSummaryCard extends StatelessWidget {
+  const _NotificationsSummaryCard({required this.unreadCount});
+
+  final int unreadCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    final hasUnread = unreadCount > 0;
+
+    return AppPanel(
+      tone: hasUnread ? AppPanelTone.elevated : AppPanelTone.soft,
+      padding: EdgeInsets.all(tokens.space4),
+      child: Row(
+        children: [
+          Icon(
+            hasUnread
+                ? Icons.notifications_active_outlined
+                : Icons.notifications_none_rounded,
+            color: context.colorScheme.primary,
+          ),
+          SizedBox(width: tokens.space3),
+          Expanded(
+            child: Text(
+              hasUnread
+                  ? context.l10n.notificationsSummaryUnread(unreadCount)
+                  : context.l10n.notificationsSummaryAllRead,
+              style: context.textTheme.titleSmall,
+            ),
+          ),
+          if (hasUnread) const AppStatusBadge(kind: AppStatusKind.unread),
+        ],
+      ),
     );
   }
 }

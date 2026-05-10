@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/extensions/build_context_x.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
+import '../../../core/widgets/app_panel.dart';
 import '../../../core/widgets/app_shell_insets.dart';
-import '../../../core/widgets/app_status_badge.dart';
 import '../../notifications/application/notification_device_token_service.dart';
 import 'my_view_model.dart';
 import 'widgets/my_account_panel.dart';
@@ -36,17 +36,9 @@ class MyScreen extends ConsumerWidget {
           tokens.space8 + context.shellBottomInset,
         ),
         children: [
-          AppEditorialHero(
-            eyebrow: context.l10n.myHeroEyebrow,
-            title: context.l10n.myHeroTitle,
-            description: context.l10n.myHeroDescription,
-            badges: const [
-              AppStatusBadge(kind: AppStatusKind.verified),
-              AppStatusBadge(kind: AppStatusKind.pending),
-            ],
-          ),
-          SizedBox(height: tokens.space5),
           MyAccountPanel(user: user),
+          SizedBox(height: tokens.space4),
+          const _MyQuickActionsPanel(),
           SizedBox(height: tokens.space6),
           MyVerificationSection(
             user: user,
@@ -55,13 +47,6 @@ class MyScreen extends ConsumerWidget {
             hasError: myAsync?.hasError ?? false,
           ),
           SizedBox(height: tokens.space6),
-          OutlinedButton.icon(
-            key: const ValueKey('my-settings-fallback-action'),
-            onPressed: () => context.push('/settings'),
-            icon: const Icon(Icons.tune_rounded),
-            label: Text(context.l10n.settingsOpenAction),
-          ),
-          SizedBox(height: tokens.space4),
           FilledButton(
             onPressed: () async {
               try {
@@ -87,6 +72,92 @@ class MyScreen extends ConsumerWidget {
             child: Text(context.l10n.mySignOut),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _MyQuickActionsPanel extends StatelessWidget {
+  const _MyQuickActionsPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
+    return AppPanel(
+      tone: AppPanelTone.soft,
+      padding: EdgeInsets.all(tokens.space3),
+      child: Row(
+        children: [
+          Expanded(
+            child: _MyQuickActionTile(
+              key: const ValueKey('my-settings-fallback-action'),
+              icon: Icons.tune_rounded,
+              label: context.l10n.settingsOpenAction,
+              onTap: () => context.push('/settings'),
+            ),
+          ),
+          SizedBox(width: tokens.space3),
+          Expanded(
+            child: _MyQuickActionTile(
+              icon: Icons.add_business_rounded,
+              label: context.l10n.sellTitle,
+              onTap: () => context.go('/sell'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MyQuickActionTile extends StatelessWidget {
+  const _MyQuickActionTile({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    final brightness = Theme.of(context).brightness;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(tokens.cardRadius),
+        onTap: onTap,
+        child: Ink(
+          padding: EdgeInsets.symmetric(
+            horizontal: tokens.space3,
+            vertical: tokens.space3,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.bgSurfaceFor(brightness),
+            borderRadius: BorderRadius.circular(tokens.cardRadius),
+            border: Border.all(color: AppColors.borderSoftFor(brightness)),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: context.colorScheme.primary),
+              SizedBox(width: tokens.space2),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.textTheme.labelLarge,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

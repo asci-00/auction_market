@@ -40,7 +40,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Google로 계속하기'), findsOneWidget);
-    expect(find.text('진지한 입찰을 위한 차분한 마켓에 입장하세요.'), findsOneWidget);
+    expect(find.text('로그인하고 입찰과 판매를 이어가세요.'), findsOneWidget);
   });
 
   testWidgets('login screen renders English copy when locale is English', (
@@ -65,7 +65,7 @@ void main() {
 
     expect(find.text('Continue with Google'), findsOneWidget);
     expect(
-      find.text('Enter a quieter marketplace for serious bidding.'),
+      find.text('Sign in to continue bidding and selling.'),
       findsOneWidget,
     );
   });

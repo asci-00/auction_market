@@ -43,14 +43,15 @@ class FirebaseBootstrap {
       }
 
       if (!_appCheckConfigured) {
-        // App Check provider activation can trigger noisy Google broker calls on
-        // debug builds. Keep enforcement on production release builds only.
-        if (config.isProd && kReleaseMode) {
-          await FirebaseAppCheck.instance.activate(
-            providerAndroid: const AndroidPlayIntegrityProvider(),
-            providerApple: const AppleDeviceCheckProvider(),
-          );
-        }
+        final useProductionAppCheck = config.isProd && kReleaseMode;
+        await FirebaseAppCheck.instance.activate(
+          providerAndroid: useProductionAppCheck
+              ? const AndroidPlayIntegrityProvider()
+              : const AndroidDebugProvider(),
+          providerApple: useProductionAppCheck
+              ? const AppleDeviceCheckProvider()
+              : const AppleDebugProvider(),
+        );
         _appCheckConfigured = true;
       }
 

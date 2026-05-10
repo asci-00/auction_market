@@ -6,11 +6,16 @@ import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const _deviceTokenIdCacheKey = 'notifications.deviceTokenId';
+const _deviceTokenRegistrationCacheKey =
+    'notifications.deviceTokenRegistration';
+const _deviceTokenRegistrationAtCacheKey =
+    'notifications.deviceTokenRegistrationAt';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +41,26 @@ void main() {
       NotificationDeviceTokenService.deviceTokenDocumentId('abc/def:ghi'),
       'abc%2Fdef%3Aghi',
     );
+  });
+
+  test('builds stable registration fingerprint from token metadata', () {
+    final fingerprint =
+        NotificationDeviceTokenService.deviceTokenRegistrationFingerprint(
+          tokenId: 'token-id',
+          payload: NotificationDeviceTokenService.buildRegisterPayload(
+            token: 'raw-token',
+            platform: 'ANDROID',
+            appVersion: '1.0.0',
+            locale: 'ko',
+            timezone: 'KST',
+            permissionStatus: 'AUTHORIZED',
+          ),
+        );
+
+    expect(fingerprint, contains('"tokenId":"token-id"'));
+    expect(fingerprint, contains('"platform":"ANDROID"'));
+    expect(fingerprint, contains('"permissionStatus":"AUTHORIZED"'));
+    expect(fingerprint, isNot(contains('raw-token')));
   });
 
   test('maps Firebase authorization states to schema labels', () {
@@ -156,6 +181,69 @@ void main() {
       );
     },
   );
+
+  test('fresh registration cache skips duplicate backend register', () async {
+    final tokenId = NotificationDeviceTokenService.deviceTokenDocumentId(
+      'cached/token',
+    );
+    final fingerprint =
+        NotificationDeviceTokenService.deviceTokenRegistrationFingerprint(
+          tokenId: tokenId,
+          payload: NotificationDeviceTokenService.buildRegisterPayload(
+            token: 'cached/token',
+            platform: 'IOS',
+            appVersion: '1.2.3',
+            locale: WidgetsBinding.instance.platformDispatcher.locale
+                .toLanguageTag(),
+            timezone: DateTime.now().timeZoneName,
+            permissionStatus: 'AUTHORIZED',
+          ),
+        );
+    SharedPreferences.setMockInitialValues({
+      _deviceTokenIdCacheKey: tokenId,
+      _deviceTokenRegistrationCacheKey: fingerprint,
+      _deviceTokenRegistrationAtCacheKey: DateTime.now().millisecondsSinceEpoch,
+    });
+    final sharedPreferences = await SharedPreferences.getInstance();
+    final gateway = _RecordingBackendGateway();
+    final service = _buildService(
+      gateway: gateway,
+      messaging: _FakeFirebaseMessaging(token: 'cached/token'),
+      sharedPreferences: sharedPreferences,
+    );
+
+    await service.syncUserDeviceToken('user-1');
+
+    expect(gateway.registerPayloads, isEmpty);
+    expect(gateway.deactivatePayloads, isEmpty);
+    expect(sharedPreferences.getString(_deviceTokenIdCacheKey), tokenId);
+  });
+
+  test('clearCachedTokenReference removes token registration cache', () async {
+    SharedPreferences.setMockInitialValues({
+      _deviceTokenIdCacheKey: 'cached-token-id',
+      _deviceTokenRegistrationCacheKey: 'cached-fingerprint',
+      _deviceTokenRegistrationAtCacheKey: DateTime.now().millisecondsSinceEpoch,
+    });
+    final sharedPreferences = await SharedPreferences.getInstance();
+    final service = _buildService(
+      gateway: _RecordingBackendGateway(),
+      messaging: _FakeFirebaseMessaging(token: 'token-1'),
+      sharedPreferences: sharedPreferences,
+    );
+
+    await service.clearCachedTokenReference();
+
+    expect(sharedPreferences.getString(_deviceTokenIdCacheKey), isNull);
+    expect(
+      sharedPreferences.getString(_deviceTokenRegistrationCacheKey),
+      isNull,
+    );
+    expect(
+      sharedPreferences.getInt(_deviceTokenRegistrationAtCacheKey),
+      isNull,
+    );
+  });
 
   test('iOS APNs-not-ready path skips registration and deactivation', () async {
     SharedPreferences.setMockInitialValues({

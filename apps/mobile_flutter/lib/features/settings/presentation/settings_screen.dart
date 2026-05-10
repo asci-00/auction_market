@@ -12,9 +12,9 @@ import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
+import '../../../core/widgets/app_panel.dart';
 import '../../../core/widgets/app_shell_insets.dart';
 import '../../notifications/application/notification_device_token_service.dart';
 import '../application/settings_preferences_service.dart';
@@ -33,6 +33,11 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen>
     with WidgetsBindingObserver {
+  final _scrollController = ScrollController();
+  final _notificationsSectionKey = GlobalKey();
+  final _appearanceSectionKey = GlobalKey();
+  final _languageSectionKey = GlobalKey();
+
   bool _isSendingDebugPushProbe = false;
 
   @override
@@ -44,6 +49,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -91,6 +97,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       subtitle: context.l10n.settingsSubtitle,
       showSettingsAction: false,
       body: ListView(
+        controller: _scrollController,
         padding: EdgeInsets.fromLTRB(
           tokens.screenPadding,
           tokens.space3,
@@ -98,109 +105,124 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           tokens.space8 + context.shellBottomInset,
         ),
         children: [
-          AppEditorialHero(
-            eyebrow: context.l10n.settingsHeroEyebrow,
-            title: context.l10n.settingsHeroTitle,
-            description: context.l10n.settingsHeroDescription,
+          _SettingsQuickNav(
+            notificationLabel: context.l10n.settingsQuickNavNotifications,
+            appearanceLabel: context.l10n.settingsQuickNavAppearance,
+            languageLabel: context.l10n.settingsQuickNavLanguage,
+            onOpenNotifications: () =>
+                _scrollToSection(_notificationsSectionKey),
+            onOpenAppearance: () => _scrollToSection(_appearanceSectionKey),
+            onOpenLanguage: () => _scrollToSection(_languageSectionKey),
           ),
-          SizedBox(height: tokens.space6),
-          preferencesAsync.when(
-            data: (preferences) {
-              final effectivePreferences = SettingsPreferences(
-                pushEnabled: _isPushEnabledForUi(
-                  preferences: preferences,
-                  permissionStatus: permissionStatus,
-                ),
-                categories: preferences.categories,
-              );
-              return SettingsNotificationSection(
-                preferences: effectivePreferences,
-                onPushEnabledChanged: (enabled) => _handlePushEnabledChanged(
-                  context,
-                  user.uid,
-                  enabled,
-                  permissionStatus: permissionStatus,
-                ),
-                onCategoryChanged: (category, enabled) =>
-                    _handleCategoryChanged(
-                      context,
-                      user.uid,
-                      category,
-                      enabled,
-                    ),
-                masterTitle: context.l10n.settingsNotificationsMasterTitle,
-                masterDescription:
-                    context.l10n.settingsNotificationsMasterDescription,
-                permissionTitle:
-                    context.l10n.settingsNotificationsPermissionTitle,
-                permissionDescription:
-                    context.l10n.settingsNotificationsPermissionDescription,
-                permissionStatusLabel: _permissionStatusLabel(
-                  context,
-                  permissionStatus,
-                ),
-                openPermissionSettingsLabel:
-                    context.l10n.settingsOpenSystemSettings,
-                onOpenPermissionSettings:
-                    permissionStatus == AuthorizationStatus.denied
-                    ? () => _handleOpenSystemSettingsInternal(
+          SizedBox(height: tokens.space4),
+          KeyedSubtree(
+            key: _notificationsSectionKey,
+            child: preferencesAsync.when(
+              data: (preferences) {
+                final effectivePreferences = SettingsPreferences(
+                  pushEnabled: _isPushEnabledForUi(
+                    preferences: preferences,
+                    permissionStatus: permissionStatus,
+                  ),
+                  categories: preferences.categories,
+                );
+                return SettingsNotificationSection(
+                  preferences: effectivePreferences,
+                  onPushEnabledChanged: (enabled) => _handlePushEnabledChanged(
+                    context,
+                    user.uid,
+                    enabled,
+                    permissionStatus: permissionStatus,
+                  ),
+                  onCategoryChanged: (category, enabled) =>
+                      _handleCategoryChanged(
                         context,
-                        showResultToast: true,
-                      )
-                    : null,
-                categoryTitle:
-                    context.l10n.settingsNotificationsCategoriesTitle,
-                categoryDescription:
-                    context.l10n.settingsNotificationsCategoriesDescription,
-                categoryLabels: {
-                  SettingsNotificationCategory.auctionActivity:
-                      context.l10n.settingsCategoryAuctionActivity,
-                  SettingsNotificationCategory.orderPayment:
-                      context.l10n.settingsCategoryOrderPayment,
-                  SettingsNotificationCategory.shippingAndReceipt:
-                      context.l10n.settingsCategoryShippingAndReceipt,
-                  SettingsNotificationCategory.system:
-                      context.l10n.settingsCategorySystem,
-                },
-                categoryDescriptions: {
-                  SettingsNotificationCategory.auctionActivity:
-                      context.l10n.settingsCategoryAuctionActivityDescription,
-                  SettingsNotificationCategory.orderPayment:
-                      context.l10n.settingsCategoryOrderPaymentDescription,
-                  SettingsNotificationCategory.shippingAndReceipt: context
-                      .l10n
-                      .settingsCategoryShippingAndReceiptDescription,
-                  SettingsNotificationCategory.system:
-                      context.l10n.settingsCategorySystemDescription,
-                },
-              );
-            },
-            loading: () => const _SettingsNotificationLoadingSection(),
-            error: (_, __) => AppEmptyState(
-              icon: Icons.settings_input_antenna_outlined,
-              title: context.l10n.settingsUnavailableTitle,
-              description: context.l10n.settingsUnavailableDescription,
+                        user.uid,
+                        category,
+                        enabled,
+                      ),
+                  masterTitle: context.l10n.settingsNotificationsMasterTitle,
+                  masterDescription:
+                      context.l10n.settingsNotificationsMasterDescription,
+                  permissionTitle:
+                      context.l10n.settingsNotificationsPermissionTitle,
+                  permissionDescription:
+                      context.l10n.settingsNotificationsPermissionDescription,
+                  permissionStatusLabel: _permissionStatusLabel(
+                    context,
+                    permissionStatus,
+                  ),
+                  openPermissionSettingsLabel:
+                      context.l10n.settingsOpenSystemSettings,
+                  onOpenPermissionSettings:
+                      permissionStatus == AuthorizationStatus.denied
+                      ? () => _handleOpenSystemSettingsInternal(
+                          context,
+                          showResultToast: true,
+                        )
+                      : null,
+                  categoryTitle:
+                      context.l10n.settingsNotificationsCategoriesTitle,
+                  categoryDescription:
+                      context.l10n.settingsNotificationsCategoriesDescription,
+                  categoryLabels: {
+                    SettingsNotificationCategory.auctionActivity:
+                        context.l10n.settingsCategoryAuctionActivity,
+                    SettingsNotificationCategory.orderPayment:
+                        context.l10n.settingsCategoryOrderPayment,
+                    SettingsNotificationCategory.shippingAndReceipt:
+                        context.l10n.settingsCategoryShippingAndReceipt,
+                    SettingsNotificationCategory.system:
+                        context.l10n.settingsCategorySystem,
+                  },
+                  categoryDescriptions: {
+                    SettingsNotificationCategory.auctionActivity:
+                        context.l10n.settingsCategoryAuctionActivityDescription,
+                    SettingsNotificationCategory.orderPayment:
+                        context.l10n.settingsCategoryOrderPaymentDescription,
+                    SettingsNotificationCategory.shippingAndReceipt: context
+                        .l10n
+                        .settingsCategoryShippingAndReceiptDescription,
+                    SettingsNotificationCategory.system:
+                        context.l10n.settingsCategorySystemDescription,
+                  },
+                );
+              },
+              loading: () => const _SettingsNotificationLoadingSection(),
+              error: (_, __) => AppEmptyState(
+                icon: Icons.settings_input_antenna_outlined,
+                title: context.l10n.settingsUnavailableTitle,
+                description: context.l10n.settingsUnavailableDescription,
+              ),
             ),
           ),
           SizedBox(height: tokens.space6),
-          SettingsThemeSection(
-            sectionTitle: context.l10n.settingsAppearanceTitle,
-            groupValue: themeMode,
-            systemTitle: context.l10n.settingsThemeSystemTitle,
-            lightTitle: context.l10n.settingsThemeLightTitle,
-            darkTitle: context.l10n.settingsThemeDarkTitle,
-            onChanged: (themeMode) =>
-                _handleThemeModeChanged(context, ref, themeMode),
+          KeyedSubtree(
+            key: _appearanceSectionKey,
+            child: SettingsThemeSection(
+              sectionTitle: context.l10n.settingsAppearanceTitle,
+              groupValue: themeMode,
+              systemTitle: context.l10n.settingsThemeSystemTitle,
+              lightTitle: context.l10n.settingsThemeLightTitle,
+              darkTitle: context.l10n.settingsThemeDarkTitle,
+              onChanged: (themeMode) =>
+                  _handleThemeModeChanged(context, ref, themeMode),
+            ),
           ),
           SizedBox(height: tokens.space6),
-          SettingsLanguageSection(
-            sectionTitle: context.l10n.settingsLanguageTitle,
-            sectionDescription: context.l10n.settingsLanguageDescription,
-            currentLanguageLabel: context.l10n.settingsLanguageCurrentLabel,
-            supportedLanguageLabel: context.l10n.settingsLanguageSupportedLabel,
-            supportedLanguageValue: context.l10n.settingsLanguageSupportedValue,
-            koreanLanguageLabel: context.l10n.settingsLanguageKoreanLabel,
-            englishLanguageLabel: context.l10n.settingsLanguageEnglishLabel,
+          KeyedSubtree(
+            key: _languageSectionKey,
+            child: SettingsLanguageSection(
+              sectionTitle: context.l10n.settingsLanguageTitle,
+              sectionDescription: context.l10n.settingsLanguageDescription,
+              currentLanguageLabel: context.l10n.settingsLanguageCurrentLabel,
+              supportedLanguageLabel:
+                  context.l10n.settingsLanguageSupportedLabel,
+              supportedLanguageValue:
+                  context.l10n.settingsLanguageSupportedValue,
+              koreanLanguageLabel: context.l10n.settingsLanguageKoreanLabel,
+              englishLanguageLabel: context.l10n.settingsLanguageEnglishLabel,
+            ),
           ),
           SizedBox(height: tokens.space6),
           SettingsAppInfoSection(
@@ -239,6 +261,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           ),
         ],
       ),
+    );
+  }
+
+  void _scrollToSection(GlobalKey key) {
+    final context = key.currentContext;
+    if (context == null) {
+      return;
+    }
+
+    Scrollable.ensureVisible(
+      context,
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOutCubic,
+      alignment: 0.08,
     );
   }
 
@@ -659,6 +695,76 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           error: error,
           stackTrace: stackTrace,
         );
+  }
+}
+
+class _SettingsQuickNav extends StatelessWidget {
+  const _SettingsQuickNav({
+    required this.notificationLabel,
+    required this.appearanceLabel,
+    required this.languageLabel,
+    required this.onOpenNotifications,
+    required this.onOpenAppearance,
+    required this.onOpenLanguage,
+  });
+
+  final String notificationLabel;
+  final String appearanceLabel;
+  final String languageLabel;
+  final VoidCallback onOpenNotifications;
+  final VoidCallback onOpenAppearance;
+  final VoidCallback onOpenLanguage;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
+    return AppPanel(
+      tone: AppPanelTone.soft,
+      padding: EdgeInsets.all(tokens.space3),
+      child: Wrap(
+        spacing: tokens.space2,
+        runSpacing: tokens.space2,
+        children: [
+          _SettingsQuickNavChip(
+            icon: Icons.notifications_active_outlined,
+            label: notificationLabel,
+            onTap: onOpenNotifications,
+          ),
+          _SettingsQuickNavChip(
+            icon: Icons.contrast_rounded,
+            label: appearanceLabel,
+            onTap: onOpenAppearance,
+          ),
+          _SettingsQuickNavChip(
+            icon: Icons.language_rounded,
+            label: languageLabel,
+            onTap: onOpenLanguage,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsQuickNavChip extends StatelessWidget {
+  const _SettingsQuickNavChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionChip(
+      avatar: Icon(icon, size: 18),
+      label: Text(label),
+      onPressed: onTap,
+    );
   }
 }
 

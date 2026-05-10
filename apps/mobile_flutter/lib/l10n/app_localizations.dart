@@ -245,13 +245,13 @@ abstract class AppLocalizations {
   /// No description provided for @homeHeroTitle.
   ///
   /// In en, this message translates to:
-  /// **'Move quickly on trusted auctions without losing the calm.'**
+  /// **'Start with the auctions closing today.'**
   String get homeHeroTitle;
 
   /// No description provided for @homeHeroDescription.
   ///
   /// In en, this message translates to:
-  /// **'Track the pieces ending first, the sellers drawing momentum, and the categories worth revisiting today.'**
+  /// **'Ending-soon listings, popular auctions, and category picks are gathered in one place.'**
   String get homeHeroDescription;
 
   /// No description provided for @homeHeroChipUrgency.
@@ -349,24 +349,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search'**
   String get searchTitle;
-
-  /// No description provided for @searchHeroEyebrow.
-  ///
-  /// In en, this message translates to:
-  /// **'Refined discovery'**
-  String get searchHeroEyebrow;
-
-  /// No description provided for @searchHeroTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Search by taste, not only by keywords.'**
-  String get searchHeroTitle;
-
-  /// No description provided for @searchHeroDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Use focused filters to narrow down price, urgency, and instant-purchase availability in one pass.'**
-  String get searchHeroDescription;
 
   /// No description provided for @searchFieldLabel.
   ///
@@ -497,13 +479,13 @@ abstract class AppLocalizations {
   /// No description provided for @loginHeroTitle.
   ///
   /// In en, this message translates to:
-  /// **'Enter a quieter marketplace for serious bidding.'**
+  /// **'Sign in to continue bidding and selling.'**
   String get loginHeroTitle;
 
   /// No description provided for @loginHeroDescription.
   ///
   /// In en, this message translates to:
-  /// **'Sign in with a supported provider to restore your session, inbox, orders, and selling tools securely.'**
+  /// **'Use Apple or Google to restore orders, notifications, and selling tools securely.'**
   String get loginHeroDescription;
 
   /// No description provided for @loginContinueGoogle.
@@ -577,24 +559,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Activity'**
   String get activityTitle;
-
-  /// No description provided for @activityHeroEyebrow.
-  ///
-  /// In en, this message translates to:
-  /// **'At-a-glance status'**
-  String get activityHeroEyebrow;
-
-  /// No description provided for @activityHeroTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep payment, shipping, and inbox movement in one place.'**
-  String get activityHeroTitle;
-
-  /// No description provided for @activityHeroDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Jump to the next operational step quickly instead of hunting across screens.'**
-  String get activityHeroDescription;
 
   /// No description provided for @activityOrdersTitle.
   ///
@@ -749,7 +713,7 @@ abstract class AppLocalizations {
   /// No description provided for @auctionDetailSellerDescription.
   ///
   /// In en, this message translates to:
-  /// **'Trust signals, category fit, and shipping readiness stay visible before you place a bid.'**
+  /// **'Review the seller\'s basic trust signals and trade readiness.'**
   String get auctionDetailSellerDescription;
 
   /// No description provided for @auctionDetailDescriptionTitle.
@@ -1154,24 +1118,6 @@ abstract class AppLocalizations {
   /// **'Notifications'**
   String get notificationsTitle;
 
-  /// No description provided for @notificationsHeroEyebrow.
-  ///
-  /// In en, this message translates to:
-  /// **'Inbox'**
-  String get notificationsHeroEyebrow;
-
-  /// No description provided for @notificationsHeroTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Important changes, without noisy blue alerts.'**
-  String get notificationsHeroTitle;
-
-  /// No description provided for @notificationsHeroDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Unread updates stay visible so you can move straight to the next relevant screen.'**
-  String get notificationsHeroDescription;
-
   /// No description provided for @notificationsDestinationAuction.
   ///
   /// In en, this message translates to:
@@ -1214,6 +1160,18 @@ abstract class AppLocalizations {
   /// **'Bid, payment, and shipment updates will land here as soon as activity begins.'**
   String get notificationsEmptyDescription;
 
+  /// No description provided for @notificationsSummaryUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} unread notifications'**
+  String notificationsSummaryUnread(int count);
+
+  /// No description provided for @notificationsSummaryAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'All notifications are read.'**
+  String get notificationsSummaryAllRead;
+
   /// No description provided for @notificationsOpenAction.
   ///
   /// In en, this message translates to:
@@ -1235,26 +1193,26 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Keep alerts and app information within reach.'**
+  /// **'Manage alerts, appearance, and app information.'**
   String get settingsSubtitle;
 
-  /// No description provided for @settingsHeroEyebrow.
+  /// No description provided for @settingsQuickNavNotifications.
   ///
   /// In en, this message translates to:
-  /// **'Preferences'**
-  String get settingsHeroEyebrow;
+  /// **'Go to notifications'**
+  String get settingsQuickNavNotifications;
 
-  /// No description provided for @settingsHeroTitle.
+  /// No description provided for @settingsQuickNavAppearance.
   ///
   /// In en, this message translates to:
-  /// **'Shape alerts around the moments that actually need your attention.'**
-  String get settingsHeroTitle;
+  /// **'Go to appearance'**
+  String get settingsQuickNavAppearance;
 
-  /// No description provided for @settingsHeroDescription.
+  /// No description provided for @settingsQuickNavLanguage.
   ///
   /// In en, this message translates to:
-  /// **'Notification controls should feel operational, clear, and easy to revisit from anywhere in the app.'**
-  String get settingsHeroDescription;
+  /// **'Go to language'**
+  String get settingsQuickNavLanguage;
 
   /// No description provided for @settingsSignedOutTitle.
   ///
@@ -1541,7 +1499,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAppInfoDescription.
   ///
   /// In en, this message translates to:
-  /// **'Version, licenses, and environment details stay tucked into a quieter section.'**
+  /// **'Review version, license, and environment details.'**
   String get settingsAppInfoDescription;
 
   /// No description provided for @settingsVersionLabel.
@@ -1634,24 +1592,6 @@ abstract class AppLocalizations {
   /// **'My'**
   String get myTitle;
 
-  /// No description provided for @myHeroEyebrow.
-  ///
-  /// In en, this message translates to:
-  /// **'Profile and trust'**
-  String get myHeroEyebrow;
-
-  /// No description provided for @myHeroTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep your profile ready for buying and selling.'**
-  String get myHeroTitle;
-
-  /// No description provided for @myHeroDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Verification, seller momentum, and account preferences should feel close at hand, not buried in settings.'**
-  String get myHeroDescription;
-
   /// No description provided for @mySignedInAs.
   ///
   /// In en, this message translates to:
@@ -1721,13 +1661,13 @@ abstract class AppLocalizations {
   /// No description provided for @sellHeroTitle.
   ///
   /// In en, this message translates to:
-  /// **'Shape a listing that feels deliberate before it goes live.'**
+  /// **'Prepare an item for auction.'**
   String get sellHeroTitle;
 
   /// No description provided for @sellHeroDescription.
   ///
   /// In en, this message translates to:
-  /// **'Walk through the item story, pricing, schedule, and images with a cleaner publishing rhythm.'**
+  /// **'Fill in category, price, schedule, and images in order. Drafts are saved as you go.'**
   String get sellHeroDescription;
 
   /// No description provided for @sellPolicyTitle.
@@ -1763,7 +1703,7 @@ abstract class AppLocalizations {
   /// No description provided for @sellStepDetailsDescription.
   ///
   /// In en, this message translates to:
-  /// **'Title, condition, tags, and description should make the listing easy to trust at a glance.'**
+  /// **'Enter the title, condition, tags, and description accurately.'**
   String get sellStepDetailsDescription;
 
   /// No description provided for @sellStepPricingTitle.
@@ -1775,7 +1715,7 @@ abstract class AppLocalizations {
   /// No description provided for @sellStepPricingDescription.
   ///
   /// In en, this message translates to:
-  /// **'Start price, buy-now price, and closing time need to communicate urgency without confusion.'**
+  /// **'Set the start price, buy-now price, and closing time together.'**
   String get sellStepPricingDescription;
 
   /// No description provided for @sellStepImagesTitle.
@@ -1787,7 +1727,7 @@ abstract class AppLocalizations {
   /// No description provided for @sellStepImagesDescription.
   ///
   /// In en, this message translates to:
-  /// **'Main photos and any required authentication images should feel complete before publishing.'**
+  /// **'Add main photos and any required authentication images before publishing.'**
   String get sellStepImagesDescription;
 
   /// No description provided for @sellStepPublishTitle.
@@ -1799,7 +1739,7 @@ abstract class AppLocalizations {
   /// No description provided for @sellStepPublishDescription.
   ///
   /// In en, this message translates to:
-  /// **'Check the story, pricing, and urgency cues together before you send the auction live.'**
+  /// **'Review the item details, price, and schedule before publishing.'**
   String get sellStepPublishDescription;
 
   /// No description provided for @sellProgressTitle.
@@ -1877,7 +1817,7 @@ abstract class AppLocalizations {
   /// No description provided for @sellDraftStatusNotSavedDescription.
   ///
   /// In en, this message translates to:
-  /// **'Save the draft once the item basics feel ready to keep your progress anchored.'**
+  /// **'Enter the item basics, then save a draft.'**
   String get sellDraftStatusNotSavedDescription;
 
   /// No description provided for @sellDraftStatusUnsaved.
@@ -2363,7 +2303,7 @@ abstract class AppLocalizations {
   /// No description provided for @ordersPaymentSheetReadyDescription.
   ///
   /// In en, this message translates to:
-  /// **'This order already has the payment return path prepared. Review the session details before you continue outside the app.'**
+  /// **'This order is ready to open the Toss checkout flow. Review the session details before continuing outside the app.'**
   String get ordersPaymentSheetReadyDescription;
 
   /// No description provided for @ordersPaymentSheetBlockedDescription.
@@ -2381,7 +2321,7 @@ abstract class AppLocalizations {
   /// No description provided for @ordersPaymentSheetStatusReady.
   ///
   /// In en, this message translates to:
-  /// **'Return path prepared'**
+  /// **'Toss checkout ready'**
   String get ordersPaymentSheetStatusReady;
 
   /// No description provided for @ordersPaymentSheetStatusBlocked.
