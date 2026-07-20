@@ -258,9 +258,27 @@ class ForegroundLocalNotificationBridge {
         },
       );
     } on MissingPluginException {
+      _initialized = false;
+      return false;
+    } on PlatformException {
+      _initialized = false;
       return false;
     }
     _initialized = initialized ?? true;
+    if (_initialized) {
+      try {
+        final launchDetails = await _plugin.getNotificationAppLaunchDetails();
+        if (launchDetails?.didNotificationLaunchApp ?? false) {
+          onPayload(launchDetails?.notificationResponse?.payload);
+        }
+      } on MissingPluginException {
+        _initialized = false;
+        return false;
+      } on PlatformException {
+        _initialized = false;
+        return false;
+      }
+    }
     return _initialized;
   }
 
@@ -289,6 +307,9 @@ class ForegroundLocalNotificationBridge {
         payload: payload.toLocalNotificationPayload(),
       );
     } on MissingPluginException {
+      _initialized = false;
+      return false;
+    } on PlatformException {
       _initialized = false;
       return false;
     }
@@ -356,6 +377,13 @@ class NotificationPushService {
     _refreshRouteStateIfCurrentRouteMatches(router, payload);
 
     if (await _showForegroundSystemNotificationIfAvailable(payload)) {
+      return;
+    }
+
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      logInfo(
+        'skip foreground SnackBar presentation: iOS native alert enabled key=${payload.deduplicationKey}',
+      );
       return;
     }
 

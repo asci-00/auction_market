@@ -150,6 +150,8 @@ class _SellerSummaryPanel extends StatelessWidget {
     required this.sellerId,
   });
 
+  static const _narrowLayoutThreshold = 300.0;
+
   final String description;
   final String? sellerId;
 
@@ -182,7 +184,7 @@ class _SellerSummaryPanel extends StatelessWidget {
             ],
           );
 
-          if (constraints.maxWidth < 300) {
+          if (constraints.maxWidth < _narrowLayoutThreshold) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

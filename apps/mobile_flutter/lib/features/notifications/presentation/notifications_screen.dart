@@ -242,20 +242,42 @@ class _NotificationCard extends ConsumerWidget {
                   return;
                 }
                 onNavigateStart();
-                if (!isRead) {
-                  try {
-                    await ref
-                        .read(backendGatewayProvider)
-                        .markNotificationRead(notificationId: item.id);
-                    sendToEventBus(BackendRefreshEvent.notificationsChanged);
-                  } catch (_) {
-                    // Keep navigation responsive even if the read marker fails.
+                var navigationStarted = false;
+                try {
+                  if (!isRead) {
+                    try {
+                      await ref
+                          .read(backendGatewayProvider)
+                          .markNotificationRead(notificationId: item.id);
+                      sendToEventBus(BackendRefreshEvent.notificationsChanged);
+                    } catch (_) {
+                      // Keep navigation responsive even if the read marker fails.
+                    }
+                  }
+
+                  if (!context.mounted) return;
+                  final navigation = context.push(
+                    resolveAppDeepLinkPath(deeplink),
+                  );
+                  onNavigateEnd();
+                  navigationStarted = true;
+                  await navigation;
+                } catch (error, stackTrace) {
+                  FlutterError.reportError(
+                    FlutterErrorDetails(
+                      exception: error,
+                      stack: stackTrace,
+                      library: 'notifications_screen',
+                      context: ErrorDescription(
+                        'while navigating from notification deeplink',
+                      ),
+                    ),
+                  );
+                } finally {
+                  if (!navigationStarted) {
+                    onNavigateEnd();
                   }
                 }
-
-                onNavigateEnd();
-                if (!context.mounted) return;
-                context.push(resolveAppDeepLinkPath(deeplink));
               },
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -48,7 +48,7 @@ final notificationDeviceTokenLifecycleProvider = Provider<void>((ref) {
 
   final service = ref.watch(notificationDeviceTokenServiceProvider);
   String? previousUserId = ref.watch(firebaseAuthProvider).currentUser?.uid;
-  Timer? transientRetryTimer;
+  final transientRetryTimers = <String, Timer>{};
 
   Future<void> runLifecycleTask(
     Future<void> Function() operation, {
@@ -60,8 +60,10 @@ final notificationDeviceTokenLifecycleProvider = Provider<void>((ref) {
     } catch (error, stackTrace) {
       if (_isTransientBackendError(error)) {
         if (allowRetry) {
-          transientRetryTimer?.cancel();
-          transientRetryTimer = Timer(_transientRetryDelay, () {
+          final retryContext = context;
+          transientRetryTimers[retryContext]?.cancel();
+          transientRetryTimers[retryContext] = Timer(_transientRetryDelay, () {
+            transientRetryTimers.remove(retryContext);
             unawaited(
               runLifecycleTask(
                 operation,
@@ -148,7 +150,10 @@ final notificationDeviceTokenLifecycleProvider = Provider<void>((ref) {
   );
 
   ref.onDispose(() {
-    transientRetryTimer?.cancel();
+    for (final timer in transientRetryTimers.values) {
+      timer.cancel();
+    }
+    transientRetryTimers.clear();
     authSubscription.cancel();
     tokenRefreshSubscription.cancel();
     appLifecycleListener.dispose();

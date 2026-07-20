@@ -115,18 +115,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             onOpenLanguage: () => _scrollToSection(_languageSectionKey),
           ),
           SizedBox(height: tokens.space4),
-          KeyedSubtree(
-            key: _notificationsSectionKey,
-            child: preferencesAsync.when(
-              data: (preferences) {
-                final effectivePreferences = SettingsPreferences(
-                  pushEnabled: _isPushEnabledForUi(
-                    preferences: preferences,
-                    permissionStatus: permissionStatus,
-                  ),
-                  categories: preferences.categories,
-                );
-                return SettingsNotificationSection(
+          preferencesAsync.when(
+            data: (preferences) {
+              final effectivePreferences = SettingsPreferences(
+                pushEnabled: _isPushEnabledForUi(
+                  preferences: preferences,
+                  permissionStatus: permissionStatus,
+                ),
+                categories: preferences.categories,
+              );
+              return KeyedSubtree(
+                key: _notificationsSectionKey,
+                child: SettingsNotificationSection(
                   preferences: effectivePreferences,
                   onPushEnabledChanged: (enabled) => _handlePushEnabledChanged(
                     context,
@@ -186,14 +186,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                     SettingsNotificationCategory.system:
                         context.l10n.settingsCategorySystemDescription,
                   },
-                );
-              },
-              loading: () => const _SettingsNotificationLoadingSection(),
-              error: (_, __) => AppEmptyState(
-                icon: Icons.settings_input_antenna_outlined,
-                title: context.l10n.settingsUnavailableTitle,
-                description: context.l10n.settingsUnavailableDescription,
-              ),
+                ),
+              );
+            },
+            loading: () => const _SettingsNotificationLoadingSection(),
+            error: (_, __) => AppEmptyState(
+              icon: Icons.settings_input_antenna_outlined,
+              title: context.l10n.settingsUnavailableTitle,
+              description: context.l10n.settingsUnavailableDescription,
             ),
           ),
           SizedBox(height: tokens.space6),

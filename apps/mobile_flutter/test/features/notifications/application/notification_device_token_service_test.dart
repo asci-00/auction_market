@@ -219,6 +219,45 @@ void main() {
     expect(sharedPreferences.getString(_deviceTokenIdCacheKey), tokenId);
   });
 
+  test('stale registration cache triggers backend register', () async {
+    final tokenId = NotificationDeviceTokenService.deviceTokenDocumentId(
+      'cached/token',
+    );
+    final fingerprint =
+        NotificationDeviceTokenService.deviceTokenRegistrationFingerprint(
+          tokenId: tokenId,
+          payload: NotificationDeviceTokenService.buildRegisterPayload(
+            token: 'cached/token',
+            platform: 'IOS',
+            appVersion: '1.2.3',
+            locale: WidgetsBinding.instance.platformDispatcher.locale
+                .toLanguageTag(),
+            timezone: DateTime.now().timeZoneName,
+            permissionStatus: 'AUTHORIZED',
+          ),
+        );
+    SharedPreferences.setMockInitialValues({
+      _deviceTokenIdCacheKey: tokenId,
+      _deviceTokenRegistrationCacheKey: fingerprint,
+      _deviceTokenRegistrationAtCacheKey: DateTime.now()
+          .subtract(const Duration(hours: 25))
+          .millisecondsSinceEpoch,
+    });
+    final sharedPreferences = await SharedPreferences.getInstance();
+    final gateway = _RecordingBackendGateway();
+    final service = _buildService(
+      gateway: gateway,
+      messaging: _FakeFirebaseMessaging(token: 'cached/token'),
+      sharedPreferences: sharedPreferences,
+    );
+
+    await service.syncUserDeviceToken('user-1');
+
+    expect(gateway.registerPayloads, hasLength(1));
+    expect(gateway.deactivatePayloads, isEmpty);
+    expect(sharedPreferences.getString(_deviceTokenIdCacheKey), tokenId);
+  });
+
   test('clearCachedTokenReference removes token registration cache', () async {
     SharedPreferences.setMockInitialValues({
       _deviceTokenIdCacheKey: 'cached-token-id',

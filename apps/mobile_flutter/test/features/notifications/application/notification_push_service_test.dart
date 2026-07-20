@@ -1,5 +1,6 @@
 import 'package:auction_market_mobile/features/notifications/application/notification_push_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -242,6 +243,38 @@ void main() {
         expect(refreshedRoutes, ['/orders/order-123']);
       },
     );
+
+    test('skips SnackBar fallback on iOS foreground native alerts', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      final logMessages = <String>[];
+      final service = NotificationPushService(
+        markNotificationRead: ({required notificationId}) async {},
+        logInfoMessage: logMessages.add,
+        logErrorMessage: ({required message, error, stackTrace}) {},
+        scaffoldMessengerKey: GlobalKey<ScaffoldMessengerState>(),
+        resolveCurrentRoutePath: (_) => '/orders/order-999',
+        showForegroundSystemNotification: (_) async => false,
+      );
+
+      final router = _buildTestRouter();
+      addTearDown(router.dispose);
+
+      final message = RemoteMessage.fromMap({
+        'messageId': 'message-foreground-ios-1',
+        'data': {'deeplink': 'app://orders/order-123'},
+        'sentTime': DateTime.utc(2026, 4, 11, 8).millisecondsSinceEpoch,
+      });
+
+      await service.handleForegroundMessage(router, message);
+
+      expect(
+        logMessages,
+        contains(
+          contains('skip foreground SnackBar presentation: iOS native alert'),
+        ),
+      );
+    });
 
     test('keeps opened-message dedupe for mark-read and routing', () async {
       final markedReadIds = <String>[];

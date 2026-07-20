@@ -104,6 +104,7 @@
 - Loading overlays must use the shared `loading.lottie` asset instead of ad hoc spinners for high-latency blocking actions.
 
 ### Editorial Hero
+
 - Use `AppEditorialHero` only when a screen needs first-visit orientation, brand tone, or a high-value conversion setup such as home, login, or the sell flow.
 - Do not use `AppEditorialHero` as a default page header for familiar utility screens. Search fields, filters, settings groups, inbox rows, profile panels, and activity cards should carry their own context.
 - Keep hero copy short and concrete. Avoid explaining what the visible UI already teaches through labels, section headings, chips, or cards.
@@ -139,6 +140,7 @@
 - Notification entry point stays visible.
 
 ### Search
+
 - Sticky search field.
 - Filter chips for category, price, end time, and buy now.
 - Results can switch between large cards and compact list if needed.
@@ -168,11 +170,13 @@
 - Use compact cards and section copy instead of a hero; users learn this screen through the buyer, seller, and notification queues.
 
 ### Notifications
+
 - Inbox rows show title, body, time, and next destination.
 - Unread state should be visible without bright blue dots.
 - Do not add an editorial intro above the inbox. Empty-state copy is enough when there are no notifications.
 
 ### My
+
 - Show profile, verification states, seller grade summary, and settings.
 - Keep settings secondary. Surface trust and selling readiness first.
 - Start with account and verification panels rather than a hero.
