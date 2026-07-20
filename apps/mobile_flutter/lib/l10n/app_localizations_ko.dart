@@ -82,11 +82,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeHeroEyebrow => '프리미엄 리셀';
 
   @override
-  String get homeHeroTitle => '차분한 탐색감 속에서 신뢰할 수 있는 경매를 빠르게 잡아보세요.';
+  String get homeHeroTitle => '오늘 마감되는 경매를 먼저 확인하세요.';
 
   @override
-  String get homeHeroDescription =>
-      '가장 먼저 끝나는 경매, 주목이 몰리는 셀러, 오늘 다시 볼 만한 카테고리를 한눈에 정리합니다.';
+  String get homeHeroDescription => '마감 임박, 인기 리스팅, 카테고리별 추천을 한 화면에 모았습니다.';
 
   @override
   String get homeHeroChipUrgency => '시간형 입찰';
@@ -136,16 +135,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get searchTitle => '검색';
-
-  @override
-  String get searchHeroEyebrow => '정제된 탐색';
-
-  @override
-  String get searchHeroTitle => '키워드만이 아니라 취향으로도 탐색해 보세요.';
-
-  @override
-  String get searchHeroDescription =>
-      '가격, 마감 시점, 즉시 구매 가능 여부를 한 번에 좁혀 원하는 경매를 빠르게 찾습니다.';
 
   @override
   String get searchFieldLabel => '검색어';
@@ -211,11 +200,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get loginHeroEyebrow => '안전한 시작';
 
   @override
-  String get loginHeroTitle => '진지한 입찰을 위한 차분한 마켓에 입장하세요.';
+  String get loginHeroTitle => '로그인하고 입찰과 판매를 이어가세요.';
 
   @override
   String get loginHeroDescription =>
-      '지원되는 로그인으로 세션, 주문, 알림함, 판매 도구를 안전하게 이어받을 수 있습니다.';
+      'Apple 또는 Google 계정으로 주문, 알림, 판매 도구를 안전하게 불러옵니다.';
 
   @override
   String get loginContinueGoogle => 'Google로 계속하기';
@@ -255,16 +244,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get activityTitle => '활동';
-
-  @override
-  String get activityHeroEyebrow => '상태 한눈에 보기';
-
-  @override
-  String get activityHeroTitle => '결제, 배송, 알림 흐름을 한 곳에서 정리하세요.';
-
-  @override
-  String get activityHeroDescription =>
-      '화면을 오가며 찾기보다 지금 해야 할 다음 단계를 바로 여는 흐름에 집중합니다.';
 
   @override
   String get activityOrdersTitle => '주문과 결제';
@@ -353,15 +332,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get auctionDetailSellerSummary => '셀러 요약';
 
   @override
-  String get auctionDetailSellerDescription =>
-      '입찰 전에도 신뢰 신호, 카테고리 적합성, 배송 준비 상태를 바로 확인할 수 있어야 합니다.';
+  String get auctionDetailSellerDescription => '셀러의 기본 신뢰 신호와 거래 준비 상태를 확인하세요.';
 
   @override
   String get auctionDetailDescriptionTitle => '상품 상세';
 
   @override
   String get auctionDetailDescriptionSubtitle =>
-      '상태, 카테고리 맥락, 셀러 메모를 액션 전에 바로 확인할 수 있어야 합니다.';
+      '상태, 카테고리, 셀러 메모를 입찰 전에 확인하세요.';
 
   @override
   String get auctionDetailDescriptionFallback =>
@@ -580,16 +558,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notificationsTitle => '알림';
 
   @override
-  String get notificationsHeroEyebrow => '알림함';
-
-  @override
-  String get notificationsHeroTitle => '과한 강조 없이 중요한 변화만 분명하게 보여줍니다.';
-
-  @override
-  String get notificationsHeroDescription =>
-      '읽지 않은 업데이트를 또렷하게 남겨 다음 액션으로 바로 이동할 수 있게 합니다.';
-
-  @override
   String get notificationsDestinationAuction => '경매 상세로 이동';
 
   @override
@@ -612,6 +580,14 @@ class AppLocalizationsKo extends AppLocalizations {
       '입찰, 결제, 배송 업데이트가 생기면 이곳에 차곡차곡 쌓입니다.';
 
   @override
+  String notificationsSummaryUnread(int count) {
+    return '읽지 않은 알림 $count개';
+  }
+
+  @override
+  String get notificationsSummaryAllRead => '모든 알림을 확인했습니다.';
+
+  @override
   String get notificationsOpenAction => '열기';
 
   @override
@@ -621,17 +597,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsTitle => '설정';
 
   @override
-  String get settingsSubtitle => '알림과 앱 정보를 가까운 곳에서 관리합니다.';
+  String get settingsSubtitle => '알림, 표시 방식, 앱 정보를 관리합니다.';
 
   @override
-  String get settingsHeroEyebrow => '환경 설정';
+  String get settingsQuickNavNotifications => '알림으로 이동';
 
   @override
-  String get settingsHeroTitle => '정말 필요한 순간에만 알림이 도착하도록 흐름을 다듬으세요.';
+  String get settingsQuickNavAppearance => '화면 모드로 이동';
 
   @override
-  String get settingsHeroDescription =>
-      '알림 제어는 복잡한 설정 트리보다 운영 화면에 가까운 감각으로 보여야 합니다.';
+  String get settingsQuickNavLanguage => '언어로 이동';
 
   @override
   String get settingsSignedOutTitle => '로그인 후 설정을 관리할 수 있습니다';
@@ -791,8 +766,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsAppInfoTitle => '앱 정보';
 
   @override
-  String get settingsAppInfoDescription =>
-      '버전, 라이선스, 실행 환경 정보는 조용한 정보 섹션으로 분리합니다.';
+  String get settingsAppInfoDescription => '버전, 라이선스, 실행 환경 정보를 확인합니다.';
 
   @override
   String get settingsVersionLabel => '버전';
@@ -848,16 +822,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get myTitle => '마이';
 
   @override
-  String get myHeroEyebrow => '프로필과 신뢰';
-
-  @override
-  String get myHeroTitle => '구매와 판매를 위한 프로필 상태를 가까이 두세요.';
-
-  @override
-  String get myHeroDescription =>
-      '검증 상태, 셀러 신뢰도, 계정 선호 설정이 깊은 설정 화면에 숨지 않도록 정리합니다.';
-
-  @override
   String get mySignedInAs => '로그인 계정';
 
   @override
@@ -894,11 +858,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sellHeroEyebrow => '셀러 스튜디오';
 
   @override
-  String get sellHeroTitle => '라이브 전부터 완성도 있는 리스팅 흐름을 준비하세요.';
+  String get sellHeroTitle => '판매할 상품을 경매로 준비하세요.';
 
   @override
-  String get sellHeroDescription =>
-      '상품 스토리, 가격, 일정, 이미지를 더 정돈된 리듬으로 점검하며 발행합니다.';
+  String get sellHeroDescription => '카테고리, 가격, 일정, 이미지를 순서대로 채우면 드래프트가 저장됩니다.';
 
   @override
   String get sellPolicyTitle => '경매 시간 정책';
@@ -918,28 +881,25 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sellStepDetailsTitle => '상품 정보를 선명하게 정리';
 
   @override
-  String get sellStepDetailsDescription =>
-      '제목, 상태, 태그, 설명이 첫인상만으로도 신뢰를 주어야 합니다.';
+  String get sellStepDetailsDescription => '제목, 상태, 태그, 설명을 정확하게 입력해 주세요.';
 
   @override
   String get sellStepPricingTitle => '가격과 일정 설정';
 
   @override
-  String get sellStepPricingDescription =>
-      '시작가, 즉시 구매가, 종료 시점이 경매의 긴장감을 명확하게 전달해야 합니다.';
+  String get sellStepPricingDescription => '시작가, 즉시 구매가, 종료 시점을 한 번에 설정합니다.';
 
   @override
   String get sellStepImagesTitle => '이미지 구성 준비';
 
   @override
-  String get sellStepImagesDescription => '대표 이미지와 필요한 인증 이미지를 발행 전에 충분히 갖춥니다.';
+  String get sellStepImagesDescription => '대표 이미지와 필요한 인증 이미지를 발행 전에 추가합니다.';
 
   @override
   String get sellStepPublishTitle => '미리보기와 발행';
 
   @override
-  String get sellStepPublishDescription =>
-      '스토리, 가격, 긴급도 신호를 함께 점검한 뒤 경매를 라이브로 보냅니다.';
+  String get sellStepPublishDescription => '상품 정보, 가격, 일정을 확인한 뒤 경매를 발행합니다.';
 
   @override
   String get sellProgressTitle => '발행 진행 상태';
@@ -985,7 +945,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get sellDraftStatusNotSavedDescription =>
-      '상품 기본 정보가 갖춰지면 드래프트를 저장해 진행 상태를 고정하세요.';
+      '상품 기본 정보를 입력한 뒤 드래프트를 저장하세요.';
 
   @override
   String get sellDraftStatusUnsaved => '저장되지 않은 변경사항';

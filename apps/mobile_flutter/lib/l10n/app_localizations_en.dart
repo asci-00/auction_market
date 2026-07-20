@@ -83,12 +83,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeHeroEyebrow => 'Premium resale';
 
   @override
-  String get homeHeroTitle =>
-      'Move quickly on trusted auctions without losing the calm.';
+  String get homeHeroTitle => 'Start with the auctions closing today.';
 
   @override
   String get homeHeroDescription =>
-      'Track the pieces ending first, the sellers drawing momentum, and the categories worth revisiting today.';
+      'Ending-soon listings, popular auctions, and category picks are gathered in one place.';
 
   @override
   String get homeHeroChipUrgency => 'Timed bidding';
@@ -142,16 +141,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchTitle => 'Search';
-
-  @override
-  String get searchHeroEyebrow => 'Refined discovery';
-
-  @override
-  String get searchHeroTitle => 'Search by taste, not only by keywords.';
-
-  @override
-  String get searchHeroDescription =>
-      'Use focused filters to narrow down price, urgency, and instant-purchase availability in one pass.';
 
   @override
   String get searchFieldLabel => 'Search query';
@@ -220,12 +209,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginHeroEyebrow => 'Trusted access';
 
   @override
-  String get loginHeroTitle =>
-      'Enter a quieter marketplace for serious bidding.';
+  String get loginHeroTitle => 'Sign in to continue bidding and selling.';
 
   @override
   String get loginHeroDescription =>
-      'Sign in with a supported provider to restore your session, inbox, orders, and selling tools securely.';
+      'Use Apple or Google to restore orders, notifications, and selling tools securely.';
 
   @override
   String get loginContinueGoogle => 'Continue with Google';
@@ -269,17 +257,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get activityTitle => 'Activity';
-
-  @override
-  String get activityHeroEyebrow => 'At-a-glance status';
-
-  @override
-  String get activityHeroTitle =>
-      'Keep payment, shipping, and inbox movement in one place.';
-
-  @override
-  String get activityHeroDescription =>
-      'Jump to the next operational step quickly instead of hunting across screens.';
 
   @override
   String get activityOrdersTitle => 'Orders and payments';
@@ -373,7 +350,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get auctionDetailSellerDescription =>
-      'Trust signals, category fit, and shipping readiness stay visible before you place a bid.';
+      'Review the seller\'s basic trust signals and trade readiness.';
 
   @override
   String get auctionDetailDescriptionTitle => 'Item details';
@@ -609,17 +586,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsTitle => 'Notifications';
 
   @override
-  String get notificationsHeroEyebrow => 'Inbox';
-
-  @override
-  String get notificationsHeroTitle =>
-      'Important changes, without noisy blue alerts.';
-
-  @override
-  String get notificationsHeroDescription =>
-      'Unread updates stay visible so you can move straight to the next relevant screen.';
-
-  @override
   String get notificationsDestinationAuction => 'Opens auction detail';
 
   @override
@@ -643,6 +609,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Bid, payment, and shipment updates will land here as soon as activity begins.';
 
   @override
+  String notificationsSummaryUnread(int count) {
+    return '$count unread notifications';
+  }
+
+  @override
+  String get notificationsSummaryAllRead => 'All notifications are read.';
+
+  @override
   String get notificationsOpenAction => 'Open';
 
   @override
@@ -653,18 +627,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsSubtitle =>
-      'Keep alerts and app information within reach.';
+      'Manage alerts, appearance, and app information.';
 
   @override
-  String get settingsHeroEyebrow => 'Preferences';
+  String get settingsQuickNavNotifications => 'Go to notifications';
 
   @override
-  String get settingsHeroTitle =>
-      'Shape alerts around the moments that actually need your attention.';
+  String get settingsQuickNavAppearance => 'Go to appearance';
 
   @override
-  String get settingsHeroDescription =>
-      'Notification controls should feel operational, clear, and easy to revisit from anywhere in the app.';
+  String get settingsQuickNavLanguage => 'Go to language';
 
   @override
   String get settingsSignedOutTitle => 'Sign in to manage preferences';
@@ -836,7 +808,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAppInfoDescription =>
-      'Version, licenses, and environment details stay tucked into a quieter section.';
+      'Review version, license, and environment details.';
 
   @override
   String get settingsVersionLabel => 'Version';
@@ -893,16 +865,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myTitle => 'My';
 
   @override
-  String get myHeroEyebrow => 'Profile and trust';
-
-  @override
-  String get myHeroTitle => 'Keep your profile ready for buying and selling.';
-
-  @override
-  String get myHeroDescription =>
-      'Verification, seller momentum, and account preferences should feel close at hand, not buried in settings.';
-
-  @override
   String get mySignedInAs => 'Signed in as';
 
   @override
@@ -939,12 +901,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sellHeroEyebrow => 'Seller studio';
 
   @override
-  String get sellHeroTitle =>
-      'Shape a listing that feels deliberate before it goes live.';
+  String get sellHeroTitle => 'Prepare an item for auction.';
 
   @override
   String get sellHeroDescription =>
-      'Walk through the item story, pricing, schedule, and images with a cleaner publishing rhythm.';
+      'Fill in category, price, schedule, and images in order. Drafts are saved as you go.';
 
   @override
   String get sellPolicyTitle => 'Auction timing policy';
@@ -965,28 +926,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sellStepDetailsDescription =>
-      'Title, condition, tags, and description should make the listing easy to trust at a glance.';
+      'Enter the title, condition, tags, and description accurately.';
 
   @override
   String get sellStepPricingTitle => 'Set price and schedule';
 
   @override
   String get sellStepPricingDescription =>
-      'Start price, buy-now price, and closing time need to communicate urgency without confusion.';
+      'Set the start price, buy-now price, and closing time together.';
 
   @override
   String get sellStepImagesTitle => 'Prepare image coverage';
 
   @override
   String get sellStepImagesDescription =>
-      'Main photos and any required authentication images should feel complete before publishing.';
+      'Add main photos and any required authentication images before publishing.';
 
   @override
   String get sellStepPublishTitle => 'Preview and publish';
 
   @override
   String get sellStepPublishDescription =>
-      'Check the story, pricing, and urgency cues together before you send the auction live.';
+      'Review the item details, price, and schedule before publishing.';
 
   @override
   String get sellProgressTitle => 'Publishing progress';
@@ -1034,7 +995,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sellDraftStatusNotSavedDescription =>
-      'Save the draft once the item basics feel ready to keep your progress anchored.';
+      'Enter the item basics, then save a draft.';
 
   @override
   String get sellDraftStatusUnsaved => 'Unsaved changes';

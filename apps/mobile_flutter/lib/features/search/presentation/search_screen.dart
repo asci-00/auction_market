@@ -3,12 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../core/l10n/app_localization.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/app_event_transformers.dart';
-import '../../../core/widgets/app_editorial_hero.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
-import '../../../core/widgets/app_panel.dart';
 import '../../../core/widgets/app_section_heading.dart';
 import '../../../core/widgets/app_shell_insets.dart';
-import '../../../core/widgets/app_status_badge.dart';
 import '../application/search_auction_filter.dart';
 import 'search_results_layout.dart';
 import 'widgets/search_filter_chips.dart';
@@ -118,6 +115,12 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  bool get _hasActiveFilters =>
+      _filters.category != SearchCategoryFilter.all ||
+      _filters.price != SearchPriceFilter.all ||
+      _filters.endingSoonOnly ||
+      _filters.buyNowOnly;
+
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
@@ -128,36 +131,30 @@ class _SearchScreenState extends State<SearchScreen> {
       extendBodyBehindAppBar: false,
       body: CustomScrollView(
         slivers: [
-          SliverPadding(
-            padding: EdgeInsets.fromLTRB(
-              tokens.screenPadding,
-              tokens.space4,
-              tokens.screenPadding,
-              0,
-            ),
-            sliver: SliverToBoxAdapter(
-              child: AppEditorialHero(
-                eyebrow: context.l10n.searchHeroEyebrow,
-                title: context.l10n.searchHeroTitle,
-                description: context.l10n.searchHeroDescription,
-                badges: const [
-                  AppStatusBadge(kind: AppStatusKind.pending),
-                  AppStatusBadge(kind: AppStatusKind.buyNow),
-                ],
-                tone: AppPanelTone.surface,
-              ),
-            ),
-          ),
           SliverPersistentHeader(
             pinned: true,
             delegate: _SearchStickyQueryHeaderDelegate(
               tokens: tokens,
               brightness: brightness,
-              child: SearchQueryField(
-                controller: _controller,
-                query: _query,
-                onChanged: _onQueryChanged,
-                onClear: _resetQuery,
+              child: Column(
+                children: [
+                  SearchQueryField(
+                    controller: _controller,
+                    query: _query,
+                    onChanged: _onQueryChanged,
+                    onClear: _resetQuery,
+                  ),
+                  SizedBox(height: tokens.space3),
+                  SearchFilterChips(
+                    filters: _filters,
+                    onCycleCategory: _cycleCategoryFilter,
+                    onCyclePrice: _cyclePriceFilter,
+                    onToggleEndingSoon: _toggleEndingSoon,
+                    onToggleBuyNow: _toggleBuyNow,
+                    onReset: _hasActiveFilters ? _resetFilters : null,
+                    scrollable: true,
+                  ),
+                ],
               ),
             ),
           ),
@@ -172,14 +169,6 @@ class _SearchScreenState extends State<SearchScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SearchFilterChips(
-                    filters: _filters,
-                    onCycleCategory: _cycleCategoryFilter,
-                    onCyclePrice: _cyclePriceFilter,
-                    onToggleEndingSoon: _toggleEndingSoon,
-                    onToggleBuyNow: _toggleBuyNow,
-                  ),
-                  SizedBox(height: tokens.space6),
                   AppSectionHeading(
                     title: context.l10n.searchResultsTitle,
                     subtitle: context.l10n.searchResultsSubtitle,
@@ -219,10 +208,11 @@ class _SearchStickyQueryHeaderDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
 
   @override
-  double get minExtent => tokens.inputHeight + tokens.space4 * 2;
+  double get minExtent =>
+      tokens.inputHeight + kMinInteractiveDimension + tokens.space3 * 4;
 
   @override
-  double get maxExtent => tokens.inputHeight + tokens.space4 * 2;
+  double get maxExtent => minExtent;
 
   @override
   Widget build(
@@ -252,9 +242,9 @@ class _SearchStickyQueryHeaderDelegate extends SliverPersistentHeaderDelegate {
       child: Padding(
         padding: EdgeInsets.fromLTRB(
           tokens.screenPadding,
-          tokens.space4,
+          tokens.space3,
           tokens.screenPadding,
-          tokens.space4,
+          tokens.space3,
         ),
         child: child,
       ),

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../../core/extensions/build_context_x.dart';
 import '../../../../core/l10n/app_localization.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/app_editorial_hero.dart';
 import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_page_insets.dart';
 import '../../../../core/widgets/app_panel.dart';
@@ -121,18 +120,9 @@ class AuctionDetailView extends StatelessWidget {
               SizedBox(height: tokens.space5),
               AuctionDetailPriceSummary(auction: auction!),
               SizedBox(height: tokens.space5),
-              AppEditorialHero(
-                eyebrow: context.l10n.auctionDetailSellerSummary,
-                title: auction!.titleSnapshot.isEmpty
-                    ? context.l10n.genericUnavailable
-                    : auction!.titleSnapshot,
+              _SellerSummaryPanel(
                 description: context.l10n.auctionDetailSellerDescription,
-                badges: const [
-                  AppStatusBadge(kind: AppStatusKind.verified),
-                  AppStatusBadge(kind: AppStatusKind.live),
-                ],
-                tone: AppPanelTone.surface,
-                trailing: _SellerSummaryPlate(sellerId: auction!.sellerId),
+                sellerId: auction!.sellerId,
               ),
               SizedBox(height: tokens.space5),
               AuctionDetailDescriptionPanel(auction: auction!),
@@ -149,6 +139,74 @@ class AuctionDetailView extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SellerSummaryPanel extends StatelessWidget {
+  const _SellerSummaryPanel({
+    required this.description,
+    required this.sellerId,
+  });
+
+  static const _narrowLayoutThreshold = 300.0;
+
+  final String description;
+  final String? sellerId;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
+    return AppPanel(
+      tone: AppPanelTone.surface,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final content = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                context.l10n.auctionDetailSellerSummary,
+                style: context.textTheme.headlineSmall,
+              ),
+              SizedBox(height: tokens.space2),
+              Text(description, style: context.textTheme.bodyMedium),
+              SizedBox(height: tokens.space4),
+              Wrap(
+                spacing: tokens.space2,
+                runSpacing: tokens.space2,
+                children: const [
+                  AppStatusBadge(kind: AppStatusKind.verified),
+                  AppStatusBadge(kind: AppStatusKind.live),
+                ],
+              ),
+            ],
+          );
+
+          if (constraints.maxWidth < _narrowLayoutThreshold) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                content,
+                SizedBox(height: tokens.space4),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: _SellerSummaryPlate(sellerId: sellerId),
+                ),
+              ],
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: content),
+              SizedBox(width: tokens.space4),
+              _SellerSummaryPlate(sellerId: sellerId),
+            ],
+          );
+        },
       ),
     );
   }

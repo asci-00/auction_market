@@ -1,6 +1,9 @@
 import 'package:auction_market_mobile/features/notifications/application/notification_push_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -92,9 +95,137 @@ void main() {
       expect(payload!.routePath, '/notifications');
       expect(payload.deduplicationKey, 'message-4');
     });
+
+    test('round-trips local notification payloads for tap routing', () {
+      const originalPayload = NotificationPushPayload(
+        deduplicationKey: 'message-local-1',
+        routePath: '/orders/order-123',
+        title: 'Payment confirmed',
+        body: 'Open the timeline',
+        notificationId: 'notif-local-1',
+      );
+
+      final restoredPayload =
+          NotificationPushPayload.fromLocalNotificationPayload(
+            originalPayload.toLocalNotificationPayload(),
+          );
+
+      expect(restoredPayload, isNotNull);
+      expect(restoredPayload!.deduplicationKey, 'message-local-1');
+      expect(restoredPayload.routePath, '/orders/order-123');
+      expect(restoredPayload.title, 'Payment confirmed');
+      expect(restoredPayload.body, 'Open the timeline');
+      expect(restoredPayload.notificationId, 'notif-local-1');
+    });
+
+    test('rejects unsupported local notification routes', () {
+      final payload = NotificationPushPayload.fromLocalNotificationPayload(
+        '{"deduplicationKey":"message-local-2","routePath":"/unknown"}',
+      );
+
+      expect(payload, isNull);
+    });
+  });
+
+  group('ForegroundLocalNotificationBridge', () {
+    setUp(() {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    });
+
+    tearDown(() {
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    test(
+      'forwards the launch notification payload after initialization',
+      () async {
+        final plugin = _FakeLocalNotificationsPlugin(
+          launchDetails: const NotificationAppLaunchDetails(
+            true,
+            notificationResponse: NotificationResponse(
+              notificationResponseType:
+                  NotificationResponseType.selectedNotification,
+              payload: 'launch-payload',
+            ),
+          ),
+        );
+        final payloads = <String?>[];
+        final bridge = ForegroundLocalNotificationBridge(plugin: plugin);
+
+        final initialized = await bridge.initialize(onPayload: payloads.add);
+
+        expect(initialized, isTrue);
+        expect(plugin.initializeCalls, 1);
+        expect(plugin.launchDetailsCalls, 1);
+        expect(payloads, ['launch-payload']);
+      },
+    );
+
+    test('keeps initialization when launch detail lookup fails', () async {
+      final plugin = _FakeLocalNotificationsPlugin(
+        launchDetailsError: PlatformException(code: 'launch-details'),
+      );
+      final bridge = ForegroundLocalNotificationBridge(plugin: plugin);
+
+      final initialized = await bridge.initialize(onPayload: (_) {});
+      final shown = await bridge.show(_testLocalNotificationPayload);
+
+      expect(initialized, isTrue);
+      expect(shown, isTrue);
+      expect(plugin.showCalls, 1);
+    });
+
+    test('clears initialization when showing a notification fails', () async {
+      final plugin = _FakeLocalNotificationsPlugin(
+        showError: PlatformException(code: 'show'),
+      );
+      final bridge = ForegroundLocalNotificationBridge(plugin: plugin);
+      await bridge.initialize(onPayload: (_) {});
+
+      final firstResult = await bridge.show(_testLocalNotificationPayload);
+      final secondResult = await bridge.show(_testLocalNotificationPayload);
+
+      expect(firstResult, isFalse);
+      expect(secondResult, isFalse);
+      expect(plugin.showCalls, 1);
+    });
   });
 
   group('NotificationPushService', () {
+    test('presents foreground pushes through system notifications', () async {
+      final presentedPayloads = <NotificationPushPayload>[];
+      final service = NotificationPushService(
+        markNotificationRead: ({required notificationId}) async {},
+        logInfoMessage: (_) {},
+        logErrorMessage: ({required message, error, stackTrace}) {},
+        scaffoldMessengerKey: GlobalKey<ScaffoldMessengerState>(),
+        resolveCurrentRoutePath: (_) => '/orders/order-999',
+        showForegroundSystemNotification: (payload) async {
+          presentedPayloads.add(payload);
+          return true;
+        },
+      );
+
+      final router = _buildTestRouter();
+      addTearDown(router.dispose);
+
+      final message = RemoteMessage.fromMap({
+        'messageId': 'message-foreground-system-1',
+        'data': {
+          'deeplink': 'app://orders/order-123',
+          'notificationId': 'notif-system-1',
+        },
+        'sentTime': DateTime.utc(2026, 4, 11, 4).millisecondsSinceEpoch,
+      });
+
+      await service.handleForegroundMessage(router, message);
+
+      expect(presentedPayloads, hasLength(1));
+      expect(presentedPayloads.single.deduplicationKey, message.messageId);
+      expect(presentedPayloads.single.routePath, '/orders/order-123');
+      expect(presentedPayloads.single.notificationId, 'notif-system-1');
+    });
+
     test(
       'refreshes foreground route state when current route matches',
       () async {
@@ -179,6 +310,38 @@ void main() {
       },
     );
 
+    test('skips SnackBar fallback on iOS foreground native alerts', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      final logMessages = <String>[];
+      final service = NotificationPushService(
+        markNotificationRead: ({required notificationId}) async {},
+        logInfoMessage: logMessages.add,
+        logErrorMessage: ({required message, error, stackTrace}) {},
+        scaffoldMessengerKey: GlobalKey<ScaffoldMessengerState>(),
+        resolveCurrentRoutePath: (_) => '/orders/order-999',
+        showForegroundSystemNotification: (_) async => false,
+      );
+
+      final router = _buildTestRouter();
+      addTearDown(router.dispose);
+
+      final message = RemoteMessage.fromMap({
+        'messageId': 'message-foreground-ios-1',
+        'data': {'deeplink': 'app://orders/order-123'},
+        'sentTime': DateTime.utc(2026, 4, 11, 8).millisecondsSinceEpoch,
+      });
+
+      await service.handleForegroundMessage(router, message);
+
+      expect(
+        logMessages,
+        contains(
+          contains('skip foreground SnackBar presentation: iOS native alert'),
+        ),
+      );
+    });
+
     test('keeps opened-message dedupe for mark-read and routing', () async {
       final markedReadIds = <String>[];
       final routedPaths = <String>[];
@@ -218,6 +381,47 @@ void main() {
       expect(foregroundRefreshed, isFalse);
     });
 
+    test('routes local notification taps through mark-read dedupe', () async {
+      final markedReadIds = <String>[];
+      final routedPaths = <String>[];
+      final service = NotificationPushService(
+        markNotificationRead: ({required notificationId}) async {
+          markedReadIds.add(notificationId);
+        },
+        logInfoMessage: (_) {},
+        logErrorMessage: ({required message, error, stackTrace}) {},
+        scaffoldMessengerKey: GlobalKey<ScaffoldMessengerState>(),
+        navigateToRoute: (_, routePath) {
+          routedPaths.add(routePath);
+        },
+      );
+
+      final router = _buildTestRouter();
+      addTearDown(router.dispose);
+
+      const payload = NotificationPushPayload(
+        deduplicationKey: 'message-local-open-1',
+        routePath: '/auction/auction-1',
+        title: 'Auction updated',
+        body: 'Open the auction',
+        notificationId: 'notif-local-open-1',
+      );
+
+      await service.handleLocalNotificationPayload(
+        router,
+        payload.toLocalNotificationPayload(),
+        source: 'foreground-local',
+      );
+      await service.handleLocalNotificationPayload(
+        router,
+        payload.toLocalNotificationPayload(),
+        source: 'foreground-local',
+      );
+
+      expect(markedReadIds, ['notif-local-open-1']);
+      expect(routedPaths, ['/auction/auction-1']);
+    });
+
     test(
       'falls back to notifications when opened message route is unsupported',
       () async {
@@ -247,4 +451,62 @@ void main() {
       },
     );
   });
+}
+
+const _testLocalNotificationPayload = NotificationPushPayload(
+  deduplicationKey: 'local-test',
+  routePath: '/notifications',
+  title: 'Notification title',
+  body: 'Notification body',
+  notificationId: 'notification-test',
+);
+
+class _FakeLocalNotificationsPlugin implements LocalNotificationsPlugin {
+  _FakeLocalNotificationsPlugin({
+    this.launchDetails,
+    this.launchDetailsError,
+    this.showError,
+  });
+
+  final NotificationAppLaunchDetails? launchDetails;
+  final Object? launchDetailsError;
+  final Object? showError;
+  int initializeCalls = 0;
+  int launchDetailsCalls = 0;
+  int showCalls = 0;
+
+  @override
+  Future<bool?> initialize({
+    required InitializationSettings settings,
+    DidReceiveNotificationResponseCallback? onDidReceiveNotificationResponse,
+  }) async {
+    initializeCalls += 1;
+    return true;
+  }
+
+  @override
+  Future<NotificationAppLaunchDetails?>
+  getNotificationAppLaunchDetails() async {
+    launchDetailsCalls += 1;
+    final error = launchDetailsError;
+    if (error != null) {
+      throw error;
+    }
+    return launchDetails;
+  }
+
+  @override
+  Future<void> show({
+    required int id,
+    String? title,
+    String? body,
+    NotificationDetails? notificationDetails,
+    String? payload,
+  }) async {
+    showCalls += 1;
+    final error = showError;
+    if (error != null) {
+      throw error;
+    }
+  }
 }

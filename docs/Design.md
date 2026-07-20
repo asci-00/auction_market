@@ -10,7 +10,7 @@
 - Base mood: warm neutral paper and soft stone.
 - Contrast mood: charcoal panels for important price and action areas.
 - Accent mood: copper for primary action, coral for urgent status, muted sage for success and confirmation.
-- Composition mood: editorial luxury marketplace with large headlines, breathing room, and image-first cards.
+- Composition mood: editorial luxury marketplace with selective large headlines, breathing room, and image-first cards.
 - Reference direction:
   - [Dribbble auction app search](https://dribbble.com/search/auction%20app)
   - [Dribbble marketplace app search](https://dribbble.com/search/marketplace%20mobile%20app)
@@ -103,6 +103,14 @@
 - Pair every quiet state with either a real read path, a navigation recovery action, or a clear informational explanation.
 - Loading overlays must use the shared `loading.lottie` asset instead of ad hoc spinners for high-latency blocking actions.
 
+### Editorial Hero
+
+- Use `AppEditorialHero` only when a screen needs first-visit orientation, brand tone, or a high-value conversion setup such as home, login, or the sell flow.
+- Do not use `AppEditorialHero` as a default page header for familiar utility screens. Search fields, filters, settings groups, inbox rows, profile panels, and activity cards should carry their own context.
+- Keep hero copy short and concrete. Avoid explaining what the visible UI already teaches through labels, section headings, chips, or cards.
+- Prefer `AppPageScaffold` titles, `AppSectionHeading`, `AppPanel`, and empty-state copy for local context after the user has entered an ordinary workflow.
+- When a hero is removed, rebalance the screen with functional controls or state summaries, such as pinned filters, quick actions, pull-to-refresh, or section jump chips. Do not leave a large top gap or replace the hero with decorative filler.
+
 ### Form Inputs
 - Use full-width fields with strong label and helper text.
 - Image upload area uses a card with visible progress and failure retry.
@@ -128,13 +136,15 @@
   - ending soon
   - hot auctions
   - curated category rows
-- Use strong editorial header and dense card layout.
+- Use one strong editorial header and dense card layout.
 - Notification entry point stays visible.
 
 ### Search
+
 - Sticky search field.
 - Filter chips for category, price, end time, and buy now.
 - Results can switch between large cards and compact list if needed.
+- Do not add a hero above search. The search field and filters are the screen orientation.
 
 ### Auction Detail
 - Image gallery at top.
@@ -157,14 +167,19 @@
 - Separate buyer and seller states clearly.
 - Order cards show current status, next action, and deadline.
 - Payment due cards must display countdown and amount together.
+- Use compact cards and section copy instead of a hero; users learn this screen through the buyer, seller, and notification queues.
 
 ### Notifications
+
 - Inbox rows show title, body, time, and next destination.
 - Unread state should be visible without bright blue dots.
+- Do not add an editorial intro above the inbox. Empty-state copy is enough when there are no notifications.
 
 ### My
+
 - Show profile, verification states, seller grade summary, and settings.
 - Keep settings secondary. Surface trust and selling readiness first.
+- Start with account and verification panels rather than a hero.
 
 ### Settings
 
@@ -179,6 +194,7 @@
 - Show OS notification-permission status with a short explanation and a direct recovery action when permission is denied.
 - App version and open-source licenses belong in a quiet informational section near the bottom.
 - Developer settings must never appear in release builds.
+- Do not use a hero on settings; grouped controls and the app-bar subtitle provide enough context.
 
 ## Accessibility Rules
 

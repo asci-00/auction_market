@@ -226,7 +226,8 @@
 - Mark the active token record inactive before sign-out completes.
 - Keep token records scoped per signed-in user and per app installation.
 - Store token records under `users/{uid}/deviceTokens/{tokenId}` as documented in `Documentation.md`.
-- The mobile app must manage token lifecycle through backend callables instead of direct Firestore writes.
+- The mobile app must manage token lifecycle through the backend API instead of direct Firestore writes.
+- The mobile app caches the last successful token-registration fingerprint and retries one transient backend timeout during lifecycle sync, because push-token registration is a recoverable background task and must not create noisy startup failures.
 - Token records should capture at least:
   - `token: string`
   - `platform: "ANDROID" | "IOS"`

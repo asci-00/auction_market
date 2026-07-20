@@ -43,6 +43,7 @@
   - `lib/core/app_config/app_config.dart` validates non-secret app defines such as `APP_ENV`, `APP_BACKEND_TRANSPORT=http`, `APP_API_BASE_URL`, emulator mode, and the currently wired payment launch key.
   - `lib/core/backend/backend_gateway.dart` always uses the HTTP backend contract for both dev and prod so feature services do not fork behavior by environment.
   - `lib/core/firebase/firebase_bootstrap.dart` initializes Firebase from native iOS and Android config files, then attaches Auth, Firestore, Functions, and Storage emulators when enabled.
+  - Firebase App Check is activated during bootstrap for every native app run: prod release uses Play Integrity on Android and DeviceCheck on Apple platforms, while dev/debug builds use Firebase App Check debug providers so Firebase SDK interceptors do not fall back to placeholder tokens.
   - `lib/core/logging/app_logger.dart` is the single structured mobile logger entrypoint and emits `timestamp | level | domain | source | message`; release builds force production-safe logger policy (info-level minimum with redaction) even when runtime `APP_ENV` is `dev`.
   - `lib/core/l10n/app_localization.dart` resolves device locale to `ko` or `en` and exposes generated localization accessors.
   - `lib/core/extensions/build_context_x.dart` centralizes repeated `BuildContext` lookups like `Theme.of`, `ScaffoldMessenger.of`, `MediaQuery.of`, `Navigator.of`, and `GoRouter.of`.
@@ -94,8 +95,8 @@
   - The debug-only settings developer area now also exposes a server push-probe trigger for the signed-in user, routed through `core/backend/backend_gateway.dart` as `sendDebugPushProbe` on the shared HTTP backend path.
   - Settings reads `users/{uid}.preferences` through the active read transport and falls back to `SettingsPreferences.defaults()` when the signed-in user document exists without a populated `preferences` payload yet.
   - `app/app.dart` now applies theme mode from local `SharedPreferences` state instead of the signed-in user document, while locale always follows the device setting through the shared locale resolver.
-  - Notification device-token lifecycle now lives under `features/notifications/application/notification_device_token_service.dart`, where the signed-in app session calls `registerDeviceToken` after permission grant, re-syncs on app resume and FCM token rotation, and calls `deactivateDeviceToken` before sign-out or when push is disabled.
-  - In `dev`, that same service now emits console diagnostics for permission state, token resolution, callable register or deactivate attempts, and skip reasons so silent push-token no-op paths can be traced without exposing raw token values in release UI.
+  - Notification device-token lifecycle now lives under `features/notifications/application/notification_device_token_service.dart`, where the signed-in app session calls `registerDeviceToken` after permission grant, re-syncs on app resume and FCM token rotation, and calls `deactivateDeviceToken` before sign-out or when push is disabled. The mobile client caches the last successful registration fingerprint for a short freshness window and retries transient backend timeouts once, so app startup does not repeatedly issue duplicate token writes when the device token metadata has not changed.
+  - In `dev`, that same service now emits console diagnostics for permission state, token resolution, backend register or deactivate attempts, and skip reasons so silent push-token no-op paths can be traced without exposing raw token values in release UI.
   - Signed-in routes no longer expose a separate global locale picker in the shared app bar, and the login screen no longer carries a manual locale menu either; language behavior is system-driven only.
   - Theme selection now uses a compact preview-card selector instead of long descriptive radio rows, aligning the settings surface with common mobile-app patterns.
   - Notifications now reuse the shared app deep-link normalizer instead of carrying a screen-local route parser.
@@ -297,10 +298,10 @@
   - `lastSeenAt: Timestamp`
   - `createdAt: Timestamp`
   - `updatedAt: Timestamp`
-- Server-managed through the `registerDeviceToken` and `deactivateDeviceToken` callables only.
+- Server-managed through the `registerDeviceToken` and `deactivateDeviceToken` backend API paths only.
 - Current mobile behavior:
   - call `registerDeviceToken` after sign-in when permission is `AUTHORIZED` or `PROVISIONAL`
-  - refresh locale, timezone, appVersion, and `lastSeenAt` through the same callable when FCM rotates the token
+  - refresh locale, timezone, appVersion, and `lastSeenAt` through the same backend API path when FCM rotates the token
   - call `deactivateDeviceToken` when permission is no longer granted, when push is disabled in settings, or just before sign-out
   - keep the cached token id in local `SharedPreferences` so the next sync can deactivate or replace the same installation token deterministically
 - Rules:
