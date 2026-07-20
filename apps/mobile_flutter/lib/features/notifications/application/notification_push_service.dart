@@ -230,11 +230,70 @@ final notificationPushLifecycleProvider = Provider<void>((ref) {
 typedef ForegroundSystemNotificationPresenter =
     Future<bool> Function(NotificationPushPayload payload);
 
-class ForegroundLocalNotificationBridge {
-  ForegroundLocalNotificationBridge({FlutterLocalNotificationsPlugin? plugin})
-    : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+abstract interface class LocalNotificationsPlugin {
+  Future<bool?> initialize({
+    required InitializationSettings settings,
+    DidReceiveNotificationResponseCallback? onDidReceiveNotificationResponse,
+  });
+
+  Future<NotificationAppLaunchDetails?> getNotificationAppLaunchDetails();
+
+  Future<void> show({
+    required int id,
+    String? title,
+    String? body,
+    NotificationDetails? notificationDetails,
+    String? payload,
+  });
+}
+
+class FlutterLocalNotificationsPluginAdapter
+    implements LocalNotificationsPlugin {
+  FlutterLocalNotificationsPluginAdapter({
+    FlutterLocalNotificationsPlugin? plugin,
+  }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   final FlutterLocalNotificationsPlugin _plugin;
+
+  @override
+  Future<bool?> initialize({
+    required InitializationSettings settings,
+    DidReceiveNotificationResponseCallback? onDidReceiveNotificationResponse,
+  }) {
+    return _plugin.initialize(
+      settings: settings,
+      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+    );
+  }
+
+  @override
+  Future<NotificationAppLaunchDetails?> getNotificationAppLaunchDetails() {
+    return _plugin.getNotificationAppLaunchDetails();
+  }
+
+  @override
+  Future<void> show({
+    required int id,
+    String? title,
+    String? body,
+    NotificationDetails? notificationDetails,
+    String? payload,
+  }) {
+    return _plugin.show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: notificationDetails,
+      payload: payload,
+    );
+  }
+}
+
+class ForegroundLocalNotificationBridge {
+  ForegroundLocalNotificationBridge({LocalNotificationsPlugin? plugin})
+    : _plugin = plugin ?? FlutterLocalNotificationsPluginAdapter();
+
+  final LocalNotificationsPlugin _plugin;
   bool _initialized = false;
 
   Future<bool> initialize({
@@ -272,11 +331,9 @@ class ForegroundLocalNotificationBridge {
           onPayload(launchDetails?.notificationResponse?.payload);
         }
       } on MissingPluginException {
-        _initialized = false;
-        return false;
+        // The plugin remains initialized even if startup metadata is unavailable.
       } on PlatformException {
-        _initialized = false;
-        return false;
+        // The plugin remains initialized even if startup metadata is unavailable.
       }
     }
     return _initialized;

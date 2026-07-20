@@ -9,6 +9,7 @@ import '../../../core/extensions/build_context_x.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/l10n/app_formatters.dart';
 import '../../../core/l10n/app_localization.dart';
+import '../../../core/logging/app_logger.dart';
 import '../../../core/routing/app_deeplink.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_empty_state.dart';
@@ -250,8 +251,16 @@ class _NotificationCard extends ConsumerWidget {
                           .read(backendGatewayProvider)
                           .markNotificationRead(notificationId: item.id);
                       sendToEventBus(BackendRefreshEvent.notificationsChanged);
-                    } catch (_) {
-                      // Keep navigation responsive even if the read marker fails.
+                    } catch (error, stackTrace) {
+                      ref
+                          .read(appLoggerProvider)
+                          .error(
+                            'notification read marker update failed',
+                            domain: AppLogDomain.notifications,
+                            source: 'notifications_screen:notification_card',
+                            error: error,
+                            stackTrace: stackTrace,
+                          );
                     }
                   }
 
@@ -263,16 +272,15 @@ class _NotificationCard extends ConsumerWidget {
                   navigationStarted = true;
                   await navigation;
                 } catch (error, stackTrace) {
-                  FlutterError.reportError(
-                    FlutterErrorDetails(
-                      exception: error,
-                      stack: stackTrace,
-                      library: 'notifications_screen',
-                      context: ErrorDescription(
-                        'while navigating from notification deeplink',
-                      ),
-                    ),
-                  );
+                  ref
+                      .read(appLoggerProvider)
+                      .error(
+                        'notification deeplink navigation failed',
+                        domain: AppLogDomain.notifications,
+                        source: 'notifications_screen:notification_card',
+                        error: error,
+                        stackTrace: stackTrace,
+                      );
                 } finally {
                   if (!navigationStarted) {
                     onNavigateEnd();

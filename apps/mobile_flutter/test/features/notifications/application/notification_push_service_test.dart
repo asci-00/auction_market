@@ -2,6 +2,8 @@ import 'package:auction_market_mobile/features/notifications/application/notific
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -122,6 +124,70 @@ void main() {
       );
 
       expect(payload, isNull);
+    });
+  });
+
+  group('ForegroundLocalNotificationBridge', () {
+    setUp(() {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    });
+
+    tearDown(() {
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    test(
+      'forwards the launch notification payload after initialization',
+      () async {
+        final plugin = _FakeLocalNotificationsPlugin(
+          launchDetails: const NotificationAppLaunchDetails(
+            true,
+            notificationResponse: NotificationResponse(
+              notificationResponseType:
+                  NotificationResponseType.selectedNotification,
+              payload: 'launch-payload',
+            ),
+          ),
+        );
+        final payloads = <String?>[];
+        final bridge = ForegroundLocalNotificationBridge(plugin: plugin);
+
+        final initialized = await bridge.initialize(onPayload: payloads.add);
+
+        expect(initialized, isTrue);
+        expect(plugin.initializeCalls, 1);
+        expect(plugin.launchDetailsCalls, 1);
+        expect(payloads, ['launch-payload']);
+      },
+    );
+
+    test('keeps initialization when launch detail lookup fails', () async {
+      final plugin = _FakeLocalNotificationsPlugin(
+        launchDetailsError: PlatformException(code: 'launch-details'),
+      );
+      final bridge = ForegroundLocalNotificationBridge(plugin: plugin);
+
+      final initialized = await bridge.initialize(onPayload: (_) {});
+      final shown = await bridge.show(_testLocalNotificationPayload);
+
+      expect(initialized, isTrue);
+      expect(shown, isTrue);
+      expect(plugin.showCalls, 1);
+    });
+
+    test('clears initialization when showing a notification fails', () async {
+      final plugin = _FakeLocalNotificationsPlugin(
+        showError: PlatformException(code: 'show'),
+      );
+      final bridge = ForegroundLocalNotificationBridge(plugin: plugin);
+      await bridge.initialize(onPayload: (_) {});
+
+      final firstResult = await bridge.show(_testLocalNotificationPayload);
+      final secondResult = await bridge.show(_testLocalNotificationPayload);
+
+      expect(firstResult, isFalse);
+      expect(secondResult, isFalse);
+      expect(plugin.showCalls, 1);
     });
   });
 
@@ -385,4 +451,62 @@ void main() {
       },
     );
   });
+}
+
+const _testLocalNotificationPayload = NotificationPushPayload(
+  deduplicationKey: 'local-test',
+  routePath: '/notifications',
+  title: 'Notification title',
+  body: 'Notification body',
+  notificationId: 'notification-test',
+);
+
+class _FakeLocalNotificationsPlugin implements LocalNotificationsPlugin {
+  _FakeLocalNotificationsPlugin({
+    this.launchDetails,
+    this.launchDetailsError,
+    this.showError,
+  });
+
+  final NotificationAppLaunchDetails? launchDetails;
+  final Object? launchDetailsError;
+  final Object? showError;
+  int initializeCalls = 0;
+  int launchDetailsCalls = 0;
+  int showCalls = 0;
+
+  @override
+  Future<bool?> initialize({
+    required InitializationSettings settings,
+    DidReceiveNotificationResponseCallback? onDidReceiveNotificationResponse,
+  }) async {
+    initializeCalls += 1;
+    return true;
+  }
+
+  @override
+  Future<NotificationAppLaunchDetails?>
+  getNotificationAppLaunchDetails() async {
+    launchDetailsCalls += 1;
+    final error = launchDetailsError;
+    if (error != null) {
+      throw error;
+    }
+    return launchDetails;
+  }
+
+  @override
+  Future<void> show({
+    required int id,
+    String? title,
+    String? body,
+    NotificationDetails? notificationDetails,
+    String? payload,
+  }) async {
+    showCalls += 1;
+    final error = showError;
+    if (error != null) {
+      throw error;
+    }
+  }
 }
